@@ -22,5 +22,18 @@ export function formatMoney(amount: number, currency = "NGN", locale = "en-NG") 
   }).format(amount);
 }
 
+export function planCodeToTier(planCode: string | null | undefined): Tier {
+  switch (planCode) {
+    case "free":
+      return "Free";
+    case "business":
+      return "Business";
+    case "custom":
+      return "Custom";
+    default:
+      return "Growth";
+  }
+}
+
 export const COMPANY_LINE =
   "Jaylor is a product of Bethjay Global Enterprise Limited — Abuja, Nigeria.";

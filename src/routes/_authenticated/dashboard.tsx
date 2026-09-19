@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
@@ -7,6 +8,26 @@ import { LockedFeature } from "@/components/jaylor/locked-feature";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { useStore } from "@/lib/store-context";
+import { supabase } from "@/integrations/supabase/client";
+
+function useFirstName() {
+  const [firstName, setFirstName] = useState<string | null>(null);
+  useEffect(() => {
+    supabase.auth.getUser().then(({ data }) => {
+      const fullName = (data.user?.user_metadata as { full_name?: string } | undefined)?.full_name;
+      setFirstName(fullName?.trim().split(/\s+/)[0] ?? null);
+    });
+  }, []);
+  return firstName;
+}
+
+function greeting() {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning";
+  if (hour < 17) return "Good afternoon";
+  return "Good evening";
+}
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
@@ -28,18 +49,31 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
   component: Home,
 });
 
+// Demo data until orders/payments exist (Prompts 6-8); wire to real queries then.
 const DUE = [
   { client: "Mama Blessing", item: "Aso-oke gown", status: "Fitting" as const, due: "Fri, 26 Sep" },
-  { client: "Chief Adeyemi", item: "Agbada, 3-piece", status: "Sewing" as const, due: "Sat, 27 Sep" },
+  {
+    client: "Chief Adeyemi",
+    item: "Agbada, 3-piece",
+    status: "Sewing" as const,
+    due: "Sat, 27 Sep",
+  },
   { client: "Ngozi O.", item: "Ankara two-piece", status: "Ready" as const, due: "Mon, 29 Sep" },
 ];
 
 function Home() {
+  const { currentStore } = useStore();
+  const firstName = useFirstName();
+  const location = [currentStore?.city, "Nigeria"].filter(Boolean).join(", ");
+
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
-        <p className="text-xs uppercase tracking-[0.18em] text-gold">Abuja, Nigeria</p>
-        <h1 className="mt-2 text-3xl leading-tight lg:text-4xl">Good afternoon, Isaac</h1>
+        <p className="text-xs uppercase tracking-[0.18em] text-gold">{location}</p>
+        <h1 className="mt-2 text-3xl leading-tight lg:text-4xl">
+          {greeting()}
+          {firstName ? `, ${firstName}` : ""}
+        </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Every order tracked. Every naira collected.
         </p>
@@ -47,10 +81,26 @@ function Home() {
         <StitchDivider className="my-6" />
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Stat label="Money owed" value={<MoneyText amount={412500} variant="owed" />} hint="9 clients" />
-          <Stat label="Collected this month" value={<MoneyText amount={1285000} variant="paid" />} hint="24 orders" />
-          <Stat label="Due this week" value={<span className="figures text-2xl">7</span>} hint="2 overdue" />
-          <Stat label="In the workroom" value={<span className="figures text-2xl">18</span>} hint="Active jobs" />
+          <Stat
+            label="Money owed"
+            value={<MoneyText amount={412500} variant="owed" />}
+            hint="9 clients"
+          />
+          <Stat
+            label="Collected this month"
+            value={<MoneyText amount={1285000} variant="paid" />}
+            hint="24 orders"
+          />
+          <Stat
+            label="Due this week"
+            value={<span className="figures text-2xl">7</span>}
+            hint="2 overdue"
+          />
+          <Stat
+            label="In the workroom"
+            value={<span className="figures text-2xl">18</span>}
+            hint="Active jobs"
+          />
         </div>
 
         <section className="mt-8">
@@ -119,15 +169,7 @@ function Home() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: React.ReactNode;
-  hint: string;
-}) {
+function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint: string }) {
   return (
     <Card className="rounded-2xl">
       <CardContent className="p-4">

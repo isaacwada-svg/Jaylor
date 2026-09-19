@@ -12,13 +12,22 @@ import {
   Banknote,
   PanelLeftClose,
   PanelLeft,
+  ChevronsUpDown,
+  Check,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
 import { TierBadge } from "./tier-badge";
-import { COMPANY_LINE } from "@/lib/jaylor";
+import { COMPANY_LINE, planCodeToTier } from "@/lib/jaylor";
+import { useStore } from "@/lib/store-context";
 import { cn } from "@/lib/utils";
 
 const NAV = [
@@ -40,6 +49,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [newOpen, setNewOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
+  const { memberships, currentStore, setCurrentStoreId } = useStore();
+  const tier = planCodeToTier(currentStore?.plan_code);
 
   return (
     <div className="linen min-h-screen bg-background">
@@ -60,9 +71,21 @@ export function AppShell({ children }: { children: ReactNode }) {
                 aria-label={collapsed ? "Expand menu" : "Collapse menu"}
                 onClick={() => setCollapsed((c) => !c)}
               >
-                {collapsed ? <PanelLeft className="size-5" /> : <PanelLeftClose className="size-5" />}
+                {collapsed ? (
+                  <PanelLeft className="size-5" />
+                ) : (
+                  <PanelLeftClose className="size-5" />
+                )}
               </Button>
             </div>
+            {!collapsed && (
+              <StoreSwitcher
+                memberships={memberships}
+                currentStoreId={currentStore?.id}
+                onSelect={setCurrentStoreId}
+                className="mt-4"
+              />
+            )}
             <StitchDivider className="my-4" />
             <nav className="flex flex-col gap-1">
               {NAV.map(({ to, label, icon: Icon }) => {
@@ -91,7 +114,7 @@ export function AppShell({ children }: { children: ReactNode }) {
               </Button>
             </div>
             <div className="mt-auto space-y-3">
-              {!collapsed && <TierBadge tier="Growth" />}
+              {!collapsed && <TierBadge tier={tier} />}
               <ThemeToggle />
             </div>
           </div>
@@ -99,10 +122,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Mobile header */}
-          <header className="sticky top-0 z-30 flex items-center justify-between border-b border-border bg-background/85 px-4 py-3 backdrop-blur lg:hidden">
-            <Wordmark />
-            <div className="flex items-center gap-1">
-              <TierBadge tier="Growth" />
+          <header className="sticky top-0 z-30 flex items-center justify-between gap-2 border-b border-border bg-background/85 px-4 py-3 backdrop-blur lg:hidden">
+            <StoreSwitcher
+              memberships={memberships}
+              currentStoreId={currentStore?.id}
+              onSelect={setCurrentStoreId}
+              className="min-w-0"
+            />
+            <div className="flex shrink-0 items-center gap-1">
+              <TierBadge tier={tier} />
               <ThemeToggle />
             </div>
           </header>
@@ -168,6 +196,70 @@ export function AppShell({ children }: { children: ReactNode }) {
         </SheetContent>
       </Sheet>
     </div>
+  );
+}
+
+function StoreSwitcher({
+  memberships,
+  currentStoreId,
+  onSelect,
+  className,
+}: {
+  memberships: ReturnType<typeof useStore>["memberships"];
+  currentStoreId: string | undefined;
+  onSelect: (id: string) => void;
+  className?: string;
+}) {
+  const current = memberships.find((m) => m.store.id === currentStoreId) ?? memberships[0];
+  if (!current) return <Wordmark />;
+
+  const badge = (
+    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+      <span className="font-display text-sm font-semibold">J</span>
+    </span>
+  );
+
+  if (memberships.length <= 1) {
+    return (
+      <Link to="/dashboard" className={cn("flex min-w-0 items-center gap-2", className)}>
+        {badge}
+        <span className="min-w-0 truncate font-display text-lg font-semibold tracking-tight">
+          {current.store.name}
+        </span>
+      </Link>
+    );
+  }
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <button
+          type="button"
+          className={cn(
+            "flex min-w-0 items-center gap-2 rounded-lg py-1 pr-1 text-left hover:bg-accent/60",
+            className,
+          )}
+        >
+          {badge}
+          <span className="min-w-0 flex-1 truncate font-display text-base font-semibold tracking-tight">
+            {current.store.name}
+          </span>
+          <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" />
+        </button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="start" className="w-56">
+        {memberships.map((m) => (
+          <DropdownMenuItem
+            key={m.store.id}
+            onClick={() => onSelect(m.store.id)}
+            className="flex items-center justify-between gap-2"
+          >
+            <span className="truncate">{m.store.name}</span>
+            {m.store.id === currentStoreId && <Check className="size-4 shrink-0 text-gold" />}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 

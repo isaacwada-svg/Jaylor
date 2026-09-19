@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,12 +32,51 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  const [recovery, setRecovery] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setRecovery(true);
+    });
+    return () => sub.subscription.unsubscribe();
+  }, []);
+
+  async function handleResetRequest(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: window.location.origin + "/auth",
+      });
+      if (error) throw error;
+      setSent(true);
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleSetNewPassword(event: React.FormEvent) {
+    event.preventDefault();
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.updateUser({ password });
+      if (error) throw error;
+      toast.success("Password updated. You're signed in.");
+      navigate({ to: "/dashboard" });
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Something went wrong");
+    } finally {
+      setBusy(false);
+    }
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
@@ -57,7 +96,7 @@ function AuthPage() {
           setSent(true);
           return;
         }
-        navigate({ to: "/welcome" });
+        navigate({ to: "/dashboard" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -98,16 +137,77 @@ function AuthPage() {
         </p>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">
-          {sent ? (
+          {recovery ? (
+            <>
+              <h1 className="text-xl">Set a new password</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Choose a new password for your account.
+              </p>
+              <form onSubmit={handleSetNewPassword} className="mt-6 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="new-password">New password</Label>
+                  <Input
+                    id="new-password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    autoComplete="new-password"
+                    minLength={10}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={busy}>
+                  Update password
+                </Button>
+              </form>
+            </>
+          ) : sent ? (
             <div className="text-center">
               <h1 className="text-xl">Check your email</h1>
               <p className="mt-2 text-sm text-muted-foreground">
-                We sent a confirmation link to {email}. Open it to finish setting up your workroom.
+                {mode === "reset"
+                  ? `We sent a password reset link to ${email}.`
+                  : `We sent a confirmation link to ${email}. Open it to finish setting up your workroom.`}
               </p>
             </div>
+          ) : mode === "reset" ? (
+            <>
+              <h1 className="text-xl">Reset your password</h1>
+              <p className="mt-1 text-sm text-muted-foreground">
+                We&apos;ll email you a link to choose a new one.
+              </p>
+              <form onSubmit={handleResetRequest} className="mt-6 space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="reset-email">Email</Label>
+                  <Input
+                    id="reset-email"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="you@example.com"
+                    autoComplete="email"
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={busy}>
+                  Send reset link
+                </Button>
+              </form>
+              <p className="mt-6 text-center text-sm text-muted-foreground">
+                <button
+                  type="button"
+                  className="font-medium text-gold underline-offset-4 hover:underline"
+                  onClick={() => setMode("signin")}
+                >
+                  Back to sign in
+                </button>
+              </p>
+            </>
           ) : (
             <>
-              <h1 className="text-xl">{mode === "signin" ? "Welcome back" : "Create your account"}</h1>
+              <h1 className="text-xl">
+                {mode === "signin" ? "Welcome back" : "Create your account"}
+              </h1>
               <p className="mt-1 text-sm text-muted-foreground">
                 {mode === "signin"
                   ? "Sign in to your workroom."
@@ -141,14 +241,25 @@ function AuthPage() {
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="password">Password</Label>
+                    {mode === "signin" && (
+                      <button
+                        type="button"
+                        className="text-xs font-medium text-gold underline-offset-4 hover:underline"
+                        onClick={() => setMode("reset")}
+                      >
+                        Forgot password?
+                      </button>
+                    )}
+                  </div>
                   <Input
                     id="password"
                     type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete={mode === "signin" ? "current-password" : "new-password"}
-                    minLength={8}
+                    minLength={mode === "signup" ? 10 : 8}
                     required
                   />
                 </div>
