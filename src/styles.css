@@ -1,0 +1,256 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Jaylor design system — quiet luxury atelier.
+ * Deep ink, warm ivory, a thread of gold.
+ * All colours in oklch. Never hardcode colours in components.
+ */
+
+@theme inline {
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+  --radius-2xl: calc(var(--radius) + 8px);
+  --radius-3xl: calc(var(--radius) + 12px);
+  --radius-4xl: calc(var(--radius) + 16px);
+
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  /* Jaylor brand tokens */
+  --color-ink: var(--ink);
+  --color-ivory: var(--ivory);
+  --color-surface: var(--surface);
+  --color-gold: var(--gold);
+  --color-gold-soft: var(--gold-soft);
+  --color-owed: var(--owed);
+  --color-paid: var(--paid);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-ring: var(--sidebar-ring);
+
+  --shadow-float: 0 10px 30px -12px oklch(0.22 0.06 285 / 0.28);
+  --shadow-sheet: 0 -8px 40px -16px oklch(0.22 0.06 285 / 0.24);
+}
+
+:root {
+  --radius: 0.75rem;
+
+  --ink: oklch(0.24 0.062 287);
+  --ivory: oklch(0.975 0.008 85);
+  --surface: oklch(1 0 0);
+  --gold: oklch(0.66 0.105 84);
+  --gold-soft: oklch(0.88 0.05 88);
+  --owed: oklch(0.53 0.138 42);
+  --paid: oklch(0.5 0.095 162);
+
+  --background: var(--ivory);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: oklch(0.98 0.006 85);
+  --secondary: oklch(0.955 0.012 85);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.955 0.012 85);
+  --muted-foreground: oklch(0.52 0.028 290);
+  --accent: oklch(0.945 0.03 88);
+  --accent-foreground: var(--ink);
+  --destructive: var(--owed);
+  --destructive-foreground: oklch(0.98 0.006 85);
+  --border: oklch(0.91 0.016 85);
+  --input: oklch(0.91 0.016 85);
+  --ring: var(--gold);
+
+  --chart-1: var(--gold);
+  --chart-2: var(--paid);
+  --chart-3: var(--owed);
+  --chart-4: var(--ink);
+  --chart-5: oklch(0.72 0.05 290);
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--ink);
+  --sidebar-primary-foreground: oklch(0.98 0.006 85);
+  --sidebar-accent: oklch(0.945 0.03 88);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: oklch(0.91 0.016 85);
+  --sidebar-ring: var(--gold);
+}
+
+.dark {
+  --ink: oklch(0.93 0.018 291);
+  --ivory: oklch(0.155 0.038 285);
+  --surface: oklch(0.225 0.045 287);
+  --gold: oklch(0.77 0.107 87);
+  --gold-soft: oklch(0.45 0.07 87);
+  --owed: oklch(0.7 0.135 45);
+  --paid: oklch(0.73 0.128 163);
+
+  --background: var(--ivory);
+  --foreground: var(--ink);
+  --card: var(--surface);
+  --card-foreground: var(--ink);
+  --popover: var(--surface);
+  --popover-foreground: var(--ink);
+  --primary: var(--gold);
+  --primary-foreground: oklch(0.18 0.04 285);
+  --secondary: oklch(0.27 0.04 287);
+  --secondary-foreground: var(--ink);
+  --muted: oklch(0.27 0.04 287);
+  --muted-foreground: oklch(0.7 0.028 290);
+  --accent: oklch(0.3 0.045 287);
+  --accent-foreground: var(--ink);
+  --destructive: var(--owed);
+  --destructive-foreground: oklch(0.18 0.04 285);
+  --border: oklch(0.3 0.04 287);
+  --input: oklch(0.32 0.04 287);
+  --ring: var(--gold);
+
+  --sidebar: var(--surface);
+  --sidebar-foreground: var(--ink);
+  --sidebar-primary: var(--gold);
+  --sidebar-primary-foreground: oklch(0.18 0.04 285);
+  --sidebar-accent: oklch(0.3 0.045 287);
+  --sidebar-accent-foreground: var(--ink);
+  --sidebar-border: oklch(0.3 0.04 287);
+  --sidebar-ring: var(--gold);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  input,
+  textarea,
+  select {
+    font-size: 1rem; /* never below 16px on mobile */
+  }
+}
+
+/* Tabular figures for money and measurements */
+@utility figures {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Very subtle linen texture on ivory backgrounds */
+@utility linen {
+  position: relative;
+  background-image:
+    repeating-linear-gradient(
+      90deg,
+      color-mix(in oklab, var(--color-ink) 2.2%, transparent) 0 1px,
+      transparent 1px 3px
+    ),
+    repeating-linear-gradient(
+      0deg,
+      color-mix(in oklab, var(--color-ink) 2.2%, transparent) 0 1px,
+      transparent 1px 3px
+    );
+}
+
+/* Dashed gold stitch line */
+@utility stitch-x {
+  background-image: repeating-linear-gradient(
+    90deg,
+    var(--color-gold) 0 6px,
+    transparent 6px 12px
+  );
+  height: 1.5px;
+  width: 100%;
+}
+
+@utility stitch-y {
+  background-image: repeating-linear-gradient(
+    180deg,
+    var(--color-gold) 0 6px,
+    transparent 6px 12px
+  );
+  width: 1.5px;
+}
+
+@utility touch-target {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@keyframes stitch-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-gold) 55%, transparent);
+  }
+  50% {
+    box-shadow: 0 0 0 6px color-mix(in oklab, var(--color-gold) 0%, transparent);
+  }
+}
+
+@utility animate-stitch-pulse {
+  animation: stitch-pulse 2s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
