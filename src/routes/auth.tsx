@@ -12,6 +12,7 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
+import { normalizePhoneNG } from "@/lib/phone";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
@@ -43,14 +44,34 @@ function AuthPage() {
   const [mode, setMode] = useState<"signin" | "signup" | "reset">(initialMode ?? "signin");
   const [recovery, setRecovery] = useState(false);
   const [name, setName] = useState("");
+  const [whatsappRaw, setWhatsappRaw] = useState("");
   const [email, setEmail] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
 
   useEffect(() => {
-    const { data: sub } = supabase.auth.onAuthStateChange((event) => {
+    document.title =
+      mode === "signup"
+        ? "Create account | Jaylor"
+        : mode === "reset"
+          ? "Reset password | Jaylor"
+          : "Sign in | Jaylor";
+  }, [mode]);
+
+  useEffect(() => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, session) => {
       if (event === "PASSWORD_RECOVERY") setRecovery(true);
+      if (event === "SIGNED_IN" && session?.user) {
+        const phone = (session.user.user_metadata as { whatsapp_phone?: string } | undefined)
+          ?.whatsapp_phone;
+        if (phone) {
+          void supabase
+            .from("phone_directory")
+            .upsert({ phone, user_id: session.user.id }, { onConflict: "phone" });
+        }
+      }
     });
     return () => sub.subscription.unsubscribe();
   }, []);
@@ -102,15 +123,21 @@ function AuthPage() {
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
-    setBusy(true);
-    try {
-      if (mode === "signup") {
+
+    if (mode === "signup") {
+      const whatsapp = normalizePhoneNG(whatsappRaw);
+      if (!whatsapp) {
+        toast.error("Enter a valid Nigerian WhatsApp number");
+        return;
+      }
+      setBusy(true);
+      try {
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
           options: {
             emailRedirectTo: window.location.origin,
-            data: { full_name: name },
+            data: { full_name: name, whatsapp_phone: whatsapp },
           },
         });
         if (error) throw error;
@@ -121,11 +148,42 @@ function AuthPage() {
         }
         if (data.user) void trackEvent("signup_completed", data.user.id);
         goToPostAuthDestination();
-      } else {
-        const { error } = await supabase.auth.signInWithPassword({ email, password });
-        if (error) throw error;
-        goToPostAuthDestination();
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Something went wrong"));
+      } finally {
+        setBusy(false);
       }
+      return;
+    }
+
+    setBusy(true);
+    try {
+      let loginEmail = identifier.trim();
+      if (!loginEmail.includes("@")) {
+        const phone = normalizePhoneNG(loginEmail);
+        if (!phone) {
+          toast.error("Enter your email or a valid WhatsApp number");
+          setBusy(false);
+          return;
+        }
+        const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
+          "resolve_login_email",
+          { p_phone: phone },
+        );
+        if (resolveError) throw resolveError;
+        if (!resolvedEmail) {
+          toast.error("We couldn't find an account with that WhatsApp number");
+          setBusy(false);
+          return;
+        }
+        loginEmail = resolvedEmail;
+      }
+      const { error } = await supabase.auth.signInWithPassword({
+        email: loginEmail,
+        password,
+      });
+      if (error) throw error;
+      goToPostAuthDestination();
     } catch (error) {
       toast.error(getErrorMessage(error, "Something went wrong"));
     } finally {
@@ -237,30 +295,58 @@ function AuthPage() {
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 {mode === "signup" && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="name">Your name</Label>
+                      <Input
+                        id="name"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        placeholder="Isaac Wada"
+                        autoComplete="name"
+                        required
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="signup-whatsapp">WhatsApp number</Label>
+                      <Input
+                        id="signup-whatsapp"
+                        type="tel"
+                        value={whatsappRaw}
+                        onChange={(e) => setWhatsappRaw(e.target.value)}
+                        placeholder="0803 123 4567"
+                        autoComplete="tel"
+                        required
+                      />
+                    </div>
+                  </>
+                )}
+                {mode === "signup" ? (
                   <div className="space-y-2">
-                    <Label htmlFor="name">Your name</Label>
+                    <Label htmlFor="email">Email</Label>
                     <Input
-                      id="name"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Isaac Wada"
-                      autoComplete="name"
+                      id="email"
+                      type="email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      placeholder="you@example.com"
+                      autoComplete="email"
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <Label htmlFor="identifier">Email or WhatsApp number</Label>
+                    <Input
+                      id="identifier"
+                      value={identifier}
+                      onChange={(e) => setIdentifier(e.target.value)}
+                      placeholder="you@example.com or 0803 123 4567"
+                      autoComplete="username"
                       required
                     />
                   </div>
                 )}
-                <div className="space-y-2">
-                  <Label htmlFor="email">Email</Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    placeholder="you@example.com"
-                    autoComplete="email"
-                    required
-                  />
-                </div>
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
                     <Label htmlFor="password">Password</Label>
@@ -286,6 +372,25 @@ function AuthPage() {
                 <Button type="submit" className="w-full" disabled={busy}>
                   {mode === "signin" ? "Sign in" : "Create account"}
                 </Button>
+                {mode === "signup" && (
+                  <p className="text-center text-xs text-muted-foreground">
+                    By creating an account you agree to our{" "}
+                    <Link
+                      to="/terms"
+                      className="underline underline-offset-4 hover:text-foreground"
+                    >
+                      Terms
+                    </Link>{" "}
+                    and{" "}
+                    <Link
+                      to="/privacy-policy"
+                      className="underline underline-offset-4 hover:text-foreground"
+                    >
+                      Privacy Policy
+                    </Link>
+                    .
+                  </p>
+                )}
               </form>
 
               <StitchDivider className="my-6" />
