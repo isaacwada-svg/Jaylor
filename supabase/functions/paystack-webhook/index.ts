@@ -34,6 +34,12 @@ Deno.serve(async (req) => {
 
   if (reference.startsWith("orderpay_")) {
     await confirmOrderPayment(supabase, reference);
+  } else if (reference.startsWith("topup_")) {
+    await supabase
+      .from("message_topups")
+      .update({ status: "success", paid_at: new Date().toISOString() })
+      .eq("reference", reference)
+      .eq("status", "pending");
   } else {
     await supabase
       .from("ai_design_payments")

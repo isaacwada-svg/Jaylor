@@ -174,6 +174,7 @@ function Admin() {
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="messaging">Messaging</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
@@ -186,6 +187,9 @@ function Admin() {
           </TabsContent>
           <TabsContent value="plans" className="mt-6">
             <PlansTab />
+          </TabsContent>
+          <TabsContent value="messaging" className="mt-6">
+            <MessagingTab />
           </TabsContent>
           <TabsContent value="leads" className="mt-6">
             <LeadsTab />
@@ -536,6 +540,77 @@ function PlansTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+type MessageUsageRow = {
+  store_id: string;
+  store_name: string;
+  plan_code: string;
+  message_count: number;
+  cost_ngn: number;
+  plan_limit: number | null;
+};
+
+function MessagingTab() {
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["admin-message-usage"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_store_message_usage", {});
+      if (error) throw error;
+      return data as unknown as MessageUsageRow[];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const withMessages = (rows ?? []).filter((r) => r.message_count > 0);
+
+  if (withMessages.length === 0) {
+    return <p className="text-sm text-muted-foreground">No messages recorded this month yet.</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        WhatsApp messages and estimated cost this calendar month, by store.
+      </p>
+      {withMessages.map((row) => {
+        const overAllowance = row.plan_limit != null && row.message_count > row.plan_limit;
+        return (
+          <div
+            key={row.store_id}
+            className="flex items-center justify-between rounded-xl border border-border p-4"
+          >
+            <div>
+              <p className="font-medium">{row.store_name}</p>
+              <p className="text-xs text-muted-foreground">
+                {row.plan_code}
+                {row.plan_limit != null ? ` · ${row.plan_limit} included` : ""}
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="figures text-sm font-medium">
+                {row.message_count} messages · {formatMoney(row.cost_ngn)}
+              </p>
+              {overAllowance && (
+                <Badge variant="outline" className="mt-1 border-owed text-owed">
+                  Over plan allowance
+                </Badge>
+              )}
+            </div>
+          </div>
+        );
+      })}
     </div>
   );
 }

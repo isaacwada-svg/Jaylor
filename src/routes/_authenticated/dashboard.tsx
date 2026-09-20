@@ -18,6 +18,8 @@ import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
 import { orderReadyMessage } from "@/lib/whatsapp";
+import { useFeature } from "@/lib/use-feature";
+import { useMessageTopups } from "@/lib/use-message-topups";
 
 function useFirstName() {
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -84,6 +86,16 @@ function Home() {
   const canSeeMoney = currentRole === "owner" || currentRole === "manager";
   const firstName = useFirstName();
   const location = [currentStore?.city, "Nigeria"].filter(Boolean).join(", ");
+
+  const { data: messagesFeature } = useFeature(storeId, "whatsapp_auto");
+  const { data: messageTopups } = useMessageTopups(storeId);
+  const messagesLimit =
+    typeof messagesFeature?.limit === "number"
+      ? messagesFeature.limit + (messageTopups ?? 0)
+      : null;
+  const messagesUsageRatio =
+    messagesLimit && messagesLimit > 0 ? (messagesFeature?.used ?? 0) / messagesLimit : 0;
+  const messagesRunningLow = canSeeMoney && messagesUsageRatio >= 0.8;
 
   const today = startOfToday();
   const weekAhead = new Date(today);
@@ -332,9 +344,21 @@ function Home() {
             <Button
               size="sm"
               variant="outline"
-              onClick={() => toast("Billing isn't set up yet — coming soon")}
+              onClick={() => toast("Plan upgrades aren't available yet")}
             >
               Upgrade now
+            </Button>
+          </div>
+        )}
+
+        {messagesRunningLow && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-owed/40 bg-owed/10 px-4 py-3">
+            <p className="text-sm">
+              You&apos;ve used {messagesFeature?.used} of {messagesLimit} automatic WhatsApp
+              messages this month. Tap-to-send stays free and unlimited either way.
+            </p>
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/billing">Top up messages</Link>
             </Button>
           </div>
         )}

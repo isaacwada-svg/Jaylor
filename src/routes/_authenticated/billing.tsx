@@ -1,11 +1,13 @@
+import { useEffect } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { PaymentAccountSettings } from "@/components/jaylor/payment-account-settings";
 import { ReferralCard } from "@/components/jaylor/referral-card";
+import { MessageTopupButton } from "@/components/jaylor/message-topup-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -13,7 +15,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { useFeature } from "@/lib/use-feature";
+import { useMessageTopups } from "@/lib/use-message-topups";
 import { effectiveTier, planCodeToTier } from "@/lib/jaylor";
+import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   staticData: { sitemap: false },
@@ -25,6 +29,7 @@ function Billing() {
   const { currentStore } = useStore();
   const tier = effectiveTier(currentStore);
   const inTrial = !!currentStore && new Date(currentStore.trial_ends_at) > new Date();
+  const queryClient = useQueryClient();
 
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: ["plans"],
@@ -37,6 +42,38 @@ function Billing() {
 
   const { data: ordersFeature } = useFeature(currentStore?.id, "orders");
   const { data: messagesFeature } = useFeature(currentStore?.id, "whatsapp_auto");
+  const { data: topupCount } = useMessageTopups(currentStore?.id);
+  const messagesLimit =
+    typeof messagesFeature?.limit === "number"
+      ? messagesFeature.limit + (topupCount ?? 0)
+      : messagesFeature?.limit;
+
+  // If the owner returns from a Paystack message top-up.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get("reference") ?? params.get("trxref");
+    if (!reference) return;
+    window.history.replaceState({}, "", window.location.pathname);
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("verify-message-topup", {
+          body: { reference },
+        });
+        if (error) throw error;
+        const status = (data as { status: string }).status;
+        if (status === "success") {
+          toast.success("Top-up confirmed. 100 messages added to this month's allowance.");
+          queryClient.invalidateQueries({ queryKey: ["message-topups", currentStore?.id] });
+        } else {
+          toast.error("Payment wasn't confirmed");
+        }
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Could not confirm this payment"));
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <AppShell>
@@ -56,7 +93,7 @@ function Billing() {
                   {inTrial && <span className="text-xs text-muted-foreground">(free trial)</span>}
                 </div>
               </div>
-              <Button size="sm" onClick={() => toast("Billing isn't set up yet — coming soon")}>
+              <Button size="sm" onClick={() => toast("Plan upgrades aren't available yet")}>
                 Upgrade
               </Button>
             </div>
@@ -64,7 +101,7 @@ function Billing() {
             {inTrial && currentStore && (
               <p className="mt-3 text-sm text-muted-foreground">
                 Your Growth trial ends {new Date(currentStore.trial_ends_at).toLocaleDateString()}.
-                Afterwards you&apos;ll move to Free unless you subscribe — all your data stays
+                Afterwards you&apos;ll move to Free unless you subscribe. All your data stays
                 exactly as it is.
               </p>
             )}
@@ -78,11 +115,18 @@ function Billing() {
                 />
               )}
               {messagesFeature && (
-                <UsageMeter
-                  label="Automatic WhatsApp messages"
-                  used={messagesFeature.used}
-                  limit={messagesFeature.limit}
-                />
+                <div>
+                  <UsageMeter
+                    label="Automatic WhatsApp messages"
+                    used={messagesFeature.used}
+                    limit={messagesLimit ?? messagesFeature.limit}
+                  />
+                  {typeof messagesFeature.limit === "number" && currentStore && (
+                    <div className="mt-2">
+                      <MessageTopupButton storeId={currentStore.id} />
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           </CardContent>
@@ -132,7 +176,7 @@ function Billing() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => toast("Billing isn't set up yet — coming soon")}
+                        onClick={() => toast("Plan upgrades aren't available yet")}
                       >
                         Choose
                       </Button>

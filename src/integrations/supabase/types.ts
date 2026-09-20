@@ -982,6 +982,47 @@ export type Database = {
           },
         ];
       };
+      message_topups: {
+        Row: {
+          amount: number;
+          created_at: string;
+          id: string;
+          paid_at: string | null;
+          quantity: number;
+          reference: string;
+          status: string;
+          store_id: string;
+        };
+        Insert: {
+          amount: number;
+          created_at?: string;
+          id?: string;
+          paid_at?: string | null;
+          quantity?: number;
+          reference: string;
+          status?: string;
+          store_id: string;
+        };
+        Update: {
+          amount?: number;
+          created_at?: string;
+          id?: string;
+          paid_at?: string | null;
+          quantity?: number;
+          reference?: string;
+          status?: string;
+          store_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "message_topups_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       messages: {
         Row: {
           channel: string;
@@ -2404,6 +2445,10 @@ export type Database = {
       };
       get_referral_stats: {
         Args: { p_store_id: string };
+        Returns: Json;
+      };
+      admin_store_message_usage: {
+        Args: Record<PropertyKey, never>;
         Returns: Json;
       };
       get_design_by_token: {
