@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { LogoMark } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
@@ -146,9 +147,7 @@ function AuthPage() {
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary font-heading text-primary-foreground">
-            J
-          </span>
+          <LogoMark className="size-9" />
           <span className="font-heading text-2xl">Jaylor</span>
         </Link>
         <p className="mt-3 text-center text-sm text-muted-foreground">

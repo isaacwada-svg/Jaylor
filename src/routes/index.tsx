@@ -9,6 +9,7 @@ import {
   Store,
   Wallet,
 } from "lucide-react";
+import { LogoMark } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
@@ -112,9 +113,7 @@ function Home() {
       <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary font-heading text-primary-foreground">
-              J
-            </span>
+            <LogoMark className="size-8" />
             <span className="font-heading text-xl">Jaylor</span>
           </Link>
           <nav className="flex items-center gap-2">
@@ -322,9 +321,7 @@ function Home() {
       <footer className="border-t border-border/60 py-10">
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 text-center lg:px-8">
           <div className="flex items-center gap-2">
-            <span className="flex size-7 items-center justify-center rounded-lg bg-primary font-heading text-sm text-primary-foreground">
-              J
-            </span>
+            <LogoMark className="size-7" />
             <span className="font-heading text-lg">Jaylor</span>
           </div>
           <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">

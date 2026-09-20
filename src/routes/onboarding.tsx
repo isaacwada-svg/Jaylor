@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { LogoMark } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { cn, getErrorMessage } from "@/lib/utils";
@@ -215,9 +216,7 @@ function Onboarding() {
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center gap-2">
-          <span className="flex size-9 items-center justify-center rounded-lg bg-primary font-display text-primary-foreground">
-            J
-          </span>
+          <LogoMark className="size-9" />
           <span className="font-display text-2xl">Jaylor</span>
         </div>
         <p className="mt-3 text-center text-sm text-muted-foreground">

@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
+import { LogoMark } from "@/components/jaylor/logo";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -123,9 +124,7 @@ function Admin() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
           <div className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary font-heading text-primary-foreground">
-              J
-            </span>
+            <LogoMark className="size-8" />
             <span className="font-heading text-lg">Platform admin</span>
           </div>
           <Button asChild variant="ghost" size="sm">

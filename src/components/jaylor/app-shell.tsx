@@ -25,6 +25,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LogoMark } from "./logo";
 import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
 import { TierBadge } from "./tier-badge";
@@ -251,11 +252,7 @@ function StoreSwitcher({
   const current = memberships.find((m) => m.store.id === currentStoreId) ?? memberships[0];
   if (!current) return <Wordmark />;
 
-  const badge = (
-    <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-      <span className="font-display text-sm font-semibold">J</span>
-    </span>
-  );
+  const badge = <LogoMark className="size-8 shrink-0" />;
 
   if (memberships.length <= 1) {
     return (
@@ -304,9 +301,7 @@ function StoreSwitcher({
 function Wordmark() {
   return (
     <Link to="/" className="flex items-center gap-2">
-      <span className="flex size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <span className="font-display text-sm font-semibold">J</span>
-      </span>
+      <LogoMark className="size-8" />
       <span className="font-display text-lg font-semibold tracking-tight">Jaylor</span>
     </Link>
   );

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import { LogoMark } from "./logo";
 import { StitchDivider } from "./stitch-divider";
 import { COMPANY_LINE } from "@/lib/jaylor";
 
@@ -17,9 +18,7 @@ export function LegalLayout({
       <header className="border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-4 lg:px-8">
           <Link to="/" className="flex items-center gap-2">
-            <span className="flex size-8 items-center justify-center rounded-lg bg-primary font-heading text-primary-foreground">
-              J
-            </span>
+            <LogoMark className="size-8" />
             <span className="font-heading text-lg">Jaylor</span>
           </Link>
           <nav className="flex gap-4 text-sm text-muted-foreground">
