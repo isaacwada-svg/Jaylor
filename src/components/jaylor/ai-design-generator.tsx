@@ -110,13 +110,19 @@ export function AiDesignGenerator({
     setUploadingSelfie(true);
     try {
       const resized = await resizeImageFile(file, 1000, 0.8);
-      const path = `${storeId}/${crypto.randomUUID()}.jpg`;
-      const { error } = await supabase.storage
-        .from("ai-design-photos")
-        .upload(path, resized, { contentType: "image/jpeg" });
-      if (error) throw error;
-      const { data } = supabase.storage.from("ai-design-photos").getPublicUrl(path);
-      setSelfieUrl(data.publicUrl);
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read that photo"));
+        reader.readAsDataURL(resized);
+      });
+      if (!dataUrl.startsWith("data:image/jpeg;base64,")) {
+        throw new Error("Please choose a photo in JPG format");
+      }
+      // Uploaded server-side so the photo lands in a private bucket.
+      const { path } = await uploadDesignSelfie({ data: { storeId, dataUrl } });
+      setSelfiePath(path);
+      setSelfiePreview(dataUrl);
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not upload your photo"));
     } finally {
