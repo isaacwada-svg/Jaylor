@@ -1,4 +1,5 @@
 import { callAI, CORS_HEADERS, errorResponse, jsonResponse } from "../_shared/ai.ts";
+import { getRequestUser } from "../_shared/auth.ts";
 
 type RequestBody = {
   transcript: string;
