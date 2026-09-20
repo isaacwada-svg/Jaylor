@@ -63,6 +63,7 @@ function Staff() {
   const [inviteOpen, setInviteOpen] = useState(false);
   const [limitSheetOpen, setLimitSheetOpen] = useState(false);
   const [tailorFilter, setTailorFilter] = useState<string>("all");
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ["store-members", storeId],
@@ -190,6 +191,7 @@ function Staff() {
   }
 
   async function removeMember(memberId: string) {
+    setBusyId(memberId);
     try {
       const { error } = await supabase
         .from("store_members")
@@ -200,10 +202,13 @@ function Staff() {
       invalidateMembers();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not remove this person"));
+    } finally {
+      setBusyId(null);
     }
   }
 
   async function revokeInvite(inviteId: string) {
+    setBusyId(inviteId);
     try {
       const { error } = await supabase
         .from("store_invites")
@@ -213,6 +218,8 @@ function Staff() {
       invalidateInvites();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not revoke this invite"));
+    } finally {
+      setBusyId(null);
     }
   }
 
@@ -455,8 +462,13 @@ function Staff() {
                             <SelectItem value="tailor">Tailor</SelectItem>
                           </SelectContent>
                         </Select>
-                        <Button size="sm" variant="outline" onClick={() => removeMember(member.id)}>
-                          Remove
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busyId === member.id}
+                          onClick={() => removeMember(member.id)}
+                        >
+                          {busyId === member.id ? "Removing..." : "Remove"}
                         </Button>
                       </div>
                     ) : (
@@ -484,8 +496,13 @@ function Staff() {
                             {new Date(invite.expires_at).toLocaleDateString()}
                           </p>
                         </div>
-                        <Button size="sm" variant="outline" onClick={() => revokeInvite(invite.id)}>
-                          Revoke
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          disabled={busyId === invite.id}
+                          onClick={() => revokeInvite(invite.id)}
+                        >
+                          {busyId === invite.id ? "Revoking..." : "Revoke"}
                         </Button>
                       </div>
                     ))}

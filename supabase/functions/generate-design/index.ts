@@ -16,10 +16,7 @@ type RequestBody = {
 };
 
 function serviceClient() {
-  return createClient(
-    Deno.env.get("SUPABASE_URL")!,
-    Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-  );
+  return createClient(Deno.env.get("SUPABASE_URL")!, Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!);
 }
 
 /** Accepts either a bare storage path or a legacy full public URL. */
@@ -67,7 +64,12 @@ Deno.serve(async (req) => {
   } catch {
     return errorResponse("Invalid JSON body");
   }
-  if (!body.storeId || !body.clientName?.trim() || !body.phone?.trim() || !body.description?.trim()) {
+  if (
+    !body.storeId ||
+    !body.clientName?.trim() ||
+    !body.phone?.trim() ||
+    !body.description?.trim()
+  ) {
     return errorResponse("storeId, clientName, phone and description are required");
   }
 
@@ -95,6 +97,45 @@ Deno.serve(async (req) => {
     }
   } catch {
     // If the rate limiter itself isn't reachable, fail open rather than block a real customer.
+  }
+
+  // The phone number above is self-reported and free to change on every request, so also
+  // rate-limit by the caller's network address to slow down anyone resetting their free quota
+  // by simply typing a different number each time.
+  const clientIp =
+    req.headers.get("cf-connecting-ip") ??
+    req.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
+    req.headers.get("x-real-ip") ??
+    "unknown";
+  try {
+    const { data: ipWithinLimit } = await supabase.rpc("check_rate_limit", {
+      p_bucket: "ai_design_request_ip",
+      p_key: clientIp,
+      p_max_count: 8,
+      p_window_minutes: 60,
+    });
+    if (ipWithinLimit === false) {
+      return errorResponse(
+        "Too many design requests from this device — try again in an hour.",
+        429,
+      );
+    }
+  } catch {
+    // Fail open if the rate limiter itself isn't reachable.
+  }
+
+  // Bound a single store's total exposure to abuse regardless of who's asking, since neither
+  // the phone number nor (behind a shared network) the IP address is a reliable identity here.
+  const { count: storeDailyCount } = await supabase
+    .from("ai_designs")
+    .select("id", { count: "exact", head: true })
+    .eq("store_id", body.storeId)
+    .gte("created_at", new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString());
+  if ((storeDailyCount ?? 0) >= 40) {
+    return errorResponse(
+      "This shop has reached its daily design preview limit. Please try again tomorrow.",
+      429,
+    );
   }
 
   const { count: freeUsed } = await supabase
@@ -131,16 +172,21 @@ Deno.serve(async (req) => {
     : "";
 
   const promptText = `Create a photorealistic fashion photograph of a custom-tailored Nigerian outfit, suitable for a real tailor to sew. Style brief from the customer: "${body.description.trim()}".${
-    measurementsText ? ` Approximate body measurements for proportion reference: ${measurementsText}.` : ""
+    measurementsText
+      ? ` Approximate body measurements for proportion reference: ${measurementsText}.`
+      : ""
   } Show the full outfit clearly on a person in a neutral studio setting, good lighting, realistic fabric texture. This is a design reference for a tailor, not a fantasy illustration.`;
 
-  const parts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
-    { type: "text", text: promptText },
-  ];
+  const parts: Array<
+    { type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }
+  > = [{ type: "text", text: promptText }];
   if (selfiePath) {
     const signedSelfie = await signPath(supabase, selfiePath);
     if (signedSelfie) {
-      parts.push({ type: "text", text: "Use the attached photo as a reference for the person's face and body." });
+      parts.push({
+        type: "text",
+        text: "Use the attached photo as a reference for the person's face and body.",
+      });
       parts.push({ type: "image_url", image_url: { url: signedSelfie } });
     }
   }
@@ -176,6 +222,9 @@ Deno.serve(async (req) => {
       result: { ...design, image_url: signedImage ?? "" },
     });
   } catch (error) {
-    return errorResponse(error instanceof Error ? error.message : "Could not generate this design", 500);
+    return errorResponse(
+      error instanceof Error ? error.message : "Could not generate this design",
+      500,
+    );
   }
 });

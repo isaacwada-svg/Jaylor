@@ -2,7 +2,7 @@ import { useState, type FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowDown, ArrowUp, ExternalLink, Pencil, Plus, Trash2 } from "lucide-react";
+import { ArrowDown, ArrowUp, ExternalLink, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
@@ -60,6 +60,7 @@ function Shop() {
   const [editingItem, setEditingItem] = useState<ItemRow | null>(null);
   const [limitSheetOpen, setLimitSheetOpen] = useState(false);
   const [orderFormOpen, setOrderFormOpen] = useState(false);
+  const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [orderClient, setOrderClient] = useState<ClientRow | null>(null);
 
   const { data: items, isLoading: itemsLoading } = useQuery({
@@ -77,7 +78,6 @@ function Shop() {
   });
 
   const photoUrl = useStorefrontPhotoUrls(items?.flatMap((item) => item.photos) ?? []);
-
 
   const { data: requests } = useQuery({
     queryKey: ["sew-requests", storeId],
@@ -127,6 +127,7 @@ function Shop() {
   }
 
   async function deleteItem(item: ItemRow) {
+    setDeletingItemId(item.id);
     try {
       const { error } = await supabase.from("storefront_items").delete().eq("id", item.id);
       if (error) throw error;
@@ -134,6 +135,8 @@ function Shop() {
       invalidateItems();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not remove this item"));
+    } finally {
+      setDeletingItemId(null);
     }
   }
 
@@ -318,10 +321,15 @@ function Shop() {
                         <Button
                           size="sm"
                           variant="outline"
+                          disabled={deletingItemId === item.id}
                           onClick={() => deleteItem(item)}
                           aria-label="Delete item"
                         >
-                          <Trash2 className="size-4 text-owed" />
+                          {deletingItemId === item.id ? (
+                            <Loader2 className="size-4 animate-spin text-owed" />
+                          ) : (
+                            <Trash2 className="size-4 text-owed" />
+                          )}
                         </Button>
                       </div>
                     )}

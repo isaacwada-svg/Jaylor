@@ -19,6 +19,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
+import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
 
 type Step = "form" | "generating" | "result" | "payment";
 
@@ -53,8 +54,11 @@ export function AiDesignGenerator({
 
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [resultToken, setResultToken] = useState<string | null>(null);
+  const [resultDesignId, setResultDesignId] = useState<string | null>(null);
   const [paymentAmount, setPaymentAmount] = useState<number | null>(null);
   const [busy, setBusy] = useState(false);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [selected, setSelected] = useState(false);
 
   // Resume after returning from a Paystack redirect.
   useEffect(() => {
@@ -147,7 +151,7 @@ export function AiDesignGenerator({
       const body = data as {
         payment_required?: boolean;
         amount?: number;
-        result?: { image_url: string; share_token: string };
+        result?: { id: string; image_url: string; share_token: string };
       };
       if (body.payment_required) {
         setPaymentAmount(body.amount ?? 0);
@@ -157,6 +161,7 @@ export function AiDesignGenerator({
       if (body.result) {
         setResultImage(body.result.image_url);
         setResultToken(body.result.share_token);
+        setResultDesignId(body.result.id);
         setStep("result");
       }
     } catch (error) {
@@ -223,7 +228,23 @@ export function AiDesignGenerator({
     setSelfieConsent(false);
     setResultImage(null);
     setResultToken(null);
+    setResultDesignId(null);
     setPaymentAmount(null);
+    setSelected(false);
+  }
+
+  async function markSelected() {
+    if (!resultDesignId || selected) return;
+    const phone = normalizePhoneNG(phoneRaw);
+    if (!phone) return;
+    setSelected(true);
+    try {
+      await supabase.functions.invoke("select-ai-design", {
+        body: { designId: resultDesignId, phone },
+      });
+    } catch {
+      // Best-effort — the store owner already sees every generated design either way.
+    }
   }
 
   return (
@@ -360,6 +381,13 @@ export function AiDesignGenerator({
                 <Button className="w-full" onClick={handleSubmit}>
                   Generate my style preview
                 </Button>
+                <button
+                  type="button"
+                  onClick={() => setOpen(false)}
+                  className="w-full text-center text-sm text-muted-foreground underline-offset-4 hover:underline"
+                >
+                  Prefer to choose from {storeName}&apos;s own designs instead?
+                </button>
               </>
             )}
 
@@ -374,27 +402,58 @@ export function AiDesignGenerator({
 
             {step === "result" && resultImage && (
               <div className="space-y-3 text-center">
-                <img src={resultImage} alt="Your style preview" className="mx-auto rounded-2xl" />
+                <button
+                  type="button"
+                  onClick={() => setLightboxOpen(true)}
+                  className="block w-full cursor-zoom-in"
+                  aria-label="View full size"
+                >
+                  <img src={resultImage} alt="Your style preview" className="mx-auto rounded-2xl" />
+                </button>
+                <p className="text-xs text-muted-foreground">Tap the photo to view full size</p>
                 <p className="text-sm text-muted-foreground">
                   Show this to {storeName} to have it made for you.
                 </p>
                 {resultToken && (
-                  <Button
-                    variant="outline"
-                    className="w-full"
-                    onClick={() => {
-                      const url = `${window.location.origin}/design/${resultToken}`;
-                      navigator.clipboard
-                        .writeText(url)
-                        .then(() => toast.success("Link copied — save it to see this design again"))
-                        .catch(() => toast.error("Could not copy the link"));
-                    }}
-                  >
-                    Copy my design link
-                  </Button>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        const url = `${window.location.origin}/design/${resultToken}`;
+                        navigator.clipboard
+                          .writeText(url)
+                          .then(() =>
+                            toast.success("Link copied — save it to see this design again"),
+                          )
+                          .catch(() => toast.error("Could not copy the link"));
+                      }}
+                    >
+                      Save / copy link
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => {
+                        const url = `${window.location.origin}/design/${resultToken}`;
+                        if (navigator.share) {
+                          navigator
+                            .share({ url, text: "My style preview from Jaylor" })
+                            .catch(() => {});
+                          return;
+                        }
+                        navigator.clipboard
+                          .writeText(url)
+                          .then(() => toast.success("Link copied to share"))
+                          .catch(() => toast.error("Could not copy the link"));
+                      }}
+                    >
+                      Share
+                    </Button>
+                  </div>
                 )}
                 {whatsappNumber && (
-                  <Button asChild className="w-full">
+                  <Button asChild className="w-full" onClick={markSelected}>
                     <a
                       href={whatsappLink(
                         whatsappNumber,
@@ -404,9 +463,14 @@ export function AiDesignGenerator({
                       rel="noreferrer"
                     >
                       <MessageCircle className="size-4" />
-                      Send to {storeName}
+                      Use this design — send to {storeName}
                     </a>
                   </Button>
+                )}
+                {selected && (
+                  <p className="text-xs text-paid">
+                    {storeName} has been notified about this design.
+                  </p>
                 )}
               </div>
             )}
@@ -441,6 +505,16 @@ export function AiDesignGenerator({
           </div>
         </SheetContent>
       </Sheet>
+
+      {/* Rendered as a sibling of Sheet, not nested inside it: SheetContent
+          animates with a CSS transform, which would create a new containing
+          block and break this lightbox's position:fixed full-screen sizing. */}
+      <PhotoLightbox
+        photos={resultImage ? [resultImage] : []}
+        index={lightboxOpen && resultImage ? 0 : null}
+        onIndexChange={() => {}}
+        onClose={() => setLightboxOpen(false)}
+      />
     </>
   );
 }

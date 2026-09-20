@@ -46,7 +46,10 @@ function AiDesigns() {
         .eq("store_id", currentStore?.id as string)
         .order("created_at", { ascending: false });
       if (error) throw error;
-      return data;
+      return [...data].sort((a, b) => {
+        if (!!a.selected_at !== !!b.selected_at) return a.selected_at ? -1 : 1;
+        return 0;
+      });
     },
   });
 
@@ -163,7 +166,12 @@ function AiDesigns() {
                   <div className="min-w-0 flex-1">
                     <div className="flex items-center justify-between gap-2">
                       <p className="font-medium">{design.client_name}</p>
-                      {design.was_paid && <Badge variant="outline">Paid</Badge>}
+                      <div className="flex shrink-0 gap-1">
+                        {design.selected_at && (
+                          <Badge className="border-paid/40 bg-paid/10 text-paid">Selected</Badge>
+                        )}
+                        {design.was_paid && <Badge variant="outline">Paid</Badge>}
+                      </div>
                     </div>
                     <p className="figures text-sm text-muted-foreground">
                       {formatPhoneNG(design.phone)}
