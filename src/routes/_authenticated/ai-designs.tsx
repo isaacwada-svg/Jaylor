@@ -140,7 +140,9 @@ function AiDesigns() {
             />
           ) : (
             designs.map((design) => {
-              const photos = [design.image_url, design.selfie_url].filter((p): p is string => !!p);
+              const photos = [photoUrl(design.image_url), photoUrl(design.selfie_url)].filter(
+                (p): p is string => !!p,
+              );
               const measurements = Object.entries(
                 (design.measurements as Record<string, string>) ?? {},
               ).filter(([, v]) => v?.trim());
@@ -153,7 +155,7 @@ function AiDesigns() {
                     className="shrink-0"
                   >
                     <img
-                      src={design.image_url}
+                      src={photoUrl(design.image_url)}
                       alt=""
                       className="size-24 rounded-xl object-cover"
                     />
