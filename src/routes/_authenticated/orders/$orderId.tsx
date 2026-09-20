@@ -306,7 +306,7 @@ function OrderDetail() {
                     <RemindButton
                       storeId={currentStore.id}
                       clientId={client.id}
-                      orderId={order.id}
+                      orderId={order.id ?? ""}
                       phone={client.whatsapp_phone ?? client.phone ?? ""}
                       consentWhatsapp={client.consent_whatsapp}
                       template={order.status === "ready" ? "order_ready" : "balance_due"}
