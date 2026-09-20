@@ -264,6 +264,148 @@ export type Database = {
           },
         ];
       };
+      events: {
+        Row: {
+          id: string;
+          store_id: string;
+          name: string;
+          event_date: string | null;
+          organiser_name: string | null;
+          organiser_phone: string | null;
+          fabric_description: string | null;
+          styles: Json;
+          price_per_person: number | null;
+          deposit_amount: number | null;
+          measurement_deadline: string | null;
+          delivery_date: string | null;
+          public_token: string;
+          status: string;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          name: string;
+          event_date?: string | null;
+          organiser_name?: string | null;
+          organiser_phone?: string | null;
+          fabric_description?: string | null;
+          styles?: Json;
+          price_per_person?: number | null;
+          deposit_amount?: number | null;
+          measurement_deadline?: string | null;
+          delivery_date?: string | null;
+          public_token?: string;
+          status?: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          name?: string;
+          event_date?: string | null;
+          organiser_name?: string | null;
+          organiser_phone?: string | null;
+          fabric_description?: string | null;
+          styles?: Json;
+          price_per_person?: number | null;
+          deposit_amount?: number | null;
+          measurement_deadline?: string | null;
+          delivery_date?: string | null;
+          public_token?: string;
+          status?: string;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "events_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      event_participants: {
+        Row: {
+          id: string;
+          event_id: string;
+          store_id: string;
+          client_id: string | null;
+          full_name: string;
+          phone: string;
+          style_key: string | null;
+          measurement_choice: string | null;
+          status: string;
+          token: string;
+          paid_amount: number;
+          order_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          event_id: string;
+          store_id: string;
+          client_id?: string | null;
+          full_name: string;
+          phone: string;
+          style_key?: string | null;
+          measurement_choice?: string | null;
+          status?: string;
+          token?: string;
+          paid_amount?: number;
+          order_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          event_id?: string;
+          store_id?: string;
+          client_id?: string | null;
+          full_name?: string;
+          phone?: string;
+          style_key?: string | null;
+          measurement_choice?: string | null;
+          status?: string;
+          token?: string;
+          paid_amount?: number;
+          order_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "event_participants_event_id_fkey";
+            columns: ["event_id"];
+            isOneToOne: false;
+            referencedRelation: "events";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_participants_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_participants_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "event_participants_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       country_configs: {
         Row: {
           code: string;
@@ -1173,6 +1315,18 @@ export type Database = {
       };
       increment_usage_counter: {
         Args: { p_store_id: string; p_column: string };
+        Returns: undefined;
+      };
+      get_participant_by_token: {
+        Args: { p_token: string };
+        Returns: Json;
+      };
+      set_participant_style: {
+        Args: { p_token: string; p_style_key: string };
+        Returns: undefined;
+      };
+      set_participant_measurement_choice: {
+        Args: { p_token: string; p_choice: string };
         Returns: undefined;
       };
       has_store_role: {

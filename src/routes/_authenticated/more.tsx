@@ -94,6 +94,15 @@ function More() {
                 </Link>
               );
             }
+            if (label === "Group events") {
+              return (
+                <Link key={label} to="/events">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
             return (
               <Card key={label} className="rounded-2xl">
                 {content}
