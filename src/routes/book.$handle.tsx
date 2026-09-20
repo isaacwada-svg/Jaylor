@@ -87,7 +87,7 @@ function BookConsultation() {
     setBusy(true);
     try {
       const { error } = await supabase.from("consultation_requests").insert({
-        store_id: store.id,
+        store_id: store.id ?? "",
         name: name.trim(),
         phone,
         type,

@@ -124,7 +124,7 @@ function PublicStorefront() {
             {store.logo_url ? (
               <img src={store.logo_url} alt="" className="size-full rounded-2xl object-cover" />
             ) : (
-              store.name.slice(0, 1).toUpperCase()
+              (store.name ?? "?").slice(0, 1).toUpperCase()
             )}
           </div>
         </div>
@@ -151,8 +151,8 @@ function PublicStorefront() {
             </Button>
           )}
           <AiDesignGenerator
-            storeId={store.id}
-            storeName={store.name}
+            storeId={store.id ?? ""}
+            storeName={store.name ?? ""}
             whatsappNumber={whatsappNumber}
           />
         </div>
@@ -271,7 +271,7 @@ function PublicStorefront() {
         <SewRequestForm
           open={sewFormOpen}
           onOpenChange={setSewFormOpen}
-          storeId={store.id}
+          storeId={store.id ?? ""}
           itemId={selectedItem.id}
           itemTitle={selectedItem.title}
         />

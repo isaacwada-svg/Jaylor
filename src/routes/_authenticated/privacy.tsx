@@ -64,7 +64,7 @@ function Privacy() {
         p_store_id: storeId,
         p_action: "support_access_granted",
         p_entity: "support_grants",
-        p_entity_id: null,
+        p_entity_id: null as unknown as string,
         p_metadata: { hours },
       });
       toast.success(`Support access granted for ${hours} hours`);

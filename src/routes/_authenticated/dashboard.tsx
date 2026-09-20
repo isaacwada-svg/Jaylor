@@ -125,7 +125,7 @@ function Home() {
       const balanceByOrder = new Map((balancesRes.data ?? []).map((b) => [b.order_id, b.balance]));
 
       return {
-        moneyOwed: (balancesRes.data ?? []).reduce((sum, b) => sum + b.balance, 0),
+        moneyOwed: (balancesRes.data ?? []).reduce((sum, b) => sum + (b.balance ?? 0), 0),
         owedOrdersCount: balancesRes.data?.length ?? 0,
         collectedThisMonth: (paymentsRes.data ?? []).reduce((sum, p) => sum + p.amount, 0),
         collectedCount: paymentsRes.data?.length ?? 0,
@@ -418,7 +418,7 @@ function Home() {
                     o.status as (typeof ORDER_STATUSES_DB)[number],
                   );
                   return (
-                    <Link key={o.id} to="/orders/$orderId" params={{ orderId: o.id }}>
+                    <Link key={o.id} to="/orders/$orderId" params={{ orderId: o.id ?? "" }}>
                       <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                         <CardContent className="p-4">
                           <div className="flex items-start justify-between gap-3">
