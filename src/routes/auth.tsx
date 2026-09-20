@@ -9,6 +9,7 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { COMPANY_LINE } from "@/lib/jaylor";
+import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
   head: () => ({
@@ -58,7 +59,7 @@ function AuthPage() {
       if (error) throw error;
       setSent(true);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(getErrorMessage(error, "Something went wrong"));
     } finally {
       setBusy(false);
     }
@@ -73,7 +74,7 @@ function AuthPage() {
       toast.success("Password updated. You're signed in.");
       navigate({ to: "/dashboard" });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(getErrorMessage(error, "Something went wrong"));
     } finally {
       setBusy(false);
     }
@@ -104,7 +105,7 @@ function AuthPage() {
         navigate({ to: "/dashboard" });
       }
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Something went wrong");
+      toast.error(getErrorMessage(error, "Something went wrong"));
     } finally {
       setBusy(false);
     }

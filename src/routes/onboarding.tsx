@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
-import { cn } from "@/lib/utils";
+import { cn, getErrorMessage } from "@/lib/utils";
 import { COMPANY_LINE } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/onboarding")({
@@ -161,7 +161,7 @@ function Onboarding() {
       setStoreId(store.id);
       setStep(1);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not create your store");
+      toast.error(getErrorMessage(error, "Could not create your store"));
     } finally {
       setBusy(false);
     }
@@ -179,7 +179,7 @@ function Onboarding() {
       if (error) throw error;
       setStep(2);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not save your look");
+      toast.error(getErrorMessage(error, "Could not save your look"));
     } finally {
       setBusy(false);
     }
@@ -197,7 +197,7 @@ function Onboarding() {
       if (error) throw error;
       setStep(3);
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not save what you sew");
+      toast.error(getErrorMessage(error, "Could not save what you sew"));
     } finally {
       setBusy(false);
     }
