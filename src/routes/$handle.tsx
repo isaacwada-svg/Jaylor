@@ -5,6 +5,7 @@ import { MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { SewRequestForm } from "@/components/jaylor/sew-request-form";
+import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -40,6 +41,7 @@ function PublicStorefront() {
   const { handle } = Route.useParams();
   const [selectedItem, setSelectedItem] = useState<ItemRow | null>(null);
   const [sewFormOpen, setSewFormOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   const {
     data: store,
@@ -207,13 +209,19 @@ function PublicStorefront() {
               </DialogHeader>
               {selectedItem.photos.length > 0 && (
                 <div className="flex gap-2 overflow-x-auto">
-                  {selectedItem.photos.map((photo) => (
-                    <img
+                  {selectedItem.photos.map((photo, i) => (
+                    <button
                       key={photo}
-                      src={photo}
-                      alt={selectedItem.title}
-                      className="h-40 w-32 shrink-0 rounded-xl object-cover"
-                    />
+                      type="button"
+                      onClick={() => setLightboxIndex(i)}
+                      className="shrink-0"
+                    >
+                      <img
+                        src={photo}
+                        alt={selectedItem.title}
+                        className="h-40 w-32 rounded-xl object-cover"
+                      />
+                    </button>
                   ))}
                 </div>
               )}
@@ -255,6 +263,15 @@ function PublicStorefront() {
           storeId={store.id}
           itemId={selectedItem.id}
           itemTitle={selectedItem.title}
+        />
+      )}
+
+      {selectedItem && (
+        <PhotoLightbox
+          photos={selectedItem.photos}
+          index={lightboxIndex}
+          onIndexChange={setLightboxIndex}
+          onClose={() => setLightboxIndex(null)}
         />
       )}
     </main>
