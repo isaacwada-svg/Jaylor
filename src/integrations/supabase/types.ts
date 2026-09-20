@@ -2557,6 +2557,7 @@ export type Database = {
         }
         Returns: undefined
       }
+      resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
       revoke_measurement_passport_by_store: {
         Args: { p_client_id: string }
