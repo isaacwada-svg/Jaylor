@@ -102,8 +102,15 @@ export function StoreProvider({ children }: { children: ReactNode }) {
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>;
 }
 
+const EMPTY_STORE_CONTEXT: StoreContextValue = {
+  memberships: [],
+  currentStore: null,
+  currentRole: null,
+  setCurrentStoreId: () => {},
+  isLoading: false,
+  refetch: () => {},
+};
+
 export function useStore() {
-  const ctx = useContext(StoreContext);
-  if (!ctx) throw new Error("useStore must be used within a StoreProvider");
-  return ctx;
+  return useContext(StoreContext) ?? EMPTY_STORE_CONTEXT;
 }
