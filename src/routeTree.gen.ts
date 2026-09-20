@@ -10,6 +10,7 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as HandleRouteImport } from './routes/$handle'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
@@ -27,6 +28,11 @@ import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authen
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HandleRoute = HandleRouteImport.update({
+  id: '/$handle',
+  path: '/$handle',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
@@ -101,6 +107,7 @@ const AuthenticatedOrdersOrderIdRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$handle': typeof HandleRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -116,6 +123,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$handle': typeof HandleRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -133,6 +141,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
+  '/$handle': typeof HandleRoute
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
@@ -150,6 +159,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/$handle'
     | '/auth'
     | '/onboarding'
     | '/billing'
@@ -165,6 +175,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/$handle'
     | '/auth'
     | '/onboarding'
     | '/billing'
@@ -181,6 +192,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/$handle'
     | '/auth'
     | '/onboarding'
     | '/_authenticated/billing'
@@ -198,6 +210,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
+  HandleRoute: typeof HandleRoute
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
   BookHandleRoute: typeof BookHandleRoute
@@ -210,6 +223,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/$handle': {
+      id: '/$handle'
+      path: '/$handle'
+      fullPath: '/$handle'
+      preLoaderRoute: typeof HandleRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -336,6 +356,7 @@ const AuthenticatedRouteRouteWithChildren =
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
+  HandleRoute: HandleRoute,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
   BookHandleRoute: BookHandleRoute,

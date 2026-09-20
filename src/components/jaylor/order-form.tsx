@@ -38,11 +38,13 @@ export function OrderForm({
   open,
   onOpenChange,
   storeId,
+  initialClient,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
+  initialClient?: ClientRow | null;
   onSaved: (order: OrderRow) => void;
 }) {
   const isMobile = useIsMobile();
@@ -72,9 +74,9 @@ export function OrderForm({
 
   useEffect(() => {
     if (!open) return;
-    setStep(0);
+    setStep(initialClient ? 1 : 0);
     setClientSearch("");
-    setSelectedClient(null);
+    setSelectedClient(initialClient ?? null);
     setGarmentType("");
     setQuantity("1");
     setStyleNotes("");
@@ -87,6 +89,7 @@ export function OrderForm({
     setPrice("");
     setDeliveryDate("");
     setRush(false);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
   const { data: clientResults } = useQuery({

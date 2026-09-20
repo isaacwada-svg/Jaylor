@@ -854,9 +854,133 @@ export type Database = {
           },
         ];
       };
+      storefront_items: {
+        Row: {
+          id: string;
+          store_id: string;
+          title: string;
+          category: string | null;
+          description: string | null;
+          photos: string[];
+          price_min: number | null;
+          price_max: number | null;
+          turnaround_days: number | null;
+          is_ready_made: boolean;
+          sizes_stock: Json;
+          published: boolean;
+          sort_order: number;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          title: string;
+          category?: string | null;
+          description?: string | null;
+          photos?: string[];
+          price_min?: number | null;
+          price_max?: number | null;
+          turnaround_days?: number | null;
+          is_ready_made?: boolean;
+          sizes_stock?: Json;
+          published?: boolean;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          title?: string;
+          category?: string | null;
+          description?: string | null;
+          photos?: string[];
+          price_min?: number | null;
+          price_max?: number | null;
+          turnaround_days?: number | null;
+          is_ready_made?: boolean;
+          sizes_stock?: Json;
+          published?: boolean;
+          sort_order?: number;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "storefront_items_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sew_requests: {
+        Row: {
+          id: string;
+          store_id: string;
+          item_id: string | null;
+          client_name: string;
+          phone: string;
+          fabric_source: string;
+          notes: string | null;
+          measurement_choice: string;
+          status: string;
+          order_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          item_id?: string | null;
+          client_name: string;
+          phone: string;
+          fabric_source: string;
+          notes?: string | null;
+          measurement_choice?: string;
+          status?: string;
+          order_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          item_id?: string | null;
+          client_name?: string;
+          phone?: string;
+          fabric_source?: string;
+          notes?: string | null;
+          measurement_choice?: string;
+          status?: string;
+          order_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sew_requests_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sew_requests_item_id_fkey";
+            columns: ["item_id"];
+            isOneToOne: false;
+            referencedRelation: "storefront_items";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "sew_requests_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       stores: {
         Row: {
           accent_color: string | null;
+          bio: string | null;
           city: string | null;
           country_code: string;
           cover_url: string | null;
@@ -869,6 +993,7 @@ export type Database = {
           logo_url: string | null;
           name: string;
           onboarding_completed: boolean;
+          opening_hours: string | null;
           owner_id: string;
           plan_code: string;
           sews_for: string | null;
@@ -877,9 +1002,11 @@ export type Database = {
           trial_ends_at: string;
           unit: Database["public"]["Enums"]["measurement_unit"];
           updated_at: string;
+          whatsapp_phone: string | null;
         };
         Insert: {
           accent_color?: string | null;
+          bio?: string | null;
           city?: string | null;
           country_code?: string;
           cover_url?: string | null;
@@ -892,6 +1019,7 @@ export type Database = {
           logo_url?: string | null;
           name: string;
           onboarding_completed?: boolean;
+          opening_hours?: string | null;
           owner_id: string;
           plan_code?: string;
           sews_for?: string | null;
@@ -900,9 +1028,11 @@ export type Database = {
           trial_ends_at?: string;
           unit?: Database["public"]["Enums"]["measurement_unit"];
           updated_at?: string;
+          whatsapp_phone?: string | null;
         };
         Update: {
           accent_color?: string | null;
+          bio?: string | null;
           city?: string | null;
           country_code?: string;
           cover_url?: string | null;
@@ -915,6 +1045,7 @@ export type Database = {
           logo_url?: string | null;
           name?: string;
           onboarding_completed?: boolean;
+          opening_hours?: string | null;
           owner_id?: string;
           plan_code?: string;
           sews_for?: string | null;
@@ -923,6 +1054,7 @@ export type Database = {
           trial_ends_at?: string;
           unit?: Database["public"]["Enums"]["measurement_unit"];
           updated_at?: string;
+          whatsapp_phone?: string | null;
         };
         Relationships: [
           {
@@ -987,8 +1119,12 @@ export type Database = {
           name: string;
           slug: string;
           logo_url: string | null;
+          cover_url: string | null;
           accent_color: string | null;
           city: string | null;
+          bio: string | null;
+          whatsapp_phone: string | null;
+          opening_hours: string | null;
         };
         Relationships: [];
       };
