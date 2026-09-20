@@ -10,6 +10,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage, cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
@@ -387,12 +388,7 @@ export function OrderForm({
             {materialSource === "tailor" && (
               <div className="col-span-2 space-y-2">
                 <Label htmlFor="material-cost">Estimated cost (added to the bill) *</Label>
-                <Input
-                  id="material-cost"
-                  inputMode="decimal"
-                  value={materialCost}
-                  onChange={(e) => setMaterialCost(e.target.value)}
-                />
+                <MoneyInput id="material-cost" value={materialCost} onChange={setMaterialCost} />
               </div>
             )}
           </div>
@@ -404,13 +400,7 @@ export function OrderForm({
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
               <Label htmlFor="order-price">Price</Label>
-              <Input
-                id="order-price"
-                inputMode="decimal"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-                required
-              />
+              <MoneyInput id="order-price" value={price} onChange={setPrice} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="order-delivery-date">Delivery date</Label>

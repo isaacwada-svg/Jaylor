@@ -5,6 +5,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -103,13 +104,7 @@ export function PaymentForm({
       </div>
       <div className="space-y-2">
         <Label htmlFor="payment-amount">Amount</Label>
-        <Input
-          id="payment-amount"
-          inputMode="decimal"
-          value={amount}
-          onChange={(e) => setAmount(e.target.value)}
-          required
-        />
+        <MoneyInput id="payment-amount" value={amount} onChange={setAmount} required />
       </div>
       <div className="space-y-2">
         <Label>Method</Label>
