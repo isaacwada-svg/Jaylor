@@ -54,15 +54,41 @@ export function effectiveTier(
   return planCodeToTier(store.plan_code);
 }
 
-/** True if the birthday (ISO date string) makes this person under 18 today. */
-export function isMinor(birthday: string | null | undefined): boolean {
-  if (!birthday) return false;
+/** Age in whole years as of today, from an ISO date string. */
+export function ageInYears(birthday: string | null | undefined): number | null {
+  if (!birthday) return null;
   const dob = new Date(birthday);
   const now = new Date();
   let age = now.getFullYear() - dob.getFullYear();
   const monthDiff = now.getMonth() - dob.getMonth();
   if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) age--;
-  return age < 18;
+  return age;
+}
+
+/** True if the birthday (ISO date string) makes this person under 18 today. */
+export function isMinor(birthday: string | null | undefined): boolean {
+  const age = ageInYears(birthday);
+  return age !== null && age < 18;
+}
+
+export type AgeGroup = "baby" | "child" | "teen" | "adult";
+
+/** 0-2 baby, 3-12 child, 13-17 teen, 18+ adult; unknown birthday defaults to adult. */
+export function computeAgeGroup(birthday: string | null | undefined): AgeGroup {
+  const age = ageInYears(birthday);
+  if (age === null) return "adult";
+  if (age <= 2) return "baby";
+  if (age <= 12) return "child";
+  if (age <= 17) return "teen";
+  return "adult";
+}
+
+export type TemplateSex = "female" | "male" | "unisex";
+
+export function computeTemplateSex(gender: string | null | undefined): TemplateSex {
+  if (gender === "female") return "female";
+  if (gender === "male") return "male";
+  return "unisex";
 }
 
 export const COMPANY_LINE =

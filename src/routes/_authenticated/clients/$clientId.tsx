@@ -6,6 +6,7 @@ import { ArrowLeft, MessageCircle, Pencil, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { ClientForm } from "@/components/jaylor/client-form";
+import { MeasurementsTab } from "@/components/jaylor/measurements-tab";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -209,10 +210,7 @@ function ClientProfile() {
           </TabsContent>
 
           <TabsContent value="measurements" className="mt-6">
-            <EmptyState
-              title="No measurements yet"
-              description="Take this client's first set of measurements when you create their next order."
-            />
+            <MeasurementsTab client={client} />
           </TabsContent>
           <TabsContent value="orders" className="mt-6">
             <EmptyState
