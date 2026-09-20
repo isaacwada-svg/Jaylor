@@ -15,6 +15,7 @@ import { useStore } from "@/lib/store-context";
 import { ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/_authenticated/orders/")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Orders — Jaylor" },

@@ -9,6 +9,7 @@ import { COMPANY_LINE } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/design/$token")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [{ title: "Your style preview — Jaylor" }] }),
   component: SharedDesign,
 });

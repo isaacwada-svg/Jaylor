@@ -17,6 +17,7 @@ import { formatMoney, EXPENSE_CATEGORIES } from "@/lib/jaylor";
 import { downloadCsv } from "@/lib/csv";
 
 export const Route = createFileRoute("/_authenticated/reports")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Reports — Jaylor" },

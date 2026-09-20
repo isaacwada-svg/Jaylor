@@ -14,6 +14,7 @@ import { useFeature } from "@/lib/use-feature";
 import { effectiveTier, planCodeToTier } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/_authenticated/billing")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [{ title: "Billing — Jaylor" }] }),
   component: Billing,
 });

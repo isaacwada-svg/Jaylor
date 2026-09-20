@@ -13,6 +13,7 @@ import { downloadCsv } from "@/lib/csv";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/privacy")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Privacy and data — Jaylor" },

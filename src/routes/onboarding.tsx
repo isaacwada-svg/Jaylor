@@ -12,6 +12,7 @@ import { cn, getErrorMessage } from "@/lib/utils";
 import { COMPANY_LINE, GARMENT_TYPES } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/onboarding")({
+  staticData: { sitemap: false },
   ssr: false,
   head: () => ({
     meta: [{ title: "Set up your store — Jaylor" }],

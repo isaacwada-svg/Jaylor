@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { PRICING_PLANS } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/pricing")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Pricing — Jaylor" },

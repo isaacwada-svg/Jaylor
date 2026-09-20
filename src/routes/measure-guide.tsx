@@ -4,6 +4,7 @@ import { MEASUREMENT_GUIDES, MeasurementDiagram } from "@/components/jaylor/meas
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 
 export const Route = createFileRoute("/measure-guide")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       {

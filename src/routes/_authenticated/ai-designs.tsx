@@ -17,6 +17,7 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/ai-designs")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [{ title: "AI style requests — Jaylor" }] }),
   component: AiDesigns,
 });

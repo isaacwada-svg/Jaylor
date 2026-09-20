@@ -21,6 +21,7 @@ import {
 } from "@/components/ui/select";
 
 export const Route = createFileRoute("/book/$handle")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [{ title: "Book a consultation — Jaylor" }],
   }),

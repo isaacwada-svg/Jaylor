@@ -28,6 +28,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/clients/$clientId")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [{ title: "Client — Jaylor" }],
   }),

@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 
 export const Route = createFileRoute("/_authenticated/events/")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Events — Jaylor" },

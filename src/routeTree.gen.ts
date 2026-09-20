@@ -22,6 +22,7 @@ import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as SecurityRouteImport } from './routes/security'
+import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
@@ -105,6 +106,11 @@ const PrivacyPolicyRoute = PrivacyPolicyRouteImport.update({
 const SecurityRoute = SecurityRouteImport.update({
   id: '/security',
   path: '/security',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
+  id: '/sitemap.xml',
+  path: '/sitemap.xml',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -228,6 +234,7 @@ export interface FileRoutesByFullPath {
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -298,6 +306,7 @@ export interface FileRoutesById {
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
+  '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
@@ -334,6 +343,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy-policy'
     | '/security'
+    | '/sitemap.xml'
     | '/terms'
     | '/ai-designs'
     | '/billing'
@@ -368,6 +378,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy-policy'
     | '/security'
+    | '/sitemap.xml'
     | '/terms'
     | '/ai-designs'
     | '/billing'
@@ -403,6 +414,7 @@ export interface FileRouteTypes {
     | '/pricing'
     | '/privacy-policy'
     | '/security'
+    | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/ai-designs'
     | '/_authenticated/billing'
@@ -439,6 +451,7 @@ export interface RootRouteChildren {
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SecurityRoute: typeof SecurityRoute
+  SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
   BookHandleRoute: typeof BookHandleRoute
   DesignTokenRoute: typeof DesignTokenRoute
@@ -537,6 +550,13 @@ declare module '@tanstack/react-router' {
       path: '/security'
       fullPath: '/security'
       preLoaderRoute: typeof SecurityRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/sitemap.xml': {
+      id: '/sitemap.xml'
+      path: '/sitemap.xml'
+      fullPath: '/sitemap.xml'
+      preLoaderRoute: typeof SitemapDotxmlRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -735,6 +755,7 @@ const rootRouteChildren: RootRouteChildren = {
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SecurityRoute: SecurityRoute,
+  SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
   BookHandleRoute: BookHandleRoute,
   DesignTokenRoute: DesignTokenRoute,

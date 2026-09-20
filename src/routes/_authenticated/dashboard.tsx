@@ -43,6 +43,7 @@ function startOfToday() {
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Jaylor — Every order tracked. Every naira collected." },

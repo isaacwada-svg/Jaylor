@@ -13,6 +13,7 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/e/$token")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [{ title: "Your event order — Jaylor" }],
   }),

@@ -3,6 +3,7 @@ import { LegalLayout } from "@/components/jaylor/legal-layout";
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/privacy-policy")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Privacy Policy — Jaylor" },

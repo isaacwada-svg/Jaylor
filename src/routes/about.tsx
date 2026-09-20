@@ -4,6 +4,7 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/about")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "About — Jaylor" },
