@@ -7,6 +7,7 @@ import { useOnlineStatus } from "@/lib/use-online-status";
 import { getErrorMessage } from "@/lib/utils";
 import { Label } from "@/components/ui/label";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
 
 const MAX_SOURCE_BYTES = 15 * 1024 * 1024; // 15MB, before client-side resize
 
@@ -27,6 +28,7 @@ export function ImageUploadField({
   const inputRef = useRef<HTMLInputElement>(null);
   const [uploadingCount, setUploadingCount] = useState(0);
   const remaining = max - value.length;
+  const photoUrl = useStorefrontPhotoUrls(value);
 
   async function handleFiles(files: FileList | null) {
     if (!files || files.length === 0) return;
