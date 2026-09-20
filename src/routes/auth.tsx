@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { COMPANY_LINE } from "@/lib/jaylor";
@@ -146,9 +147,8 @@ function AuthPage() {
               <form onSubmit={handleSetNewPassword} className="mt-6 space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="new-password">New password</Label>
-                  <Input
+                  <PasswordInput
                     id="new-password"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete="new-password"
@@ -253,9 +253,8 @@ function AuthPage() {
                       </button>
                     )}
                   </div>
-                  <Input
+                  <PasswordInput
                     id="password"
-                    type="password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     autoComplete={mode === "signin" ? "current-password" : "new-password"}
