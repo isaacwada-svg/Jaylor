@@ -4,6 +4,7 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { LockedFeature } from "@/components/jaylor/locked-feature";
+import { ORDER_STATUSES } from "@/lib/jaylor";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -30,7 +31,12 @@ export const Route = createFileRoute("/")({
 
 const DUE = [
   { client: "Mama Blessing", item: "Aso-oke gown", status: "Fitting" as const, due: "Fri, 26 Sep" },
-  { client: "Chief Adeyemi", item: "Agbada, 3-piece", status: "Sewing" as const, due: "Sat, 27 Sep" },
+  {
+    client: "Chief Adeyemi",
+    item: "Agbada, 3-piece",
+    status: "Sewing" as const,
+    due: "Sat, 27 Sep",
+  },
   { client: "Ngozi O.", item: "Ankara two-piece", status: "Ready" as const, due: "Mon, 29 Sep" },
 ];
 
@@ -47,10 +53,26 @@ function Home() {
         <StitchDivider className="my-6" />
 
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-          <Stat label="Money owed" value={<MoneyText amount={412500} variant="owed" />} hint="9 clients" />
-          <Stat label="Collected this month" value={<MoneyText amount={1285000} variant="paid" />} hint="24 orders" />
-          <Stat label="Due this week" value={<span className="figures text-2xl">7</span>} hint="2 overdue" />
-          <Stat label="In the workroom" value={<span className="figures text-2xl">18</span>} hint="Active jobs" />
+          <Stat
+            label="Money owed"
+            value={<MoneyText amount={412500} variant="owed" />}
+            hint="9 clients"
+          />
+          <Stat
+            label="Collected this month"
+            value={<MoneyText amount={1285000} variant="paid" />}
+            hint="24 orders"
+          />
+          <Stat
+            label="Due this week"
+            value={<span className="figures text-2xl">7</span>}
+            hint="2 overdue"
+          />
+          <Stat
+            label="In the workroom"
+            value={<span className="figures text-2xl">18</span>}
+            hint="Active jobs"
+          />
         </div>
 
         <section className="mt-8">
@@ -73,7 +95,11 @@ function Home() {
                       {o.due}
                     </Badge>
                   </div>
-                  <StitchTrack status={o.status} className="mt-5" />
+                  <StitchTrack
+                    steps={ORDER_STATUSES}
+                    currentIndex={ORDER_STATUSES.indexOf(o.status)}
+                    className="mt-5"
+                  />
                 </CardContent>
               </Card>
             ))}
@@ -119,15 +145,7 @@ function Home() {
   );
 }
 
-function Stat({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: React.ReactNode;
-  hint: string;
-}) {
+function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint: string }) {
   return (
     <Card className="rounded-2xl">
       <CardContent className="p-4">

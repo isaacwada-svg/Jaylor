@@ -1,20 +1,19 @@
 import { cn } from "@/lib/utils";
-import { ORDER_STATUSES, type OrderStatus } from "@/lib/jaylor";
 
 export function StitchTrack({
-  status,
+  steps,
+  currentIndex,
   className,
   compact = false,
 }: {
-  status: OrderStatus;
+  steps: readonly string[];
+  currentIndex: number;
   className?: string;
   compact?: boolean;
 }) {
-  const currentIndex = ORDER_STATUSES.indexOf(status);
-
   return (
     <ol className={cn("flex w-full items-start gap-0 overflow-x-auto", className)}>
-      {ORDER_STATUSES.map((step, i) => {
+      {steps.map((step, i) => {
         const done = i < currentIndex;
         const current = i === currentIndex;
         return (
@@ -39,7 +38,7 @@ export function StitchTrack({
               <span
                 className={cn(
                   "h-[1.5px] flex-1",
-                  i === ORDER_STATUSES.length - 1 && "opacity-0",
+                  i === steps.length - 1 && "opacity-0",
                   done ? "bg-gold" : "stitch-x opacity-50",
                 )}
               />
@@ -48,9 +47,7 @@ export function StitchTrack({
               className={cn(
                 "whitespace-nowrap text-center text-[10px] leading-tight",
                 compact && "sr-only",
-                current
-                  ? "font-semibold text-foreground"
-                  : "hidden text-muted-foreground sm:block",
+                current ? "font-semibold text-foreground" : "hidden text-muted-foreground sm:block",
               )}
             >
               {step}

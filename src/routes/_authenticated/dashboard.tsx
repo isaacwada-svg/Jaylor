@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
+import { ORDER_STATUSES } from "@/lib/jaylor";
 
 function useFirstName() {
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -123,7 +124,11 @@ function Home() {
                       {o.due}
                     </Badge>
                   </div>
-                  <StitchTrack status={o.status} className="mt-5" />
+                  <StitchTrack
+                    steps={ORDER_STATUSES}
+                    currentIndex={ORDER_STATUSES.indexOf(o.status)}
+                    className="mt-5"
+                  />
                 </CardContent>
               </Card>
             ))}
