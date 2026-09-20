@@ -25,6 +25,7 @@ import { TierBadge } from "@/components/jaylor/tier-badge";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin")({
+  staticData: { sitemap: false },
   ssr: false,
   head: () => ({ meta: [{ title: "Platform admin — Jaylor" }] }),
   component: Admin,

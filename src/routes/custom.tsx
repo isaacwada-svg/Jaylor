@@ -11,6 +11,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/custom")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Custom plan — Jaylor" },

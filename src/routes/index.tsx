@@ -22,6 +22,7 @@ import { COMPANY_LINE, ORDER_STATUSES, PRICING_PLANS } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "Jaylor — Every order tracked. Every naira collected." },

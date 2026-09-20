@@ -35,6 +35,7 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/events/$eventId")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [{ title: "Event — Jaylor" }],
   }),

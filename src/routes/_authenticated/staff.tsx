@@ -25,6 +25,7 @@ import { effectiveTier, STAFF_LIMITS, ORDER_STATUSES_DB, orderStatusLabel } from
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/staff")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Staff and job board — Jaylor" },

@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout } from "@/components/jaylor/legal-layout";
 
 export const Route = createFileRoute("/cookies")({
+  staticData: { sitemap: true },
   head: () => ({ meta: [
     { title: "Cookie Notice — Jaylor" },
     { name: "description", content: "How Jaylor uses essential browser storage and first-party analytics." },

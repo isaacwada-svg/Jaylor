@@ -30,6 +30,7 @@ import { orderReadyMessage, balanceDueMessage } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
+  staticData: { sitemap: false },
   head: () => ({ meta: [{ title: "Order — Jaylor" }] }),
   component: OrderDetail,
 });

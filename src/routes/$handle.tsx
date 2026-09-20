@@ -22,6 +22,7 @@ import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/$handle")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [{ title: "Shop — Jaylor" }],
   }),

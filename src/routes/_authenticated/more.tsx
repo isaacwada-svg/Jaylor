@@ -15,6 +15,7 @@ import {
 import type { Tier } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/_authenticated/more")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "More — Jaylor" },

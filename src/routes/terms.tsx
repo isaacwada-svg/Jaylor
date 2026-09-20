@@ -3,6 +3,7 @@ import { LegalLayout } from "@/components/jaylor/legal-layout";
 import { SUPPORT_EMAIL } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/terms")({
+  staticData: { sitemap: true },
   head: () => ({ meta: [
     { title: "Terms of Service — Jaylor" },
     { name: "description", content: "The terms governing business use of Jaylor in Nigeria." },

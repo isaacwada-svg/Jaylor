@@ -14,6 +14,7 @@ import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/auth")({
+  staticData: { sitemap: false },
   validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
     search["mode"] === "signup" ? { mode: "signup" } : {},
   head: () => ({

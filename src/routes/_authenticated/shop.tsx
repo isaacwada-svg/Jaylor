@@ -24,6 +24,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/shop")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "Shop — Jaylor" },

@@ -10,6 +10,7 @@ import { getErrorMessage } from "@/lib/utils";
 import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/join/$token")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [{ title: "Join your team — Jaylor" }],
   }),

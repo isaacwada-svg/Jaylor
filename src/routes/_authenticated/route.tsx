@@ -4,6 +4,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { StoreProvider, useStore } from "@/lib/store-context";
 
 export const Route = createFileRoute("/_authenticated")({
+  staticData: { sitemap: "exclude-subtree" },
   ssr: false,
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
