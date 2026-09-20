@@ -12,6 +12,8 @@ import {
   type TemplateField,
 } from "@/lib/measurements";
 import { getErrorMessage, cn } from "@/lib/utils";
+import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
+import { useOnlineStatus } from "@/lib/use-online-status";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { MeasurementDiagram, measurementGuideText } from "@/components/jaylor/measurement-diagram";
 import { Button } from "@/components/ui/button";
@@ -252,6 +254,7 @@ function MeasurementForm({
   onCancel: () => void;
   onSaved: () => void;
 }) {
+  const online = useOnlineStatus();
   const [templateId, setTemplateId] = useState(defaultTemplateId ?? templates[0]?.id ?? "");
   const [unit, setUnit] = useState<"in" | "cm">((previous?.unit as "in" | "cm") ?? "in");
   const [values, setValues] = useState<Record<string, string>>({});
@@ -310,7 +313,7 @@ function MeasurementForm({
       }
 
       const { data: userData } = await supabase.auth.getUser();
-      const { error } = await supabase.from("measurement_sets").insert({
+      const payload = {
         store_id: client.store_id,
         client_id: client.id,
         template_id: templateId || null,
@@ -321,9 +324,34 @@ function MeasurementForm({
         source: "manual",
         taken_by: userData.user?.id ?? null,
         notes: notes.trim() || null,
-      });
-      if (error) throw error;
-      toast.success("Measurements saved");
+      };
+
+      if (!online) {
+        await enqueue({
+          kind: "measurement.create",
+          storeId: client.store_id,
+          label: `Measurements for ${client.full_name}`,
+          payload,
+        });
+        toast.success("Saved offline — will sync when you're back online");
+        onSaved();
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("measurement_sets").insert(payload);
+        if (error) throw error;
+        toast.success("Measurements saved");
+      } catch (error) {
+        if (!isNetworkFailure(error)) throw error;
+        await enqueue({
+          kind: "measurement.create",
+          storeId: client.store_id,
+          label: `Measurements for ${client.full_name}`,
+          payload,
+        });
+        toast.success("Saved offline — will sync when you're back online");
+      }
       onSaved();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not save measurements"));

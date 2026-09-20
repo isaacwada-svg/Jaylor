@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -26,6 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { LogoMark } from "./logo";
+import { OfflineBanner } from "./offline-banner";
 import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
 import { TierBadge } from "./tier-badge";
@@ -34,6 +35,7 @@ import { OrderForm } from "./order-form";
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
 import { cn } from "@/lib/utils";
+import { initOutboxSync } from "@/lib/offline/outbox";
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
@@ -55,6 +57,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const tier = effectiveTier(currentStore);
   const canManageOrders = currentRole === "owner" || currentRole === "manager";
 
+  useEffect(() => initOutboxSync(), []);
+
   const newActions: { label: string; icon: typeof Scissors; onClick: () => void }[] = [
     ...(canManageOrders
       ? [{ label: "New order", icon: Scissors, onClick: () => setOrderFormOpen(true) }]
@@ -68,6 +72,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="linen min-h-screen bg-background">
+      <OfflineBanner storeId={currentStore?.id} />
       <div className="flex">
         {/* Desktop sidebar */}
         <aside

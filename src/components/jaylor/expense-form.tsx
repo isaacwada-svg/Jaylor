@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
 import { EXPENSE_CATEGORIES } from "@/lib/jaylor";
+import { useOnlineStatus } from "@/lib/use-online-status";
+import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -35,6 +37,7 @@ export function ExpenseForm({
   onSaved: () => void;
 }) {
   const isMobile = useIsMobile();
+  const online = useOnlineStatus();
   const [category, setCategory] = useState("fabric");
   const [amount, setAmount] = useState("");
   const [spentAt, setSpentAt] = useState(todayISO());
@@ -114,7 +117,8 @@ export function ExpenseForm({
           onChange={(e) => setNote(e.target.value)}
         />
       </div>
-      <Button type="submit" className="w-full" disabled={busy || !amount.trim()}>
+      {!online && <OfflineNotice />}
+      <Button type="submit" className="w-full" disabled={busy || !amount.trim() || !online}>
         {busy ? "Saving..." : "Add expense"}
       </Button>
     </form>

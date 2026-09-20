@@ -7,6 +7,8 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
+import { useOnlineStatus } from "@/lib/use-online-status";
+import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,6 +53,7 @@ export function ConsultationForm({
   onSaved: () => void;
 }) {
   const isMobile = useIsMobile();
+  const online = useOnlineStatus();
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
   const [type, setType] = useState<ConsultationType>("measurement");
@@ -134,6 +137,8 @@ export function ConsultationForm({
               Change
             </Button>
           </div>
+        ) : !online ? (
+          <OfflineNotice label="Searching clients needs an internet connection." />
         ) : (
           <>
             <div className="relative">
@@ -240,7 +245,8 @@ export function ConsultationForm({
         />
       </div>
 
-      <Button type="submit" className="w-full" disabled={busy}>
+      {!online && <OfflineNotice />}
+      <Button type="submit" className="w-full" disabled={busy || !online}>
         {busy ? "Booking..." : "Book consultation"}
       </Button>
     </form>

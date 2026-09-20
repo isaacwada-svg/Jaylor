@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
+import { useOnlineStatus } from "@/lib/use-online-status";
+import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -26,6 +28,7 @@ export function InviteStaffForm({
   storeId: string;
   onSaved: () => void;
 }) {
+  const online = useOnlineStatus();
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [role, setRole] = useState<"manager" | "tailor">("tailor");
@@ -140,7 +143,8 @@ export function InviteStaffForm({
                 placeholder="0803 123 4567"
               />
             </div>
-            <Button type="submit" className="w-full" disabled={busy}>
+            {!online && <OfflineNotice />}
+            <Button type="submit" className="w-full" disabled={busy || !online}>
               {busy ? "Creating..." : "Create invite link"}
             </Button>
           </form>

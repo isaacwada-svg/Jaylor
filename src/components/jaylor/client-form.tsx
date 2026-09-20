@@ -7,6 +7,9 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { normalizePhoneNG } from "@/lib/phone";
 import { isMinor } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
+import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
+import { useOnlineStatus } from "@/lib/use-online-status";
+import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +42,7 @@ export function ClientForm({
 }) {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
+  const online = useOnlineStatus();
   const isEdit = !!client;
 
   const [fullName, setFullName] = useState("");
@@ -100,7 +104,7 @@ export function ClientForm({
 
     setBusy(true);
     try {
-      if (!isEdit || phone !== client?.phone) {
+      if (online && (!isEdit || phone !== client?.phone)) {
         const { data: existing } = await supabase
           .from("clients")
           .select("id, full_name")
@@ -155,18 +159,42 @@ export function ClientForm({
         if (error) throw error;
         toast.success("Client updated");
         onSaved(data);
+        onOpenChange(false);
       } else {
         const { data: userData } = await supabase.auth.getUser();
-        const { data, error } = await supabase
-          .from("clients")
-          .insert({ ...payload, created_by: userData.user?.id ?? null })
-          .select()
-          .single();
-        if (error) throw error;
-        toast.success("Client added");
-        onSaved(data);
+        const insertPayload = { ...payload, created_by: userData.user?.id ?? null };
+        if (!online) {
+          await enqueue({
+            kind: "client.create",
+            storeId,
+            label: `New client: ${payload.full_name}`,
+            payload: insertPayload,
+          });
+          toast.success("Saved offline — will sync when you're back online");
+          onOpenChange(false);
+          return;
+        }
+        try {
+          const { data, error } = await supabase
+            .from("clients")
+            .insert(insertPayload)
+            .select()
+            .single();
+          if (error) throw error;
+          toast.success("Client added");
+          onSaved(data);
+        } catch (error) {
+          if (!isNetworkFailure(error)) throw error;
+          await enqueue({
+            kind: "client.create",
+            storeId,
+            label: `New client: ${payload.full_name}`,
+            payload: insertPayload,
+          });
+          toast.success("Saved offline — will sync when you're back online");
+        }
+        onOpenChange(false);
       }
-      onOpenChange(false);
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not save this client"));
     } finally {
@@ -326,7 +354,11 @@ export function ClientForm({
         </label>
       </div>
 
-      <Button type="submit" className="w-full" disabled={busy}>
+      {isEdit && !online && (
+        <OfflineNotice label="Editing a client needs an internet connection." />
+      )}
+
+      <Button type="submit" className="w-full" disabled={busy || (isEdit && !online)}>
         {busy ? "Saving..." : isEdit ? "Save changes" : "Add client"}
       </Button>
     </form>

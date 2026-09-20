@@ -9,7 +9,10 @@ import { GARMENT_TYPES, formatMoney, planCodeToTier } from "@/lib/jaylor";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage, cn } from "@/lib/utils";
 import { useFeature } from "@/lib/use-feature";
+import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
+import { useOnlineStatus } from "@/lib/use-online-status";
 import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
+import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -48,6 +51,7 @@ export function OrderForm({
   onSaved: (order: OrderRow) => void;
 }) {
   const isMobile = useIsMobile();
+  const online = useOnlineStatus();
   const { data: ordersFeature } = useFeature(open ? storeId : undefined, "orders");
   const [step, setStep] = useState(0);
 
@@ -106,6 +110,7 @@ export function OrderForm({
       if (error) throw error;
       return data;
     },
+    retry: false,
   });
 
   const { data: measurementSets } = useQuery({
@@ -120,6 +125,7 @@ export function OrderForm({
       if (error) throw error;
       return data;
     },
+    retry: false,
   });
 
   useEffect(() => {
@@ -164,37 +170,64 @@ export function OrderForm({
     setBusy(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
-      const { data: order, error } = await supabase
-        .from("orders")
-        .insert({
-          store_id: storeId,
-          client_id: selectedClient.id,
-          garment_type: garmentType,
-          style_notes: styleNotes.trim() || null,
-          measurement_set_id: measurementSetId || null,
-          quantity: Number(quantity) || 1,
-          price: Number(price) || 0,
-          delivery_date: deliveryDate || null,
-          priority: rush ? "rush" : "normal",
-          created_by: userData.user?.id ?? null,
-        })
-        .select()
-        .single();
-      if (error) throw error;
-
-      const { error: materialError } = await supabase.from("order_materials").insert({
-        order_id: order.id,
+      const orderPayload = {
+        store_id: storeId,
+        client_id: selectedClient.id,
+        garment_type: garmentType,
+        style_notes: styleNotes.trim() || null,
+        measurement_set_id: measurementSetId || null,
+        quantity: Number(quantity) || 1,
+        price: Number(price) || 0,
+        delivery_date: deliveryDate || null,
+        priority: rush ? "rush" : "normal",
+        created_by: userData.user?.id ?? null,
+      };
+      const materialPayload = {
         store_id: storeId,
         source: materialSource,
         description: materialDescription.trim(),
         colour: materialColour.trim() || null,
         yards: materialYards.trim() ? Number(materialYards) : null,
         cost: materialSource === "tailor" ? Number(materialCost) || 0 : 0,
-      });
-      if (materialError) throw materialError;
+      };
 
-      toast.success(`Order ${order.number} created`);
-      onSaved(order);
+      if (!online) {
+        await enqueue({
+          kind: "order.create",
+          storeId,
+          label: `New order: ${garmentType} for ${selectedClient.full_name}`,
+          payload: { order: orderPayload, material: materialPayload },
+        });
+        toast.success("Saved offline — will sync when you're back online");
+        onOpenChange(false);
+        return;
+      }
+
+      try {
+        const { data: order, error } = await supabase
+          .from("orders")
+          .insert(orderPayload)
+          .select()
+          .single();
+        if (error) throw error;
+
+        const { error: materialError } = await supabase
+          .from("order_materials")
+          .insert({ ...materialPayload, order_id: order.id });
+        if (materialError) throw materialError;
+
+        toast.success(`Order ${order.number} created`);
+        onSaved(order);
+      } catch (error) {
+        if (!isNetworkFailure(error)) throw error;
+        await enqueue({
+          kind: "order.create",
+          storeId,
+          label: `New order: ${garmentType} for ${selectedClient.full_name}`,
+          payload: { order: orderPayload, material: materialPayload },
+        });
+        toast.success("Saved offline — will sync when you're back online");
+      }
       onOpenChange(false);
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not create this order"));
@@ -227,6 +260,8 @@ export function OrderForm({
                 Change
               </Button>
             </div>
+          ) : !online ? (
+            <OfflineNotice label="Searching clients needs an internet connection. Open this from the client's own profile instead." />
           ) : (
             <>
               <div className="relative">

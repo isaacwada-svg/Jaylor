@@ -4,6 +4,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
+import { useOnlineStatus } from "@/lib/use-online-status";
+import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -32,6 +34,7 @@ export function StorefrontItemForm({
   onSaved: () => void;
 }) {
   const isMobile = useIsMobile();
+  const online = useOnlineStatus();
   const isEdit = !!item;
 
   const [title, setTitle] = useState("");
@@ -155,7 +158,8 @@ export function StorefrontItemForm({
         <span className="text-sm">Published on your shop page</span>
         <Switch checked={published} onCheckedChange={setPublished} />
       </label>
-      <Button type="submit" className="w-full" disabled={busy || !title.trim()}>
+      {!online && <OfflineNotice />}
+      <Button type="submit" className="w-full" disabled={busy || !title.trim() || !online}>
         {busy ? "Saving..." : isEdit ? "Save changes" : "Add item"}
       </Button>
     </form>

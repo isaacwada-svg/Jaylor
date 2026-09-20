@@ -3,6 +3,8 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
+import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
+import { useOnlineStatus } from "@/lib/use-online-status";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -36,6 +38,7 @@ export function PaymentForm({
   onSaved: () => void;
 }) {
   const isMobile = useIsMobile();
+  const online = useOnlineStatus();
   const [amount, setAmount] = useState("");
   const [method, setMethod] = useState<Method>("cash");
   const [reference, setReference] = useState("");
@@ -60,7 +63,7 @@ export function PaymentForm({
     setBusy(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
-      const { error } = await supabase.from("payments").insert({
+      const payload = {
         store_id: storeId,
         order_id: orderId,
         amount: amt,
@@ -68,10 +71,35 @@ export function PaymentForm({
         reference: reference.trim() || null,
         received_by: userData.user?.id ?? null,
         paid_at: new Date(paidAt).toISOString(),
-      });
-      if (error) throw error;
-      toast.success("Payment recorded");
-      onSaved();
+      };
+
+      if (!online) {
+        await enqueue({
+          kind: "payment.create",
+          storeId,
+          label: `Payment of ${amt}`,
+          payload,
+        });
+        toast.success("Saved offline — will sync when you're back online");
+        onOpenChange(false);
+        return;
+      }
+
+      try {
+        const { error } = await supabase.from("payments").insert(payload);
+        if (error) throw error;
+        toast.success("Payment recorded");
+        onSaved();
+      } catch (error) {
+        if (!isNetworkFailure(error)) throw error;
+        await enqueue({
+          kind: "payment.create",
+          storeId,
+          label: `Payment of ${amt}`,
+          payload,
+        });
+        toast.success("Saved offline — will sync when you're back online");
+      }
       onOpenChange(false);
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not record this payment"));
