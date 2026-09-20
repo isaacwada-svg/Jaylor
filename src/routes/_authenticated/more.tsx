@@ -85,6 +85,15 @@ function More() {
                 </Link>
               );
             }
+            if (label === "Consultations") {
+              return (
+                <Link key={label} to="/consultations">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
             return (
               <Card key={label} className="rounded-2xl">
                 {content}

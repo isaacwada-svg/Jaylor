@@ -147,6 +147,123 @@ export type Database = {
           },
         ];
       };
+      consultation_requests: {
+        Row: {
+          id: string;
+          store_id: string;
+          name: string;
+          phone: string;
+          type: string;
+          preferred_at: string;
+          note: string | null;
+          consent_whatsapp: boolean;
+          status: string;
+          consultation_id: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          name: string;
+          phone: string;
+          type: string;
+          preferred_at: string;
+          note?: string | null;
+          consent_whatsapp?: boolean;
+          status?: string;
+          consultation_id?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          name?: string;
+          phone?: string;
+          type?: string;
+          preferred_at?: string;
+          note?: string | null;
+          consent_whatsapp?: boolean;
+          status?: string;
+          consultation_id?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "consultation_requests_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "consultation_requests_consultation_id_fkey";
+            columns: ["consultation_id"];
+            isOneToOne: false;
+            referencedRelation: "consultations";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      consultations: {
+        Row: {
+          id: string;
+          store_id: string;
+          client_id: string | null;
+          staff_id: string | null;
+          type: string;
+          starts_at: string;
+          ends_at: string;
+          status: string;
+          meeting_link: string | null;
+          notes: string | null;
+          source: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          client_id?: string | null;
+          staff_id?: string | null;
+          type: string;
+          starts_at: string;
+          ends_at: string;
+          status?: string;
+          meeting_link?: string | null;
+          notes?: string | null;
+          source?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          client_id?: string | null;
+          staff_id?: string | null;
+          type?: string;
+          starts_at?: string;
+          ends_at?: string;
+          status?: string;
+          meeting_link?: string | null;
+          notes?: string | null;
+          source?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "consultations_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "consultations_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       country_configs: {
         Row: {
           code: string;
@@ -864,6 +981,17 @@ export type Database = {
       };
     };
     Views: {
+      stores_public: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          logo_url: string | null;
+          accent_color: string | null;
+          city: string | null;
+        };
+        Relationships: [];
+      };
       order_balances: {
         Row: {
           order_id: string;

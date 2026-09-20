@@ -14,9 +14,11 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
+import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authenticated/consultations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedMoreRouteImport } from './routes/_authenticated/more'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
+import { Route as BookHandleRouteImport } from './routes/book.$handle'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
@@ -46,6 +48,12 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedConsultationsRoute =
+  AuthenticatedConsultationsRouteImport.update({
+    id: '/consultations',
+    path: '/consultations',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -60,6 +68,11 @@ const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
   id: '/shop',
   path: '/shop',
   getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const BookHandleRoute = BookHandleRouteImport.update({
+  id: '/book/$handle',
+  path: '/book/$handle',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
@@ -91,9 +104,11 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/consultations': typeof AuthenticatedConsultationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/more': typeof AuthenticatedMoreRoute
   '/shop': typeof AuthenticatedShopRoute
+  '/book/$handle': typeof BookHandleRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
@@ -104,9 +119,11 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/consultations': typeof AuthenticatedConsultationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/more': typeof AuthenticatedMoreRoute
   '/shop': typeof AuthenticatedShopRoute
+  '/book/$handle': typeof BookHandleRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
@@ -119,9 +136,11 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/onboarding': typeof OnboardingRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/consultations': typeof AuthenticatedConsultationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/more': typeof AuthenticatedMoreRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
+  '/book/$handle': typeof BookHandleRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
@@ -134,9 +153,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/billing'
+    | '/consultations'
     | '/dashboard'
     | '/more'
     | '/shop'
+    | '/book/$handle'
     | '/clients/$clientId'
     | '/orders/$orderId'
     | '/clients/'
@@ -147,9 +168,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/billing'
+    | '/consultations'
     | '/dashboard'
     | '/more'
     | '/shop'
+    | '/book/$handle'
     | '/clients/$clientId'
     | '/orders/$orderId'
     | '/clients'
@@ -161,9 +184,11 @@ export interface FileRouteTypes {
     | '/auth'
     | '/onboarding'
     | '/_authenticated/billing'
+    | '/_authenticated/consultations'
     | '/_authenticated/dashboard'
     | '/_authenticated/more'
     | '/_authenticated/shop'
+    | '/book/$handle'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/clients/'
@@ -175,6 +200,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   OnboardingRoute: typeof OnboardingRoute
+  BookHandleRoute: typeof BookHandleRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -214,6 +240,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/consultations': {
+      id: '/_authenticated/consultations'
+      path: '/consultations'
+      fullPath: '/consultations'
+      preLoaderRoute: typeof AuthenticatedConsultationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/dashboard': {
       id: '/_authenticated/dashboard'
       path: '/dashboard'
@@ -234,6 +267,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/shop'
       preLoaderRoute: typeof AuthenticatedShopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/book/$handle': {
+      id: '/book/$handle'
+      path: '/book/$handle'
+      fullPath: '/book/$handle'
+      preLoaderRoute: typeof BookHandleRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
@@ -268,6 +308,7 @@ declare module '@tanstack/react-router' {
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedConsultationsRoute: typeof AuthenticatedConsultationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMoreRoute: typeof AuthenticatedMoreRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
@@ -279,6 +320,7 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedConsultationsRoute: AuthenticatedConsultationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMoreRoute: AuthenticatedMoreRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
@@ -296,6 +338,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   OnboardingRoute: OnboardingRoute,
+  BookHandleRoute: BookHandleRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
