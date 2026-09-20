@@ -49,8 +49,7 @@ export function ImageUploadField({
           .from("storefront-photos")
           .upload(path, file, { contentType: "image/jpeg", upsert: false });
         if (uploadError) throw uploadError;
-        const { data } = supabase.storage.from("storefront-photos").getPublicUrl(path);
-        onChange([...value, data.publicUrl]);
+        onChange([...value, path]);
       } catch (error) {
         toast.error(getErrorMessage(error, `Could not upload ${original.name}`));
       } finally {
