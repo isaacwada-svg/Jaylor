@@ -1,7 +1,6 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { toast } from "sonner";
 import {
   Home,
   Scissors,
@@ -31,7 +30,8 @@ import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
 import { TierBadge } from "./tier-badge";
 import { ClientForm } from "./client-form";
-import { OrderForm } from "./order-form";
+import { OrderForm, type OrderPrefill } from "./order-form";
+import { VoiceOrderDialog } from "./voice-order-dialog";
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
 import { cn } from "@/lib/utils";
@@ -50,6 +50,8 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const [clientFormOpen, setClientFormOpen] = useState(false);
   const [orderFormOpen, setOrderFormOpen] = useState(false);
+  const [voiceOrderOpen, setVoiceOrderOpen] = useState(false);
+  const [orderPrefill, setOrderPrefill] = useState<OrderPrefill | null>(null);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -67,7 +69,9 @@ export function AppShell({ children }: { children: ReactNode }) {
     ...(canManageOrders
       ? [{ label: "Record payment", icon: Banknote, onClick: () => navigate({ to: "/orders" }) }]
       : []),
-    { label: "Voice order", icon: Mic, onClick: () => toast("Voice orders are coming soon") },
+    ...(canManageOrders
+      ? [{ label: "Voice order", icon: Mic, onClick: () => setVoiceOrderOpen(true) }]
+      : []),
   ];
 
   return (
@@ -230,11 +234,23 @@ export function AppShell({ children }: { children: ReactNode }) {
           />
           <OrderForm
             open={orderFormOpen}
-            onOpenChange={setOrderFormOpen}
+            onOpenChange={(o) => {
+              setOrderFormOpen(o);
+              if (!o) setOrderPrefill(null);
+            }}
             storeId={currentStore.id}
+            prefill={orderPrefill}
             onSaved={(order) => {
               queryClient.invalidateQueries({ queryKey: ["orders", currentStore.id] });
               navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
+            }}
+          />
+          <VoiceOrderDialog
+            open={voiceOrderOpen}
+            onOpenChange={setVoiceOrderOpen}
+            onParsed={(prefill) => {
+              setOrderPrefill(prefill);
+              setOrderFormOpen(true);
             }}
           />
         </>

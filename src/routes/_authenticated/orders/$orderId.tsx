@@ -9,6 +9,7 @@ import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { PaymentForm } from "@/components/jaylor/payment-form";
 import { RemindButton } from "@/components/jaylor/remind-button";
+import { AiReplyDraftButton } from "@/components/jaylor/ai-reply-draft-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -301,7 +302,7 @@ function OrderDetail() {
               {client &&
                 currentStore &&
                 (order.status === "ready" || (balance?.balance ?? 0) > 0) && (
-                  <div className="mt-3 border-t border-border pt-3">
+                  <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
                     <RemindButton
                       storeId={currentStore.id}
                       clientId={client.id}
@@ -329,6 +330,15 @@ function OrderDetail() {
                           ? "Remind: ready for pickup"
                           : "Remind: balance due"
                       }
+                    />
+                    <AiReplyDraftButton
+                      phone={client.whatsapp_phone ?? client.phone}
+                      consentWhatsapp={client.consent_whatsapp}
+                      clientName={client.full_name}
+                      garmentType={order.garment_type}
+                      orderStatus={orderStatusLabel(order.status)}
+                      balance={balance?.balance ?? 0}
+                      deliveryDate={order.delivery_date}
                     />
                   </div>
                 )}

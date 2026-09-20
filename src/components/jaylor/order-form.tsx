@@ -37,17 +37,28 @@ type OrderRow = Tables<"orders">;
 
 const STEPS = ["Client", "Garment", "Measurements", "Material", "Price & review"] as const;
 
+export type OrderPrefill = {
+  garment_type: string | null;
+  quantity: number | null;
+  style_notes: string | null;
+  price: number | null;
+  delivery_date: string | null;
+  rush: boolean | null;
+};
+
 export function OrderForm({
   open,
   onOpenChange,
   storeId,
   initialClient,
+  prefill,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
   initialClient?: ClientRow | null;
+  prefill?: OrderPrefill | null;
   onSaved: (order: OrderRow) => void;
 }) {
   const isMobile = useIsMobile();
@@ -75,24 +86,26 @@ export function OrderForm({
   const [rush, setRush] = useState(false);
 
   const [busy, setBusy] = useState(false);
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestion, setSuggestion] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
     setStep(initialClient ? 1 : 0);
     setClientSearch("");
     setSelectedClient(initialClient ?? null);
-    setGarmentType("");
-    setQuantity("1");
-    setStyleNotes("");
+    setGarmentType(prefill?.garment_type ?? "");
+    setQuantity(prefill?.quantity ? String(prefill.quantity) : "1");
+    setStyleNotes(prefill?.style_notes ?? "");
     setMeasurementSetId("");
     setMaterialSource("customer");
     setMaterialDescription("");
     setMaterialColour("");
     setMaterialYards("");
     setMaterialCost("");
-    setPrice("");
-    setDeliveryDate("");
-    setRush(false);
+    setPrice(prefill?.price != null ? String(prefill.price) : "");
+    setDeliveryDate(prefill?.delivery_date ?? "");
+    setRush(prefill?.rush ?? false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
@@ -162,6 +175,63 @@ export function OrderForm({
 
   function back() {
     setStep((s) => Math.max(s - 1, 0));
+  }
+
+  async function suggestPrice() {
+    if (!garmentType) return;
+    setSuggesting(true);
+    setSuggestion(null);
+    try {
+      const { data: pastOrders, error } = await supabase
+        .from("orders")
+        .select("id, price")
+        .eq("store_id", storeId)
+        .eq("garment_type", garmentType)
+        .limit(50);
+      if (error) throw error;
+
+      const prices = (pastOrders ?? [])
+        .map((o) => o.price)
+        .filter((p): p is number => typeof p === "number" && p > 0);
+      if (prices.length === 0) {
+        toast.error("No pricing history yet for this garment type");
+        return;
+      }
+
+      const orderIds = (pastOrders ?? []).map((o) => o.id);
+      const { data: materials } = await supabase
+        .from("order_materials")
+        .select("yards")
+        .in("order_id", orderIds);
+      const yardsList = (materials ?? [])
+        .map((m) => m.yards)
+        .filter((y): y is number => typeof y === "number" && y > 0);
+
+      const stats = {
+        avgPrice: prices.reduce((a, b) => a + b, 0) / prices.length,
+        minPrice: Math.min(...prices),
+        maxPrice: Math.max(...prices),
+        count: prices.length,
+        avgYards: yardsList.length ? yardsList.reduce((a, b) => a + b, 0) / yardsList.length : null,
+      };
+
+      const { data, error: fnError } = await supabase.functions.invoke("suggest-pricing", {
+        body: {
+          garmentType,
+          quantity: Number(quantity) || 1,
+          rush,
+          materialSource,
+          styleNotes,
+          stats,
+        },
+      });
+      if (fnError) throw fnError;
+      setSuggestion((data as { result: string }).result);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not suggest a price"));
+    } finally {
+      setSuggesting(false);
+    }
   }
 
   async function handleCreate(event: FormEvent) {
@@ -453,6 +523,23 @@ export function OrderForm({
               />
             </div>
           </div>
+
+          <Button
+            type="button"
+            variant="outline"
+            size="sm"
+            onClick={suggestPrice}
+            disabled={suggesting || !online}
+          >
+            {suggesting ? "Thinking..." : "Suggest price with AI"}
+          </Button>
+          {suggestion && (
+            <p className="rounded-xl border border-gold/30 bg-accent/30 p-3 text-sm text-muted-foreground">
+              {suggestion}
+            </p>
+          )}
+          {!online && <OfflineNotice label="Price suggestions need an internet connection." />}
+
           <label className="flex items-center justify-between rounded-xl border border-border p-3">
             <span className="text-sm">Rush order</span>
             <Switch checked={rush} onCheckedChange={setRush} />
