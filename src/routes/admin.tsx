@@ -272,7 +272,7 @@ function PlansTab() {
     if (!editingPlan) return;
     setBusy(true);
     try {
-      const { error } = await supabase.rpc("admin_update_plan", {
+      const { error } = await rpcAdmin("admin_update_plan", {
         p_code: editingPlan.code,
         p_name: editingPlan.name,
         p_price_monthly: priceMonthly.trim() ? Number(priceMonthly) : null,
@@ -411,7 +411,7 @@ function AuditTab() {
   const { data: logs, isLoading } = useQuery({
     queryKey: ["admin-audit-logs"],
     queryFn: async () => {
-      const { data, error } = await supabase.rpc("admin_list_audit_logs", { p_limit: 200 });
+      const { data, error } = await rpcAdmin("admin_list_audit_logs", { p_limit: 200 });
       if (error) throw error;
       return data as unknown as AuditRow[];
     },
