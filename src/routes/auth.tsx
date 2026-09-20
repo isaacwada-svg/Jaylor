@@ -9,15 +9,17 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { LogoMark } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
-import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
+import { COMPANY_LINE, PENDING_INVITE_KEY, PENDING_REFERRAL_KEY } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { normalizePhoneNG } from "@/lib/phone";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
-  validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
-    search["mode"] === "signup" ? { mode: "signup" } : {},
+  validateSearch: (search: Record<string, unknown>): { mode?: "signup"; ref?: string } => ({
+    ...(search["mode"] === "signup" ? { mode: "signup" as const } : {}),
+    ...(typeof search["ref"] === "string" && search["ref"] ? { ref: search["ref"] } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Sign in — Jaylor" },
@@ -40,7 +42,7 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { mode: initialMode } = Route.useSearch();
+  const { mode: initialMode, ref: referralCode } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup" | "reset">(initialMode ?? "signin");
   const [recovery, setRecovery] = useState(false);
   const [name, setName] = useState("");
@@ -50,6 +52,15 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+
+  useEffect(() => {
+    if (!referralCode) return;
+    try {
+      sessionStorage.setItem(PENDING_REFERRAL_KEY, referralCode);
+    } catch {
+      // ignore storage failures
+    }
+  }, [referralCode]);
 
   useEffect(() => {
     document.title =

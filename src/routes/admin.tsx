@@ -275,7 +275,8 @@ function AnalyticsTab() {
         <div>
           <h2 className="text-xl">Launch health</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            Since {new Date(data.period_start).toLocaleDateString()} · healthy early targets shown below
+            Since {new Date(data.period_start).toLocaleDateString()} · healthy early targets shown
+            below
           </p>
         </div>
         <Badge variant="outline">First-party data</Badge>
@@ -328,10 +329,10 @@ function AnalyticsTab() {
         <h3 className="text-lg">WhatsApp rate guardrail</h3>
         <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
           Reviewed {new Date(data.rate_assumptions.reviewed_on).toLocaleDateString()}. Working Meta
-          rates for Nigeria are ${data.rate_assumptions.utility_usd.toFixed(4)} per delivered utility
-          message and ${data.rate_assumptions.marketing_usd.toFixed(4)} per delivered marketing
-          message, before provider markup and exchange-rate movement. Launch allowances are{" "}
-          {data.rate_assumptions.growth_allowance} for Growth and{" "}
+          rates for Nigeria are ${data.rate_assumptions.utility_usd.toFixed(4)} per delivered
+          utility message and ${data.rate_assumptions.marketing_usd.toFixed(4)} per delivered
+          marketing message, before provider markup and exchange-rate movement. Launch allowances
+          are {data.rate_assumptions.growth_allowance} for Growth and{" "}
           {data.rate_assumptions.business_allowance} for Business; marketing campaigns are excluded.
         </p>
       </div>
@@ -570,8 +571,13 @@ function LeadsTab() {
     <div className="space-y-2">
       {leads.map((lead) => (
         <div key={lead.id} className="rounded-xl border border-border p-4">
-          <div className="flex items-center justify-between">
-            <p className="font-medium">{lead.name}</p>
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <p className="font-medium">{lead.name}</p>
+              <span className="rounded-full bg-accent px-2 py-0.5 text-xs text-muted-foreground">
+                {lead.source}
+              </span>
+            </div>
             <span className="text-xs text-muted-foreground">
               {new Date(lead.created_at).toLocaleString()}
             </span>

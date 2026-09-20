@@ -91,13 +91,17 @@ export const PRICE_TIERS: PriceTier[] = [
   },
 ];
 
-export type AddOn = { name: string; price: string };
+export type AddOn = { name: string; price: string; href?: string };
 
 export const ADD_ONS: AddOn[] = [
   { name: "100 automatic WhatsApp messages", price: "₦2,000" },
   { name: "Extra user", price: "₦1,500 / month" },
   { name: "Extra branch", price: "₦4,000 / month" },
-  { name: "Notebook import service (we type in your old records)", price: "₦10,000 one-off" },
+  {
+    name: "Notebook import service (we type in your old records)",
+    price: "₦10,000 one-off",
+    href: "/import",
+  },
   { name: "Own domain for your storefront", price: "₦3,000 / month" },
 ];
 

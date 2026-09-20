@@ -9,7 +9,7 @@ import { LogoMark } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { cn, getErrorMessage } from "@/lib/utils";
-import { COMPANY_LINE, GARMENT_TYPES } from "@/lib/jaylor";
+import { COMPANY_LINE, GARMENT_TYPES, PENDING_REFERRAL_KEY } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/onboarding")({
   staticData: { sitemap: false },
@@ -119,6 +119,20 @@ function Onboarding() {
     if (!userId || handleTaken) return;
     setBusy(true);
     try {
+      let referredByStoreId: string | null = null;
+      try {
+        const pendingReferral = sessionStorage.getItem(PENDING_REFERRAL_KEY);
+        if (pendingReferral) {
+          const { data: resolved } = await supabase.rpc("resolve_referral_code", {
+            p_code: pendingReferral,
+          });
+          referredByStoreId = resolved ?? null;
+          sessionStorage.removeItem(PENDING_REFERRAL_KEY);
+        }
+      } catch {
+        // referral is a bonus, never block store creation over it
+      }
+
       const { data: store, error } = await supabase
         .from("stores")
         .insert({
@@ -127,6 +141,7 @@ function Onboarding() {
           city: city.trim() || null,
           country_code: "NG",
           owner_id: userId,
+          referred_by_store_id: referredByStoreId,
         })
         .select()
         .single();
@@ -190,7 +205,7 @@ function Onboarding() {
     }
   }
 
-  async function finish(destination: "/clients" | "/dashboard", note?: string) {
+  async function finish(destination: "/clients" | "/dashboard" | "/import", note?: string) {
     if (!storeId) return;
     setBusy(true);
     try {
@@ -432,6 +447,18 @@ function Onboarding() {
                   <p className="font-medium">Scan a page of my notebook</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Coming soon: turn a photo of your notebook into clients and measurements.
+                  </p>
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => finish("/import")}
+                  className="touch-target w-full rounded-2xl border border-border p-4 text-left transition-colors hover:border-gold hover:bg-accent/60"
+                >
+                  <p className="font-medium">Let us type it in for you</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    Send us photos of your notebook and we&apos;ll enter your clients for you, for a
+                    small one-off fee.
                   </p>
                 </button>
                 <button

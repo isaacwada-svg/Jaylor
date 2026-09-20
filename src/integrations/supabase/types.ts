@@ -1781,6 +1781,8 @@ export type Database = {
           opening_hours: string | null;
           owner_id: string;
           plan_code: string;
+          referral_code: string | null;
+          referred_by_store_id: string | null;
           sews_for: string | null;
           slug: string;
           timezone: string;
@@ -1807,6 +1809,8 @@ export type Database = {
           opening_hours?: string | null;
           owner_id: string;
           plan_code?: string;
+          referral_code?: string | null;
+          referred_by_store_id?: string | null;
           sews_for?: string | null;
           slug: string;
           timezone?: string;
@@ -1833,6 +1837,8 @@ export type Database = {
           opening_hours?: string | null;
           owner_id?: string;
           plan_code?: string;
+          referral_code?: string | null;
+          referred_by_store_id?: string | null;
           sews_for?: string | null;
           slug?: string;
           timezone?: string;
@@ -1855,6 +1861,55 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "plans";
             referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "stores_referred_by_store_id_fkey";
+            columns: ["referred_by_store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      referral_rewards: {
+        Row: {
+          applied_at: string | null;
+          created_at: string;
+          id: string;
+          referred_store_id: string;
+          referrer_store_id: string;
+          status: string;
+        };
+        Insert: {
+          applied_at?: string | null;
+          created_at?: string;
+          id?: string;
+          referred_store_id: string;
+          referrer_store_id: string;
+          status?: string;
+        };
+        Update: {
+          applied_at?: string | null;
+          created_at?: string;
+          id?: string;
+          referred_store_id?: string;
+          referrer_store_id?: string;
+          status?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "referral_rewards_referred_store_id_fkey";
+            columns: ["referred_store_id"];
+            isOneToOne: true;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "referral_rewards_referrer_store_id_fkey";
+            columns: ["referrer_store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
           },
         ];
       };
@@ -2202,6 +2257,14 @@ export type Database = {
       resolve_login_email: {
         Args: { p_phone: string };
         Returns: string | null;
+      };
+      resolve_referral_code: {
+        Args: { p_code: string };
+        Returns: string | null;
+      };
+      get_referral_stats: {
+        Args: { p_store_id: string };
+        Returns: Json;
       };
       get_design_by_token: {
         Args: { p_token: string };

@@ -145,6 +145,9 @@ export const STAFF_LIMITS: Record<Tier, number> = {
 /** sessionStorage key holding a store invite token while the user signs in. */
 export const PENDING_INVITE_KEY = "jaylor:pendingInvite";
 
+/** sessionStorage key holding a referral code while the user signs up. */
+export const PENDING_REFERRAL_KEY = "jaylor:pendingReferral";
+
 export const COMPANY_LINE =
   "Jaylor is a product of Bethjay Global Enterprise Limited, RC 3283706 — FCT Abuja, Nigeria.";
 

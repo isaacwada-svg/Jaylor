@@ -179,7 +179,15 @@ function Pricing() {
               <tbody>
                 {ADD_ONS.map((addOn, i) => (
                   <tr key={addOn.name} className={i > 0 ? "border-t border-border" : ""}>
-                    <td className="p-4 text-muted-foreground">{addOn.name}</td>
+                    <td className="p-4 text-muted-foreground">
+                      {addOn.href ? (
+                        <Link to={addOn.href} className="underline underline-offset-2">
+                          {addOn.name}
+                        </Link>
+                      ) : (
+                        addOn.name
+                      )}
+                    </td>
                     <td className="p-4 text-right font-medium">{addOn.price}</td>
                   </tr>
                 ))}
