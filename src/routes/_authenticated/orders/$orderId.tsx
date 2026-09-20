@@ -287,15 +287,15 @@ function OrderDetail() {
               {balance && (
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-sm">
                   <span className="text-muted-foreground">Paid</span>
-                  <MoneyText amount={balance.paid} variant="paid" />
+                  <MoneyText amount={balance.paid ?? 0} variant="paid" />
                 </div>
               )}
               {balance && (
                 <div className="mt-1 flex items-center justify-between text-sm">
                   <span className="text-muted-foreground">Balance</span>
                   <MoneyText
-                    amount={balance.balance}
-                    variant={balance.balance > 0 ? "owed" : "paid"}
+                    amount={balance.balance ?? 0}
+                    variant={(balance.balance ?? 0) > 0 ? "owed" : "paid"}
                   />
                 </div>
               )}
@@ -306,22 +306,22 @@ function OrderDetail() {
                     <RemindButton
                       storeId={currentStore.id}
                       clientId={client.id}
-                      orderId={order.id}
-                      phone={client.whatsapp_phone ?? client.phone}
+                      orderId={order.id ?? ""}
+                      phone={client.whatsapp_phone ?? client.phone ?? ""}
                       consentWhatsapp={client.consent_whatsapp}
                       template={order.status === "ready" ? "order_ready" : "balance_due"}
                       message={
                         order.status === "ready"
                           ? orderReadyMessage(
-                              client.full_name,
-                              order.garment_type,
-                              currentStore.name,
+                              client.full_name ?? "",
+                              order.garment_type ?? "",
+                              currentStore.name ?? "",
                               balance?.balance ?? 0,
                             )
                           : balanceDueMessage(
-                              client.full_name,
-                              order.garment_type,
-                              currentStore.name,
+                              client.full_name ?? "",
+                              order.garment_type ?? "",
+                              currentStore.name ?? "",
                               balance?.balance ?? 0,
                             )
                       }
@@ -334,9 +334,9 @@ function OrderDetail() {
                     <AiReplyDraftButton
                       phone={client.whatsapp_phone ?? client.phone}
                       consentWhatsapp={client.consent_whatsapp}
-                      clientName={client.full_name}
-                      garmentType={order.garment_type}
-                      orderStatus={orderStatusLabel(order.status)}
+                      clientName={client.full_name ?? ""}
+                      garmentType={order.garment_type ?? ""}
+                      orderStatus={orderStatusLabel(order.status ?? "")}
                       balance={balance?.balance ?? 0}
                       deliveryDate={order.delivery_date}
                     />
@@ -450,7 +450,7 @@ function OrderDetail() {
           open={paymentFormOpen}
           onOpenChange={setPaymentFormOpen}
           orderId={orderId}
-          storeId={order.store_id}
+          storeId={order.store_id ?? ""}
           balance={balance?.balance ?? 0}
           onSaved={() => {
             queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] });
@@ -466,9 +466,9 @@ function OrderDetail() {
               Mark as {pendingStatus ? orderStatusLabel(pendingStatus) : ""}?
             </DialogTitle>
             <DialogDescription>
-              {pendingStatus === "collected" && canSeeMoney && balance && balance.balance > 0 ? (
+              {pendingStatus === "collected" && canSeeMoney && balance && (balance.balance ?? 0) > 0 ? (
                 <span className="text-owed">
-                  A balance of <MoneyText amount={balance.balance} variant="owed" /> is still owed.
+                  A balance of <MoneyText amount={balance.balance ?? 0} variant="owed" /> is still owed.
                   Confirm collection anyway?
                 </span>
               ) : (

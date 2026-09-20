@@ -71,7 +71,10 @@ function Orders() {
     },
   });
 
-  const clientIds = useMemo(() => [...new Set((orders ?? []).map((o) => o.client_id))], [orders]);
+  const clientIds = useMemo(
+    () => [...new Set((orders ?? []).map((o) => o.client_id).filter((id): id is string => id != null))],
+    [orders],
+  );
   const { data: clients } = useQuery({
     queryKey: ["orders-clients", clientIds],
     enabled: clientIds.length > 0,
@@ -164,12 +167,12 @@ function Orders() {
                 <Link
                   key={order.id}
                   to="/orders/$orderId"
-                  params={{ orderId: order.id }}
+                  params={{ orderId: order.id ?? "" }}
                   className="block rounded-2xl border border-border p-4 transition-colors hover:bg-accent/40"
                 >
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate font-medium">{clientName(order.client_id)}</p>
+                      <p className="truncate font-medium">{clientName(order.client_id ?? "")}</p>
                       <p className="truncate text-sm text-muted-foreground">
                         {order.garment_type} · {order.number}
                       </p>

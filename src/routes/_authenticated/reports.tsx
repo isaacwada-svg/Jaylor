@@ -240,7 +240,7 @@ function Reports() {
   const collectedRevenue = (paymentsInMonth ?? []).reduce((sum, p) => sum + p.amount, 0);
   const expensesTotal = (expensesInMonth ?? []).reduce((sum, e) => sum + e.amount, 0);
   const netProfit = collectedRevenue - expensesTotal;
-  const outstandingBalance = (outstandingRows ?? []).reduce((sum, r) => sum + r.balance, 0);
+  const outstandingBalance = (outstandingRows ?? []).reduce((sum, r) => sum + (r.balance ?? 0), 0);
 
   const trendMonths = useMemo(() => {
     const months: Date[] = [];

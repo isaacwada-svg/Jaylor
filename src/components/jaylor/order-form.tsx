@@ -242,6 +242,8 @@ export function OrderForm({
       const { data: userData } = await supabase.auth.getUser();
       const orderPayload = {
         store_id: storeId,
+        // Placeholder only — the orders_set_number trigger assigns the real number on insert.
+        number: "",
         client_id: selectedClient.id,
         garment_type: garmentType,
         style_notes: styleNotes.trim() || null,
