@@ -15,7 +15,8 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { TierBadge } from "@/components/jaylor/tier-badge";
-import { PhoneMockup, MockBar, MockCard } from "@/components/jaylor/phone-mockup";
+import { PhoneMockup } from "@/components/jaylor/phone-mockup";
+import { cn } from "@/lib/utils";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -357,61 +358,105 @@ function Home() {
           <h2 className="text-center text-2xl lg:text-3xl">See it in your hands</h2>
           <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
             <ScreenshotCard caption="Track every order">
-              <MockCard>
-                <MockBar width="60%" tone="gold" />
-                <MockBar width="90%" />
-                <MockBar width="70%" />
-              </MockCard>
-              <MockCard>
-                <MockBar width="50%" tone="paid" />
-                <MockBar width="80%" />
-              </MockCard>
-              <MockCard>
-                <MockBar width="65%" tone="owed" />
-                <MockBar width="85%" />
-              </MockCard>
+              <div className="space-y-1.5">
+                <div className="rounded-lg border border-border/70 bg-card p-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="truncate text-[10px] font-medium">Blessing Eze</p>
+                    <span className="shrink-0 rounded-full bg-gold/15 px-1.5 py-0.5 text-[8px] font-medium text-gold">
+                      Fitting
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
+                    Aso-oke gown · ORD-1042
+                  </p>
+                  <div className="mt-1.5 flex items-center gap-0.5">
+                    {["Received", "Cutting", "Sewing", "Fitting", "Ready"].map((s, i) => (
+                      <span
+                        key={s}
+                        className={cn("h-1 flex-1 rounded-full", i <= 3 ? "bg-gold" : "bg-border")}
+                      />
+                    ))}
+                  </div>
+                </div>
+                <div className="rounded-lg border border-border/70 bg-card p-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="truncate text-[10px] font-medium">Amaka Obi</p>
+                    <span className="shrink-0 rounded-full bg-paid/15 px-1.5 py-0.5 text-[8px] font-medium text-paid">
+                      Ready
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
+                    Ankara dress · ORD-1039
+                  </p>
+                </div>
+                <div className="rounded-lg border border-border/70 bg-card p-2">
+                  <div className="flex items-center justify-between gap-1">
+                    <p className="truncate text-[10px] font-medium">Ibrahim Sule</p>
+                    <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground">
+                      Cutting
+                    </span>
+                  </div>
+                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
+                    Agbada set · ORD-1044
+                  </p>
+                </div>
+              </div>
             </ScreenshotCard>
             <ScreenshotCard caption="Never lose a naira">
-              <MockCard>
-                <MockBar width="40%" tone="owed" />
-                <MockBar width="75%" tone="owed" />
-              </MockCard>
-              <MockCard>
-                <MockBar width="40%" tone="paid" />
-                <MockBar width="60%" tone="paid" />
-              </MockCard>
-              <MockCard>
-                <MockBar width="55%" />
-                <MockBar width="30%" />
-              </MockCard>
+              <div className="space-y-1.5">
+                <div className="rounded-lg border border-border/70 bg-card p-2.5">
+                  <p className="text-[8px] uppercase tracking-wide text-muted-foreground">
+                    You are owed
+                  </p>
+                  <p className="figures mt-0.5 text-sm font-medium text-owed">₦145,000</p>
+                  <p className="text-[8px] text-muted-foreground">9 clients owing</p>
+                </div>
+                <div className="rounded-lg border border-border/70 bg-card p-2.5">
+                  <p className="text-[8px] uppercase tracking-wide text-muted-foreground">
+                    Collected this month
+                  </p>
+                  <p className="figures mt-0.5 text-sm font-medium text-paid">₦850,000</p>
+                </div>
+                <div className="rounded-lg border border-border/70 bg-card p-2.5">
+                  <div className="flex justify-between text-[9px]">
+                    <span className="text-muted-foreground">Collection score</span>
+                    <span className="font-medium text-gold">82/100</span>
+                  </div>
+                </div>
+              </div>
             </ScreenshotCard>
             <ScreenshotCard caption="Remind clients on WhatsApp">
-              <MockCard>
-                <MockBar width="70%" tone="gold" />
-              </MockCard>
-              <div className="ml-6">
-                <MockCard>
-                  <MockBar width="55%" />
-                </MockCard>
+              <div className="space-y-2">
+                <div className="ml-auto max-w-[85%] rounded-lg rounded-tr-sm bg-gold/15 p-2 text-[9px] leading-snug">
+                  Hi Blessing, your aso-oke gown is ready for pickup. Balance: ₦15,000.
+                </div>
+                <p className="ml-auto max-w-[85%] text-right text-[7px] text-muted-foreground">
+                  Delivered ✓✓
+                </p>
+                <div className="ml-auto max-w-[85%] rounded-lg rounded-tr-sm bg-gold/15 p-2 text-[9px] leading-snug">
+                  Hi Ibrahim, just a reminder that ₦20,000 is still outstanding on your order.
+                </div>
               </div>
-              <MockCard>
-                <MockBar width="80%" tone="gold" />
-              </MockCard>
             </ScreenshotCard>
             <ScreenshotCard caption="Your own storefront">
               <div className="grid grid-cols-2 gap-1.5">
-                <MockCard>
-                  <MockBar width="80%" />
-                </MockCard>
-                <MockCard>
-                  <MockBar width="80%" />
-                </MockCard>
-                <MockCard>
-                  <MockBar width="80%" />
-                </MockCard>
-                <MockCard>
-                  <MockBar width="80%" />
-                </MockCard>
+                {[
+                  { name: "Ankara gown", price: "₦25k–45k", tone: "from-owed/40 to-gold/40" },
+                  { name: "Agbada set", price: "₦40k–60k", tone: "from-gold/40 to-paid/30" },
+                  { name: "Aso-oke", price: "₦32k–50k", tone: "from-paid/30 to-owed/30" },
+                  { name: "Kaftan", price: "₦18k–30k", tone: "from-gold/30 to-owed/40" },
+                ].map((item) => (
+                  <div
+                    key={item.name}
+                    className="overflow-hidden rounded-lg border border-border/70 bg-card"
+                  >
+                    <div className={cn("h-8 bg-gradient-to-br", item.tone)} />
+                    <div className="p-1.5">
+                      <p className="truncate text-[9px] font-medium">{item.name}</p>
+                      <p className="text-[8px] text-muted-foreground">{item.price}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
             </ScreenshotCard>
           </div>
