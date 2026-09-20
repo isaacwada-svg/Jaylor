@@ -81,6 +81,34 @@ type AuditRow = {
   created_at: string;
 };
 
+type AnalyticsData = {
+  period_start: string;
+  visitor_count: number;
+  signup_count: number;
+  visitor_to_signup_rate: number | null;
+  store_signup_count: number;
+  activated_store_count: number;
+  signup_to_first_order_rate: number | null;
+  week4_eligible_count: number;
+  week4_active_count: number;
+  week4_active_rate: number | null;
+  trials_ended_count: number;
+  trial_converted_count: number;
+  trial_to_paid_rate: number | null;
+  paying_shop_count: number;
+  whatsapp_cost_ngn: number;
+  whatsapp_cost_per_paying_shop: number | null;
+  monthly_money_collected: { month: string; amount: number }[];
+  rate_assumptions: {
+    reviewed_on: string;
+    usd_ngn: number;
+    utility_usd: number;
+    marketing_usd: number;
+    growth_allowance: number;
+    business_allowance: number;
+  };
+};
+
 function Admin() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
@@ -143,6 +171,7 @@ function Admin() {
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
@@ -150,6 +179,9 @@ function Admin() {
 
           <TabsContent value="overview" className="mt-6">
             <OverviewTab />
+          </TabsContent>
+          <TabsContent value="analytics" className="mt-6">
+            <AnalyticsTab />
           </TabsContent>
           <TabsContent value="plans" className="mt-6">
             <PlansTab />
@@ -163,6 +195,146 @@ function Admin() {
         </Tabs>
       </div>
     </main>
+  );
+}
+
+function AnalyticsTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-growth-analytics"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_growth_analytics", { p_months: 12 });
+      if (error) throw error;
+      return data as AnalyticsData;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <Skeleton key={index} className="h-32 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!data) return <p className="text-sm text-muted-foreground">Analytics are unavailable.</p>;
+
+  const metrics = [
+    {
+      label: "Visitor to sign-up",
+      value: data.visitor_to_signup_rate,
+      suffix: "%",
+      target: "3–8%",
+      detail: `${data.signup_count} sign-ups from ${data.visitor_count} visitors`,
+      healthy: (value: number) => value >= 3 && value <= 8,
+    },
+    {
+      label: "First order in 24 hours",
+      value: data.signup_to_first_order_rate,
+      suffix: "%",
+      target: "60%+",
+      detail: `${data.activated_store_count} of ${data.store_signup_count} shops`,
+      healthy: (value: number) => value >= 60,
+    },
+    {
+      label: "Week-4 active shops",
+      value: data.week4_active_rate,
+      suffix: "%",
+      target: "40%+",
+      detail: `${data.week4_active_count} of ${data.week4_eligible_count} eligible shops`,
+      healthy: (value: number) => value >= 40,
+    },
+    {
+      label: "Trial to paid",
+      value: data.trial_to_paid_rate,
+      suffix: "%",
+      target: "15–25%",
+      detail: `${data.trial_converted_count} of ${data.trials_ended_count} ended trials`,
+      healthy: (value: number) => value >= 15 && value <= 25,
+    },
+    {
+      label: "WhatsApp cost / paying shop",
+      value: data.whatsapp_cost_per_paying_shop,
+      suffix: "",
+      target: "Under 20% of plan price",
+      detail: `${formatMoney(data.whatsapp_cost_ngn)} total · ${data.paying_shop_count} paying shops`,
+      healthy: () => true,
+      money: true,
+    },
+  ];
+
+  const latestMoney = data.monthly_money_collected.at(-1)?.amount ?? 0;
+  const previousMoney = data.monthly_money_collected.at(-2)?.amount ?? 0;
+  const moneyGrowing = latestMoney > previousMoney;
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-end justify-between gap-3">
+        <div>
+          <h2 className="text-xl">Launch health</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Since {new Date(data.period_start).toLocaleDateString()} · healthy early targets shown below
+          </p>
+        </div>
+        <Badge variant="outline">First-party data</Badge>
+      </div>
+
+      <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {metrics.map((metric) => {
+          const metricValue = metric.value;
+          const hasValue = metricValue !== null;
+          const healthy = metricValue !== null && metric.healthy(metricValue);
+          return (
+            <Card key={metric.label} className="rounded-2xl">
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between gap-3">
+                  <p className="text-sm font-medium">{metric.label}</p>
+                  <Badge variant={healthy ? "default" : "outline"}>{metric.target}</Badge>
+                </div>
+                <p className="figures mt-4 text-3xl font-semibold">
+                  {metricValue === null
+                    ? "—"
+                    : metric.money
+                      ? formatMoney(metricValue)
+                      : `${metricValue}${metric.suffix}`}
+                </p>
+                <p className="mt-2 text-xs text-muted-foreground">
+                  {hasValue ? metric.detail : "Not enough data yet"}
+                </p>
+              </CardContent>
+            </Card>
+          );
+        })}
+
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-sm font-medium">Money collected</p>
+              <Badge variant={moneyGrowing ? "default" : "outline"}>Growing monthly</Badge>
+            </div>
+            <p className="figures mt-4 text-3xl font-semibold">{formatMoney(latestMoney)}</p>
+            <p className="mt-2 text-xs text-muted-foreground">
+              {data.monthly_money_collected.length > 1
+                ? `${moneyGrowing ? "Up" : "Not up"} from ${formatMoney(previousMoney)} last month`
+                : "A second month is needed for a trend"}
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-8 border-t border-border pt-6">
+        <h3 className="text-lg">WhatsApp rate guardrail</h3>
+        <p className="mt-2 max-w-3xl text-sm text-muted-foreground">
+          Reviewed {new Date(data.rate_assumptions.reviewed_on).toLocaleDateString()}. Working Meta
+          rates for Nigeria are ${data.rate_assumptions.utility_usd.toFixed(4)} per delivered utility
+          message and ${data.rate_assumptions.marketing_usd.toFixed(4)} per delivered marketing
+          message, before provider markup and exchange-rate movement. Launch allowances are{" "}
+          {data.rate_assumptions.growth_allowance} for Growth and{" "}
+          {data.rate_assumptions.business_allowance} for Business; marketing campaigns are excluded.
+        </p>
+      </div>
+    </div>
   );
 }
 

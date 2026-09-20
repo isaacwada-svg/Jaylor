@@ -15,6 +15,13 @@ export const Route = createFileRoute("/pricing")({
         content:
           "Simple, honest pricing for tailors and fashion houses. Free to start, with a 14-day Growth trial for every new store.",
       },
+      { property: "og:title", content: "Pricing — Jaylor" },
+      {
+        property: "og:description",
+        content: "Simple pricing for Nigerian tailors and fashion houses, free to start.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Pricing,
@@ -82,6 +89,10 @@ function Pricing() {
             tracker. Growth and Business add automatic WhatsApp reminders, storefronts and team
             features as your shop grows. Nothing is ever locked away — you&apos;ll always see
             what&apos;s next and what it costs.
+          </p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Included automatic WhatsApp messages are transactional utility messages, not marketing
+            campaigns. Provider rules and fair-use limits apply.
           </p>
           <Button asChild className="mt-6" variant="outline">
             <Link to="/custom">Need something custom?</Link>

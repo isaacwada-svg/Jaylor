@@ -1,8 +1,16 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout } from "@/components/jaylor/legal-layout";
+import { SUPPORT_EMAIL } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/terms")({
-  head: () => ({ meta: [{ title: "Terms of Service — Jaylor" }] }),
+  head: () => ({ meta: [
+    { title: "Terms of Service — Jaylor" },
+    { name: "description", content: "The terms governing business use of Jaylor in Nigeria." },
+    { property: "og:title", content: "Terms of Service — Jaylor" },
+    { property: "og:description", content: "The terms governing business use of Jaylor." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Terms,
 });
 
@@ -13,7 +21,7 @@ function Terms() {
         <h2>Agreement</h2>
         <p>
           These terms govern your use of Jaylor, a product of Bethjay Global Enterprise Limited (RC
-          [registration number]). By creating a store, you agree to these terms on behalf of your
+          3283706), FCT Abuja, Nigeria. By creating a store, you agree to these terms on behalf of your
           business.
         </p>
       </section>
@@ -55,8 +63,56 @@ function Terms() {
           currency shown for your country. New stores get a 14-day Growth trial; afterwards, stores
           continue on Growth if they subscribe, or move to Free automatically — all existing data is
           kept either way. You can cancel or downgrade at any time from Billing; cancellation takes
-          effect at the end of the current billing period. Refunds are considered case by case
-          within [refund window] of a charge; contact us to request one.
+          effect at the end of the current billing period. Except where law requires otherwise,
+          subscription charges already paid are non-refundable. If we make an incorrect or duplicate
+          charge, contact us within 14 days so we can investigate and correct it.
+        </p>
+      </section>
+
+      <section>
+        <h2>WhatsApp messaging</h2>
+        <p>
+          Automatic-message allowances cover transactional utility messages, such as order updates
+          and appointment reminders. They do not include marketing campaigns. Delivery depends on
+          the recipient&apos;s consent, WhatsApp availability and Meta&apos;s rules. Allowances and fair-use
+          limits may change if provider rates change; we will give reasonable notice of material changes.
+        </p>
+      </section>
+
+      <section>
+        <h2>Your content and our service</h2>
+        <p>
+          You retain ownership of store information, photographs and other content you submit. You
+          give us the limited permission needed to host, process, display and back up that content
+          for your use of Jaylor. Jaylor, its branding and software remain our intellectual property.
+        </p>
+      </section>
+
+      <section>
+        <h2>Suspension, termination and data export</h2>
+        <p>
+          We may suspend access where necessary to prevent abuse, fraud, security harm or unlawful
+          use, and will give notice where reasonably possible. Before closing your store, owners can
+          export supported records from the app. Closing an account does not remove obligations or
+          liabilities that arose before closure.
+        </p>
+      </section>
+
+      <section>
+        <h2>Electronic agreement and Nigerian law</h2>
+        <p>
+          You agree that electronic actions, notices and records may satisfy writing and signature
+          requirements to the extent allowed by Nigerian law. These terms are governed by the laws
+          of the Federal Republic of Nigeria. We will first try to resolve disputes in good faith;
+          unresolved disputes are subject to the courts of the Federal Capital Territory, Abuja.
+        </p>
+      </section>
+
+      <section>
+        <h2>Contact</h2>
+        <p>
+          Questions, complaints and billing disputes can be sent to{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a>.
         </p>
       </section>
 
