@@ -1309,6 +1309,59 @@ export type Database = {
           },
         ];
       };
+      platform_admins: {
+        Row: {
+          user_id: string;
+          created_at: string;
+        };
+        Insert: {
+          user_id: string;
+          created_at?: string;
+        };
+        Update: {
+          user_id?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
+      support_grants: {
+        Row: {
+          id: string;
+          store_id: string;
+          admin_id: string | null;
+          granted_by: string;
+          expires_at: string;
+          revoked_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          admin_id?: string | null;
+          granted_by: string;
+          expires_at: string;
+          revoked_at?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          admin_id?: string | null;
+          granted_by?: string;
+          expires_at?: string;
+          revoked_at?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "support_grants_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       usage_counters: {
         Row: {
           store_id: string;
@@ -1422,6 +1475,51 @@ export type Database = {
       accept_invite: {
         Args: { p_token: string };
         Returns: string;
+      };
+      is_platform_admin: {
+        Args: Record<PropertyKey, never>;
+        Returns: boolean;
+      };
+      log_audit_event: {
+        Args: {
+          p_store_id: string | null;
+          p_action: string;
+          p_entity: string;
+          p_entity_id: string | null;
+          p_metadata?: Json;
+        };
+        Returns: undefined;
+      };
+      has_active_support_grant: {
+        Args: { p_store_id: string };
+        Returns: boolean;
+      };
+      admin_platform_stats: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      admin_list_stores: {
+        Args: Record<PropertyKey, never>;
+        Returns: Json;
+      };
+      admin_update_plan: {
+        Args: {
+          p_code: string;
+          p_name: string;
+          p_price_monthly: number | null;
+          p_price_quarterly: number | null;
+          p_limits: Json;
+          p_features: Json;
+        };
+        Returns: undefined;
+      };
+      admin_list_audit_logs: {
+        Args: { p_limit?: number };
+        Returns: Json;
+      };
+      admin_get_store_summary: {
+        Args: { p_store_id: string };
+        Returns: Json;
       };
       set_participant_style: {
         Args: { p_token: string; p_style_key: string };

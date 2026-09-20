@@ -121,6 +121,15 @@ function More() {
                 </Link>
               );
             }
+            if (label === "Privacy and data") {
+              return (
+                <Link key={label} to="/privacy">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
             return (
               <Card key={label} className="rounded-2xl">
                 {content}
