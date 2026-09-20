@@ -73,6 +73,86 @@ export type Database = {
           },
         ]
       }
+      clients: {
+        Row: {
+          id: string
+          store_id: string
+          full_name: string
+          phone: string
+          whatsapp_phone: string | null
+          gender: string | null
+          birthday: string | null
+          address: string | null
+          photo_url: string | null
+          notes: string | null
+          tags: string[]
+          guardian_name: string | null
+          guardian_phone: string | null
+          consent_whatsapp: boolean
+          consent_whatsapp_at: string | null
+          consent_photos: boolean
+          consent_photos_at: string | null
+          household_id: string | null
+          created_by: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          store_id: string
+          full_name: string
+          phone: string
+          whatsapp_phone?: string | null
+          gender?: string | null
+          birthday?: string | null
+          address?: string | null
+          photo_url?: string | null
+          notes?: string | null
+          tags?: string[]
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          consent_whatsapp?: boolean
+          consent_whatsapp_at?: string | null
+          consent_photos?: boolean
+          consent_photos_at?: string | null
+          household_id?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          store_id?: string
+          full_name?: string
+          phone?: string
+          whatsapp_phone?: string | null
+          gender?: string | null
+          birthday?: string | null
+          address?: string | null
+          photo_url?: string | null
+          notes?: string | null
+          tags?: string[]
+          guardian_name?: string | null
+          guardian_phone?: string | null
+          consent_whatsapp?: boolean
+          consent_whatsapp_at?: string | null
+          consent_photos?: boolean
+          consent_photos_at?: string | null
+          household_id?: string | null
+          created_by?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       country_configs: {
         Row: {
           code: string

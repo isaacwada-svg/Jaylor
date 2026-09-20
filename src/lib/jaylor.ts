@@ -54,5 +54,16 @@ export function effectiveTier(
   return planCodeToTier(store.plan_code);
 }
 
+/** True if the birthday (ISO date string) makes this person under 18 today. */
+export function isMinor(birthday: string | null | undefined): boolean {
+  if (!birthday) return false;
+  const dob = new Date(birthday);
+  const now = new Date();
+  let age = now.getFullYear() - dob.getFullYear();
+  const monthDiff = now.getMonth() - dob.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && now.getDate() < dob.getDate())) age--;
+  return age < 18;
+}
+
 export const COMPANY_LINE =
   "Jaylor is a product of Bethjay Global Enterprise Limited — Abuja, Nigeria.";
