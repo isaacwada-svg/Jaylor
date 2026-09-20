@@ -123,22 +123,21 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
   errorComponent: ErrorComponent,
 });
 
+const THEME_BOOTSTRAP = `try{var t=localStorage.getItem("jaylor-theme");var d=t==="dark"||((!t||t==="system")&&window.matchMedia("(prefers-color-scheme: dark)").matches);if(d){document.documentElement.classList.add("dark");}}catch(e){}`;
+
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="en"
-      style={{ backgroundColor: "#F9F6F1" }}
-      className="dark:bg-[#191527]"
-    >
+    <html lang="en" style={{ backgroundColor: "#F9F6F1" }}>
       <head>
         <HeadContent />
         {/* Paint the site background before the stylesheet arrives — no white flash */}
         <style
           dangerouslySetInnerHTML={{
-            __html:
-              "html,body{background-color:#F9F6F1}@media(prefers-color-scheme:dark){html:not(.light){background-color:#191527}}",
+            __html: "html{background-color:#F9F6F1}html.dark{background-color:#0B091B}",
           }}
         />
+        {/* Apply the saved theme before first paint so dark-mode users don't flash either */}
+        <script dangerouslySetInnerHTML={{ __html: THEME_BOOTSTRAP }} />
       </head>
       <body>
         {children}
