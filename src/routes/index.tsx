@@ -10,6 +10,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { LogoMark } from "@/components/jaylor/logo";
+import { Wordmark } from "@/components/jaylor/wordmark";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
@@ -114,7 +115,7 @@ function Home() {
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
           <Link to="/" className="flex items-center gap-2">
             <LogoMark className="size-8" />
-            <span className="font-heading text-xl">Jaylor</span>
+            <Wordmark className="text-xl" />
           </Link>
           <nav className="flex items-center gap-2">
             {signedIn ? (
@@ -322,7 +323,7 @@ function Home() {
         <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 text-center lg:px-8">
           <div className="flex items-center gap-2">
             <LogoMark className="size-7" />
-            <span className="font-heading text-lg">Jaylor</span>
+            <Wordmark className="text-lg" />
           </div>
           <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
             <Link to="/pricing" className="hover:text-foreground">
