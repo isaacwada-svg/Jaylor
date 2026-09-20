@@ -282,8 +282,9 @@ function AnalyticsTab() {
 
       <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
         {metrics.map((metric) => {
-          const hasValue = metric.value !== null;
-          const healthy = hasValue && metric.healthy(metric.value);
+          const metricValue = metric.value;
+          const hasValue = metricValue !== null;
+          const healthy = metricValue !== null && metric.healthy(metricValue);
           return (
             <Card key={metric.label} className="rounded-2xl">
               <CardContent className="p-5">
@@ -292,11 +293,11 @@ function AnalyticsTab() {
                   <Badge variant={healthy ? "default" : "outline"}>{metric.target}</Badge>
                 </div>
                 <p className="figures mt-4 text-3xl font-semibold">
-                  {!hasValue
+                  {metricValue === null
                     ? "—"
                     : metric.money
-                      ? formatMoney(metric.value)
-                      : `${metric.value}${metric.suffix}`}
+                      ? formatMoney(metricValue)
+                      : `${metricValue}${metric.suffix}`}
                 </p>
                 <p className="mt-2 text-xs text-muted-foreground">
                   {hasValue ? metric.detail : "Not enough data yet"}
