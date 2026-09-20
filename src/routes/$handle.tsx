@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { SewRequestForm } from "@/components/jaylor/sew-request-form";
 import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
+import { AiDesignGenerator } from "@/components/jaylor/ai-design-generator";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -135,16 +136,26 @@ function PublicStorefront() {
           <p className="mt-1 text-xs text-muted-foreground">{store.opening_hours}</p>
         )}
 
-        {whatsappNumber && (
-          <Button asChild className="mt-4">
-            <a
-              href={whatsappLink(whatsappNumber, `Hi ${store.name}, I saw your Jaylor shop page.`)}
-            >
-              <MessageCircle className="size-4" />
-              Message on WhatsApp
-            </a>
-          </Button>
-        )}
+        <div className="flex flex-wrap gap-2">
+          {whatsappNumber && (
+            <Button asChild className="mt-4">
+              <a
+                href={whatsappLink(
+                  whatsappNumber,
+                  `Hi ${store.name}, I saw your Jaylor shop page.`,
+                )}
+              >
+                <MessageCircle className="size-4" />
+                Message on WhatsApp
+              </a>
+            </Button>
+          )}
+          <AiDesignGenerator
+            storeId={store.id}
+            storeName={store.name}
+            whatsappNumber={whatsappNumber}
+          />
+        </div>
 
         <StitchDivider className="my-8" />
 

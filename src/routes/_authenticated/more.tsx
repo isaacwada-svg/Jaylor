@@ -49,7 +49,12 @@ const ITEMS: { label: string; hint: string; icon: typeof Users2; tier?: Tier }[]
   },
   { label: "Expenses and reports", hint: "Costs and net profit", icon: Receipt, tier: "Business" },
   { label: "Payments and receipts", hint: "Balances and receipts", icon: Wallet },
-  { label: "AI tools", hint: "Style previews, captions", icon: Sparkles, tier: "Growth" },
+  {
+    label: "AI tools",
+    hint: "Customer style requests from your shop",
+    icon: Sparkles,
+    tier: "Growth",
+  },
   { label: "Privacy and data", hint: "Consent, exports, support access", icon: ShieldCheck },
   { label: "Settings and billing", hint: "Store, plan, team", icon: Settings },
 ];
@@ -115,6 +120,15 @@ function More() {
             if (label === "Expenses and reports") {
               return (
                 <Link key={label} to="/reports">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "AI tools") {
+              return (
+                <Link key={label} to="/ai-designs">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

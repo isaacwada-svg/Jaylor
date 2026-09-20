@@ -23,6 +23,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authenticated/consultations'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -32,6 +33,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as BookHandleRouteImport } from './routes/book.$handle'
+import { Route as DesignTokenRouteImport } from './routes/design.$token'
 import { Route as ETokenRouteImport } from './routes/e.$token'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
@@ -110,6 +112,11 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedAiDesignsRoute = AuthenticatedAiDesignsRouteImport.update({
+  id: '/ai-designs',
+  path: '/ai-designs',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -154,6 +161,11 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
 const BookHandleRoute = BookHandleRouteImport.update({
   id: '/book/$handle',
   path: '/book/$handle',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DesignTokenRoute = DesignTokenRouteImport.update({
+  id: '/design/$token',
+  path: '/design/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ETokenRoute = ETokenRouteImport.update({
@@ -217,6 +229,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -226,6 +239,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
   '/book/$handle': typeof BookHandleRoute
+  '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
   '/join/$token': typeof JoinTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
@@ -249,6 +263,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -258,6 +273,7 @@ export interface FileRoutesByTo {
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
   '/book/$handle': typeof BookHandleRoute
+  '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
   '/join/$token': typeof JoinTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
@@ -283,6 +299,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/terms': typeof TermsRoute
+  '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/consultations': typeof AuthenticatedConsultationsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -292,6 +309,7 @@ export interface FileRoutesById {
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/book/$handle': typeof BookHandleRoute
+  '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
   '/join/$token': typeof JoinTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
@@ -317,6 +335,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/security'
     | '/terms'
+    | '/ai-designs'
     | '/billing'
     | '/consultations'
     | '/dashboard'
@@ -326,6 +345,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/staff'
     | '/book/$handle'
+    | '/design/$token'
     | '/e/$token'
     | '/join/$token'
     | '/clients/$clientId'
@@ -349,6 +369,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/security'
     | '/terms'
+    | '/ai-designs'
     | '/billing'
     | '/consultations'
     | '/dashboard'
@@ -358,6 +379,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/staff'
     | '/book/$handle'
+    | '/design/$token'
     | '/e/$token'
     | '/join/$token'
     | '/clients/$clientId'
@@ -382,6 +404,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/security'
     | '/terms'
+    | '/_authenticated/ai-designs'
     | '/_authenticated/billing'
     | '/_authenticated/consultations'
     | '/_authenticated/dashboard'
@@ -391,6 +414,7 @@ export interface FileRouteTypes {
     | '/_authenticated/shop'
     | '/_authenticated/staff'
     | '/book/$handle'
+    | '/design/$token'
     | '/e/$token'
     | '/join/$token'
     | '/_authenticated/clients/$clientId'
@@ -417,6 +441,7 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   TermsRoute: typeof TermsRoute
   BookHandleRoute: typeof BookHandleRoute
+  DesignTokenRoute: typeof DesignTokenRoute
   ETokenRoute: typeof ETokenRoute
   JoinTokenRoute: typeof JoinTokenRoute
 }
@@ -521,6 +546,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/ai-designs': {
+      id: '/_authenticated/ai-designs'
+      path: '/ai-designs'
+      fullPath: '/ai-designs'
+      preLoaderRoute: typeof AuthenticatedAiDesignsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/billing': {
       id: '/_authenticated/billing'
       path: '/billing'
@@ -584,6 +616,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof BookHandleRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/design/$token': {
+      id: '/design/$token'
+      path: '/design/$token'
+      fullPath: '/design/$token'
+      preLoaderRoute: typeof DesignTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/e/$token': {
       id: '/e/$token'
       path: '/e/$token'
@@ -644,6 +683,7 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteRouteChildren {
+  AuthenticatedAiDesignsRoute: typeof AuthenticatedAiDesignsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedConsultationsRoute: typeof AuthenticatedConsultationsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -661,6 +701,7 @@ interface AuthenticatedRouteRouteChildren {
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedAiDesignsRoute: AuthenticatedAiDesignsRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedConsultationsRoute: AuthenticatedConsultationsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -696,6 +737,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   TermsRoute: TermsRoute,
   BookHandleRoute: BookHandleRoute,
+  DesignTokenRoute: DesignTokenRoute,
   ETokenRoute: ETokenRoute,
   JoinTokenRoute: JoinTokenRoute,
 }

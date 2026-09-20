@@ -1213,6 +1213,113 @@ export type Database = {
           },
         ];
       };
+      ai_designs: {
+        Row: {
+          id: string;
+          store_id: string;
+          client_name: string;
+          phone: string;
+          description: string;
+          measurements: Json;
+          selfie_url: string | null;
+          image_url: string;
+          was_paid: boolean;
+          payment_id: string | null;
+          sew_request_id: string | null;
+          share_token: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          client_name: string;
+          phone: string;
+          description: string;
+          measurements?: Json;
+          selfie_url?: string | null;
+          image_url: string;
+          was_paid?: boolean;
+          payment_id?: string | null;
+          sew_request_id?: string | null;
+          share_token?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          client_name?: string;
+          phone?: string;
+          description?: string;
+          measurements?: Json;
+          selfie_url?: string | null;
+          image_url?: string;
+          was_paid?: boolean;
+          payment_id?: string | null;
+          sew_request_id?: string | null;
+          share_token?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_designs_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "ai_designs_sew_request_id_fkey";
+            columns: ["sew_request_id"];
+            isOneToOne: false;
+            referencedRelation: "sew_requests";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      ai_design_payments: {
+        Row: {
+          id: string;
+          store_id: string;
+          phone: string;
+          reference: string;
+          amount: number;
+          status: string;
+          used: boolean;
+          created_at: string;
+          verified_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          phone: string;
+          reference: string;
+          amount: number;
+          status?: string;
+          used?: boolean;
+          created_at?: string;
+          verified_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          phone?: string;
+          reference?: string;
+          amount?: number;
+          status?: string;
+          used?: boolean;
+          created_at?: string;
+          verified_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "ai_design_payments_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       stores: {
         Row: {
           accent_color: string | null;
@@ -1501,6 +1608,19 @@ export type Database = {
       get_invite_by_token: {
         Args: { p_token: string };
         Returns: Json;
+      };
+      get_design_by_token: {
+        Args: { p_token: string };
+        Returns: {
+          id: string;
+          store_name: string;
+          client_name: string;
+          description: string;
+          measurements: Json;
+          selfie_url: string | null;
+          image_url: string;
+          created_at: string;
+        }[];
       };
       accept_invite: {
         Args: { p_token: string };
