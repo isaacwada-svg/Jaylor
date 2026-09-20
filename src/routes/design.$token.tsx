@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { LogoMark } from "@/components/jaylor/logo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
+import { getSharedDesign } from "@/lib/design-photos.functions";
 
 export const Route = createFileRoute("/design/$token")({
   staticData: { sitemap: false },
@@ -14,27 +14,12 @@ export const Route = createFileRoute("/design/$token")({
   component: SharedDesign,
 });
 
-type DesignResult = {
-  id: string;
-  store_name: string;
-  client_name: string;
-  description: string;
-  measurements: Record<string, string>;
-  selfie_url: string | null;
-  image_url: string;
-  created_at: string;
-};
-
 function SharedDesign() {
   const { token } = Route.useParams();
 
   const { data: design, isLoading } = useQuery({
     queryKey: ["design-by-token", token],
-    queryFn: async () => {
-      const { data, error } = await supabase.rpc("get_design_by_token", { p_token: token });
-      if (error) throw error;
-      return ((data as unknown as DesignResult[]) ?? [])[0] ?? null;
-    },
+    queryFn: () => getSharedDesign({ data: { token } }),
   });
 
   return (

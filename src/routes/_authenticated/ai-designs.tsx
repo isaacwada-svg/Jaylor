@@ -24,6 +24,13 @@ export const Route = createFileRoute("/_authenticated/ai-designs")({
 
 type DesignRow = Tables<"ai_designs">;
 
+/** Accepts either a bare storage path or a legacy full public URL. */
+function toStoragePath(value: string): string {
+  const marker = "/ai-design-photos/";
+  const at = value.indexOf(marker);
+  return at === -1 ? value.replace(/^\/+/, "") : value.slice(at + marker.length);
+}
+
 function AiDesigns() {
   const { currentStore } = useStore();
   const navigate = useNavigate();
@@ -42,6 +49,35 @@ function AiDesigns() {
       return data;
     },
   });
+
+  // Photos live in a private bucket, so they are viewed through short-lived signed links.
+  const { data: signedPhotos } = useQuery({
+    queryKey: ["ai-design-photo-urls", designs?.map((d) => d.id).join(",")],
+    enabled: !!designs && designs.length > 0,
+    queryFn: async () => {
+      const paths = Array.from(
+        new Set(
+          (designs ?? [])
+            .flatMap((d) => [d.image_url, d.selfie_url])
+            .filter((p): p is string => !!p)
+            .map(toStoragePath),
+        ),
+      );
+      if (paths.length === 0) return {} as Record<string, string>;
+      const { data, error } = await supabase.storage
+        .from("ai-design-photos")
+        .createSignedUrls(paths, 3600);
+      if (error) throw error;
+      const map: Record<string, string> = {};
+      for (const item of data ?? []) {
+        if (item.path && item.signedUrl) map[item.path] = item.signedUrl;
+      }
+      return map;
+    },
+  });
+
+  const photoUrl = (value: string | null) =>
+    (value && signedPhotos?.[toStoragePath(value)]) || undefined;
 
   async function addAsClient(design: DesignRow) {
     if (!currentStore) return;
@@ -104,7 +140,9 @@ function AiDesigns() {
             />
           ) : (
             designs.map((design) => {
-              const photos = [design.image_url, design.selfie_url].filter((p): p is string => !!p);
+              const photos = [photoUrl(design.image_url), photoUrl(design.selfie_url)].filter(
+                (p): p is string => !!p,
+              );
               const measurements = Object.entries(
                 (design.measurements as Record<string, string>) ?? {},
               ).filter(([, v]) => v?.trim());
@@ -117,7 +155,7 @@ function AiDesigns() {
                     className="shrink-0"
                   >
                     <img
-                      src={design.image_url}
+                      src={photoUrl(design.image_url)}
                       alt=""
                       className="size-24 rounded-xl object-cover"
                     />

@@ -6,7 +6,8 @@ export type AiDesignDraft = {
   phone: string;
   description: string;
   measurements: Record<string, string>;
-  selfieUrl: string | null;
+  /** Object path inside the private ai-design-photos bucket. */
+  selfiePath: string | null;
   paymentReference?: string;
 };
 

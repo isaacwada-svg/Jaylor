@@ -6,6 +6,7 @@ import { normalizePhoneNG } from "@/lib/phone";
 import { resizeImageFile } from "@/lib/image";
 import { getErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
+import { uploadDesignSelfie } from "@/lib/design-photos.functions";
 import {
   clearDesignDraft,
   loadDesignDraft,
@@ -44,7 +45,8 @@ export function AiDesignGenerator({
   const [phoneRaw, setPhoneRaw] = useState("");
   const [description, setDescription] = useState("");
   const [measurements, setMeasurements] = useState<Record<string, string>>({});
-  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
+  const [selfiePath, setSelfiePath] = useState<string | null>(null);
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [uploadingSelfie, setUploadingSelfie] = useState(false);
   const [selfieConsent, setSelfieConsent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -68,7 +70,7 @@ export function AiDesignGenerator({
     setPhoneRaw(draft.phone);
     setDescription(draft.description);
     setMeasurements(draft.measurements);
-    setSelfieUrl(draft.selfieUrl);
+    setSelfiePath(draft.selfiePath);
     setOpen(true);
     setStep("generating");
 
@@ -89,7 +91,7 @@ export function AiDesignGenerator({
           phone: draft.phone,
           description: draft.description,
           measurements: draft.measurements,
-          selfieUrl: draft.selfieUrl,
+          selfiePath: draft.selfiePath,
         });
       } catch (error) {
         toast.error(getErrorMessage(error, "Could not confirm your payment"));
@@ -110,13 +112,19 @@ export function AiDesignGenerator({
     setUploadingSelfie(true);
     try {
       const resized = await resizeImageFile(file, 1000, 0.8);
-      const path = `${storeId}/${crypto.randomUUID()}.jpg`;
-      const { error } = await supabase.storage
-        .from("ai-design-photos")
-        .upload(path, resized, { contentType: "image/jpeg" });
-      if (error) throw error;
-      const { data } = supabase.storage.from("ai-design-photos").getPublicUrl(path);
-      setSelfieUrl(data.publicUrl);
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read that photo"));
+        reader.readAsDataURL(resized);
+      });
+      if (!dataUrl.startsWith("data:image/jpeg;base64,")) {
+        throw new Error("Please choose a photo in JPG format");
+      }
+      // Uploaded server-side so the photo lands in a private bucket.
+      const { path } = await uploadDesignSelfie({ data: { storeId, dataUrl } });
+      setSelfiePath(path);
+      setSelfiePreview(dataUrl);
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not upload your photo"));
     } finally {
@@ -130,7 +138,7 @@ export function AiDesignGenerator({
     phone: string;
     description: string;
     measurements: Record<string, string>;
-    selfieUrl: string | null;
+    selfiePath: string | null;
   }) {
     setStep("generating");
     try {
@@ -169,7 +177,7 @@ export function AiDesignGenerator({
       phone,
       description: description.trim(),
       measurements,
-      selfieUrl,
+      selfiePath,
     });
   }
 
@@ -184,7 +192,7 @@ export function AiDesignGenerator({
         phone,
         description: description.trim(),
         measurements,
-        selfieUrl,
+        selfiePath,
       };
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       const { data, error } = await supabase.functions.invoke("create-design-payment", {
@@ -210,7 +218,8 @@ export function AiDesignGenerator({
     setPhoneRaw("");
     setDescription("");
     setMeasurements({});
-    setSelfieUrl(null);
+    setSelfiePath(null);
+    setSelfiePreview(null);
     setSelfieConsent(false);
     setResultImage(null);
     setResultToken(null);
@@ -305,12 +314,15 @@ export function AiDesignGenerator({
                     />
                     I agree to share my photo to generate this preview.
                   </label>
-                  {selfieUrl ? (
+                  {selfiePreview ? (
                     <div className="relative w-24">
-                      <img src={selfieUrl} alt="" className="size-24 rounded-xl object-cover" />
+                      <img src={selfiePreview} alt="" className="size-24 rounded-xl object-cover" />
                       <button
                         type="button"
-                        onClick={() => setSelfieUrl(null)}
+                        onClick={() => {
+                          setSelfiePath(null);
+                          setSelfiePreview(null);
+                        }}
                         aria-label="Remove photo"
                         className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-background shadow-sm"
                       >
