@@ -303,6 +303,64 @@ export type Database = {
           },
         ];
       };
+      messages: {
+        Row: {
+          id: string;
+          store_id: string;
+          client_id: string | null;
+          order_id: string | null;
+          template: string;
+          channel: string;
+          status: string;
+          sent_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          client_id?: string | null;
+          order_id?: string | null;
+          template: string;
+          channel?: string;
+          status?: string;
+          sent_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          client_id?: string | null;
+          order_id?: string | null;
+          template?: string;
+          channel?: string;
+          status?: string;
+          sent_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "messages_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "messages_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       order_materials: {
         Row: {
           id: string;

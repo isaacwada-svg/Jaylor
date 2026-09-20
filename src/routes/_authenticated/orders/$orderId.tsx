@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { PaymentForm } from "@/components/jaylor/payment-form";
+import { RemindButton } from "@/components/jaylor/remind-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -24,6 +25,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
+import { orderReadyMessage, balanceDueMessage } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
@@ -34,7 +36,7 @@ export const Route = createFileRoute("/_authenticated/orders/$orderId")({
 function OrderDetail() {
   const { orderId } = Route.useParams();
   const queryClient = useQueryClient();
-  const { currentRole } = useStore();
+  const { currentStore, currentRole } = useStore();
   const canSeeMoney = currentRole === "owner" || currentRole === "manager";
 
   const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
@@ -296,6 +298,40 @@ function OrderDetail() {
                   />
                 </div>
               )}
+              {client &&
+                currentStore &&
+                (order.status === "ready" || (balance?.balance ?? 0) > 0) && (
+                  <div className="mt-3 border-t border-border pt-3">
+                    <RemindButton
+                      storeId={currentStore.id}
+                      clientId={client.id}
+                      orderId={order.id}
+                      phone={client.whatsapp_phone ?? client.phone}
+                      consentWhatsapp={client.consent_whatsapp}
+                      template={order.status === "ready" ? "order_ready" : "balance_due"}
+                      message={
+                        order.status === "ready"
+                          ? orderReadyMessage(
+                              client.full_name,
+                              order.garment_type,
+                              currentStore.name,
+                              balance?.balance ?? 0,
+                            )
+                          : balanceDueMessage(
+                              client.full_name,
+                              order.garment_type,
+                              currentStore.name,
+                              balance?.balance ?? 0,
+                            )
+                      }
+                      label={
+                        order.status === "ready"
+                          ? "Remind: ready for pickup"
+                          : "Remind: balance due"
+                      }
+                    />
+                  </div>
+                )}
             </div>
           )}
 

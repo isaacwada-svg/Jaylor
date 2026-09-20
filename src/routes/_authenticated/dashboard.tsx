@@ -7,6 +7,7 @@ import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { LockedFeature } from "@/components/jaylor/locked-feature";
+import { RemindButton } from "@/components/jaylor/remind-button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -14,6 +15,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
+import { orderReadyMessage } from "@/lib/whatsapp";
 
 function useFirstName() {
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -65,7 +67,12 @@ type ActiveOrder = {
   garment_type: string;
   delivery_date: string | null;
   status: string;
+  ready_at: string | null;
 };
+
+function daysSince(iso: string): number {
+  return Math.max(0, Math.floor((Date.now() - new Date(iso).getTime()) / (1000 * 60 * 60 * 24)));
+}
 
 function Home() {
   const { currentStore, currentRole } = useStore();
@@ -98,7 +105,7 @@ function Home() {
           .gte("paid_at", startOfMonth),
         supabase
           .from("orders_for_tailor")
-          .select("id, client_id, garment_type, delivery_date, status")
+          .select("id, client_id, garment_type, delivery_date, status, ready_at")
           .eq("store_id", storeId as string)
           .not("status", "in", "(collected,cancelled)"),
       ]);
@@ -114,6 +121,7 @@ function Home() {
           new Date(o.delivery_date) <= weekAhead,
       );
       const overdue = active.filter((o) => o.delivery_date && new Date(o.delivery_date) < today);
+      const balanceByOrder = new Map((balancesRes.data ?? []).map((b) => [b.order_id, b.balance]));
 
       return {
         moneyOwed: (balancesRes.data ?? []).reduce((sum, b) => sum + b.balance, 0),
@@ -123,6 +131,7 @@ function Home() {
         dueThisWeekCount: dueThisWeek.length,
         overdueCount: overdue.length,
         activeCount: active.length,
+        balanceByOrder,
         dueSoon: active
           .filter((o) => o.delivery_date)
           .sort(
@@ -131,27 +140,38 @@ function Home() {
               new Date(b.delivery_date as string).getTime(),
           )
           .slice(0, 5),
+        uncollected: active
+          .filter((o) => o.status === "ready" && o.ready_at)
+          .sort(
+            (a, b) =>
+              new Date(a.ready_at as string).getTime() - new Date(b.ready_at as string).getTime(),
+          ),
       };
     },
   });
 
-  const dueSoonClientIds = useMemo(
-    () => [...new Set((stats?.dueSoon ?? []).map((o) => o.client_id))],
+  const relatedClientIds = useMemo(
+    () => [
+      ...new Set(
+        [...(stats?.dueSoon ?? []), ...(stats?.uncollected ?? [])].map((o) => o.client_id),
+      ),
+    ],
     [stats],
   );
-  const { data: dueSoonClients } = useQuery({
-    queryKey: ["dashboard-due-soon-clients", dueSoonClientIds],
-    enabled: dueSoonClientIds.length > 0,
+  const { data: relatedClients } = useQuery({
+    queryKey: ["dashboard-related-clients", relatedClientIds],
+    enabled: relatedClientIds.length > 0,
     queryFn: async () => {
       const { data, error } = await supabase
         .from("clients")
-        .select("id, full_name")
-        .in("id", dueSoonClientIds);
+        .select("id, full_name, phone, whatsapp_phone, consent_whatsapp")
+        .in("id", relatedClientIds);
       if (error) throw error;
       return data;
     },
   });
-  const clientName = (id: string) => dueSoonClients?.find((c) => c.id === id)?.full_name ?? "—";
+  const clientById = (id: string) => relatedClients?.find((c) => c.id === id);
+  const clientName = (id: string) => clientById(id)?.full_name ?? "—";
 
   const { data: myJobs, isLoading: myJobsLoading } = useQuery({
     queryKey: ["dashboard-my-jobs", storeId],
@@ -267,6 +287,53 @@ function Home() {
                 )}
               </div>
             </section>
+
+            {stats && stats.uncollected.length > 0 && (
+              <section className="mt-10">
+                <h2 className="text-xl">Uncollected</h2>
+                <p className="mt-1 text-sm text-muted-foreground">Ready and waiting for pickup.</p>
+                <div className="mt-3 space-y-3">
+                  {stats.uncollected.map((o) => {
+                    const client = clientById(o.client_id);
+                    const balance = stats.balanceByOrder.get(o.id) ?? 0;
+                    return (
+                      <Card key={o.id} className="rounded-2xl">
+                        <CardContent className="flex items-center justify-between gap-3 p-4">
+                          <Link
+                            to="/orders/$orderId"
+                            params={{ orderId: o.id }}
+                            className="min-w-0 flex-1"
+                          >
+                            <p className="truncate font-medium">{clientName(o.client_id)}</p>
+                            <p className="truncate text-sm text-muted-foreground">
+                              {o.garment_type} · waiting {daysSince(o.ready_at as string)}{" "}
+                              {daysSince(o.ready_at as string) === 1 ? "day" : "days"}
+                            </p>
+                          </Link>
+                          {client && currentStore && (
+                            <RemindButton
+                              storeId={currentStore.id}
+                              clientId={client.id}
+                              orderId={o.id}
+                              phone={client.whatsapp_phone ?? client.phone}
+                              consentWhatsapp={client.consent_whatsapp}
+                              template="order_ready"
+                              message={orderReadyMessage(
+                                client.full_name,
+                                o.garment_type,
+                                currentStore.name,
+                                balance,
+                              )}
+                              label="Remind"
+                            />
+                          )}
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
 
             <section className="mt-10">
               <h2 className="text-xl">Grow with Business</h2>

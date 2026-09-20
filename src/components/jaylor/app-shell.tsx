@@ -1,5 +1,7 @@
 import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
 import {
   Home,
   Scissors,
@@ -26,6 +28,8 @@ import {
 import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
 import { TierBadge } from "./tier-badge";
+import { ClientForm } from "./client-form";
+import { OrderForm } from "./order-form";
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
 import { cn } from "@/lib/utils";
@@ -38,19 +42,28 @@ const NAV = [
   { to: "/more", label: "More", icon: MoreHorizontal },
 ] as const;
 
-const NEW_ACTIONS = [
-  { label: "New order", icon: Scissors },
-  { label: "New client", icon: UserPlus },
-  { label: "Record payment", icon: Banknote },
-  { label: "Voice order", icon: Mic },
-] as const;
-
 export function AppShell({ children }: { children: ReactNode }) {
   const [newOpen, setNewOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
+  const [clientFormOpen, setClientFormOpen] = useState(false);
+  const [orderFormOpen, setOrderFormOpen] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
-  const { memberships, currentStore, setCurrentStoreId } = useStore();
+  const navigate = useNavigate();
+  const queryClient = useQueryClient();
+  const { memberships, currentStore, currentRole, setCurrentStoreId } = useStore();
   const tier = effectiveTier(currentStore);
+  const canManageOrders = currentRole === "owner" || currentRole === "manager";
+
+  const newActions: { label: string; icon: typeof Scissors; onClick: () => void }[] = [
+    ...(canManageOrders
+      ? [{ label: "New order", icon: Scissors, onClick: () => setOrderFormOpen(true) }]
+      : []),
+    { label: "New client", icon: UserPlus, onClick: () => setClientFormOpen(true) },
+    ...(canManageOrders
+      ? [{ label: "Record payment", icon: Banknote, onClick: () => navigate({ to: "/orders" }) }]
+      : []),
+    { label: "Voice order", icon: Mic, onClick: () => toast("Voice orders are coming soon") },
+  ];
 
   return (
     <div className="linen min-h-screen bg-background">
@@ -180,12 +193,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             <SheetTitle className="text-2xl">Create</SheetTitle>
           </SheetHeader>
           <div className="grid gap-2 px-4 pb-4">
-            {NEW_ACTIONS.map(({ label, icon: Icon }) => (
+            {newActions.map(({ label, icon: Icon, onClick }) => (
               <Button
                 key={label}
                 variant="outline"
                 className="justify-start gap-3 py-6 text-base"
-                onClick={() => setNewOpen(false)}
+                onClick={() => {
+                  setNewOpen(false);
+                  onClick();
+                }}
               >
                 <Icon className="size-5 text-gold" />
                 {label}
@@ -194,6 +210,29 @@ export function AppShell({ children }: { children: ReactNode }) {
           </div>
         </SheetContent>
       </Sheet>
+
+      {currentStore && (
+        <>
+          <ClientForm
+            open={clientFormOpen}
+            onOpenChange={setClientFormOpen}
+            storeId={currentStore.id}
+            onSaved={(client) => {
+              queryClient.invalidateQueries({ queryKey: ["clients", currentStore.id] });
+              navigate({ to: "/clients/$clientId", params: { clientId: client.id } });
+            }}
+          />
+          <OrderForm
+            open={orderFormOpen}
+            onOpenChange={setOrderFormOpen}
+            storeId={currentStore.id}
+            onSaved={(order) => {
+              queryClient.invalidateQueries({ queryKey: ["orders", currentStore.id] });
+              navigate({ to: "/orders/$orderId", params: { orderId: order.id } });
+            }}
+          />
+        </>
+      )}
     </div>
   );
 }
