@@ -264,6 +264,56 @@ export type Database = {
           },
         ];
       };
+      store_invites: {
+        Row: {
+          id: string;
+          store_id: string;
+          email: string | null;
+          phone: string | null;
+          role: Database["public"]["Enums"]["store_role"];
+          token: string;
+          status: string;
+          invited_by: string | null;
+          accepted_by: string | null;
+          expires_at: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          email?: string | null;
+          phone?: string | null;
+          role: Database["public"]["Enums"]["store_role"];
+          token?: string;
+          status?: string;
+          invited_by?: string | null;
+          accepted_by?: string | null;
+          expires_at?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          email?: string | null;
+          phone?: string | null;
+          role?: Database["public"]["Enums"]["store_role"];
+          token?: string;
+          status?: string;
+          invited_by?: string | null;
+          accepted_by?: string | null;
+          expires_at?: string;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "store_invites_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       events: {
         Row: {
           id: string;
@@ -1320,6 +1370,14 @@ export type Database = {
       get_participant_by_token: {
         Args: { p_token: string };
         Returns: Json;
+      };
+      get_invite_by_token: {
+        Args: { p_token: string };
+        Returns: Json;
+      };
+      accept_invite: {
+        Args: { p_token: string };
+        Returns: string;
       };
       set_participant_style: {
         Args: { p_token: string; p_style_key: string };

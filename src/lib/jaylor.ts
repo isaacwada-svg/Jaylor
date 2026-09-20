@@ -123,5 +123,16 @@ export function computeTemplateSex(gender: string | null | undefined): TemplateS
   return "unisex";
 }
 
+/** Team seats per plan tier (Custom is unlimited). Enforced client-side only. */
+export const STAFF_LIMITS: Record<Tier, number> = {
+  Free: 1,
+  Growth: 3,
+  Business: 10,
+  Custom: Infinity,
+};
+
+/** sessionStorage key holding a store invite token while the user signs in. */
+export const PENDING_INVITE_KEY = "jaylor:pendingInvite";
+
 export const COMPANY_LINE =
   "Jaylor is a product of Bethjay Global Enterprise Limited — Abuja, Nigeria.";

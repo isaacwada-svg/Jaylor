@@ -103,6 +103,15 @@ function More() {
                 </Link>
               );
             }
+            if (label === "Staff and job board") {
+              return (
+                <Link key={label} to="/staff">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
             return (
               <Card key={label} className="rounded-2xl">
                 {content}

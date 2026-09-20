@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
-import { COMPANY_LINE } from "@/lib/jaylor";
+import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
@@ -83,6 +83,20 @@ function AuthPage() {
     }
   }
 
+  function goToPostAuthDestination() {
+    let pendingInviteToken: string | null = null;
+    try {
+      pendingInviteToken = sessionStorage.getItem(PENDING_INVITE_KEY);
+    } catch {
+      // ignore storage failures
+    }
+    if (pendingInviteToken) {
+      navigate({ to: "/join/$token", params: { token: pendingInviteToken } });
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
     setBusy(true);
@@ -101,11 +115,11 @@ function AuthPage() {
           setSent(true);
           return;
         }
-        navigate({ to: "/dashboard" });
+        goToPostAuthDestination();
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
-        navigate({ to: "/dashboard" });
+        goToPostAuthDestination();
       }
     } catch (error) {
       toast.error(getErrorMessage(error, "Something went wrong"));
@@ -125,7 +139,7 @@ function AuthPage() {
       return;
     }
     if (result.redirected) return;
-    navigate({ to: "/dashboard" });
+    goToPostAuthDestination();
   }
 
   return (

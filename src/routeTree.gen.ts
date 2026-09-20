@@ -19,8 +19,10 @@ import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedMoreRouteImport } from './routes/_authenticated/more'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
+import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as BookHandleRouteImport } from './routes/book.$handle'
 import { Route as ETokenRouteImport } from './routes/e.$token'
+import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events/index'
@@ -78,6 +80,11 @@ const AuthenticatedShopRoute = AuthenticatedShopRouteImport.update({
   path: '/shop',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
+  id: '/staff',
+  path: '/staff',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const BookHandleRoute = BookHandleRouteImport.update({
   id: '/book/$handle',
   path: '/book/$handle',
@@ -86,6 +93,11 @@ const BookHandleRoute = BookHandleRouteImport.update({
 const ETokenRoute = ETokenRouteImport.update({
   id: '/e/$token',
   path: '/e/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const JoinTokenRoute = JoinTokenRouteImport.update({
+  id: '/join/$token',
+  path: '/join/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedClientsIndexRoute =
@@ -135,8 +147,10 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/more': typeof AuthenticatedMoreRoute
   '/shop': typeof AuthenticatedShopRoute
+  '/staff': typeof AuthenticatedStaffRoute
   '/book/$handle': typeof BookHandleRoute
   '/e/$token': typeof ETokenRoute
+  '/join/$token': typeof JoinTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -154,8 +168,10 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/more': typeof AuthenticatedMoreRoute
   '/shop': typeof AuthenticatedShopRoute
+  '/staff': typeof AuthenticatedStaffRoute
   '/book/$handle': typeof BookHandleRoute
   '/e/$token': typeof ETokenRoute
+  '/join/$token': typeof JoinTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -175,8 +191,10 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/more': typeof AuthenticatedMoreRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
+  '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/book/$handle': typeof BookHandleRoute
   '/e/$token': typeof ETokenRoute
+  '/join/$token': typeof JoinTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -196,8 +214,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/more'
     | '/shop'
+    | '/staff'
     | '/book/$handle'
     | '/e/$token'
+    | '/join/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -215,8 +235,10 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/more'
     | '/shop'
+    | '/staff'
     | '/book/$handle'
     | '/e/$token'
+    | '/join/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -235,8 +257,10 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/more'
     | '/_authenticated/shop'
+    | '/_authenticated/staff'
     | '/book/$handle'
     | '/e/$token'
+    | '/join/$token'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
@@ -253,6 +277,7 @@ export interface RootRouteChildren {
   OnboardingRoute: typeof OnboardingRoute
   BookHandleRoute: typeof BookHandleRoute
   ETokenRoute: typeof ETokenRoute
+  JoinTokenRoute: typeof JoinTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -327,6 +352,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedShopRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/staff': {
+      id: '/_authenticated/staff'
+      path: '/staff'
+      fullPath: '/staff'
+      preLoaderRoute: typeof AuthenticatedStaffRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/book/$handle': {
       id: '/book/$handle'
       path: '/book/$handle'
@@ -339,6 +371,13 @@ declare module '@tanstack/react-router' {
       path: '/e/$token'
       fullPath: '/e/$token'
       preLoaderRoute: typeof ETokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/join/$token': {
+      id: '/join/$token'
+      path: '/join/$token'
+      fullPath: '/join/$token'
+      preLoaderRoute: typeof JoinTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/clients/': {
@@ -392,6 +431,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedMoreRoute: typeof AuthenticatedMoreRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
+  AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
   AuthenticatedClientsClientIdRoute: typeof AuthenticatedClientsClientIdRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
   AuthenticatedOrdersOrderIdRoute: typeof AuthenticatedOrdersOrderIdRoute
@@ -406,6 +446,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedMoreRoute: AuthenticatedMoreRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
+  AuthenticatedStaffRoute: AuthenticatedStaffRoute,
   AuthenticatedClientsClientIdRoute: AuthenticatedClientsClientIdRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
   AuthenticatedOrdersOrderIdRoute: AuthenticatedOrdersOrderIdRoute,
@@ -425,6 +466,7 @@ const rootRouteChildren: RootRouteChildren = {
   OnboardingRoute: OnboardingRoute,
   BookHandleRoute: BookHandleRoute,
   ETokenRoute: ETokenRoute,
+  JoinTokenRoute: JoinTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
