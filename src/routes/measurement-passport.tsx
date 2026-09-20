@@ -16,7 +16,7 @@ export const Route = createFileRoute("/measurement-passport")({
       {
         name: "description",
         content:
-          "Your measurements, saved once and yours to share with any tailor on Jaylor — no re-measuring, no lost notebook page.",
+          "Your measurements, saved once and yours to share with any tailor on Jaylor. No re-measuring, no lost notebook page.",
       },
       { property: "og:title", content: "Measurement Passport — Jaylor" },
       {

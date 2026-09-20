@@ -23,7 +23,18 @@ import {
 export const Route = createFileRoute("/book/$handle")({
   staticData: { sitemap: false },
   head: () => ({
-    meta: [{ title: "Book a consultation — Jaylor" }],
+    meta: [
+      { title: "Book a consultation — Jaylor" },
+      {
+        name: "description",
+        content: "Book a measurement, fitting or style consultation with this shop.",
+      },
+      { property: "og:title", content: "Book a consultation — Jaylor" },
+      {
+        property: "og:description",
+        content: "Book a measurement, fitting or style consultation with this shop.",
+      },
+    ],
   }),
   component: BookConsultation,
 });

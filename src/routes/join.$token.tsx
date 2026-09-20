@@ -12,7 +12,15 @@ import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
 export const Route = createFileRoute("/join/$token")({
   staticData: { sitemap: false },
   head: () => ({
-    meta: [{ title: "Join your team — Jaylor" }],
+    meta: [
+      { title: "Join your team — Jaylor" },
+      { name: "description", content: "Accept an invitation to join a store's team on Jaylor." },
+      { property: "og:title", content: "Join your team — Jaylor" },
+      {
+        property: "og:description",
+        content: "Accept an invitation to join a store's team on Jaylor.",
+      },
+    ],
   }),
   component: JoinInvite,
 });

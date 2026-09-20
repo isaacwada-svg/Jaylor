@@ -51,7 +51,7 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       {
         name: "description",
         content:
-          "Jaylor is the premium business app for tailors and fashion houses: orders, measurements, payments and reminders in one calm place.",
+          "Jaylor tracks every order, measurement and payment for tailors and fashion houses, and reminds clients on WhatsApp so you get paid on time.",
       },
       { property: "og:title", content: "Jaylor — Every order tracked. Every naira collected." },
       {

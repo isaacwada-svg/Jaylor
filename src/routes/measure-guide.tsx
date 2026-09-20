@@ -34,7 +34,7 @@ function MeasureGuide() {
         <p className="mt-3 text-muted-foreground">
           Your tailor sent you this guide so you can take your own measurements and send the numbers
           back to them. Use a soft (fabric) measuring tape, wear light, fitted clothing, and have
-          someone help you if you can — it makes a few of these much easier to get right.
+          someone help you if you can. It makes a few of these much easier to get right.
         </p>
         <StitchDivider className="my-8" />
 
@@ -49,8 +49,8 @@ function MeasureGuide() {
         </div>
 
         <p className="mt-10 text-sm text-muted-foreground">
-          Once you have your numbers, send them to your tailor with the unit you used (inches or cm)
-          — the same way they shared this guide with you.
+          Once you have your numbers, send them to your tailor with the unit you used (inches or
+          cm), the same way they shared this guide with you.
         </p>
       </section>
     </MarketingLayout>

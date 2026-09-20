@@ -29,7 +29,7 @@ export const Route = createFileRoute("/_authenticated/consultations")({
       { property: "og:title", content: "Consultations — Jaylor" },
       {
         property: "og:description",
-        content: "Confirm booking requests and keep every consultation on one calm calendar.",
+        content: "Confirm booking requests and keep every consultation on one shared calendar.",
       },
     ],
   }),

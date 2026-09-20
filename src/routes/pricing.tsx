@@ -60,7 +60,7 @@ function Pricing() {
           <h1 className="font-heading text-4xl">Simple, honest pricing</h1>
           <p className="mt-3 text-muted-foreground">
             Every new store gets 14 days of Growth free, no card required. Downgrading never deletes
-            your data — over-limit items just become read-only.
+            your data: over-limit items just become read-only.
           </p>
         </div>
 

@@ -10,7 +10,17 @@ import { getSharedDesign } from "@/lib/design-photos.functions";
 
 export const Route = createFileRoute("/design/$token")({
   staticData: { sitemap: false },
-  head: () => ({ meta: [{ title: "Your style preview — Jaylor" }] }),
+  head: () => ({
+    meta: [
+      { title: "Your style preview — Jaylor" },
+      { name: "description", content: "An AI-generated style preview, made with Jaylor." },
+      { property: "og:title", content: "Your style preview — Jaylor" },
+      {
+        property: "og:description",
+        content: "An AI-generated style preview, made with Jaylor.",
+      },
+    ],
+  }),
   component: SharedDesign,
 });
 

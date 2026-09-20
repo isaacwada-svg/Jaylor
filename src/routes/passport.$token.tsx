@@ -36,6 +36,11 @@ export const Route = createFileRoute("/passport/$token")({
         name: "description",
         content: "A client's private measurement card, issued by their tailor on Jaylor.",
       },
+      { property: "og:title", content: "Measurement card — Jaylor" },
+      {
+        property: "og:description",
+        content: "A client's private measurement card, issued by their tailor on Jaylor.",
+      },
     ],
   }),
   component: PassportPage,
@@ -71,7 +76,7 @@ function PassportPage() {
           "noopener,noreferrer",
         );
       }
-      toast.success("Update requested — your tailor has been notified");
+      toast.success("Update requested. Your tailor has been notified");
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not send this request"));
     }

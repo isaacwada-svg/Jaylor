@@ -4,14 +4,22 @@ import { SUPPORT_EMAIL } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/security")({
   staticData: { sitemap: true },
-  head: () => ({ meta: [
-    { title: "Security — Jaylor" },
-    { name: "description", content: "How Jaylor protects tailoring-business and customer information." },
-    { property: "og:title", content: "Security — Jaylor" },
-    { property: "og:description", content: "The safeguards Jaylor uses to protect business and customer information." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "Security — Jaylor" },
+      {
+        name: "description",
+        content: "How Jaylor protects tailoring-business and customer information.",
+      },
+      { property: "og:title", content: "Security — Jaylor" },
+      {
+        property: "og:description",
+        content: "The safeguards Jaylor uses to protect business and customer information.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Security,
 });
 
@@ -31,10 +39,10 @@ function Security() {
       <section>
         <h2>Incident response</h2>
         <p>
-          We investigate suspected security incidents, contain affected systems and preserve relevant
-          records. Where a personal-data breach creates a legal notification duty, we will notify the
-          Nigeria Data Protection Commission and affected organisations or people without undue delay,
-          following the timelines required by the NDPA and current NDPC guidance.
+          We investigate suspected security incidents, contain affected systems and preserve
+          relevant records. Where a personal-data breach creates a legal notification duty, we will
+          notify the Nigeria Data Protection Commission and affected organisations or people without
+          undue delay, following the timelines required by the NDPA and current NDPC guidance.
         </p>
       </section>
 
@@ -43,7 +51,7 @@ function Security() {
         <p>
           Every table that holds business data carries a store_id, and row-level security is enabled
           on every one of them. A tailor logged into one store cannot read or write another
-          store&apos;s clients, orders, measurements or payments — this is enforced by the database
+          store&apos;s clients, orders, measurements or payments. This is enforced by the database
           itself, not just by the app&apos;s screens.
         </p>
       </section>
@@ -52,7 +60,7 @@ function Security() {
         <h2>Role separation</h2>
         <p>
           Owners, managers and tailors see different things by design. Tailors work from a database
-          view that never includes prices, costs, payments or balances — those columns simply
+          view that never includes prices, costs, payments or balances. Those columns simply
           aren&apos;t present in what a tailor&apos;s account can query, regardless of what the
           interface shows.
         </p>
@@ -63,7 +71,7 @@ function Security() {
         <p>
           Booking pages, storefronts and group-order links work without an account, but they never
           expose your client list or order book. Anonymous visitors can only submit new requests
-          (booking, sew, guest updates on their own invite) — they cannot read anyone else&apos;s
+          (booking, sew, guest updates on their own invite). They cannot read anyone else&apos;s
           data, and each of those intake forms is rate-limited to stop automated spam.
         </p>
       </section>
@@ -99,8 +107,8 @@ function Security() {
         <p>
           If you believe you&apos;ve found a security issue, email{" "}
           <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> rather than testing against live
-          customer stores. Include enough detail for us to reproduce the issue. We aim to acknowledge
-          reports within 2 business days.
+          customer stores. Include enough detail for us to reproduce the issue. We aim to
+          acknowledge reports within 2 business days.
         </p>
       </section>
     </LegalLayout>

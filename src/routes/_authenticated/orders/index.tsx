@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authenticated/orders/")({
       { property: "og:title", content: "Orders — Jaylor" },
       {
         property: "og:description",
-        content: "Track every garment from Received to Collected in one calm workroom view.",
+        content: "Track every garment from Received to Collected in one workroom view.",
       },
     ],
   }),
@@ -73,7 +73,9 @@ function Orders() {
   });
 
   const clientIds = useMemo(
-    () => [...new Set((orders ?? []).map((o) => o.client_id).filter((id): id is string => id != null))],
+    () => [
+      ...new Set((orders ?? []).map((o) => o.client_id).filter((id): id is string => id != null)),
+    ],
     [orders],
   );
   const { data: clients } = useQuery({

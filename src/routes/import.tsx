@@ -44,7 +44,7 @@ function ImportPage() {
           <h1 className="font-heading text-4xl">Let us type in your notebook</h1>
           <p className="mt-4 text-muted-foreground">
             Keep sewing. Send us photos of your paper notebook and we&apos;ll turn every client,
-            measurement and past order into your Jaylor account for you — no typing required on your
+            measurement and past order into your Jaylor account for you. No typing required on your
             side.
           </p>
         </div>
@@ -58,7 +58,7 @@ function ImportPage() {
               1. Fill in the form below so we know who you are and roughly how much to import.
             </li>
             <li>
-              2. Send clear photos of each notebook page to our WhatsApp number — one page per photo
+              2. Send clear photos of each notebook page to our WhatsApp number. One page per photo
               is easiest.
             </li>
             <li>

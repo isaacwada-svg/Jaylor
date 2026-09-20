@@ -4,14 +4,16 @@ import { SUPPORT_EMAIL } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/terms")({
   staticData: { sitemap: true },
-  head: () => ({ meta: [
-    { title: "Terms of Service — Jaylor" },
-    { name: "description", content: "The terms governing business use of Jaylor in Nigeria." },
-    { property: "og:title", content: "Terms of Service — Jaylor" },
-    { property: "og:description", content: "The terms governing business use of Jaylor." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "Terms of Service — Jaylor" },
+      { name: "description", content: "The terms governing business use of Jaylor in Nigeria." },
+      { property: "og:title", content: "Terms of Service — Jaylor" },
+      { property: "og:description", content: "The terms governing business use of Jaylor." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Terms,
 });
 
@@ -22,8 +24,8 @@ function Terms() {
         <h2>Agreement</h2>
         <p>
           These terms govern your use of Jaylor, a product of Bethjay Global Enterprise Limited (RC
-          3283706), FCT Abuja, Nigeria. By creating a store, you agree to these terms on behalf of your
-          business.
+          3283706), FCT Abuja, Nigeria. By creating a store, you agree to these terms on behalf of
+          your business.
         </p>
       </section>
 
@@ -62,7 +64,7 @@ function Terms() {
         <p>
           Plans and prices are shown in the app and on our pricing page and are billed in the
           currency shown for your country. New stores get a 14-day Growth trial; afterwards, stores
-          continue on Growth if they subscribe, or move to Free automatically — all existing data is
+          continue on Growth if they subscribe, or move to Free automatically. All existing data is
           kept either way. You can cancel or downgrade at any time from Billing; cancellation takes
           effect at the end of the current billing period. Except where law requires otherwise,
           subscription charges already paid are non-refundable. If we make an incorrect or duplicate
@@ -75,8 +77,9 @@ function Terms() {
         <p>
           Automatic-message allowances cover transactional utility messages, such as order updates
           and appointment reminders. They do not include marketing campaigns. Delivery depends on
-          the recipient&apos;s consent, WhatsApp availability and Meta&apos;s rules. Allowances and fair-use
-          limits may change if provider rates change; we will give reasonable notice of material changes.
+          the recipient&apos;s consent, WhatsApp availability and Meta&apos;s rules. Allowances and
+          fair-use limits may change if provider rates change; we will give reasonable notice of
+          material changes.
         </p>
       </section>
 
@@ -85,7 +88,8 @@ function Terms() {
         <p>
           You retain ownership of store information, photographs and other content you submit. You
           give us the limited permission needed to host, process, display and back up that content
-          for your use of Jaylor. Jaylor, its branding and software remain our intellectual property.
+          for your use of Jaylor. Jaylor, its branding and software remain our intellectual
+          property.
         </p>
       </section>
 

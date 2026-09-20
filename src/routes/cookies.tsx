@@ -3,14 +3,22 @@ import { LegalLayout } from "@/components/jaylor/legal-layout";
 
 export const Route = createFileRoute("/cookies")({
   staticData: { sitemap: true },
-  head: () => ({ meta: [
-    { title: "Cookie Notice — Jaylor" },
-    { name: "description", content: "How Jaylor uses essential browser storage and first-party analytics." },
-    { property: "og:title", content: "Cookie Notice — Jaylor" },
-    { property: "og:description", content: "How Jaylor uses essential browser storage and first-party analytics." },
-    { property: "og:type", content: "website" },
-    { name: "twitter:card", content: "summary_large_image" },
-  ] }),
+  head: () => ({
+    meta: [
+      { title: "Cookie Notice — Jaylor" },
+      {
+        name: "description",
+        content: "How Jaylor uses essential browser storage and first-party analytics.",
+      },
+      { property: "og:title", content: "Cookie Notice — Jaylor" },
+      {
+        property: "og:description",
+        content: "How Jaylor uses essential browser storage and first-party analytics.",
+      },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
   component: Cookies,
 });
 
@@ -32,16 +40,16 @@ function Cookies() {
         <h2>What we store and where</h2>
         <ul>
           <li>
-            <strong>Session storage</strong> — keeps you signed in between visits, managed by our
+            <strong>Session storage</strong>: keeps you signed in between visits, managed by our
             authentication provider.
           </li>
           <li>
-            <strong>Local storage</strong> — remembers your current store, theme preference, and a
+            <strong>Local storage</strong>: remembers your current store, theme preference, and a
             small install-prompt/visit counter for the installable app experience, plus the random
             first-party identifier used for conversion measurement.
           </li>
           <li>
-            <strong>Service worker cache</strong> — lets previously visited pages open again if you
+            <strong>Service worker cache</strong>: lets previously visited pages open again if you
             lose connection.
           </li>
         </ul>

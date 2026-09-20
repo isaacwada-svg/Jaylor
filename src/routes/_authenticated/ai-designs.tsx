@@ -156,7 +156,7 @@ function AiDesigns() {
                   >
                     <img
                       src={photoUrl(design.image_url)}
-                      alt=""
+                      alt={design.description || "AI-generated style design"}
                       className="size-24 rounded-xl object-cover"
                     />
                   </button>

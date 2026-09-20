@@ -14,6 +14,12 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           </Link>
           <nav className="flex items-center gap-4 text-sm">
             <Link
+              to="/features"
+              className="hidden text-muted-foreground hover:text-foreground sm:inline"
+            >
+              Features
+            </Link>
+            <Link
               to="/pricing"
               className="hidden text-muted-foreground hover:text-foreground sm:inline"
             >
@@ -41,6 +47,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             <span className="font-heading text-lg">Jaylor</span>
           </div>
           <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+            <Link to="/features" className="hover:text-foreground">
+              Features
+            </Link>
             <Link to="/pricing" className="hover:text-foreground">
               Pricing
             </Link>

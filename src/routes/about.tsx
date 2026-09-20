@@ -33,8 +33,8 @@ function About() {
         <h1 className="mt-3 font-heading text-4xl">About Jaylor</h1>
         <p className="mt-5 text-muted-foreground">
           Jaylor is a product of Bethjay Global Enterprise Limited, RC 3283706, based in FCT Abuja,
-          Nigeria. We build calm, premium business tools for tailors and fashion houses across
-          Nigeria — and, over time, Ghana, Kenya and wider Africa.
+          Nigeria. We build tools that track every order, measurement and payment for tailors and
+          fashion houses across Nigeria, and over time, Ghana, Kenya and wider Africa.
         </p>
         <p className="mt-4 text-muted-foreground">
           Our promise is simple: every order tracked, every naira collected. No notebook pages that

@@ -15,7 +15,18 @@ import { getErrorMessage } from "@/lib/utils";
 export const Route = createFileRoute("/e/$token")({
   staticData: { sitemap: false },
   head: () => ({
-    meta: [{ title: "Your event order — Jaylor" }],
+    meta: [
+      { title: "Your event order — Jaylor" },
+      {
+        name: "description",
+        content: "Measure, choose your style and pay your share for this group order.",
+      },
+      { property: "og:title", content: "Your event order — Jaylor" },
+      {
+        property: "og:description",
+        content: "Measure, choose your style and pay your share for this group order.",
+      },
+    ],
   }),
   component: GuestEventPage,
 });
@@ -259,7 +270,7 @@ function GuestEventPage() {
               </Button>
             ) : (
               <p className="mt-3 text-xs text-muted-foreground">
-                Online payment isn&apos;t set up yet — the organiser will collect your deposit.
+                Online payment isn&apos;t set up yet. The organiser will collect your deposit.
               </p>
             )}
           </div>

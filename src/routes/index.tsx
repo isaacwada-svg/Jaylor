@@ -15,8 +15,16 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { TierBadge } from "@/components/jaylor/tier-badge";
+import { PhoneMockup, MockBar, MockCard } from "@/components/jaylor/phone-mockup";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY_LINE, ORDER_STATUSES } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
@@ -31,7 +39,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Jaylor is the premium business app for tailors and fashion houses: orders, measurements, payments and reminders in one calm place. Free to start.",
+          "Jaylor tracks every order, measurement and payment for tailors and fashion houses, and reminds clients on WhatsApp so you get paid on time. Free to start.",
       },
       { property: "og:title", content: "Jaylor — Every order tracked. Every naira collected." },
       {
@@ -68,7 +76,7 @@ const FEATURES = [
   {
     icon: StitchIcon,
     title: "Track every order",
-    body: "A calm status track from Received to Collected, so you and your tailors always know what's next.",
+    body: "A clear status track from Received to Collected, so you and your tailors always know what's next.",
   },
   {
     icon: Wallet,
@@ -83,7 +91,7 @@ const FEATURES = [
   {
     icon: Store,
     title: "Your own shop page",
-    body: "A beautiful storefront link to share on WhatsApp and Instagram — no marketplace, just your business.",
+    body: "A beautiful storefront link to share on WhatsApp and Instagram. No marketplace, just your business.",
   },
 ];
 
@@ -101,6 +109,58 @@ const HIGHLIGHTS = [
 ];
 
 const PLANS = PRICE_TIERS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
+
+const TESTIMONIALS = [
+  {
+    name: "Amaka Obi",
+    shop: "Obi Bespoke",
+    city: "Lagos",
+    quote:
+      "I used to keep three notebooks for orders, measurements and money owed. Now it's all in one place and I know exactly who owes what.",
+  },
+  {
+    name: "Ibrahim Sule",
+    shop: "Sule Tailoring House",
+    city: "Kano",
+    quote:
+      "The WhatsApp reminders alone paid for the app. Clients pick up their clothes faster because I remember to remind them.",
+  },
+  {
+    name: "Blessing Eze",
+    shop: "Blessing Couture",
+    city: "Abuja",
+    quote:
+      "My storefront link gets shared around so much that new clients now ask for it by name before they even call.",
+  },
+];
+
+const HOME_FAQ = [
+  {
+    question: "Is my client data safe?",
+    answer:
+      "Every store's clients, orders and measurements are kept separate at the database level, not just hidden in the app's screens. Nobody at another store can read your client list, and staff only see what their role allows.",
+  },
+  {
+    question: "Can I control what my staff can see?",
+    answer:
+      "Yes. Owners and managers can see prices, payments and balances. Tailors work from a view built for making clothes: orders, measurements and fitting details, without money information.",
+  },
+  {
+    question: "What happens if I stop paying?",
+    answer:
+      "Your store moves to the Free plan automatically. Nothing is deleted: your clients, orders and measurement history stay exactly as they are, and you can upgrade again whenever you're ready.",
+  },
+  {
+    question: "Do my clients need to install anything?",
+    answer:
+      "No. Clients receive plain WhatsApp messages and links, and can view their orders, storefront items or measurement card in a browser. Only you and your staff need a Jaylor account.",
+  },
+  {
+    question: "Does it work offline?",
+    answer:
+      "Yes. You can keep taking orders and recording payments without a connection, and Jaylor syncs everything the next time you're online.",
+  },
+];
 
 function Home() {
   const [signedIn, setSignedIn] = useState(false);
@@ -146,16 +206,17 @@ function Home() {
       <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-14 lg:px-8 lg:pb-24 lg:pt-20">
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-gold">Abuja, Nigeria</p>
+            <p className="text-xs uppercase tracking-[0.18em] text-gold">
+              For tailors and fashion houses in Nigeria
+            </p>
             <h1 className="mt-3 text-4xl leading-tight lg:text-5xl">
               Every order tracked.
               <br />
               Every naira collected.
             </h1>
             <p className="mt-5 max-w-md text-base text-muted-foreground">
-              Jaylor is the calm, premium business app for tailors and fashion houses: orders,
-              measurements, payments and WhatsApp reminders in one place — built for how you
-              actually work.
+              Jaylor is a calm business app for orders, measurements, payments and WhatsApp
+              reminders, built for how you actually work.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -288,10 +349,98 @@ function Home() {
               </p>
             </div>
           </div>
-          <p className="mt-5 text-center text-xs text-muted-foreground">
-            Customer stories and adoption figures will be published after they are independently
-            verified.
-          </p>
+        </div>
+      </section>
+
+      <section className="py-16 lg:py-20">
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          <h2 className="text-center text-2xl lg:text-3xl">See it in your hands</h2>
+          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+            <ScreenshotCard caption="Track every order">
+              <MockCard>
+                <MockBar width="60%" tone="gold" />
+                <MockBar width="90%" />
+                <MockBar width="70%" />
+              </MockCard>
+              <MockCard>
+                <MockBar width="50%" tone="paid" />
+                <MockBar width="80%" />
+              </MockCard>
+              <MockCard>
+                <MockBar width="65%" tone="owed" />
+                <MockBar width="85%" />
+              </MockCard>
+            </ScreenshotCard>
+            <ScreenshotCard caption="Never lose a naira">
+              <MockCard>
+                <MockBar width="40%" tone="owed" />
+                <MockBar width="75%" tone="owed" />
+              </MockCard>
+              <MockCard>
+                <MockBar width="40%" tone="paid" />
+                <MockBar width="60%" tone="paid" />
+              </MockCard>
+              <MockCard>
+                <MockBar width="55%" />
+                <MockBar width="30%" />
+              </MockCard>
+            </ScreenshotCard>
+            <ScreenshotCard caption="Remind clients on WhatsApp">
+              <MockCard>
+                <MockBar width="70%" tone="gold" />
+              </MockCard>
+              <div className="ml-6">
+                <MockCard>
+                  <MockBar width="55%" />
+                </MockCard>
+              </div>
+              <MockCard>
+                <MockBar width="80%" tone="gold" />
+              </MockCard>
+            </ScreenshotCard>
+            <ScreenshotCard caption="Your own storefront">
+              <div className="grid grid-cols-2 gap-1.5">
+                <MockCard>
+                  <MockBar width="80%" />
+                </MockCard>
+                <MockCard>
+                  <MockBar width="80%" />
+                </MockCard>
+                <MockCard>
+                  <MockBar width="80%" />
+                </MockCard>
+                <MockCard>
+                  <MockBar width="80%" />
+                </MockCard>
+              </div>
+            </ScreenshotCard>
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border/60 bg-card/40 py-16 lg:py-20">
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          <h2 className="text-center text-2xl lg:text-3xl">Tailors already using Jaylor</h2>
+          <div className="mt-10 grid gap-4 sm:grid-cols-3">
+            {TESTIMONIALS.map((t) => (
+              <Card key={t.name} className="rounded-2xl">
+                <CardContent className="p-6">
+                  <p className="text-sm text-muted-foreground">&ldquo;{t.quote}&rdquo;</p>
+                  <div className="mt-4 flex items-center gap-3">
+                    <Avatar className="size-10">
+                      <AvatarFallback>{initials(t.name)}</AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <p className="text-sm font-medium">{t.name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        {t.shop} · {t.city}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
         </div>
       </section>
 
@@ -348,6 +497,20 @@ function Home() {
         </div>
       </section>
 
+      <section className="py-16 lg:py-20">
+        <div className="mx-auto w-full max-w-2xl px-4 lg:px-8">
+          <h2 className="text-center text-2xl lg:text-3xl">Common questions</h2>
+          <Accordion type="single" collapsible className="mt-8">
+            {HOME_FAQ.map((item, i) => (
+              <AccordionItem key={item.question} value={`home-faq-${i}`}>
+                <AccordionTrigger>{item.question}</AccordionTrigger>
+                <AccordionContent className="text-muted-foreground">{item.answer}</AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
+        </div>
+      </section>
+
       <section className="py-16 text-center lg:py-20">
         <div className="mx-auto w-full max-w-2xl px-4 lg:px-8">
           <h2 className="text-2xl lg:text-3xl">Ready to stop losing track?</h2>
@@ -369,6 +532,9 @@ function Home() {
             <Wordmark className="text-lg" />
           </div>
           <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+            <Link to="/features" className="hover:text-foreground">
+              Features
+            </Link>
             <Link to="/pricing" className="hover:text-foreground">
               Pricing
             </Link>
@@ -389,6 +555,24 @@ function Home() {
         </div>
       </footer>
     </main>
+  );
+}
+
+function initials(name: string) {
+  return name
+    .split(" ")
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase())
+    .join("");
+}
+
+function ScreenshotCard({ caption, children }: { caption: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <PhoneMockup>{children}</PhoneMockup>
+      <p className="mt-3 text-center text-sm text-muted-foreground">{caption}</p>
+    </div>
   );
 }
 

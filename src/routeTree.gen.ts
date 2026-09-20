@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CustomRouteImport } from './routes/custom'
+import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
 import { Route as MeasurementPassportRouteImport } from './routes/measurement-passport'
@@ -85,6 +86,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const CustomRoute = CustomRouteImport.update({
   id: '/custom',
   path: '/custom',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FeaturesRoute = FeaturesRouteImport.update({
+  id: '/features',
+  path: '/features',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ImportRoute = ImportRouteImport.update({
@@ -253,6 +259,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
@@ -292,6 +299,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
@@ -333,6 +341,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
@@ -374,6 +383,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/custom'
+    | '/features'
     | '/import'
     | '/measure-guide'
     | '/measurement-passport'
@@ -413,6 +423,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/custom'
+    | '/features'
     | '/import'
     | '/measure-guide'
     | '/measurement-passport'
@@ -453,6 +464,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/custom'
+    | '/features'
     | '/import'
     | '/measure-guide'
     | '/measurement-passport'
@@ -494,6 +506,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   CustomRoute: typeof CustomRoute
+  FeaturesRoute: typeof FeaturesRoute
   ImportRoute: typeof ImportRoute
   MeasureGuideRoute: typeof MeasureGuideRoute
   MeasurementPassportRoute: typeof MeasurementPassportRoute
@@ -566,6 +579,13 @@ declare module '@tanstack/react-router' {
       path: '/custom'
       fullPath: '/custom'
       preLoaderRoute: typeof CustomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/features': {
+      id: '/features'
+      path: '/features'
+      fullPath: '/features'
+      preLoaderRoute: typeof FeaturesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/import': {
@@ -831,6 +851,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   CustomRoute: CustomRoute,
+  FeaturesRoute: FeaturesRoute,
   ImportRoute: ImportRoute,
   MeasureGuideRoute: MeasureGuideRoute,
   MeasurementPassportRoute: MeasurementPassportRoute,

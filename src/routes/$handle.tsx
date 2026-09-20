@@ -24,7 +24,18 @@ import { whatsappLink } from "@/lib/whatsapp";
 export const Route = createFileRoute("/$handle")({
   staticData: { sitemap: false },
   head: () => ({
-    meta: [{ title: "Shop — Jaylor" }],
+    meta: [
+      { title: "Shop — Jaylor" },
+      {
+        name: "description",
+        content: "Browse styles and get in touch on WhatsApp, powered by Jaylor.",
+      },
+      { property: "og:title", content: "Shop — Jaylor" },
+      {
+        property: "og:description",
+        content: "Browse styles and get in touch on WhatsApp, powered by Jaylor.",
+      },
+    ],
   }),
   component: PublicStorefront,
 });

@@ -255,7 +255,7 @@ function Shop() {
                         {item.photos[0] ? (
                           <img
                             src={item.photos[0]}
-                            alt=""
+                            alt={item.title}
                             className="size-14 shrink-0 rounded-xl object-cover"
                           />
                         ) : (
