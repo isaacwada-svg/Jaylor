@@ -123,6 +123,17 @@ export function computeTemplateSex(gender: string | null | undefined): TemplateS
   return "unisex";
 }
 
+export const EXPENSE_CATEGORIES: { value: string; label: string }[] = [
+  { value: "fabric", label: "Fabric" },
+  { value: "thread_accessories", label: "Thread and accessories" },
+  { value: "fuel_power", label: "Fuel and power" },
+  { value: "rent", label: "Rent" },
+  { value: "salaries", label: "Salaries" },
+  { value: "transport", label: "Transport" },
+  { value: "marketing", label: "Marketing" },
+  { value: "other", label: "Other" },
+];
+
 /** Team seats per plan tier (Custom is unlimited). Enforced client-side only. */
 export const STAFF_LIMITS: Record<Tier, number> = {
   Free: 1,

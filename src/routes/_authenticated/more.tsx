@@ -112,6 +112,15 @@ function More() {
                 </Link>
               );
             }
+            if (label === "Expenses and reports") {
+              return (
+                <Link key={label} to="/reports">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
             return (
               <Card key={label} className="rounded-2xl">
                 {content}

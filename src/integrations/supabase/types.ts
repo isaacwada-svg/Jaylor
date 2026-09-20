@@ -264,6 +264,50 @@ export type Database = {
           },
         ];
       };
+      expenses: {
+        Row: {
+          id: string;
+          store_id: string;
+          category: string;
+          amount: number;
+          spent_at: string;
+          note: string | null;
+          receipt_url: string | null;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          category: string;
+          amount: number;
+          spent_at?: string;
+          note?: string | null;
+          receipt_url?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          category?: string;
+          amount?: number;
+          spent_at?: string;
+          note?: string | null;
+          receipt_url?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "expenses_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       store_invites: {
         Row: {
           id: string;
