@@ -1974,8 +1974,20 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string }
+      admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_stores: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
+      admin_update_plan: {
+        Args: {
+          p_code: string
+          p_features: Json
+          p_limits: Json
+          p_name: string
+          p_price_monthly: number
+          p_price_quarterly: number
+        }
+        Returns: undefined
+      }
       can_use_feature: {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
