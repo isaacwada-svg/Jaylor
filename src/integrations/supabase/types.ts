@@ -109,6 +109,56 @@ export type Database = {
         }
         Relationships: []
       }
+      measurement_templates: {
+        Row: {
+          age_group: string
+          created_at: string
+          created_by: string | null
+          fields: Json
+          hidden: boolean
+          id: string
+          is_custom: boolean
+          is_default: boolean
+          name: string
+          sex: string
+          store_id: string
+        }
+        Insert: {
+          age_group: string
+          created_at?: string
+          created_by?: string | null
+          fields?: Json
+          hidden?: boolean
+          id?: string
+          is_custom?: boolean
+          is_default?: boolean
+          name: string
+          sex: string
+          store_id: string
+        }
+        Update: {
+          age_group?: string
+          created_at?: string
+          created_by?: string | null
+          fields?: Json
+          hidden?: boolean
+          id?: string
+          is_custom?: boolean
+          is_default?: boolean
+          name?: string
+          sex?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "measurement_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           code: string
@@ -176,21 +226,27 @@ export type Database = {
         Row: {
           created_at: string
           id: string
+          invited_phone: string | null
           role: Database["public"]["Enums"]["store_role"]
+          status: string
           store_id: string
           user_id: string
         }
         Insert: {
           created_at?: string
           id?: string
+          invited_phone?: string | null
           role?: Database["public"]["Enums"]["store_role"]
+          status?: string
           store_id: string
           user_id: string
         }
         Update: {
           created_at?: string
           id?: string
+          invited_phone?: string | null
           role?: Database["public"]["Enums"]["store_role"]
+          status?: string
           store_id?: string
           user_id?: string
         }
@@ -247,49 +303,70 @@ export type Database = {
       }
       stores: {
         Row: {
+          accent_color: string | null
           city: string | null
           country_code: string
+          cover_url: string | null
           created_at: string
           currency: string
+          garment_types: string[] | null
           id: string
           is_active: boolean
+          legal_line: string | null
           logo_url: string | null
           name: string
+          onboarding_completed: boolean
           owner_id: string
           plan_code: string
+          sews_for: string | null
           slug: string
+          timezone: string
           trial_ends_at: string
           unit: Database["public"]["Enums"]["measurement_unit"]
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
           city?: string | null
           country_code?: string
+          cover_url?: string | null
           created_at?: string
           currency?: string
+          garment_types?: string[] | null
           id?: string
           is_active?: boolean
+          legal_line?: string | null
           logo_url?: string | null
           name: string
+          onboarding_completed?: boolean
           owner_id: string
           plan_code?: string
+          sews_for?: string | null
           slug: string
+          timezone?: string
           trial_ends_at?: string
           unit?: Database["public"]["Enums"]["measurement_unit"]
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
           city?: string | null
           country_code?: string
+          cover_url?: string | null
           created_at?: string
           currency?: string
+          garment_types?: string[] | null
           id?: string
           is_active?: boolean
+          legal_line?: string | null
           logo_url?: string | null
           name?: string
+          onboarding_completed?: boolean
           owner_id?: string
           plan_code?: string
+          sews_for?: string | null
           slug?: string
+          timezone?: string
           trial_ends_at?: string
           unit?: Database["public"]["Enums"]["measurement_unit"]
           updated_at?: string
