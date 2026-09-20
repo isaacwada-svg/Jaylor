@@ -79,7 +79,7 @@ export function ImageUploadField({
             key={url}
             className="group relative aspect-square overflow-hidden rounded-xl border border-border"
           >
-            <img src={url} alt="" className="size-full object-cover" />
+            <img src={photoUrl(url) ?? undefined} alt="" className="size-full object-cover" />
             <button
               type="button"
               onClick={() => removeAt(i)}
