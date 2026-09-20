@@ -12,6 +12,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ImageUploadField } from "@/components/jaylor/image-upload-field";
 
 type ItemRow = Tables<"storefront_items">;
 
@@ -36,7 +37,7 @@ export function StorefrontItemForm({
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
-  const [photosRaw, setPhotosRaw] = useState("");
+  const [photos, setPhotos] = useState<string[]>([]);
   const [priceMin, setPriceMin] = useState("");
   const [priceMax, setPriceMax] = useState("");
   const [turnaroundDays, setTurnaroundDays] = useState("");
@@ -49,7 +50,7 @@ export function StorefrontItemForm({
     setTitle(item?.title ?? "");
     setCategory(item?.category ?? "");
     setDescription(item?.description ?? "");
-    setPhotosRaw((item?.photos ?? []).join("\n"));
+    setPhotos(item?.photos ?? []);
     setPriceMin(item?.price_min != null ? String(item.price_min) : "");
     setPriceMax(item?.price_max != null ? String(item.price_max) : "");
     setTurnaroundDays(item?.turnaround_days != null ? String(item.turnaround_days) : "");
@@ -61,12 +62,6 @@ export function StorefrontItemForm({
     event.preventDefault();
     setBusy(true);
     try {
-      const photos = photosRaw
-        .split("\n")
-        .map((line) => line.trim())
-        .filter(Boolean)
-        .slice(0, 6);
-
       const payload = {
         title: title.trim(),
         category: category.trim() || null,
@@ -131,16 +126,7 @@ export function StorefrontItemForm({
           onChange={(e) => setDescription(e.target.value)}
         />
       </div>
-      <div className="space-y-2">
-        <Label htmlFor="item-photos">Photo links (one per line, up to 6)</Label>
-        <Textarea
-          id="item-photos"
-          rows={3}
-          value={photosRaw}
-          onChange={(e) => setPhotosRaw(e.target.value)}
-          placeholder="https://..."
-        />
-      </div>
+      <ImageUploadField storeId={storeId} value={photos} onChange={setPhotos} />
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
           <Label htmlFor="item-price-min">From (₦)</Label>

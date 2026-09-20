@@ -17,6 +17,7 @@ import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CustomRouteImport } from './routes/custom'
+import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -77,6 +78,11 @@ const CookiesRoute = CookiesRouteImport.update({
 const CustomRoute = CustomRouteImport.update({
   id: '/custom',
   path: '/custom',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeasureGuideRoute = MeasureGuideRouteImport.update({
+  id: '/measure-guide',
+  path: '/measure-guide',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -205,6 +211,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/measure-guide': typeof MeasureGuideRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -236,6 +243,7 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/measure-guide': typeof MeasureGuideRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -269,6 +277,7 @@ export interface FileRoutesById {
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/measure-guide': typeof MeasureGuideRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -302,6 +311,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/custom'
+    | '/measure-guide'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
@@ -333,6 +343,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/custom'
+    | '/measure-guide'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
@@ -365,6 +376,7 @@ export interface FileRouteTypes {
     | '/auth'
     | '/cookies'
     | '/custom'
+    | '/measure-guide'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
@@ -398,6 +410,7 @@ export interface RootRouteChildren {
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   CustomRoute: typeof CustomRoute
+  MeasureGuideRoute: typeof MeasureGuideRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -464,6 +477,13 @@ declare module '@tanstack/react-router' {
       path: '/custom'
       fullPath: '/custom'
       preLoaderRoute: typeof CustomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/measure-guide': {
+      id: '/measure-guide'
+      path: '/measure-guide'
+      fullPath: '/measure-guide'
+      preLoaderRoute: typeof MeasureGuideRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -669,6 +689,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   CustomRoute: CustomRoute,
+  MeasureGuideRoute: MeasureGuideRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,

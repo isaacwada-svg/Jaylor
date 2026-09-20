@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { X } from "lucide-react";
+import { Info, Share2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { computeAgeGroup, computeTemplateSex, isMinor, type AgeGroup } from "@/lib/jaylor";
@@ -13,11 +13,13 @@ import {
 } from "@/lib/measurements";
 import { getErrorMessage, cn } from "@/lib/utils";
 import { EmptyState } from "@/components/jaylor/empty-state";
+import { MeasurementDiagram, measurementGuideText } from "@/components/jaylor/measurement-diagram";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -109,12 +111,69 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
         />
       )}
 
-      <Button onClick={() => setEditing(true)}>
-        {latest ? "New measurement" : "Take measurements"}
-      </Button>
+      <div className="flex flex-wrap gap-2">
+        <Button onClick={() => setEditing(true)}>
+          {latest ? "New measurement" : "Take measurements"}
+        </Button>
+        <ShareGuideButton clientName={client.full_name} />
+      </div>
 
       {sets && sets.length > 1 && <HistoryList sets={sets.slice(1)} templates={templates ?? []} />}
     </div>
+  );
+}
+
+/** Shares the public self-measuring guide, for clients who aren't physically around. */
+function ShareGuideButton({ clientName }: { clientName: string }) {
+  async function share() {
+    const url = `${window.location.origin}/measure-guide`;
+    const text = `Hi ${clientName}, please follow this guide to take your own measurements and send them back to me: ${url}`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ text, url });
+        return;
+      } catch {
+        // user cancelled or share failed — fall through to clipboard
+      }
+    }
+    try {
+      await navigator.clipboard.writeText(text);
+      toast.success("Guide link copied — paste it in a message to your client");
+    } catch {
+      toast.error("Could not copy the link");
+    }
+  }
+
+  return (
+    <Button type="button" variant="outline" onClick={share}>
+      <Share2 className="size-4" />
+      Send measuring guide
+    </Button>
+  );
+}
+
+function MeasurementHelpButton({ label }: { label: string }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-label={`How to measure ${label}`}
+        className="text-muted-foreground hover:text-gold"
+      >
+        <Info className="size-3.5" />
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="sm:max-w-xs">
+          <DialogHeader>
+            <DialogTitle>{label}</DialogTitle>
+          </DialogHeader>
+          <MeasurementDiagram label={label} className="mx-auto h-56 w-auto" />
+          <p className="text-sm text-muted-foreground">{measurementGuideText(label)}</p>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -323,10 +382,13 @@ function MeasurementForm({
             ((f.min !== undefined && numeric < f.min) || (f.max !== undefined && numeric > f.max));
           return (
             <div key={f.key} className="space-y-1">
-              <Label htmlFor={f.key}>
-                {f.label}
-                {f.required && " *"}
-              </Label>
+              <div className="flex items-center gap-1">
+                <Label htmlFor={f.key}>
+                  {f.label}
+                  {f.required && " *"}
+                </Label>
+                <MeasurementHelpButton label={f.label} />
+              </div>
               <Input
                 id={f.key}
                 inputMode="decimal"
