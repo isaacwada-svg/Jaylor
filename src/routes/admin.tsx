@@ -51,6 +51,12 @@ type Stats = {
   mrr_estimate: number;
 };
 
+// Admin RPCs that exist in the database but aren't in the generated Database types yet.
+const rpcAdmin = supabase.rpc as unknown as (
+  fn: string,
+  args: Record<string, unknown>,
+) => Promise<{ data: unknown; error: { message: string } | null }>;
+
 type PlanRow = {
   code: string;
   name: string;
