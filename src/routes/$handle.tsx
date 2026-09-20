@@ -195,9 +195,9 @@ function PublicStorefront() {
                 className="text-left"
               >
                 <Card className="overflow-hidden rounded-2xl transition-transform hover:-translate-y-0.5">
-                  {item.photos[0] ? (
+                  {photoUrl(item.photos[0]) ? (
                     <img
-                      src={item.photos[0]}
+                      src={photoUrl(item.photos[0])}
                       alt={item.title}
                       className="h-48 w-full object-cover"
                     />
@@ -244,7 +244,7 @@ function PublicStorefront() {
                       className="shrink-0"
                     >
                       <img
-                        src={photo}
+                        src={photoUrl(photo)}
                         alt={selectedItem.title}
                         className="h-40 w-32 rounded-xl object-cover"
                       />
@@ -295,7 +295,9 @@ function PublicStorefront() {
 
       {selectedItem && (
         <PhotoLightbox
-          photos={selectedItem.photos}
+          photos={selectedItem.photos
+            .map((photo) => photoUrl(photo))
+            .filter((url): url is string => !!url)}
           index={lightboxIndex}
           onIndexChange={setLightboxIndex}
           onClose={() => setLightboxIndex(null)}
