@@ -139,6 +139,7 @@ function Admin() {
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
 
@@ -147,6 +148,9 @@ function Admin() {
           </TabsContent>
           <TabsContent value="plans" className="mt-6">
             <PlansTab />
+          </TabsContent>
+          <TabsContent value="leads" className="mt-6">
+            <LeadsTab />
           </TabsContent>
           <TabsContent value="audit" className="mt-6">
             <AuditTab />
@@ -353,6 +357,53 @@ function PlansTab() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+    </div>
+  );
+}
+
+function LeadsTab() {
+  const { data: leads, isLoading } = useQuery({
+    queryKey: ["admin-leads"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("leads")
+        .select("*")
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!leads || leads.length === 0) {
+    return <p className="text-sm text-muted-foreground">No leads yet.</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {leads.map((lead) => (
+        <div key={lead.id} className="rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between">
+            <p className="font-medium">{lead.name}</p>
+            <span className="text-xs text-muted-foreground">
+              {new Date(lead.created_at).toLocaleString()}
+            </span>
+          </div>
+          <p className="mt-1 text-sm text-muted-foreground">
+            {[lead.phone, lead.email].filter(Boolean).join(" · ") || "No contact given"}
+          </p>
+          {lead.message && <p className="mt-2 text-sm">{lead.message}</p>}
+        </div>
+      ))}
     </div>
   );
 }

@@ -16,7 +16,7 @@ import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY_LINE, ORDER_STATUSES, type Tier } from "@/lib/jaylor";
+import { COMPANY_LINE, ORDER_STATUSES, PRICING_PLANS } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -94,52 +94,7 @@ const HIGHLIGHTS = [
   },
 ];
 
-const PLANS: {
-  tier: Tier;
-  price: string;
-  billing: string;
-  blurb: string;
-  features: string[];
-}[] = [
-  {
-    tier: "Free",
-    price: "₦0",
-    billing: "forever",
-    blurb: "Everything you need to stop losing track of orders and money.",
-    features: ["1 user", "15 orders / month", "Unlimited clients", "WhatsApp tap-to-send"],
-  },
-  {
-    tier: "Growth",
-    price: "₦5,000",
-    billing: "/month, billed ₦15,000 quarterly",
-    blurb: "For a growing shop that wants automatic reminders and its own storefront.",
-    features: [
-      "3 users",
-      "Unlimited orders",
-      "300 automatic WhatsApp / month",
-      "Public booking page",
-    ],
-  },
-  {
-    tier: "Business",
-    price: "₦10,000",
-    billing: "/month, billed ₦30,000 quarterly",
-    blurb: "For a fashion house with staff, stock and reports to manage.",
-    features: [
-      "10 users with roles",
-      "Staff job board",
-      "Expenses and net profit",
-      "Up to 3 branches",
-    ],
-  },
-  {
-    tier: "Custom",
-    price: "By quote",
-    billing: "talk to us",
-    blurb: "Your own WhatsApp number, your own domain, and a migration from your old system.",
-    features: ["Own WhatsApp number", "Own domain", "Integrations", "Migration support"],
-  },
-];
+const PLANS = PRICING_PLANS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
 
 function Home() {
   const [signedIn, setSignedIn] = useState(false);
@@ -304,6 +259,11 @@ function Home() {
           <p className="mt-2 text-center text-sm text-muted-foreground">
             Every new store gets 14 days of Growth free. Downgrading never deletes your data.
           </p>
+          <p className="mt-2 text-center text-sm">
+            <Link to="/pricing" className="text-gold underline-offset-4 hover:underline">
+              See the full comparison
+            </Link>
+          </p>
           <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
             {PLANS.map((plan) => (
               <Card
@@ -329,9 +289,13 @@ function Home() {
                       className="w-full"
                       variant={plan.tier === "Growth" ? "default" : "outline"}
                     >
-                      <Link to="/auth" search={{ mode: "signup" }}>
-                        {plan.tier === "Custom" ? "Talk to us" : "Start free"}
-                      </Link>
+                      {plan.tier === "Custom" ? (
+                        <Link to="/custom">Talk to us</Link>
+                      ) : (
+                        <Link to="/auth" search={{ mode: "signup" }}>
+                          Start free
+                        </Link>
+                      )}
                     </Button>
                   </div>
                 </CardContent>
@@ -363,6 +327,23 @@ function Home() {
             </span>
             <span className="font-heading text-lg">Jaylor</span>
           </div>
+          <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
+            <Link to="/pricing" className="hover:text-foreground">
+              Pricing
+            </Link>
+            <Link to="/about" className="hover:text-foreground">
+              About
+            </Link>
+            <Link to="/privacy-policy" className="hover:text-foreground">
+              Privacy
+            </Link>
+            <Link to="/terms" className="hover:text-foreground">
+              Terms
+            </Link>
+            <Link to="/security" className="hover:text-foreground">
+              Security
+            </Link>
+          </nav>
           <p className="text-xs text-muted-foreground">{COMPANY_LINE}</p>
         </div>
       </footer>

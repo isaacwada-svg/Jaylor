@@ -134,6 +134,68 @@ export const EXPENSE_CATEGORIES: { value: string; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
+export const PRICING_PLANS: {
+  tier: Tier;
+  price: string;
+  billing: string;
+  blurb: string;
+  features: string[];
+}[] = [
+  {
+    tier: "Free",
+    price: "₦0",
+    billing: "forever",
+    blurb: "Everything you need to stop losing track of orders and money.",
+    features: [
+      "1 user",
+      "15 orders / month",
+      "Unlimited clients",
+      "WhatsApp tap-to-send",
+      "10 storefront items",
+      "Receipts with a Jaylor footer",
+      "Offline, read-only",
+    ],
+  },
+  {
+    tier: "Growth",
+    price: "₦5,000",
+    billing: "/month, billed ₦15,000 quarterly",
+    blurb: "For a growing shop that wants automatic reminders and its own storefront.",
+    features: [
+      "3 users",
+      "Unlimited orders",
+      "300 automatic WhatsApp / month",
+      "Own logo on receipts",
+      "Unlimited storefront items",
+      "Public booking page and video consultations",
+      "1 active group event",
+      "Full offline",
+    ],
+  },
+  {
+    tier: "Business",
+    price: "₦10,000",
+    billing: "/month, billed ₦30,000 quarterly",
+    blurb: "For a fashion house with staff, stock and reports to manage.",
+    features: [
+      "10 users with roles",
+      "Up to 3 branches",
+      "Staff job board",
+      "Expenses and net profit",
+      "1,000 automatic WhatsApp / month",
+      "Unlimited events",
+      "AI WhatsApp assistant",
+    ],
+  },
+  {
+    tier: "Custom",
+    price: "By quote",
+    billing: "talk to us",
+    blurb: "Your own WhatsApp number, your own domain, and a migration from your old system.",
+    features: ["Own WhatsApp number", "Own domain", "Integrations", "Migration support"],
+  },
+];
+
 /** Team seats per plan tier (Custom is unlimited). Enforced client-side only. */
 export const STAFF_LIMITS: Record<Tier, number> = {
   Free: 1,

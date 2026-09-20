@@ -1309,6 +1309,36 @@ export type Database = {
           },
         ];
       };
+      leads: {
+        Row: {
+          id: string;
+          name: string;
+          phone: string | null;
+          email: string | null;
+          message: string | null;
+          source: string;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          phone?: string | null;
+          email?: string | null;
+          message?: string | null;
+          source?: string;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          phone?: string | null;
+          email?: string | null;
+          message?: string | null;
+          source?: string;
+          created_at?: string;
+        };
+        Relationships: [];
+      };
       platform_admins: {
         Row: {
           user_id: string;
