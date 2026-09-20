@@ -7,6 +7,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
+import { PaymentForm } from "@/components/jaylor/payment-form";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -38,6 +39,7 @@ function OrderDetail() {
 
   const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [paymentFormOpen, setPaymentFormOpen] = useState(false);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", orderId, canSeeMoney],
@@ -98,6 +100,34 @@ function OrderDetail() {
         .select("*")
         .eq("id", order?.measurement_set_id as string)
         .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: balance } = useQuery({
+    queryKey: ["order-balance", orderId],
+    enabled: canSeeMoney,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_balances")
+        .select("*")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: payments } = useQuery({
+    queryKey: ["order-payments", orderId],
+    enabled: canSeeMoney,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payments")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("paid_at", { ascending: false });
       if (error) throw error;
       return data;
     },
@@ -239,11 +269,33 @@ function OrderDetail() {
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           {canSeeMoney && (
             <div className="rounded-2xl border border-border p-4">
-              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Price</p>
-              <p className="mt-1 text-lg">
-                <MoneyText amount={price ?? 0} />
-              </p>
-              <p className="mt-1 text-sm text-muted-foreground">Quantity: {order.quantity}</p>
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Price</p>
+                  <p className="mt-1 text-lg">
+                    <MoneyText amount={price ?? 0} />
+                  </p>
+                  <p className="mt-1 text-sm text-muted-foreground">Quantity: {order.quantity}</p>
+                </div>
+                <Button size="sm" onClick={() => setPaymentFormOpen(true)}>
+                  Record payment
+                </Button>
+              </div>
+              {balance && (
+                <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-sm">
+                  <span className="text-muted-foreground">Paid</span>
+                  <MoneyText amount={balance.paid} variant="paid" />
+                </div>
+              )}
+              {balance && (
+                <div className="mt-1 flex items-center justify-between text-sm">
+                  <span className="text-muted-foreground">Balance</span>
+                  <MoneyText
+                    amount={balance.balance}
+                    variant={balance.balance > 0 ? "owed" : "paid"}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -299,6 +351,31 @@ function OrderDetail() {
           )}
         </div>
 
+        {canSeeMoney && payments && payments.length > 0 && (
+          <div className="mt-8">
+            <p className="mb-2 text-sm font-medium text-muted-foreground">Payments</p>
+            <div className="space-y-2">
+              {payments.map((p) => (
+                <div
+                  key={p.id}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
+                >
+                  <div>
+                    <MoneyText amount={p.amount} variant={p.voided ? "muted" : "paid"} />
+                    <span className="ml-2 text-muted-foreground">
+                      {p.method}
+                      {p.voided ? " · voided" : ""}
+                    </span>
+                  </div>
+                  <span className="text-muted-foreground">
+                    {new Date(p.paid_at).toLocaleDateString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         {history && history.length > 0 && (
           <div className="mt-8">
             <p className="mb-2 text-sm font-medium text-muted-foreground">History</p>
@@ -322,6 +399,20 @@ function OrderDetail() {
         )}
       </div>
 
+      {canSeeMoney && (
+        <PaymentForm
+          open={paymentFormOpen}
+          onOpenChange={setPaymentFormOpen}
+          orderId={orderId}
+          storeId={order.store_id}
+          balance={balance?.balance ?? 0}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] });
+            queryClient.invalidateQueries({ queryKey: ["order-payments", orderId] });
+          }}
+        />
+      )}
+
       <Dialog open={!!pendingStatus} onOpenChange={(open) => !open && setPendingStatus(null)}>
         <DialogContent>
           <DialogHeader>
@@ -329,9 +420,14 @@ function OrderDetail() {
               Mark as {pendingStatus ? orderStatusLabel(pendingStatus) : ""}?
             </DialogTitle>
             <DialogDescription>
-              {pendingStatus === "collected" && canSeeMoney && price !== null && price > 0
-                ? "Confirm the balance is settled before marking this collected."
-                : "This updates the order's status for everyone who can see it."}
+              {pendingStatus === "collected" && canSeeMoney && balance && balance.balance > 0 ? (
+                <span className="text-owed">
+                  A balance of <MoneyText amount={balance.balance} variant="owed" /> is still owed.
+                  Confirm collection anyway?
+                </span>
+              ) : (
+                "This updates the order's status for everyone who can see it."
+              )}
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

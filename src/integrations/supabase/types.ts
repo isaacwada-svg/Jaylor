@@ -477,6 +477,66 @@ export type Database = {
           },
         ];
       };
+      payments: {
+        Row: {
+          id: string;
+          store_id: string;
+          order_id: string;
+          amount: number;
+          method: string;
+          reference: string | null;
+          received_by: string | null;
+          paid_at: string;
+          paystack_ref: string | null;
+          voided: boolean;
+          void_reason: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          order_id: string;
+          amount: number;
+          method: string;
+          reference?: string | null;
+          received_by?: string | null;
+          paid_at?: string;
+          paystack_ref?: string | null;
+          voided?: boolean;
+          void_reason?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          order_id?: string;
+          amount?: number;
+          method?: string;
+          reference?: string | null;
+          received_by?: string | null;
+          paid_at?: string;
+          paystack_ref?: string | null;
+          voided?: boolean;
+          void_reason?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payments_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "payments_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       plans: {
         Row: {
           code: string;
@@ -708,6 +768,16 @@ export type Database = {
       };
     };
     Views: {
+      order_balances: {
+        Row: {
+          order_id: string;
+          store_id: string;
+          total: number;
+          paid: number;
+          balance: number;
+        };
+        Relationships: [];
+      };
       orders_for_tailor: {
         Row: {
           id: string;
