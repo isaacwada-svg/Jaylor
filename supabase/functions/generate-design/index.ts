@@ -2,6 +2,8 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CORS_HEADERS, errorResponse, generateImage, jsonResponse } from "../_shared/ai.ts";
 
 const DESIGN_FEE_KOBO = 30000; // ₦300
+const BUCKET = "ai-design-photos";
+const SIGNED_URL_TTL = 60 * 60; // 1 hour
 
 type RequestBody = {
   storeId: string;
@@ -9,7 +11,8 @@ type RequestBody = {
   phone: string;
   description: string;
   measurements?: Record<string, string>;
-  selfieUrl?: string | null;
+  /** Object path inside the private ai-design-photos bucket. */
+  selfiePath?: string | null;
 };
 
 function serviceClient() {
@@ -17,6 +20,23 @@ function serviceClient() {
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+}
+
+/** Accepts either a bare storage path or a legacy full public URL. */
+function toStoragePath(value: string): string {
+  const marker = `/${BUCKET}/`;
+  const at = value.indexOf(marker);
+  return at === -1 ? value.replace(/^\/+/, "") : value.slice(at + marker.length);
+}
+
+async function signPath(
+  supabase: ReturnType<typeof serviceClient>,
+  path: string,
+): Promise<string | null> {
+  const { data } = await supabase.storage
+    .from(BUCKET)
+    .createSignedUrl(toStoragePath(path), SIGNED_URL_TTL);
+  return data?.signedUrl ?? null;
 }
 
 async function uploadGeneratedImage(
@@ -31,11 +51,10 @@ async function uploadGeneratedImage(
   const ext = contentType.split("/")[1] ?? "png";
   const path = `${storeId}/${crypto.randomUUID()}.${ext}`;
   const { error } = await supabase.storage
-    .from("ai-design-photos")
+    .from(BUCKET)
     .upload(path, bytes, { contentType, upsert: false });
   if (error) throw error;
-  const { data } = supabase.storage.from("ai-design-photos").getPublicUrl(path);
-  return data.publicUrl;
+  return path;
 }
 
 Deno.serve(async (req) => {
@@ -53,6 +72,16 @@ Deno.serve(async (req) => {
   }
 
   const supabase = serviceClient();
+
+  // The selfie must belong to this store's folder in the private bucket.
+  let selfiePath: string | null = null;
+  if (body.selfiePath) {
+    const candidate = toStoragePath(body.selfiePath);
+    if (!candidate.startsWith(`${body.storeId}/`)) {
+      return errorResponse("That photo does not belong to this shop", 400);
+    }
+    selfiePath = candidate;
+  }
 
   try {
     const { data: withinLimit } = await supabase.rpc("check_rate_limit", {
@@ -108,14 +137,17 @@ Deno.serve(async (req) => {
   const parts: Array<{ type: "text"; text: string } | { type: "image_url"; image_url: { url: string } }> = [
     { type: "text", text: promptText },
   ];
-  if (body.selfieUrl) {
-    parts.push({ type: "text", text: "Use the attached photo as a reference for the person's face and body." });
-    parts.push({ type: "image_url", image_url: { url: body.selfieUrl } });
+  if (selfiePath) {
+    const signedSelfie = await signPath(supabase, selfiePath);
+    if (signedSelfie) {
+      parts.push({ type: "text", text: "Use the attached photo as a reference for the person's face and body." });
+      parts.push({ type: "image_url", image_url: { url: signedSelfie } });
+    }
   }
 
   try {
     const dataUrl = await generateImage(parts);
-    const imageUrl = await uploadGeneratedImage(supabase, body.storeId, dataUrl);
+    const imagePath = await uploadGeneratedImage(supabase, body.storeId, dataUrl);
 
     const { data: design, error: insertError } = await supabase
       .from("ai_designs")
@@ -125,8 +157,8 @@ Deno.serve(async (req) => {
         phone: body.phone,
         description: body.description.trim(),
         measurements: body.measurements ?? {},
-        selfie_url: body.selfieUrl ?? null,
-        image_url: imageUrl,
+        selfie_url: selfiePath,
+        image_url: imagePath,
         was_paid: wasPaid,
         payment_id: paymentId,
       })
@@ -138,7 +170,11 @@ Deno.serve(async (req) => {
       await supabase.from("ai_design_payments").update({ used: true }).eq("id", paymentId);
     }
 
-    return jsonResponse({ result: design });
+    const signedImage = await signPath(supabase, imagePath);
+
+    return jsonResponse({
+      result: { ...design, image_url: signedImage ?? "" },
+    });
   } catch (error) {
     return errorResponse(error instanceof Error ? error.message : "Could not generate this design", 500);
   }
