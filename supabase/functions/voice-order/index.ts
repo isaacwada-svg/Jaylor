@@ -11,6 +11,9 @@ Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: CORS_HEADERS });
   if (req.method !== "POST") return errorResponse("Method not allowed", 405);
 
+  const user = await getRequestUser(req);
+  if (!user) return errorResponse("Sign in to use this feature", 401);
+
   let body: RequestBody;
   try {
     body = await req.json();
