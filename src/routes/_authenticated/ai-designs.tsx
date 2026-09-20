@@ -24,6 +24,13 @@ export const Route = createFileRoute("/_authenticated/ai-designs")({
 
 type DesignRow = Tables<"ai_designs">;
 
+/** Accepts either a bare storage path or a legacy full public URL. */
+function toStoragePath(value: string): string {
+  const marker = "/ai-design-photos/";
+  const at = value.indexOf(marker);
+  return at === -1 ? value.replace(/^\/+/, "") : value.slice(at + marker.length);
+}
+
 function AiDesigns() {
   const { currentStore } = useStore();
   const navigate = useNavigate();
