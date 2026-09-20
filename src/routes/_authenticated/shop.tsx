@@ -22,6 +22,7 @@ import { useStore } from "@/lib/store-context";
 import { effectiveTier, formatMoney } from "@/lib/jaylor";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
+import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
 
 export const Route = createFileRoute("/_authenticated/shop")({
   staticData: { sitemap: false },
@@ -74,6 +75,9 @@ function Shop() {
       return data;
     },
   });
+
+  const photoUrl = useStorefrontPhotoUrls(items?.flatMap((item) => item.photos) ?? []);
+
 
   const { data: requests } = useQuery({
     queryKey: ["sew-requests", storeId],
