@@ -6,6 +6,7 @@ import { normalizePhoneNG } from "@/lib/phone";
 import { resizeImageFile } from "@/lib/image";
 import { getErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
+import { uploadDesignSelfie } from "@/lib/design-photos.functions";
 import {
   clearDesignDraft,
   loadDesignDraft,
@@ -44,7 +45,8 @@ export function AiDesignGenerator({
   const [phoneRaw, setPhoneRaw] = useState("");
   const [description, setDescription] = useState("");
   const [measurements, setMeasurements] = useState<Record<string, string>>({});
-  const [selfieUrl, setSelfieUrl] = useState<string | null>(null);
+  const [selfiePath, setSelfiePath] = useState<string | null>(null);
+  const [selfiePreview, setSelfiePreview] = useState<string | null>(null);
   const [uploadingSelfie, setUploadingSelfie] = useState(false);
   const [selfieConsent, setSelfieConsent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
