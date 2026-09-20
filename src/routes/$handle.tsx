@@ -20,6 +20,7 @@ import {
 } from "@/components/ui/dialog";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
+import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
 
 export const Route = createFileRoute("/$handle")({
   staticData: { sitemap: false },
@@ -87,6 +88,9 @@ function PublicStorefront() {
       return data;
     },
   });
+
+  const photoUrl = useStorefrontPhotoUrls(items?.flatMap((item) => item.photos) ?? []);
+
 
   if (storeLoading) {
     return (
