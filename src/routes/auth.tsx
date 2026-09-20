@@ -12,6 +12,8 @@ import { COMPANY_LINE } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/auth")({
+  validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
+    search["mode"] === "signup" ? { mode: "signup" } : {},
   head: () => ({
     meta: [
       { title: "Sign in — Jaylor" },
@@ -34,7 +36,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
+  const { mode: initialMode } = Route.useSearch();
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">(initialMode ?? "signin");
   const [recovery, setRecovery] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
