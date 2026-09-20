@@ -19,6 +19,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY_LINE, ORDER_STATUSES, PRICING_PLANS } from "@/lib/jaylor";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -102,6 +103,7 @@ function Home() {
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
+    void trackEvent("landing_view");
     supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) =>
       setSignedIn(!!session),
@@ -250,6 +252,40 @@ function Home() {
               </Card>
             ))}
           </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border/60 py-14 lg:py-16">
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          <p className="text-center text-xs uppercase tracking-[0.18em] text-gold">
+            Built around the workroom
+          </p>
+          <h2 className="mx-auto mt-3 max-w-2xl text-center text-2xl lg:text-3xl">
+            Less chasing. More making.
+          </h2>
+          <div className="mt-8 grid gap-6 border-y border-border/70 py-7 sm:grid-cols-3">
+            <div>
+              <p className="font-heading text-xl">Know what is next</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                See every garment move from received to collected without searching through paper.
+              </p>
+            </div>
+            <div className="border-border sm:border-x sm:px-6">
+              <p className="font-heading text-xl">Remember every balance</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Keep deposits, payments and outstanding money tied to the right order.
+              </p>
+            </div>
+            <div>
+              <p className="font-heading text-xl">Keep clients informed</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                Send clear WhatsApp updates from the same place you manage the work.
+              </p>
+            </div>
+          </div>
+          <p className="mt-5 text-center text-xs text-muted-foreground">
+            Customer stories and adoption figures will be published after they are independently verified.
+          </p>
         </div>
       </section>
 

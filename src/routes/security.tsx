@@ -1,14 +1,42 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { LegalLayout } from "@/components/jaylor/legal-layout";
+import { SUPPORT_EMAIL } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/security")({
-  head: () => ({ meta: [{ title: "Security — Jaylor" }] }),
+  head: () => ({ meta: [
+    { title: "Security — Jaylor" },
+    { name: "description", content: "How Jaylor protects tailoring-business and customer information." },
+    { property: "og:title", content: "Security — Jaylor" },
+    { property: "og:description", content: "The safeguards Jaylor uses to protect business and customer information." },
+    { property: "og:type", content: "website" },
+    { name: "twitter:card", content: "summary_large_image" },
+  ] }),
   component: Security,
 });
 
 function Security() {
   return (
     <LegalLayout title="Security" lastUpdated="20 September 2026">
+      <section>
+        <h2>Account and operational safeguards</h2>
+        <p>
+          Authentication is handled through managed identity services. Sensitive operations require
+          signed-in access, business records are backed up by our managed infrastructure, and access
+          rules are reviewed as the product changes. Store owners remain responsible for choosing
+          strong passwords and removing team members who should no longer have access.
+        </p>
+      </section>
+
+      <section>
+        <h2>Incident response</h2>
+        <p>
+          We investigate suspected security incidents, contain affected systems and preserve relevant
+          records. Where a personal-data breach creates a legal notification duty, we will notify the
+          Nigeria Data Protection Commission and affected organisations or people without undue delay,
+          following the timelines required by the NDPA and current NDPC guidance.
+        </p>
+      </section>
+
       <section>
         <h2>Store independence</h2>
         <p>
@@ -68,9 +96,10 @@ function Security() {
       <section>
         <h2>Responsible disclosure</h2>
         <p>
-          If you believe you&apos;ve found a security issue, please contact us via the details on
-          our <a href="/about">About page</a> rather than testing against live customer stores. We
-          aim to acknowledge reports within 2 business days.
+          If you believe you&apos;ve found a security issue, email{" "}
+          <a href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> rather than testing against live
+          customer stores. Include enough detail for us to reproduce the issue. We aim to acknowledge
+          reports within 2 business days.
         </p>
       </section>
     </LegalLayout>

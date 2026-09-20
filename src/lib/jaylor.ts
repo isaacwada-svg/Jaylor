@@ -164,7 +164,7 @@ export const PRICING_PLANS: {
     features: [
       "3 users",
       "Unlimited orders",
-      "300 automatic WhatsApp / month",
+      "100 automatic utility WhatsApp / month",
       "Own logo on receipts",
       "Unlimited storefront items",
       "Public booking page and video consultations",
@@ -182,7 +182,7 @@ export const PRICING_PLANS: {
       "Up to 3 branches",
       "Staff job board",
       "Expenses and net profit",
-      "1,000 automatic WhatsApp / month",
+      "200 automatic utility WhatsApp / month",
       "Unlimited events",
       "AI WhatsApp assistant",
     ],
@@ -208,4 +208,7 @@ export const STAFF_LIMITS: Record<Tier, number> = {
 export const PENDING_INVITE_KEY = "jaylor:pendingInvite";
 
 export const COMPANY_LINE =
-  "Jaylor is a product of Bethjay Global Enterprise Limited — Abuja, Nigeria.";
+  "Jaylor is a product of Bethjay Global Enterprise Limited, RC 3283706 — FCT Abuja, Nigeria.";
+
+export const SUPPORT_EMAIL = "info@jaylor.com.ng";
+export const SUPPORT_PHONE = "+234 902 810 1389";

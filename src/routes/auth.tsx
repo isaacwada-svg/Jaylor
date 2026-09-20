@@ -11,6 +11,7 @@ import { LogoMark } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { COMPANY_LINE, PENDING_INVITE_KEY } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
+import { trackEvent } from "@/lib/analytics";
 
 export const Route = createFileRoute("/auth")({
   validateSearch: (search: Record<string, unknown>): { mode?: "signup" } =>
@@ -113,9 +114,11 @@ function AuthPage() {
         });
         if (error) throw error;
         if (!data.session) {
+          if (data.user) void trackEvent("signup_completed", data.user.id);
           setSent(true);
           return;
         }
+        if (data.user) void trackEvent("signup_completed", data.user.id);
         goToPostAuthDestination();
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });

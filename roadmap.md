@@ -11,3 +11,4 @@
 
 ## Backlog
 - [ ] (From earlier discussion, not started) Next-step direction for the app: make data live / order creation / publish / polish empty pages — user pivoted to DB work; revisit later.
+- [ ] Launch-readiness update in progress: legal copy, verified contact details, truthful proof section, WhatsApp allowances, first-party tracking, and private admin analytics.
