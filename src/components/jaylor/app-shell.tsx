@@ -63,11 +63,18 @@ export function AppShell({ children }: { children: ReactNode }) {
           )}
         >
           <div className="flex h-full flex-col p-4">
-            <div className="flex items-center justify-between">
-              {!collapsed && <Wordmark />}
+            <div className="flex items-center justify-between gap-2">
+              {!collapsed && (
+                <StoreSwitcher
+                  memberships={memberships}
+                  currentStoreId={currentStore?.id}
+                  onSelect={setCurrentStoreId}
+                />
+              )}
               <Button
                 variant="ghost"
                 size="icon"
+                className="shrink-0"
                 aria-label={collapsed ? "Expand menu" : "Collapse menu"}
                 onClick={() => setCollapsed((c) => !c)}
               >
@@ -78,14 +85,6 @@ export function AppShell({ children }: { children: ReactNode }) {
                 )}
               </Button>
             </div>
-            {!collapsed && (
-              <StoreSwitcher
-                memberships={memberships}
-                currentStoreId={currentStore?.id}
-                onSelect={setCurrentStoreId}
-                className="mt-4"
-              />
-            )}
             <StitchDivider className="my-4" />
             <nav className="flex flex-col gap-1">
               {NAV.map(({ to, label, icon: Icon }) => {
