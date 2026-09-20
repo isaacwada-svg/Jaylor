@@ -35,5 +35,24 @@ export function planCodeToTier(planCode: string | null | undefined): Tier {
   }
 }
 
+/**
+ * Every new store gets a 14-day Growth trial before it settles onto its
+ * real plan, so the displayed tier isn't just the raw plan_code column
+ * while trial_ends_at is still in the future.
+ */
+export function effectiveTier(
+  store:
+    | {
+        plan_code: string | null;
+        trial_ends_at: string | null;
+      }
+    | null
+    | undefined,
+): Tier {
+  if (!store) return "Growth";
+  if (store.trial_ends_at && new Date(store.trial_ends_at) > new Date()) return "Growth";
+  return planCodeToTier(store.plan_code);
+}
+
 export const COMPANY_LINE =
   "Jaylor is a product of Bethjay Global Enterprise Limited — Abuja, Nigeria.";

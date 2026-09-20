@@ -26,7 +26,7 @@ import {
 import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
 import { TierBadge } from "./tier-badge";
-import { COMPANY_LINE, planCodeToTier } from "@/lib/jaylor";
+import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +50,7 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [collapsed, setCollapsed] = useState(false);
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { memberships, currentStore, setCurrentStoreId } = useStore();
-  const tier = planCodeToTier(currentStore?.plan_code);
+  const tier = effectiveTier(currentStore);
 
   return (
     <div className="linen min-h-screen bg-background">
