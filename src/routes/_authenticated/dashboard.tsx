@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
@@ -9,6 +9,7 @@ import { MoneyText } from "@/components/jaylor/money-text";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { LockedFeature } from "@/components/jaylor/locked-feature";
 import { RemindButton } from "@/components/jaylor/remind-button";
+import { CollectionScoreCard } from "@/components/jaylor/collection-score";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -77,6 +78,7 @@ function daysSince(iso: string): number {
 }
 
 function Home() {
+  const navigate = useNavigate();
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const canSeeMoney = currentRole === "owner" || currentRole === "manager";
@@ -151,6 +153,112 @@ function Home() {
       };
     },
   });
+
+  const { data: collection } = useQuery({
+    queryKey: ["dashboard-collection", storeId],
+    enabled: !!storeId && canSeeMoney,
+    queryFn: async () => {
+      const [balancesRes, ordersRes, paymentsRes, messagesRes] = await Promise.all([
+        supabase
+          .from("order_balances")
+          .select("order_id, balance, total")
+          .eq("store_id", storeId as string),
+        supabase
+          .from("orders")
+          .select("id, created_at")
+          .eq("store_id", storeId as string)
+          .neq("status", "cancelled"),
+        supabase
+          .from("payments")
+          .select("order_id, amount, paid_at")
+          .eq("store_id", storeId as string)
+          .eq("voided", false),
+        supabase
+          .from("messages")
+          .select("order_id, created_at")
+          .eq("store_id", storeId as string)
+          .not("order_id", "is", null),
+      ]);
+      if (balancesRes.error) throw balancesRes.error;
+      if (ordersRes.error) throw ordersRes.error;
+      if (paymentsRes.error) throw paymentsRes.error;
+      if (messagesRes.error) throw messagesRes.error;
+
+      const balances = balancesRes.data ?? [];
+      const orders = ordersRes.data ?? [];
+      const payments = paymentsRes.data ?? [];
+      const messages = messagesRes.data ?? [];
+
+      const orderCreatedAt = new Map(orders.map((o) => [o.id, o.created_at]));
+      const pricedOrders = balances.filter((b) => (b.total ?? 0) > 0);
+      const fullyPaid = pricedOrders.filter((b) => (b.balance ?? 0) <= 0);
+
+      const paymentsByOrder = new Map<string, { amount: number; paid_at: string }[]>();
+      for (const p of payments) {
+        if (!p.order_id) continue;
+        const list = paymentsByOrder.get(p.order_id) ?? [];
+        list.push({ amount: p.amount, paid_at: p.paid_at });
+        paymentsByOrder.set(p.order_id, list);
+      }
+
+      const daysToPay: number[] = [];
+      for (const b of fullyPaid) {
+        if (!b.order_id) continue;
+        const created = orderCreatedAt.get(b.order_id);
+        const orderPayments = paymentsByOrder.get(b.order_id) ?? [];
+        if (!created || orderPayments.length === 0) continue;
+        const lastPaidAt = orderPayments.reduce(
+          (latest, p) => Math.max(latest, new Date(p.paid_at).getTime()),
+          0,
+        );
+        const days = (lastPaidAt - new Date(created).getTime()) / 86_400_000;
+        if (days >= 0) daysToPay.push(days);
+      }
+      const avgDaysToPay =
+        daysToPay.length > 0 ? daysToPay.reduce((a, b) => a + b, 0) / daysToPay.length : null;
+
+      const lastMessageByOrder = new Map<string, string>();
+      for (const m of messages) {
+        if (!m.order_id) continue;
+        const existing = lastMessageByOrder.get(m.order_id);
+        if (!existing || m.created_at > existing) lastMessageByOrder.set(m.order_id, m.created_at);
+      }
+      let recoveredAfterReminder = 0;
+      for (const p of payments) {
+        if (!p.order_id) continue;
+        const lastMessageAt = lastMessageByOrder.get(p.order_id);
+        if (lastMessageAt && p.paid_at > lastMessageAt) recoveredAfterReminder += p.amount;
+      }
+
+      const totalCollected = payments.reduce((sum, p) => sum + p.amount, 0);
+      const paidShare = pricedOrders.length > 0 ? fullyPaid.length / pricedOrders.length : 1;
+
+      const paidShareScore = Math.round(paidShare * 50);
+      const speedScore =
+        avgDaysToPay === null ? 25 : Math.max(0, Math.round(30 - avgDaysToPay * 2));
+      const pickupScore = Math.max(0, 20 - (stats?.uncollected.length ?? 0) * 4);
+      const score = Math.max(0, Math.min(100, paidShareScore + speedScore + pickupScore));
+
+      return { totalCollected, recoveredAfterReminder, score };
+    },
+  });
+
+  const collectionAdvice = (() => {
+    const uncollectedCount = stats?.uncollected.length ?? 0;
+    if (uncollectedCount > 0) {
+      return {
+        text: `${uncollectedCount} garment${uncollectedCount === 1 ? "" : "s"} ${uncollectedCount === 1 ? "is" : "are"} waiting for pickup. Send reminders now.`,
+        actionLabel: "See uncollected",
+      };
+    }
+    if (collection && collection.score < 70) {
+      return {
+        text: "Some balances are still unpaid. Follow up with clients who owe you.",
+        actionLabel: "View orders",
+      };
+    }
+    return { text: "You're collecting well. Keep it up.", actionLabel: undefined };
+  })();
 
   const relatedClientIds = useMemo(
     () => [
@@ -233,6 +341,48 @@ function Home() {
 
         {canSeeMoney ? (
           <>
+            {collection && (
+              <div className="mb-6 grid gap-3 lg:grid-cols-2">
+                <Card className="rounded-2xl border-gold/30">
+                  <CardContent className="p-5">
+                    <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                      Jaylor has helped you collect
+                    </p>
+                    <MoneyText
+                      amount={collection.totalCollected}
+                      variant="paid"
+                      className="mt-1 text-2xl"
+                    />
+                    {collection.recoveredAfterReminder > 0 && (
+                      <p className="mt-1 text-xs text-muted-foreground">
+                        Including{" "}
+                        <MoneyText
+                          amount={collection.recoveredAfterReminder}
+                          variant="paid"
+                          className="inline text-xs"
+                        />{" "}
+                        recovered after a reminder
+                      </p>
+                    )}
+                  </CardContent>
+                </Card>
+                <CollectionScoreCard
+                  score={collection.score}
+                  advice={collectionAdvice.text}
+                  actionLabel={collectionAdvice.actionLabel}
+                  onAction={() => {
+                    if (collectionAdvice.actionLabel === "See uncollected") {
+                      document
+                        .getElementById("uncollected")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    } else {
+                      navigate({ to: "/orders" });
+                    }
+                  }}
+                />
+              </div>
+            )}
+
             {statsLoading ? (
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 {Array.from({ length: 4 }).map((_, i) => (
@@ -316,7 +466,7 @@ function Home() {
             </section>
 
             {stats && stats.uncollected.length > 0 && (
-              <section className="mt-10">
+              <section id="uncollected" className="mt-10 scroll-mt-20">
                 <h2 className="text-xl">Uncollected</h2>
                 <p className="mt-1 text-sm text-muted-foreground">Ready and waiting for pickup.</p>
                 <div className="mt-3 space-y-3">
