@@ -10,7 +10,39 @@ export const ORDER_STATUSES = [
 
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 
+/** Lowercase values as stored in the `orders.status` column, in track order. */
+export const ORDER_STATUSES_DB = [
+  "received",
+  "cutting",
+  "sewing",
+  "fitting",
+  "adjustments",
+  "ready",
+  "collected",
+] as const;
+
+export type OrderStatusDb = (typeof ORDER_STATUSES_DB)[number] | "cancelled";
+
+export function orderStatusLabel(status: string): string {
+  return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
 export type Tier = "Free" | "Growth" | "Business" | "Custom";
+
+export const GARMENT_TYPES = [
+  "Agbada",
+  "Kaftan",
+  "Senator",
+  "Iro and buba",
+  "Gown",
+  "Skirt and blouse",
+  "Suit",
+  "Shirt",
+  "Trousers",
+  "Bridal",
+  "Children's wear",
+  "Other",
+] as const;
 
 /** Formats an amount using the store currency, e.g. ₦85,000 */
 export function formatMoney(amount: number, currency = "NGN", locale = "en-NG") {

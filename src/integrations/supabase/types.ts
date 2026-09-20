@@ -303,6 +303,180 @@ export type Database = {
           },
         ];
       };
+      order_materials: {
+        Row: {
+          id: string;
+          order_id: string;
+          store_id: string;
+          source: string;
+          description: string | null;
+          colour: string | null;
+          yards: number | null;
+          cost: number;
+          photo_url: string | null;
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          store_id: string;
+          source: string;
+          description?: string | null;
+          colour?: string | null;
+          yards?: number | null;
+          cost?: number;
+          photo_url?: string | null;
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          store_id?: string;
+          source?: string;
+          description?: string | null;
+          colour?: string | null;
+          yards?: number | null;
+          cost?: number;
+          photo_url?: string | null;
+          created_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_materials_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_materials_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_status_history: {
+        Row: {
+          id: string;
+          order_id: string;
+          from_status: string | null;
+          to_status: string;
+          changed_by: string | null;
+          changed_at: string;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          from_status?: string | null;
+          to_status: string;
+          changed_by?: string | null;
+          changed_at?: string;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          from_status?: string | null;
+          to_status?: string;
+          changed_by?: string | null;
+          changed_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_status_history_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      orders: {
+        Row: {
+          id: string;
+          store_id: string;
+          number: string;
+          client_id: string;
+          garment_type: string;
+          style_notes: string | null;
+          measurement_set_id: string | null;
+          quantity: number;
+          price: number;
+          delivery_date: string | null;
+          status: string;
+          priority: string;
+          assigned_to: string | null;
+          ready_at: string | null;
+          collected_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          store_id: string;
+          number?: string;
+          client_id: string;
+          garment_type: string;
+          style_notes?: string | null;
+          measurement_set_id?: string | null;
+          quantity?: number;
+          price?: number;
+          delivery_date?: string | null;
+          status?: string;
+          priority?: string;
+          assigned_to?: string | null;
+          ready_at?: string | null;
+          collected_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          store_id?: string;
+          number?: string;
+          client_id?: string;
+          garment_type?: string;
+          style_notes?: string | null;
+          measurement_set_id?: string | null;
+          quantity?: number;
+          price?: number;
+          delivery_date?: string | null;
+          status?: string;
+          priority?: string;
+          assigned_to?: string | null;
+          ready_at?: string | null;
+          collected_at?: string | null;
+          created_by?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "orders_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "orders_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "orders_measurement_set_id_fkey";
+            columns: ["measurement_set_id"];
+            isOneToOne: false;
+            referencedRelation: "measurement_sets";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       plans: {
         Row: {
           code: string;
@@ -534,7 +708,28 @@ export type Database = {
       };
     };
     Views: {
-      [_ in never]: never;
+      orders_for_tailor: {
+        Row: {
+          id: string;
+          store_id: string;
+          number: string;
+          client_id: string;
+          garment_type: string;
+          style_notes: string | null;
+          measurement_set_id: string | null;
+          quantity: number;
+          delivery_date: string | null;
+          status: string;
+          priority: string;
+          assigned_to: string | null;
+          ready_at: string | null;
+          collected_at: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
       can_use_feature: {

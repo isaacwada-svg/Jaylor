@@ -1,0 +1,349 @@
+import { useState } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
+import { AppShell } from "@/components/jaylor/app-shell";
+import { EmptyState } from "@/components/jaylor/empty-state";
+import { StitchTrack } from "@/components/jaylor/stitch-track";
+import { MoneyText } from "@/components/jaylor/money-text";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { supabase } from "@/integrations/supabase/client";
+import type { Tables } from "@/integrations/supabase/types";
+import { useStore } from "@/lib/store-context";
+import { formatPhoneNG } from "@/lib/phone";
+import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
+import { getErrorMessage } from "@/lib/utils";
+
+export const Route = createFileRoute("/_authenticated/orders/$orderId")({
+  head: () => ({ meta: [{ title: "Order — Jaylor" }] }),
+  component: OrderDetail,
+});
+
+function OrderDetail() {
+  const { orderId } = Route.useParams();
+  const queryClient = useQueryClient();
+  const { currentRole } = useStore();
+  const canSeeMoney = currentRole === "owner" || currentRole === "manager";
+
+  const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
+  const [updating, setUpdating] = useState(false);
+
+  const { data: order, isLoading } = useQuery({
+    queryKey: ["order", orderId, canSeeMoney],
+    queryFn: async () => {
+      if (canSeeMoney) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("*")
+          .eq("id", orderId)
+          .single();
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await supabase
+        .from("orders_for_tailor")
+        .select("*")
+        .eq("id", orderId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: client } = useQuery({
+    queryKey: ["order-client", order?.client_id],
+    enabled: !!order,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("clients")
+        .select("*")
+        .eq("id", order?.client_id as string)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: material } = useQuery({
+    queryKey: ["order-material", orderId],
+    enabled: canSeeMoney,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_materials")
+        .select("*")
+        .eq("order_id", orderId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: measurementSet } = useQuery({
+    queryKey: ["order-measurement-set", order?.measurement_set_id],
+    enabled: !!order?.measurement_set_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("measurement_sets")
+        .select("*")
+        .eq("id", order?.measurement_set_id as string)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: history } = useQuery({
+    queryKey: ["order-history", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_status_history")
+        .select("*")
+        .eq("order_id", orderId)
+        .order("changed_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  async function confirmStatusChange() {
+    if (!pendingStatus) return;
+    setUpdating(true);
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({ status: pendingStatus })
+        .eq("id", orderId);
+      if (error) throw error;
+      toast.success(`Marked ${orderStatusLabel(pendingStatus)}`);
+      queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["order-history", orderId] });
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      setPendingStatus(null);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update the status"));
+    } finally {
+      setUpdating(false);
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <AppShell>
+        <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
+          <Skeleton className="h-24 rounded-2xl" />
+          <Skeleton className="mt-4 h-48 rounded-2xl" />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (!order) {
+    return (
+      <AppShell>
+        <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
+          <EmptyState
+            title="Order not found"
+            description="This order may have been deleted, or belongs to a different store."
+            action={
+              <Button asChild>
+                <Link to="/orders">Back to orders</Link>
+              </Button>
+            }
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  const price = canSeeMoney ? (order as Tables<"orders">).price : null;
+  const statusIndex = ORDER_STATUSES_DB.indexOf(order.status as (typeof ORDER_STATUSES_DB)[number]);
+  const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
+
+  return (
+    <AppShell>
+      <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
+        <Link
+          to="/orders"
+          className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
+        >
+          <ArrowLeft className="size-4" />
+          Orders
+        </Link>
+
+        <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
+          <div>
+            <p className="text-xs uppercase tracking-[0.1em] text-gold">{order.number}</p>
+            <h1 className="mt-1 text-2xl">{order.garment_type}</h1>
+            {client && (
+              <Link
+                to="/clients/$clientId"
+                params={{ clientId: client.id }}
+                className="text-sm text-muted-foreground hover:text-foreground"
+              >
+                {client.full_name} · {formatPhoneNG(client.phone)}
+              </Link>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            {order.priority === "rush" && (
+              <Badge variant="outline" className="border-owed text-owed">
+                Rush
+              </Badge>
+            )}
+            {order.delivery_date && (
+              <Badge variant="outline" className="border-gold text-gold">
+                Due {new Date(order.delivery_date).toLocaleDateString()}
+              </Badge>
+            )}
+          </div>
+        </div>
+
+        {order.status === "cancelled" ? (
+          <Badge variant="outline" className="mt-6 border-owed text-owed">
+            Cancelled
+          </Badge>
+        ) : (
+          <div className="mt-8">
+            <StitchTrack
+              steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
+              currentIndex={statusIndex}
+              className="cursor-pointer"
+            />
+            <div className="mt-4 flex flex-wrap gap-2">
+              {ORDER_STATUSES_DB.map((s, i) => (
+                <Button
+                  key={s}
+                  size="sm"
+                  variant={i === statusIndex ? "default" : "outline"}
+                  onClick={() => setPendingStatus(s)}
+                  disabled={i === statusIndex}
+                >
+                  {orderStatusLabel(s)}
+                </Button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        <div className="mt-8 grid gap-4 sm:grid-cols-2">
+          {canSeeMoney && (
+            <div className="rounded-2xl border border-border p-4">
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Price</p>
+              <p className="mt-1 text-lg">
+                <MoneyText amount={price ?? 0} />
+              </p>
+              <p className="mt-1 text-sm text-muted-foreground">Quantity: {order.quantity}</p>
+            </div>
+          )}
+
+          {canSeeMoney && material && (
+            <div className="rounded-2xl border border-border p-4">
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Material</p>
+              <p className="mt-1 text-sm">
+                {material.source === "customer" ? "Customer's fabric" : "Store-bought fabric"}
+              </p>
+              <p className="text-sm text-muted-foreground">
+                {material.description}
+                {material.colour ? ` · ${material.colour}` : ""}
+                {material.yards ? ` · ${material.yards} yds` : ""}
+              </p>
+              {material.source === "tailor" && material.cost > 0 && (
+                <p className="mt-1 text-sm">
+                  Cost: <MoneyText amount={material.cost} />
+                </p>
+              )}
+            </div>
+          )}
+
+          <div className="rounded-2xl border border-border p-4 sm:col-span-2">
+            <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+              Measurements used
+            </p>
+            {measurementSet ? (
+              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
+                {Object.entries(measurementValues).map(([key, value]) => (
+                  <div key={key} className="flex justify-between gap-2">
+                    <span className="text-muted-foreground">{key.replace(/_/g, " ")}</span>
+                    <span className="figures">
+                      {value}
+                      {measurementSet.unit}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-1 text-sm text-muted-foreground">
+                No measurement set attached. Add one from the client&apos;s profile.
+              </p>
+            )}
+          </div>
+
+          {order.style_notes && (
+            <div className="rounded-2xl border border-border p-4 sm:col-span-2">
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                Style notes
+              </p>
+              <p className="mt-1 text-sm">{order.style_notes}</p>
+            </div>
+          )}
+        </div>
+
+        {history && history.length > 0 && (
+          <div className="mt-8">
+            <p className="mb-2 text-sm font-medium text-muted-foreground">History</p>
+            <div className="space-y-2">
+              {history.map((h) => (
+                <div
+                  key={h.id}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
+                >
+                  <span>
+                    {h.from_status ? `${orderStatusLabel(h.from_status)} → ` : "Created as "}
+                    {orderStatusLabel(h.to_status)}
+                  </span>
+                  <span className="text-muted-foreground">
+                    {new Date(h.changed_at).toLocaleString()}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
+
+      <Dialog open={!!pendingStatus} onOpenChange={(open) => !open && setPendingStatus(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              Mark as {pendingStatus ? orderStatusLabel(pendingStatus) : ""}?
+            </DialogTitle>
+            <DialogDescription>
+              {pendingStatus === "collected" && canSeeMoney && price !== null && price > 0
+                ? "Confirm the balance is settled before marking this collected."
+                : "This updates the order's status for everyone who can see it."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setPendingStatus(null)}>
+              Cancel
+            </Button>
+            <Button onClick={confirmStatusChange} disabled={updating}>
+              {updating ? "Updating..." : "Confirm"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </AppShell>
+  );
+}

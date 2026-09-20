@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { cn, getErrorMessage } from "@/lib/utils";
-import { COMPANY_LINE } from "@/lib/jaylor";
+import { COMPANY_LINE, GARMENT_TYPES } from "@/lib/jaylor";
 
 export const Route = createFileRoute("/onboarding")({
   ssr: false,
@@ -27,21 +27,6 @@ const ACCENT_COLORS = [
   { name: "Ink", value: "#1B1A3A" },
   { name: "Plum", value: "#6B3F69" },
   { name: "Teal", value: "#1F6B6B" },
-] as const;
-
-const GARMENT_TYPES = [
-  "Agbada",
-  "Kaftan",
-  "Senator",
-  "Iro and buba",
-  "Gown",
-  "Skirt and blouse",
-  "Suit",
-  "Shirt",
-  "Trousers",
-  "Bridal",
-  "Children's wear",
-  "Other",
 ] as const;
 
 const SEWS_FOR = [
