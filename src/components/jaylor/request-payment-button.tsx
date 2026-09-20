@@ -5,6 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
+import { approximateUsd } from "@/lib/fx";
 import { Button } from "@/components/ui/button";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
@@ -99,6 +100,9 @@ export function RequestPaymentButton({
               <div className="rounded-xl border border-border bg-accent/30 p-3 text-sm break-all">
                 {link}
               </div>
+              <p className="text-xs text-muted-foreground">
+                Clients abroad can pay by card in their own currency; it settles to you in naira.
+              </p>
               <div className="flex gap-2">
                 <Button
                   variant="outline"
@@ -134,6 +138,11 @@ export function RequestPaymentButton({
               <div className="space-y-2">
                 <Label htmlFor="request-amount">Amount</Label>
                 <MoneyInput id="request-amount" value={amount} onChange={setAmount} />
+                {Number(amount) > 0 && (
+                  <p className="text-xs text-muted-foreground">
+                    ≈ {approximateUsd(Number(amount))} for a client paying by card from abroad
+                  </p>
+                )}
               </div>
               <Button className="w-full" onClick={generate} disabled={busy}>
                 {busy ? "Creating link..." : "Create payment link"}

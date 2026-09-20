@@ -83,8 +83,12 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
         </div>
         <p className="mt-1 text-sm text-muted-foreground">
           Send clients a secure payment link on their orders. Money settles straight to your own
-          bank account — Jaylor never holds it. Your rate: {feePercent} per collection, based on
-          your plan.
+          bank account. Jaylor never holds it. Your rate: {feePercent} per collection, based on your
+          plan.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Clients abroad can pay by card in their own currency, and it still settles to you in
+          naira.
         </p>
 
         {account?.status === "active" ? (

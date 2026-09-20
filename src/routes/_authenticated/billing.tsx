@@ -8,6 +8,7 @@ import { TierBadge } from "@/components/jaylor/tier-badge";
 import { PaymentAccountSettings } from "@/components/jaylor/payment-account-settings";
 import { ReferralCard } from "@/components/jaylor/referral-card";
 import { MessageTopupButton } from "@/components/jaylor/message-topup-button";
+import { StoreProfileSettings } from "@/components/jaylor/store-profile-settings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -134,6 +135,11 @@ function Billing() {
 
         {currentStore && (
           <div className="mt-6 space-y-6">
+            <StoreProfileSettings
+              storeId={currentStore.id}
+              storeName={currentStore.name}
+              logoUrl={currentStore.logo_url}
+            />
             <PaymentAccountSettings storeId={currentStore.id} tier={tier} />
             <ReferralCard storeId={currentStore.id} referralCode={currentStore.referral_code} />
           </div>

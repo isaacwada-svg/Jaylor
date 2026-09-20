@@ -89,8 +89,10 @@ function PublicStorefront() {
     },
   });
 
-  const photoUrl = useStorefrontPhotoUrls(items?.flatMap((item) => item.photos) ?? []);
-
+  const photoUrl = useStorefrontPhotoUrls([
+    ...(items?.flatMap((item) => item.photos) ?? []),
+    store?.logo_url ?? null,
+  ]);
 
   if (storeLoading) {
     return (
@@ -137,8 +139,12 @@ function PublicStorefront() {
       <div className="mx-auto w-full max-w-4xl px-4 pb-16 lg:px-8">
         <div className="-mt-10 flex items-end gap-4">
           <div className="flex size-20 items-center justify-center rounded-2xl border-4 border-background bg-card font-heading text-2xl shadow-sm">
-            {store.logo_url ? (
-              <img src={store.logo_url} alt="" className="size-full rounded-2xl object-cover" />
+            {store.logo_url && photoUrl(store.logo_url) ? (
+              <img
+                src={photoUrl(store.logo_url)}
+                alt=""
+                className="size-full rounded-2xl object-cover"
+              />
             ) : (
               (store.name ?? "?").slice(0, 1).toUpperCase()
             )}

@@ -11,6 +11,7 @@ import { PaymentForm } from "@/components/jaylor/payment-form";
 import { RemindButton } from "@/components/jaylor/remind-button";
 import { AiReplyDraftButton } from "@/components/jaylor/ai-reply-draft-button";
 import { RequestPaymentButton } from "@/components/jaylor/request-payment-button";
+import { ReceiptDialog } from "@/components/jaylor/receipt-dialog";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -45,6 +46,7 @@ function OrderDetail() {
   const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
   const [updating, setUpdating] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
+  const [receiptOpen, setReceiptOpen] = useState(false);
 
   // If a client (or the owner testing it) returns from a Paystack payment link.
   useEffect(() => {
@@ -323,6 +325,11 @@ function OrderDetail() {
                       clientPhone={client.whatsapp_phone ?? client.phone ?? ""}
                     />
                   )}
+                  {client && currentStore && (
+                    <Button size="sm" variant="outline" onClick={() => setReceiptOpen(true)}>
+                      Receipt
+                    </Button>
+                  )}
                 </div>
               </div>
               {balance && (
@@ -497,6 +504,18 @@ function OrderDetail() {
             queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] });
             queryClient.invalidateQueries({ queryKey: ["order-payments", orderId] });
           }}
+        />
+      )}
+
+      {canSeeMoney && client && currentStore && (
+        <ReceiptDialog
+          open={receiptOpen}
+          onOpenChange={setReceiptOpen}
+          store={currentStore}
+          order={order as Tables<"orders">}
+          client={client}
+          balance={balance ?? null}
+          payments={payments ?? []}
         />
       )}
 
