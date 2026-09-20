@@ -18,8 +18,10 @@ import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY_LINE, ORDER_STATUSES, PRICING_PLANS } from "@/lib/jaylor";
+import { COMPANY_LINE, ORDER_STATUSES } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
+import { PRICE_TIERS } from "@/lib/pricing-content";
+import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -98,7 +100,7 @@ const HIGHLIGHTS = [
   },
 ];
 
-const PLANS = PRICING_PLANS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
+const PLANS = PRICE_TIERS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
 
 function Home() {
   const [signedIn, setSignedIn] = useState(false);
@@ -201,6 +203,8 @@ function Home() {
         </div>
       </section>
 
+      <UncollectedCalculator />
+
       <section className="border-t border-border/60 bg-card/40 py-16 lg:py-20">
         <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
           <h2 className="text-center text-2xl lg:text-3xl">
@@ -285,7 +289,8 @@ function Home() {
             </div>
           </div>
           <p className="mt-5 text-center text-xs text-muted-foreground">
-            Customer stories and adoption figures will be published after they are independently verified.
+            Customer stories and adoption figures will be published after they are independently
+            verified.
           </p>
         </div>
       </section>
@@ -309,8 +314,9 @@ function Home() {
               >
                 <CardContent className="flex h-full flex-col p-6">
                   <TierBadge tier={plan.tier} />
-                  <p className="mt-3 text-2xl">{plan.price}</p>
-                  <p className="text-xs text-muted-foreground">{plan.billing}</p>
+                  <p className="mt-3 text-2xl">
+                    {plan.prices.monthly ? plan.prices.monthly.perMonth : "By quote"}
+                  </p>
                   <p className="mt-3 text-sm text-muted-foreground">{plan.blurb}</p>
                   <ul className="mt-4 space-y-2 text-sm">
                     {plan.features.map((f) => (
@@ -324,13 +330,13 @@ function Home() {
                     <Button
                       asChild
                       className="w-full"
-                      variant={plan.tier === "Growth" ? "default" : "outline"}
+                      variant={plan.mostPopular ? "default" : "outline"}
                     >
-                      {plan.tier === "Custom" ? (
+                      {plan.cta === "custom" ? (
                         <Link to="/custom">Talk to us</Link>
                       ) : (
                         <Link to="/auth" search={{ mode: "signup" }}>
-                          Start free
+                          {plan.tier === "Free" ? "Start free" : "Start 14-day trial"}
                         </Link>
                       )}
                     </Button>
