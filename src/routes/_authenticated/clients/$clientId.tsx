@@ -186,6 +186,14 @@ function ClientProfile() {
 
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-3 sm:grid-cols-2">
+              <InfoRow
+                label="Gender"
+                value={
+                  client.gender
+                    ? client.gender.charAt(0).toUpperCase() + client.gender.slice(1)
+                    : "Not set"
+                }
+              />
               <InfoRow label="Address" value={client.address || "Not recorded"} />
               <InfoRow
                 label="Birthday"
