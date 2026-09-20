@@ -19,10 +19,11 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStore } from "@/lib/store-context";
-import { effectiveTier, formatMoney } from "@/lib/jaylor";
+import { formatMoney, planCodeToTier } from "@/lib/jaylor";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
+import { useFeatureLimit } from "@/lib/use-feature-limit";
 
 export const Route = createFileRoute("/_authenticated/shop")({
   staticData: { sitemap: false },
@@ -47,8 +48,6 @@ export const Route = createFileRoute("/_authenticated/shop")({
 type ItemRow = Tables<"storefront_items">;
 type SewRequestRow = Tables<"sew_requests">;
 type ClientRow = Tables<"clients">;
-
-const FREE_ITEM_LIMIT = 10;
 
 function Shop() {
   const { currentStore, currentRole, refetch: refetchStore } = useStore();
@@ -94,8 +93,8 @@ function Shop() {
   });
 
   const newRequests = (requests ?? []).filter((r) => r.status === "new");
-  const tier = effectiveTier(currentStore);
-  const atFreeLimit = tier === "Free" && (items?.length ?? 0) >= FREE_ITEM_LIMIT;
+  const { data: itemsFeature } = useFeatureLimit(storeId, "storefront_items");
+  const atFreeLimit = itemsFeature ? !itemsFeature.allowed : false;
 
   function invalidateItems() {
     queryClient.invalidateQueries({ queryKey: ["storefront-items", storeId] });
@@ -407,8 +406,8 @@ function Shop() {
         <FeatureLimitSheet
           open={limitSheetOpen}
           onOpenChange={setLimitSheetOpen}
-          requiredTier="Growth"
-          message={`You've reached the ${FREE_ITEM_LIMIT}-item limit on Free. Growth gives you an unlimited shop.`}
+          requiredTier={planCodeToTier(itemsFeature?.required_plan ?? "growth")}
+          message={`You've reached the ${typeof itemsFeature?.limit === "number" ? itemsFeature.limit : ""}-item limit on your plan. Growth gives you an unlimited shop.`}
         />
       )}
 

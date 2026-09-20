@@ -134,14 +134,6 @@ export const EXPENSE_CATEGORIES: { value: string; label: string }[] = [
   { value: "other", label: "Other" },
 ];
 
-/** Team seats per plan tier (Custom is unlimited). Enforced client-side only. */
-export const STAFF_LIMITS: Record<Tier, number> = {
-  Free: 1,
-  Growth: 3,
-  Business: 10,
-  Custom: Infinity,
-};
-
 /** sessionStorage key holding a store invite token while the user signs in. */
 export const PENDING_INVITE_KEY = "jaylor:pendingInvite";
 

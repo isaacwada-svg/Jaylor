@@ -175,6 +175,7 @@ function Admin() {
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
             <TabsTrigger value="messaging">Messaging</TabsTrigger>
+            <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
           </TabsList>
@@ -190,6 +191,10 @@ function Admin() {
           </TabsContent>
           <TabsContent value="messaging" className="mt-6">
             <MessagingTab />
+          </TabsContent>
+
+          <TabsContent value="ai-usage" className="mt-6">
+            <AiUsageTab />
           </TabsContent>
           <TabsContent value="leads" className="mt-6">
             <LeadsTab />
@@ -552,6 +557,66 @@ type MessageUsageRow = {
   cost_ngn: number;
   plan_limit: number | null;
 };
+
+type AiUsageRow = {
+  store_id: string;
+  store_name: string;
+  plan_code: string;
+  action_count: number;
+  cost_usd: number;
+  cost_ngn: number;
+};
+
+function AiUsageTab() {
+  const { data: rows, isLoading } = useQuery({
+    queryKey: ["admin-ai-usage"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_store_ai_usage", {});
+      if (error) throw error;
+      return data as unknown as AiUsageRow[];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!rows || rows.length === 0) {
+    return <p className="text-sm text-muted-foreground">No AI actions logged this month yet.</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      <p className="text-sm text-muted-foreground">
+        AI actions (voice entry, chat import, notebook scan, style cards, AI replies) and estimated
+        cost this calendar month, by store, sorted by cost.
+      </p>
+      {rows.map((row) => (
+        <div
+          key={row.store_id}
+          className="flex items-center justify-between rounded-xl border border-border p-4"
+        >
+          <div>
+            <p className="font-medium">{row.store_name}</p>
+            <p className="text-xs text-muted-foreground">{row.plan_code}</p>
+          </div>
+          <div className="text-right">
+            <p className="figures text-sm font-medium">
+              {row.action_count} actions · {formatMoney(row.cost_ngn)}
+            </p>
+            <p className="text-xs text-muted-foreground">${row.cost_usd.toFixed(4)}</p>
+          </div>
+        </div>
+      ))}
+    </div>
+  );
+}
 
 function MessagingTab() {
   const { data: rows, isLoading } = useQuery({

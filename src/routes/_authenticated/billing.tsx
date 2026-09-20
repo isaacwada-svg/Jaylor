@@ -16,9 +16,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { useFeature } from "@/lib/use-feature";
+import { useFeatureLimit } from "@/lib/use-feature-limit";
 import { useMessageTopups } from "@/lib/use-message-topups";
 import { effectiveTier, planCodeToTier } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
+import { FEATURE_LABELS } from "@/lib/feature-keys";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   staticData: { sitemap: false },
@@ -43,6 +45,8 @@ function Billing() {
 
   const { data: ordersFeature } = useFeature(currentStore?.id, "orders");
   const { data: messagesFeature } = useFeature(currentStore?.id, "whatsapp_auto");
+  const { data: itemsFeature } = useFeatureLimit(currentStore?.id, "storefront_items");
+  const { data: usersFeature } = useFeatureLimit(currentStore?.id, "users");
   const { data: topupCount } = useMessageTopups(currentStore?.id);
   const messagesLimit =
     typeof messagesFeature?.limit === "number"
@@ -128,6 +132,20 @@ function Billing() {
                     </div>
                   )}
                 </div>
+              )}
+              {itemsFeature && (
+                <UsageMeter
+                  label={FEATURE_LABELS["storefront_items"] ?? "Storefront items"}
+                  used={itemsFeature.used}
+                  limit={itemsFeature.limit}
+                />
+              )}
+              {usersFeature && (
+                <UsageMeter
+                  label={FEATURE_LABELS["users"] ?? "Team members"}
+                  used={usersFeature.used}
+                  limit={usersFeature.limit}
+                />
               )}
             </div>
           </CardContent>

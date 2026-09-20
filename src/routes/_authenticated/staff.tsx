@@ -21,8 +21,9 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
-import { effectiveTier, STAFF_LIMITS, ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
+import { planCodeToTier, ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
+import { useFeatureLimit } from "@/lib/use-feature-limit";
 
 export const Route = createFileRoute("/_authenticated/staff")({
   staticData: { sitemap: false },
@@ -58,7 +59,6 @@ function Staff() {
   const canManage = currentRole === "owner" || currentRole === "manager";
   const isOwner = currentRole === "owner";
   const queryClient = useQueryClient();
-  const tier = effectiveTier(currentStore);
 
   const [inviteOpen, setInviteOpen] = useState(false);
   const [limitSheetOpen, setLimitSheetOpen] = useState(false);
@@ -159,8 +159,7 @@ function Staff() {
   };
 
   const tailors = (members ?? []).filter((m) => m.role === "tailor");
-  const activeCount = members?.length ?? 0;
-  const staffLimit = STAFF_LIMITS[tier];
+  const { data: usersFeature } = useFeatureLimit(storeId, "users");
 
   function invalidateMembers() {
     queryClient.invalidateQueries({ queryKey: ["store-members", storeId] });
@@ -173,7 +172,7 @@ function Staff() {
   }
 
   function openInvite() {
-    if (activeCount >= staffLimit) {
+    if (usersFeature && !usersFeature.allowed) {
       setLimitSheetOpen(true);
       return;
     }
@@ -550,8 +549,8 @@ function Staff() {
       <FeatureLimitSheet
         open={limitSheetOpen}
         onOpenChange={setLimitSheetOpen}
-        requiredTier={tier === "Free" ? "Growth" : "Business"}
-        message={`You've reached the ${staffLimit === Infinity ? "" : staffLimit + " "}team member limit on your plan.`}
+        requiredTier={planCodeToTier(usersFeature?.required_plan ?? "growth")}
+        message={`You've reached the ${typeof usersFeature?.limit === "number" ? usersFeature.limit + " " : ""}team member limit on your plan.`}
       />
     </AppShell>
   );
