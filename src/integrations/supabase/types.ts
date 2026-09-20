@@ -1165,6 +1165,104 @@ export type Database = {
           },
         ];
       };
+      payment_accounts: {
+        Row: {
+          store_id: string;
+          provider: string;
+          subaccount_code: string | null;
+          bank_code: string | null;
+          bank_name: string | null;
+          account_number: string | null;
+          account_name: string | null;
+          status: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          store_id: string;
+          provider?: string;
+          subaccount_code?: string | null;
+          bank_code?: string | null;
+          bank_name?: string | null;
+          account_number?: string | null;
+          account_name?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          store_id?: string;
+          provider?: string;
+          subaccount_code?: string | null;
+          bank_code?: string | null;
+          bank_name?: string | null;
+          account_number?: string | null;
+          account_name?: string | null;
+          status?: string;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "payment_accounts_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: true;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      order_payment_links: {
+        Row: {
+          id: string;
+          order_id: string;
+          store_id: string;
+          amount: number;
+          platform_fee: number;
+          reference: string;
+          status: string;
+          created_at: string;
+          paid_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          order_id: string;
+          store_id: string;
+          amount: number;
+          platform_fee?: number;
+          reference: string;
+          status?: string;
+          created_at?: string;
+          paid_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          order_id?: string;
+          store_id?: string;
+          amount?: number;
+          platform_fee?: number;
+          reference?: string;
+          status?: string;
+          created_at?: string;
+          paid_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "order_payment_links_order_id_fkey";
+            columns: ["order_id"];
+            isOneToOne: false;
+            referencedRelation: "orders";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "order_payment_links_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       payments: {
         Row: {
           amount: number;

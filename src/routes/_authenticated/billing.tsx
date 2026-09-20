@@ -4,6 +4,7 @@ import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
+import { PaymentAccountSettings } from "@/components/jaylor/payment-account-settings";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -85,6 +86,12 @@ function Billing() {
             </div>
           </CardContent>
         </Card>
+
+        {currentStore && (
+          <div className="mt-6">
+            <PaymentAccountSettings storeId={currentStore.id} tier={tier} />
+          </div>
+        )}
 
         <h2 className="mt-8 text-xl">Plans</h2>
         {plansLoading ? (

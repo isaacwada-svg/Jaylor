@@ -127,6 +127,15 @@ function More() {
                 </Link>
               );
             }
+            if (label === "Payments and receipts") {
+              return (
+                <Link key={label} to="/payments">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
             if (label === "AI tools") {
               return (
                 <Link key={label} to="/ai-designs">

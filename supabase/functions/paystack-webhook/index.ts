@@ -32,11 +32,45 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  await supabase
-    .from("ai_design_payments")
-    .update({ status: "success", verified_at: new Date().toISOString() })
-    .eq("reference", reference)
-    .eq("status", "pending");
+  if (reference.startsWith("orderpay_")) {
+    await confirmOrderPayment(supabase, reference);
+  } else {
+    await supabase
+      .from("ai_design_payments")
+      .update({ status: "success", verified_at: new Date().toISOString() })
+      .eq("reference", reference)
+      .eq("status", "pending");
+  }
 
   return new Response("ok", { status: 200 });
 });
+
+async function confirmOrderPayment(
+  supabase: ReturnType<typeof createClient>,
+  reference: string,
+): Promise<void> {
+  const { data: link } = await supabase
+    .from("order_payment_links")
+    .select("id, order_id, store_id, amount, status")
+    .eq("reference", reference)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (!link) return;
+
+  const paidAt = new Date().toISOString();
+  const { error } = await supabase
+    .from("order_payment_links")
+    .update({ status: "success", paid_at: paidAt })
+    .eq("id", link.id)
+    .eq("status", "pending");
+  if (error) return;
+
+  await supabase.from("payments").insert({
+    store_id: link.store_id,
+    order_id: link.order_id,
+    amount: link.amount,
+    method: "paystack",
+    reference,
+    paid_at: paidAt,
+  });
+}

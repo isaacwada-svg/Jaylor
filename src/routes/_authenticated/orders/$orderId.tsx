@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -10,6 +10,7 @@ import { MoneyText } from "@/components/jaylor/money-text";
 import { PaymentForm } from "@/components/jaylor/payment-form";
 import { RemindButton } from "@/components/jaylor/remind-button";
 import { AiReplyDraftButton } from "@/components/jaylor/ai-reply-draft-button";
+import { RequestPaymentButton } from "@/components/jaylor/request-payment-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -44,6 +45,35 @@ function OrderDetail() {
   const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
   const [updating, setUpdating] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
+
+  // If a client (or the owner testing it) returns from a Paystack payment link.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const reference = params.get("reference") ?? params.get("trxref");
+    if (!reference) return;
+    window.history.replaceState({}, "", window.location.pathname);
+
+    (async () => {
+      try {
+        const { data, error } = await supabase.functions.invoke("verify-order-payment", {
+          body: { reference },
+        });
+        if (error) throw error;
+        const status = (data as { status: string }).status;
+        if (status === "success") {
+          toast.success("Payment confirmed");
+          queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+          queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] });
+          queryClient.invalidateQueries({ queryKey: ["order-payments", orderId] });
+        } else {
+          toast.error("Payment wasn't confirmed");
+        }
+      } catch (error) {
+        toast.error(getErrorMessage(error, "Could not confirm this payment"));
+      }
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const { data: order, isLoading } = useQuery({
     queryKey: ["order", orderId, canSeeMoney],
@@ -281,9 +311,19 @@ function OrderDetail() {
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">Quantity: {order.quantity}</p>
                 </div>
-                <Button size="sm" onClick={() => setPaymentFormOpen(true)}>
-                  Record payment
-                </Button>
+                <div className="flex shrink-0 flex-col gap-2">
+                  <Button size="sm" onClick={() => setPaymentFormOpen(true)}>
+                    Record payment
+                  </Button>
+                  {(balance?.balance ?? 0) > 0 && client && (
+                    <RequestPaymentButton
+                      orderId={order.id ?? ""}
+                      defaultAmount={balance?.balance ?? 0}
+                      clientName={client.full_name ?? ""}
+                      clientPhone={client.whatsapp_phone ?? client.phone ?? ""}
+                    />
+                  )}
+                </div>
               </div>
               {balance && (
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-sm">
@@ -467,10 +507,13 @@ function OrderDetail() {
               Mark as {pendingStatus ? orderStatusLabel(pendingStatus) : ""}?
             </DialogTitle>
             <DialogDescription>
-              {pendingStatus === "collected" && canSeeMoney && balance && (balance.balance ?? 0) > 0 ? (
+              {pendingStatus === "collected" &&
+              canSeeMoney &&
+              balance &&
+              (balance.balance ?? 0) > 0 ? (
                 <span className="text-owed">
-                  A balance of <MoneyText amount={balance.balance ?? 0} variant="owed" /> is still owed.
-                  Confirm collection anyway?
+                  A balance of <MoneyText amount={balance.balance ?? 0} variant="owed" /> is still
+                  owed. Confirm collection anyway?
                 </span>
               ) : (
                 "This updates the order's status for everyone who can see it."

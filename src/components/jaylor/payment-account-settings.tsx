@@ -1,0 +1,130 @@
+import { useState } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import { getErrorMessage } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { PRICE_TIERS } from "@/lib/pricing-content";
+import type { Tier } from "@/lib/jaylor";
+
+export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tier: Tier }) {
+  const feePercent = PRICE_TIERS.find((p) => p.tier === tier)?.jaylorPayFee ?? "1%";
+  const queryClient = useQueryClient();
+  const [bankCode, setBankCode] = useState("");
+  const [accountNumber, setAccountNumber] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const { data: account } = useQuery({
+    queryKey: ["payment-account", storeId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("payment_accounts")
+        .select("*")
+        .eq("store_id", storeId)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const { data: banks } = useQuery({
+    queryKey: ["paystack-banks"],
+    staleTime: 1000 * 60 * 60,
+    queryFn: async () => {
+      const { data, error } = await supabase.functions.invoke("list-paystack-banks");
+      if (error) throw error;
+      return (data as { result: { name: string; code: string }[] }).result;
+    },
+  });
+
+  async function connect() {
+    if (!bankCode || accountNumber.trim().length < 10) {
+      toast.error("Choose a bank and enter a valid 10-digit account number");
+      return;
+    }
+    setBusy(true);
+    try {
+      const bankName = banks?.find((b) => b.code === bankCode)?.name ?? "";
+      const { data, error } = await supabase.functions.invoke("connect-payment-account", {
+        body: { storeId, bankCode, bankName, accountNumber: accountNumber.trim() },
+      });
+      if (error) throw error;
+      const result = data as { result: { account_name: string } };
+      toast.success(`Connected — ${result.result.account_name}`);
+      queryClient.invalidateQueries({ queryKey: ["payment-account", storeId] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not connect this account"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <Card className="rounded-2xl">
+      <CardContent className="p-5">
+        <div className="flex items-center justify-between">
+          <p className="font-medium">Jaylor Pay</p>
+          {account?.status === "active" ? (
+            <Badge className="border-paid/40 bg-paid/10 text-paid">Connected</Badge>
+          ) : (
+            <Badge variant="outline">Not connected</Badge>
+          )}
+        </div>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Send clients a secure payment link on their orders. Money settles straight to your own
+          bank account — Jaylor never holds it. Your rate: {feePercent} per collection, based on
+          your plan.
+        </p>
+
+        {account?.status === "active" ? (
+          <p className="mt-4 rounded-xl border border-border p-3 text-sm">
+            {account.account_name} · {account.bank_name} ····{account.account_number?.slice(-4)}
+          </p>
+        ) : (
+          <div className="mt-4 space-y-3">
+            <div className="space-y-2">
+              <Label>Bank</Label>
+              <Select value={bankCode} onValueChange={setBankCode}>
+                <SelectTrigger>
+                  <SelectValue placeholder={banks ? "Choose your bank" : "Loading banks..."} />
+                </SelectTrigger>
+                <SelectContent>
+                  {(banks ?? []).map((b) => (
+                    <SelectItem key={b.code} value={b.code}>
+                      {b.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="account-number">Account number</Label>
+              <Input
+                id="account-number"
+                inputMode="numeric"
+                value={accountNumber}
+                onChange={(e) => setAccountNumber(e.target.value.replace(/\D/g, ""))}
+                placeholder="0123456789"
+                maxLength={10}
+              />
+            </div>
+            <Button onClick={connect} disabled={busy} className="w-full">
+              {busy ? "Connecting..." : "Connect account"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
