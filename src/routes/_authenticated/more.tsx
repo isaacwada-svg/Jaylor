@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
@@ -34,9 +34,19 @@ export const Route = createFileRoute("/_authenticated/more")({
 });
 
 const ITEMS: { label: string; hint: string; icon: typeof Users2; tier?: Tier }[] = [
-  { label: "Consultations", hint: "Bookings and video fittings", icon: CalendarClock, tier: "Growth" },
+  {
+    label: "Consultations",
+    hint: "Bookings and video fittings",
+    icon: CalendarClock,
+    tier: "Growth",
+  },
   { label: "Group events", hint: "Aso-ebi and family sets", icon: Users2, tier: "Growth" },
-  { label: "Staff and job board", hint: "Assign work, see workload", icon: Users2, tier: "Business" },
+  {
+    label: "Staff and job board",
+    hint: "Assign work, see workload",
+    icon: Users2,
+    tier: "Business",
+  },
   { label: "Expenses and reports", hint: "Costs and net profit", icon: Receipt, tier: "Business" },
   { label: "Payments and receipts", hint: "Balances and receipts", icon: Wallet },
   { label: "AI tools", hint: "Style previews, captions", icon: Sparkles, tier: "Growth" },
@@ -51,8 +61,8 @@ function More() {
         <h1 className="text-3xl">More</h1>
         <StitchDivider className="my-6" />
         <div className="grid gap-3 sm:grid-cols-2">
-          {ITEMS.map(({ label, hint, icon: Icon, tier }) => (
-            <Card key={label} className="rounded-2xl">
+          {ITEMS.map(({ label, hint, icon: Icon, tier }) => {
+            const content = (
               <CardContent className="flex items-start gap-3 p-4">
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-gold">
                   <Icon className="size-5" />
@@ -65,8 +75,22 @@ function More() {
                   <p className="mt-0.5 text-sm text-muted-foreground">{hint}</p>
                 </div>
               </CardContent>
-            </Card>
-          ))}
+            );
+            if (label === "Settings and billing") {
+              return (
+                <Link key={label} to="/billing">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            return (
+              <Card key={label} className="rounded-2xl">
+                {content}
+              </Card>
+            );
+          })}
         </div>
       </div>
     </AppShell>

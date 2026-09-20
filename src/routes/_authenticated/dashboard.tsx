@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
+import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
@@ -203,6 +204,31 @@ function Home() {
         </p>
 
         <StitchDivider className="my-6" />
+
+        {canSeeMoney && currentStore && new Date(currentStore.trial_ends_at) > new Date() && (
+          <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-accent/40 px-4 py-3">
+            <p className="text-sm">
+              <span className="font-medium text-gold">
+                {Math.max(
+                  0,
+                  Math.ceil(
+                    (new Date(currentStore.trial_ends_at).getTime() - Date.now()) /
+                      (1000 * 60 * 60 * 24),
+                  ),
+                )}{" "}
+                days left
+              </span>{" "}
+              on your Growth trial.
+            </p>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => toast("Billing isn't set up yet — coming soon")}
+            >
+              Upgrade now
+            </Button>
+          </div>
+        )}
 
         {canSeeMoney ? (
           <>

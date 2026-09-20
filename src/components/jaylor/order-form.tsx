@@ -5,9 +5,11 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { GARMENT_TYPES, formatMoney } from "@/lib/jaylor";
+import { GARMENT_TYPES, formatMoney, planCodeToTier } from "@/lib/jaylor";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage, cn } from "@/lib/utils";
+import { useFeature } from "@/lib/use-feature";
+import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -44,6 +46,7 @@ export function OrderForm({
   onSaved: (order: OrderRow) => void;
 }) {
   const isMobile = useIsMobile();
+  const { data: ordersFeature } = useFeature(open ? storeId : undefined, "orders");
   const [step, setStep] = useState(0);
 
   const [clientSearch, setClientSearch] = useState("");
@@ -456,6 +459,17 @@ export function OrderForm({
       )}
     </div>
   );
+
+  if (open && ordersFeature && !ordersFeature.allowed) {
+    return (
+      <FeatureLimitSheet
+        open={open}
+        onOpenChange={onOpenChange}
+        requiredTier={planCodeToTier(ordersFeature.required_plan ?? "growth")}
+        message="You've reached your monthly order limit. Growth gives you unlimited orders."
+      />
+    );
+  }
 
   if (isMobile) {
     return (

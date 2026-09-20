@@ -824,6 +824,44 @@ export type Database = {
           },
         ];
       };
+      usage_counters: {
+        Row: {
+          store_id: string;
+          month: string;
+          orders: number;
+          messages: number;
+          ai_scans: number;
+          ai_previews: number;
+          voice_orders: number;
+        };
+        Insert: {
+          store_id: string;
+          month: string;
+          orders?: number;
+          messages?: number;
+          ai_scans?: number;
+          ai_previews?: number;
+          voice_orders?: number;
+        };
+        Update: {
+          store_id?: string;
+          month?: string;
+          orders?: number;
+          messages?: number;
+          ai_scans?: number;
+          ai_previews?: number;
+          voice_orders?: number;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "usage_counters_store_id_fkey";
+            columns: ["store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
       order_balances: {
@@ -865,6 +903,14 @@ export type Database = {
         Returns: boolean;
       };
       effective_plan_code: { Args: { _store_id: string }; Returns: string };
+      feature_usage: {
+        Args: { p_store_id: string; p_feature: string };
+        Returns: Json;
+      };
+      increment_usage_counter: {
+        Args: { p_store_id: string; p_column: string };
+        Returns: undefined;
+      };
       has_store_role: {
         Args: {
           _roles: Database["public"]["Enums"]["store_role"][];
