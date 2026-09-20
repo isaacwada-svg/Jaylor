@@ -7,14 +7,20 @@ export const Route = createFileRoute("/measure-guide")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      {
-        title: "How to measure yourself — Jaylor",
-      },
+      { title: "How to measure yourself — Jaylor" },
       {
         name: "description",
         content:
           "A picture guide for taking your own body measurements at home, to send to your tailor.",
       },
+      { property: "og:title", content: "How to measure yourself at home" },
+      {
+        property: "og:description",
+        content:
+          "Step-by-step pictures for taking bust, waist, hip and length measurements to send to your tailor.",
+      },
+      { property: "og:type", content: "article" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: MeasureGuide,
