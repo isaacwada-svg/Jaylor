@@ -256,9 +256,9 @@ function Shop() {
                   <div key={item.id} className="rounded-2xl border border-border p-4">
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex min-w-0 items-center gap-3">
-                        {item.photos[0] ? (
+                        {photoUrl(item.photos[0]) ? (
                           <img
-                            src={item.photos[0]}
+                            src={photoUrl(item.photos[0])}
                             alt={item.title}
                             className="size-14 shrink-0 rounded-xl object-cover"
                           />
