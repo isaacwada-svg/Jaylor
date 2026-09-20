@@ -88,6 +88,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Jaylor is a premium business app for tailors and fashion houses: orders, measurements, payments and reminders.",
       },
       { name: "author", content: "Bethjay Global Enterprise Limited" },
+      {
+        name: "google-site-verification",
+        content: "H-1CL08KeAR17NLjndzxUVRIepeEU8CLkiYwZhMUdpA",
+      },
       { name: "theme-color", content: "#1B1A3A" },
       { property: "og:title", content: "Jaylor" },
       {
