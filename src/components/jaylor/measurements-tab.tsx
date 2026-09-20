@@ -16,6 +16,7 @@ import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { MeasurementDiagram, measurementGuideText } from "@/components/jaylor/measurement-diagram";
+import { SendPassportButton } from "@/components/jaylor/passport-actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -118,6 +119,13 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
           {latest ? "New measurement" : "Take measurements"}
         </Button>
         <ShareGuideButton clientName={client.full_name} />
+        {latest && (
+          <SendPassportButton
+            clientId={client.id}
+            clientName={client.full_name}
+            phone={client.whatsapp_phone ?? client.phone}
+          />
+        )}
       </div>
 
       {sets && sets.length > 1 && <HistoryList sets={sets.slice(1)} templates={templates ?? []} />}

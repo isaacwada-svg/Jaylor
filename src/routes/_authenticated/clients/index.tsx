@@ -5,6 +5,7 @@ import { Search, UserPlus } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { ClientForm } from "@/components/jaylor/client-form";
+import { PassportShareInbox } from "@/components/jaylor/passport-share-inbox";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -129,6 +130,12 @@ function Clients() {
             New client
           </Button>
         </div>
+
+        {storeId && (
+          <div className="mt-4">
+            <PassportShareInbox storeId={storeId} />
+          </div>
+        )}
 
         <div className="mt-4 flex gap-2">
           <div className="relative flex-1">

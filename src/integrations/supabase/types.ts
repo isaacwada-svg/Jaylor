@@ -858,6 +858,130 @@ export type Database = {
           },
         ];
       };
+      measurement_passports: {
+        Row: {
+          client_id: string;
+          created_at: string;
+          id: string;
+          issuing_store_id: string;
+          revoked_at: string | null;
+          revoked_by: string | null;
+          token: string;
+          update_requested_at: string | null;
+        };
+        Insert: {
+          client_id: string;
+          created_at?: string;
+          id?: string;
+          issuing_store_id: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          token: string;
+          update_requested_at?: string | null;
+        };
+        Update: {
+          client_id?: string;
+          created_at?: string;
+          id?: string;
+          issuing_store_id?: string;
+          revoked_at?: string | null;
+          revoked_by?: string | null;
+          token?: string;
+          update_requested_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "measurement_passports_client_id_fkey";
+            columns: ["client_id"];
+            isOneToOne: true;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "measurement_passports_issuing_store_id_fkey";
+            columns: ["issuing_store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      measurement_passport_shares: {
+        Row: {
+          created_at: string;
+          created_client_id: string | null;
+          extra_fields_snapshot: Json;
+          full_name: string;
+          id: string;
+          measurements_snapshot: Json;
+          notes_snapshot: string | null;
+          passport_id: string;
+          phone: string | null;
+          responded_at: string | null;
+          status: string;
+          taken_at_snapshot: string | null;
+          target_store_id: string;
+          unit_snapshot: string | null;
+          whatsapp_phone: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          created_client_id?: string | null;
+          extra_fields_snapshot?: Json;
+          full_name: string;
+          id?: string;
+          measurements_snapshot?: Json;
+          notes_snapshot?: string | null;
+          passport_id: string;
+          phone?: string | null;
+          responded_at?: string | null;
+          status?: string;
+          taken_at_snapshot?: string | null;
+          target_store_id: string;
+          unit_snapshot?: string | null;
+          whatsapp_phone?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          created_client_id?: string | null;
+          extra_fields_snapshot?: Json;
+          full_name?: string;
+          id?: string;
+          measurements_snapshot?: Json;
+          notes_snapshot?: string | null;
+          passport_id?: string;
+          phone?: string | null;
+          responded_at?: string | null;
+          status?: string;
+          taken_at_snapshot?: string | null;
+          target_store_id?: string;
+          unit_snapshot?: string | null;
+          whatsapp_phone?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "measurement_passport_shares_passport_id_fkey";
+            columns: ["passport_id"];
+            isOneToOne: false;
+            referencedRelation: "measurement_passports";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "measurement_passport_shares_target_store_id_fkey";
+            columns: ["target_store_id"];
+            isOneToOne: false;
+            referencedRelation: "stores";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "measurement_passport_shares_created_client_id_fkey";
+            columns: ["created_client_id"];
+            isOneToOne: false;
+            referencedRelation: "clients";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       messages: {
         Row: {
           channel: string;
@@ -2261,6 +2385,22 @@ export type Database = {
       resolve_referral_code: {
         Args: { p_code: string };
         Returns: string | null;
+      };
+      issue_measurement_passport: {
+        Args: { p_client_id: string };
+        Returns: string;
+      };
+      revoke_measurement_passport_by_store: {
+        Args: { p_client_id: string };
+        Returns: undefined;
+      };
+      accept_passport_share: {
+        Args: { p_share_id: string };
+        Returns: string;
+      };
+      decline_passport_share: {
+        Args: { p_share_id: string };
+        Returns: undefined;
       };
       get_referral_stats: {
         Args: { p_store_id: string };

@@ -19,6 +19,7 @@ import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CustomRouteImport } from './routes/custom'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
+import { Route as MeasurementPassportRouteImport } from './routes/measurement-passport'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -39,6 +40,7 @@ import { Route as BookHandleRouteImport } from './routes/book.$handle'
 import { Route as DesignTokenRouteImport } from './routes/design.$token'
 import { Route as ETokenRouteImport } from './routes/e.$token'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
+import { Route as PassportTokenRouteImport } from './routes/passport.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events/index'
@@ -93,6 +95,11 @@ const ImportRoute = ImportRouteImport.update({
 const MeasureGuideRoute = MeasureGuideRouteImport.update({
   id: '/measure-guide',
   path: '/measure-guide',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const MeasurementPassportRoute = MeasurementPassportRouteImport.update({
+  id: '/measurement-passport',
+  path: '/measurement-passport',
   getParentRoute: () => rootRouteImport,
 } as any)
 const OnboardingRoute = OnboardingRouteImport.update({
@@ -196,6 +203,11 @@ const JoinTokenRoute = JoinTokenRouteImport.update({
   path: '/join/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PassportTokenRoute = PassportTokenRouteImport.update({
+  id: '/passport/$token',
+  path: '/passport/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -243,6 +255,7 @@ export interface FileRoutesByFullPath {
   '/custom': typeof CustomRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
+  '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -263,6 +276,7 @@ export interface FileRoutesByFullPath {
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
   '/join/$token': typeof JoinTokenRoute
+  '/passport/$token': typeof PassportTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -280,6 +294,7 @@ export interface FileRoutesByTo {
   '/custom': typeof CustomRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
+  '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -300,6 +315,7 @@ export interface FileRoutesByTo {
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
   '/join/$token': typeof JoinTokenRoute
+  '/passport/$token': typeof PassportTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -319,6 +335,7 @@ export interface FileRoutesById {
   '/custom': typeof CustomRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
+  '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -339,6 +356,7 @@ export interface FileRoutesById {
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
   '/join/$token': typeof JoinTokenRoute
+  '/passport/$token': typeof PassportTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -358,6 +376,7 @@ export interface FileRouteTypes {
     | '/custom'
     | '/import'
     | '/measure-guide'
+    | '/measurement-passport'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
@@ -378,6 +397,7 @@ export interface FileRouteTypes {
     | '/design/$token'
     | '/e/$token'
     | '/join/$token'
+    | '/passport/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -395,6 +415,7 @@ export interface FileRouteTypes {
     | '/custom'
     | '/import'
     | '/measure-guide'
+    | '/measurement-passport'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
@@ -415,6 +436,7 @@ export interface FileRouteTypes {
     | '/design/$token'
     | '/e/$token'
     | '/join/$token'
+    | '/passport/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -433,6 +455,7 @@ export interface FileRouteTypes {
     | '/custom'
     | '/import'
     | '/measure-guide'
+    | '/measurement-passport'
     | '/onboarding'
     | '/pricing'
     | '/privacy-policy'
@@ -453,6 +476,7 @@ export interface FileRouteTypes {
     | '/design/$token'
     | '/e/$token'
     | '/join/$token'
+    | '/passport/$token'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
@@ -472,6 +496,7 @@ export interface RootRouteChildren {
   CustomRoute: typeof CustomRoute
   ImportRoute: typeof ImportRoute
   MeasureGuideRoute: typeof MeasureGuideRoute
+  MeasurementPassportRoute: typeof MeasurementPassportRoute
   OnboardingRoute: typeof OnboardingRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -482,6 +507,7 @@ export interface RootRouteChildren {
   DesignTokenRoute: typeof DesignTokenRoute
   ETokenRoute: typeof ETokenRoute
   JoinTokenRoute: typeof JoinTokenRoute
+  PassportTokenRoute: typeof PassportTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -554,6 +580,13 @@ declare module '@tanstack/react-router' {
       path: '/measure-guide'
       fullPath: '/measure-guide'
       preLoaderRoute: typeof MeasureGuideRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/measurement-passport': {
+      id: '/measurement-passport'
+      path: '/measurement-passport'
+      fullPath: '/measurement-passport'
+      preLoaderRoute: typeof MeasurementPassportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/onboarding': {
@@ -696,6 +729,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof JoinTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/passport/$token': {
+      id: '/passport/$token'
+      path: '/passport/$token'
+      fullPath: '/passport/$token'
+      preLoaderRoute: typeof PassportTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -793,6 +833,7 @@ const rootRouteChildren: RootRouteChildren = {
   CustomRoute: CustomRoute,
   ImportRoute: ImportRoute,
   MeasureGuideRoute: MeasureGuideRoute,
+  MeasurementPassportRoute: MeasurementPassportRoute,
   OnboardingRoute: OnboardingRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
@@ -803,6 +844,7 @@ const rootRouteChildren: RootRouteChildren = {
   DesignTokenRoute: DesignTokenRoute,
   ETokenRoute: ETokenRoute,
   JoinTokenRoute: JoinTokenRoute,
+  PassportTokenRoute: PassportTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
