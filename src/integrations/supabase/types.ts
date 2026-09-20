@@ -135,6 +135,30 @@ export type Database = {
           },
         ]
       }
+      analytics_events: {
+        Row: {
+          event_name: string
+          id: string
+          occurred_at: string
+          user_id: string | null
+          visitor_id: string
+        }
+        Insert: {
+          event_name: string
+          id?: string
+          occurred_at?: string
+          user_id?: string | null
+          visitor_id: string
+        }
+        Update: {
+          event_name?: string
+          id?: string
+          occurred_at?: string
+          user_id?: string | null
+          visitor_id?: string
+        }
+        Relationships: []
+      }
       app_settings: {
         Row: {
           key: string
@@ -844,8 +868,12 @@ export type Database = {
         Row: {
           channel: string
           client_id: string | null
+          cost_ngn: number
+          cost_usd: number
           created_at: string
+          delivered_at: string | null
           id: string
+          message_category: string
           order_id: string | null
           sent_by: string | null
           status: string
@@ -855,8 +883,12 @@ export type Database = {
         Insert: {
           channel?: string
           client_id?: string | null
+          cost_ngn?: number
+          cost_usd?: number
           created_at?: string
+          delivered_at?: string | null
           id?: string
+          message_category?: string
           order_id?: string | null
           sent_by?: string | null
           status?: string
@@ -866,8 +898,12 @@ export type Database = {
         Update: {
           channel?: string
           client_id?: string | null
+          cost_ngn?: number
+          cost_usd?: number
           created_at?: string
+          delivered_at?: string | null
           id?: string
+          message_category?: string
           order_id?: string | null
           sent_by?: string | null
           status?: string
@@ -1712,6 +1748,52 @@ export type Database = {
           },
         ]
       }
+      subscription_history: {
+        Row: {
+          changed_at: string
+          from_plan: string | null
+          id: string
+          store_id: string
+          to_plan: string
+        }
+        Insert: {
+          changed_at?: string
+          from_plan?: string | null
+          id?: string
+          store_id: string
+          to_plan: string
+        }
+        Update: {
+          changed_at?: string
+          from_plan?: string | null
+          id?: string
+          store_id?: string
+          to_plan?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_history_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_history_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_history_to_plan_fkey"
+            columns: ["to_plan"]
+            isOneToOne: false
+            referencedRelation: "plans"
+            referencedColumns: ["code"]
+          },
+        ]
+      }
       support_grants: {
         Row: {
           admin_id: string | null
@@ -1974,6 +2056,7 @@ export type Database = {
     }
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string }
+      admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_stores: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
