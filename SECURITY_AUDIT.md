@@ -751,6 +751,24 @@ this is stated explicitly in "How verified".
 
 ### L2 — `anon` and `authenticated` hold blanket INSERT/UPDATE/DELETE on almost every table
 
+> **Status: fix delivered, not yet applied** (migration `20260921140000_...sql`,
+> tracked in the repo — no live DB execution access from this session). Verified
+> directly against client code rather than the original guess below: `anon` is
+> revoked entirely then re-granted only `INSERT` on `leads`/`sew_requests`/
+> `consultation_requests`/`analytics_events`, `SELECT` on `storefront_items`/
+> `stores_public`, and the existing narrow column-level `SELECT` on `stores`.
+> `authenticated` keeps its existing grants on normal app tables (already
+> scoped per-row by RLS) and loses access only to the admin/internal/RPC-only
+> tables (`platform_admins`, `subscription_history`, `usage_log`,
+> `usage_counters`, `feature_usage_counters`, `ai_response_cache`,
+> `ai_design_payments`, `order_payment_links`, `audit_logs`, `app_settings`,
+> `country_configs`, `garment_type_aliases`, `calendar_event_overrides`), plus
+> a downgrade to `SELECT`-only on `plans` and `payment_accounts` (writes to
+> both go through RPCs, not direct table access — contrary to the original
+> "authenticated needs no privileges at all on plans" guess below, which was
+> wrong: `billing.tsx` reads `plans` directly). Update this line once the
+> store operator confirms the app still works end-to-end after running it.
+
 - **Area:** Database access / grants
 - **Severity:** High
 - **Location:** `pg_class.relacl` for 45 of 47 public tables, e.g. `clients`, `orders`, `payments`,
