@@ -719,7 +719,6 @@ export type Database = {
           delivered_to: string | null
           delivery_photo_url: string | null
           event_id: string
-          fabric_photo_path: string | null
           full_name: string
           id: string
           is_sponsored: boolean
@@ -729,9 +728,6 @@ export type Database = {
           paid_amount: number
           phone: string
           production_stage: string | null
-          self_measurements: Json | null
-          self_measurements_submitted_at: string | null
-          self_measurements_unit: string | null
           size_key: string | null
           status: string
           store_id: string
@@ -746,7 +742,6 @@ export type Database = {
           delivered_to?: string | null
           delivery_photo_url?: string | null
           event_id: string
-          fabric_photo_path?: string | null
           full_name: string
           id?: string
           is_sponsored?: boolean
@@ -756,9 +751,6 @@ export type Database = {
           paid_amount?: number
           phone: string
           production_stage?: string | null
-          self_measurements?: Json | null
-          self_measurements_submitted_at?: string | null
-          self_measurements_unit?: string | null
           size_key?: string | null
           status?: string
           store_id: string
@@ -773,7 +765,6 @@ export type Database = {
           delivered_to?: string | null
           delivery_photo_url?: string | null
           event_id?: string
-          fabric_photo_path?: string | null
           full_name?: string
           id?: string
           is_sponsored?: boolean
@@ -783,9 +774,6 @@ export type Database = {
           paid_amount?: number
           phone?: string
           production_stage?: string | null
-          self_measurements?: Json | null
-          self_measurements_submitted_at?: string | null
-          self_measurements_unit?: string | null
           size_key?: string | null
           status?: string
           store_id?: string
@@ -3297,16 +3285,8 @@ export type Database = {
         Args: { p_client_id: string }
         Returns: undefined
       }
-      set_participant_fabric_photo: {
-        Args: { p_path: string; p_token: string }
-        Returns: undefined
-      }
       set_participant_measurement_choice: {
         Args: { p_choice: string; p_token: string }
-        Returns: undefined
-      }
-      set_participant_measurements: {
-        Args: { p_token: string; p_unit?: string; p_values: Json }
         Returns: undefined
       }
       set_participant_style: {
