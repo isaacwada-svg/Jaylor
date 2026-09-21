@@ -53,7 +53,7 @@ function JobLandingPage() {
         </div>
 
         <div className="mt-8">
-          <Button asChild size="lg">
+          <Button asChild variant="premium" size="lg">
             <Link to="/auth" search={{ mode: "signup" }}>
               Start free
             </Link>
