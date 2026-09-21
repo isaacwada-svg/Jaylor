@@ -5,14 +5,14 @@ import { COMPANY_LINE } from "@/lib/jaylor";
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
   return (
-    <main className="linen min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
+    <main className="premium-public min-h-screen bg-background">
+      <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
           <Link to="/" className="flex items-center gap-2">
             <LogoMark className="size-8" />
-            <span className="font-heading text-xl">Jaylor</span>
+            <span className="font-heading text-2xl">Jaylor</span>
           </Link>
-          <nav className="flex items-center gap-4 text-sm">
+          <nav className="flex items-center gap-6 text-xs uppercase text-muted-foreground">
             <Link
               to="/features"
               className="hidden text-muted-foreground hover:text-foreground sm:inline"
@@ -31,7 +31,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             >
               About
             </Link>
-            <Link to="/auth" className="text-muted-foreground hover:text-foreground">
+            <Link to="/auth" className="border-b border-gold pb-1 text-foreground hover:text-gold">
               Sign in
             </Link>
           </nav>
@@ -40,11 +40,11 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
 
       {children}
 
-      <footer className="border-t border-border/60 py-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 text-center lg:px-8">
+      <footer className="border-t border-border py-14">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-5 text-center lg:px-10">
           <div className="flex items-center gap-2">
             <LogoMark className="size-7" />
-            <span className="font-heading text-lg">Jaylor</span>
+            <span className="font-heading text-2xl">Jaylor</span>
           </div>
           <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
             <Link to="/features" className="hover:text-foreground">
