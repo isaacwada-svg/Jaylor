@@ -6,6 +6,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
+import { JOB_TEMPLATES, type JobTemplate } from "@/lib/job-templates";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -41,6 +42,7 @@ export function EventForm({
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
 
+  const [template, setTemplate] = useState<JobTemplate | null>(null);
   const [name, setName] = useState("");
   const [eventDate, setEventDate] = useState("");
   const [organiserName, setOrganiserName] = useState("");
@@ -55,6 +57,7 @@ export function EventForm({
 
   useEffect(() => {
     if (!open) return;
+    setTemplate(null);
     setName("");
     setEventDate("");
     setOrganiserName("");
@@ -81,6 +84,7 @@ export function EventForm({
 
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
+    if (!template) return;
     setBusy(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -99,6 +103,11 @@ export function EventForm({
         .insert({
           store_id: storeId,
           name: name.trim(),
+          job_type: template.jobType,
+          payer_mode: template.payerMode,
+          collection_mode: template.collectionMode,
+          pricing_mode: template.pricingMode,
+          turnaround_mode: template.turnaroundMode,
           event_date: eventDate || null,
           organiser_name: organiserName.trim() || null,
           organiser_phone: organiserPhone.trim() || null,
@@ -113,25 +122,48 @@ export function EventForm({
         .select()
         .single();
       if (error) throw error;
-      toast.success("Event created");
+      toast.success("Group order created");
       onSaved(created);
       onOpenChange(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not create this event"));
+      toast.error(getErrorMessage(error, "Could not create this group order"));
     } finally {
       setBusy(false);
     }
   }
 
+  const picker = (
+    <div className="grid grid-cols-2 gap-2">
+      {JOB_TEMPLATES.map((t) => (
+        <button
+          key={t.jobType}
+          type="button"
+          onClick={() => setTemplate(t)}
+          className="rounded-xl border border-border p-3 text-left transition-colors hover:border-gold hover:bg-accent/40"
+        >
+          <p className="text-sm font-medium">{t.label}</p>
+          <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
+        </button>
+      ))}
+    </div>
+  );
+
   const body = (
     <form onSubmit={handleSubmit} className="space-y-4">
+      <button
+        type="button"
+        onClick={() => setTemplate(null)}
+        className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+      >
+        &larr; {template?.label}, change
+      </button>
       <div className="space-y-2">
-        <Label htmlFor="event-name">Event name</Label>
+        <Label htmlFor="event-name">Name</Label>
         <Input
           id="event-name"
           value={name}
           onChange={(e) => setName(e.target.value)}
-          placeholder="Adeyemi wedding aso-ebi"
+          placeholder={template?.namePlaceholder}
           required
         />
       </div>
@@ -241,19 +273,22 @@ export function EventForm({
 
       {!online && <OfflineNotice />}
       <Button type="submit" className="w-full" disabled={busy || !name.trim() || !online}>
-        {busy ? "Creating..." : "Create event"}
+        {busy ? "Creating..." : "Create group order"}
       </Button>
     </form>
   );
+
+  const content = template ? body : picker;
+  const title = template ? `New ${template.label.toLowerCase()} order` : "What kind of job?";
 
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
           <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl">New event</SheetTitle>
+            <SheetTitle className="text-2xl">{title}</SheetTitle>
           </SheetHeader>
-          <div className="mt-2 pb-4">{body}</div>
+          <div className="mt-2 pb-4">{content}</div>
         </SheetContent>
       </Sheet>
     );
@@ -263,9 +298,9 @@ export function EventForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>New event</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
         </DialogHeader>
-        {body}
+        {content}
       </DialogContent>
     </Dialog>
   );

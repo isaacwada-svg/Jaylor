@@ -576,6 +576,7 @@ export type Database = {
       };
       events: {
         Row: {
+          collection_mode: string;
           created_at: string;
           created_by: string | null;
           delivery_date: string | null;
@@ -583,17 +584,22 @@ export type Database = {
           event_date: string | null;
           fabric_description: string | null;
           id: string;
+          job_type: string;
           measurement_deadline: string | null;
           name: string;
           organiser_name: string | null;
           organiser_phone: string | null;
+          payer_mode: string;
           price_per_person: number | null;
+          pricing_mode: string;
           public_token: string;
           status: string;
           store_id: string;
           styles: Json;
+          turnaround_mode: string;
         };
         Insert: {
+          collection_mode?: string;
           created_at?: string;
           created_by?: string | null;
           delivery_date?: string | null;
@@ -601,17 +607,22 @@ export type Database = {
           event_date?: string | null;
           fabric_description?: string | null;
           id?: string;
+          job_type?: string;
           measurement_deadline?: string | null;
           name: string;
           organiser_name?: string | null;
           organiser_phone?: string | null;
+          payer_mode?: string;
           price_per_person?: number | null;
+          pricing_mode?: string;
           public_token?: string;
           status?: string;
           store_id: string;
           styles?: Json;
+          turnaround_mode?: string;
         };
         Update: {
+          collection_mode?: string;
           created_at?: string;
           created_by?: string | null;
           delivery_date?: string | null;
@@ -619,15 +630,19 @@ export type Database = {
           event_date?: string | null;
           fabric_description?: string | null;
           id?: string;
+          job_type?: string;
           measurement_deadline?: string | null;
           name?: string;
           organiser_name?: string | null;
           organiser_phone?: string | null;
+          payer_mode?: string;
           price_per_person?: number | null;
+          pricing_mode?: string;
           public_token?: string;
           status?: string;
           store_id?: string;
           styles?: Json;
+          turnaround_mode?: string;
         };
         Relationships: [
           {

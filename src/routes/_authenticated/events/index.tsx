@@ -11,16 +11,17 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
+import { jobTemplate } from "@/lib/job-templates";
 
 export const Route = createFileRoute("/_authenticated/events/")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "Events — Jaylor" },
+      { title: "Group orders — Jaylor" },
       {
         name: "description",
         content:
-          "Group orders for aso-ebi, weddings and other events — one link for the whole family to measure and pay their own share.",
+          "One link that collects measurements and money from a whole group — aso-ebi, burials, uniforms, or anyone who can't come in.",
       },
     ],
   }),
@@ -52,11 +53,11 @@ function Events() {
     <AppShell>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl">Events</h1>
+          <h1 className="text-3xl">Group orders</h1>
           {canCreate && (
             <Button onClick={() => setFormOpen(true)}>
               <Plus className="size-4" />
-              New event
+              New group order
             </Button>
           )}
         </div>
@@ -70,10 +71,12 @@ function Events() {
           </div>
         ) : !events || events.length === 0 ? (
           <EmptyState
-            title="No events yet"
-            description="Create an aso-ebi or wedding event and share one link for the whole group to measure and pay their own share."
+            title="No group orders yet"
+            description="Aso-ebi, burial, uniforms, or one client who can't come in — share one link and let them measure and pay their own share."
             action={
-              canCreate ? <Button onClick={() => setFormOpen(true)}>New event</Button> : undefined
+              canCreate ? (
+                <Button onClick={() => setFormOpen(true)}>New group order</Button>
+              ) : undefined
             }
           />
         ) : (
@@ -89,6 +92,8 @@ function Events() {
                   <div className="min-w-0">
                     <p className="truncate font-medium">{event.name}</p>
                     <p className="text-sm text-muted-foreground">
+                      {jobTemplate(event.job_type).label}
+                      {" · "}
                       {event.event_date
                         ? new Date(event.event_date).toLocaleDateString()
                         : "No date set"}
