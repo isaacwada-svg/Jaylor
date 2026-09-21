@@ -37,6 +37,7 @@ import { jobTemplate } from "@/lib/job-templates";
 import { QuoteDocument, type QuoteData } from "@/components/jaylor/quote-document";
 import { MeasuringDayPanel } from "@/components/jaylor/measuring-day-panel";
 import { JobBatchesPanel } from "@/components/jaylor/job-batches-panel";
+import { EventForm } from "@/components/jaylor/event-form";
 
 export const Route = createFileRoute("/_authenticated/events/$eventId")({
   staticData: { sitemap: false },
@@ -67,6 +68,7 @@ function EventDetail() {
   const queryClient = useQueryClient();
 
   const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [name, setName] = useState("");
   const [phoneRaw, setPhoneRaw] = useState("");
   const [busy, setBusy] = useState(false);
@@ -374,9 +376,14 @@ function EventDetail() {
               {event.status}
             </Badge>
             {canManage && (
-              <Button size="sm" variant="outline" onClick={duplicateJob} disabled={duplicating}>
-                {duplicating ? "Duplicating..." : "Duplicate"}
-              </Button>
+              <>
+                <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
+                  Edit
+                </Button>
+                <Button size="sm" variant="outline" onClick={duplicateJob} disabled={duplicating}>
+                  {duplicating ? "Duplicating..." : "Duplicate"}
+                </Button>
+              </>
             )}
           </div>
         </div>
@@ -684,6 +691,16 @@ function EventDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {currentStore && event && (
+        <EventForm
+          open={editOpen}
+          onOpenChange={setEditOpen}
+          storeId={currentStore.id}
+          event={event}
+          onSaved={() => queryClient.invalidateQueries({ queryKey: ["event", eventId] })}
+        />
+      )}
     </AppShell>
   );
 }

@@ -6,7 +6,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
-import { JOB_TEMPLATES, type JobTemplate } from "@/lib/job-templates";
+import { JOB_TEMPLATES, jobTemplate, type JobTemplate } from "@/lib/job-templates";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +25,10 @@ type StyleRow = { key: string; label: string; price: string };
 type SizeRow = { key: string; label: string; chest: string; waist: string; length: string };
 type TierRow = { minQty: string; maxQty: string; price: string };
 
+type StyleJson = { key: string; label: string; price: number | null };
+type SizeJson = { key: string; label: string; chest?: string; waist?: string; length?: string };
+type TierJson = { minQty: number; maxQty: number | null; price: number };
+
 function slugify(value: string) {
   return value
     .toLowerCase()
@@ -37,15 +41,18 @@ export function EventForm({
   open,
   onOpenChange,
   storeId,
+  event,
   onSaved,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
+  event?: EventRow | null;
   onSaved: (event: EventRow) => void;
 }) {
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
+  const isEdit = !!event;
 
   const [template, setTemplate] = useState<JobTemplate | null>(null);
   const [name, setName] = useState("");
@@ -75,6 +82,64 @@ export function EventForm({
 
   useEffect(() => {
     if (!open) return;
+    if (event) {
+      setTemplate(jobTemplate(event.job_type));
+      setName(event.name ?? "");
+      setEventDate(event.event_date ?? "");
+      setOrganiserName(event.organiser_name ?? "");
+      setOrganiserPhone(event.organiser_phone ?? "");
+      setFabricDescription(event.fabric_description ?? "");
+      setPricePerPerson(event.price_per_person != null ? String(event.price_per_person) : "");
+      setDepositAmount(event.deposit_amount != null ? String(event.deposit_amount) : "");
+      setMeasurementDeadline(event.measurement_deadline ?? "");
+      setDeliveryDate(event.delivery_date ?? "");
+      const styleList = Array.isArray(event.styles) ? (event.styles as unknown as StyleJson[]) : [];
+      setStyles(
+        styleList.length > 0
+          ? styleList.map((s) => ({
+              key: s.key,
+              label: s.label,
+              price: s.price != null ? String(s.price) : "",
+            }))
+          : [{ key: "", label: "", price: "" }],
+      );
+      const sizeList = Array.isArray(event.size_chart)
+        ? (event.size_chart as unknown as SizeJson[])
+        : [];
+      setSizes(
+        sizeList.length > 0
+          ? sizeList.map((s) => ({
+              key: s.key,
+              label: s.label,
+              chest: s.chest ?? "",
+              waist: s.waist ?? "",
+              length: s.length ?? "",
+            }))
+          : [{ key: "", label: "", chest: "", waist: "", length: "" }],
+      );
+      const tierList = Array.isArray(event.price_tiers)
+        ? (event.price_tiers as unknown as TierJson[])
+        : [];
+      setTiers(
+        tierList.length > 0
+          ? tierList.map((t) => ({
+              minQty: String(t.minQty),
+              maxQty: t.maxQty != null ? String(t.maxQty) : "",
+              price: String(t.price),
+            }))
+          : [{ minQty: "1", maxQty: "", price: "" }],
+      );
+      setQuantity(event.quantity != null ? String(event.quantity) : "");
+      setVatEnabled(event.vat_enabled ?? false);
+      setVatPercent(event.vat_percent != null ? String(event.vat_percent) : "7.5");
+      setValidityDate(event.validity_date ?? "");
+      setDepositPercent(event.deposit_percent != null ? String(event.deposit_percent) : "60");
+      setDeliveryCountry(event.delivery_country ?? "");
+      setDeliveryAddress(event.delivery_address ?? "");
+      setShippingFee(event.shipping_fee != null ? String(event.shipping_fee) : "");
+      setQuoteLink(null);
+      return;
+    }
     setTemplate(null);
     setName("");
     setEventDate("");
@@ -97,7 +162,7 @@ export function EventForm({
     setDeliveryAddress("");
     setShippingFee("");
     setQuoteLink(null);
-  }, [open]);
+  }, [open, event]);
 
   function updateStyle(index: number, patch: Partial<StyleRow>) {
     setStyles((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
@@ -135,8 +200,8 @@ export function EventForm({
     setTiers((prev) => prev.filter((_, i) => i !== index));
   }
 
-  async function handleSubmit(event: FormEvent) {
-    event.preventDefault();
+  async function handleSubmit(formEvent: FormEvent) {
+    formEvent.preventDefault();
     if (!template) return;
     if (template.isContract && !organiserPhone.trim()) {
       toast.error("Enter the client or organisation's phone number to send the quote");
@@ -179,45 +244,63 @@ export function EventForm({
           price: Number(t.price),
         }));
 
+      const editableFields = {
+        name: name.trim(),
+        event_date: eventDate || null,
+        organiser_name: organiserName.trim() || null,
+        organiser_phone: organiserPhone.trim() || null,
+        fabric_description: fabricDescription.trim() || null,
+        styles: styleList,
+        size_chart: sizeList,
+        price_tiers: tierList,
+        price_per_person: pricePerPerson.trim() ? Number(pricePerPerson) : null,
+        deposit_amount: depositAmount.trim() ? Number(depositAmount) : null,
+        measurement_deadline: measurementDeadline || null,
+        delivery_date: deliveryDate || null,
+        ...(template.isContract
+          ? {
+              quantity: quantity.trim() ? Number(quantity) : null,
+              vat_enabled: vatEnabled,
+              vat_percent: vatPercent.trim() ? Number(vatPercent) : 7.5,
+              validity_date: validityDate || null,
+              deposit_percent: depositPercent.trim() ? Number(depositPercent) : null,
+            }
+          : {}),
+        ...(template.jobType === "diaspora"
+          ? {
+              delivery_country: deliveryCountry.trim() || null,
+              delivery_address: deliveryAddress.trim() || null,
+              shipping_fee: shippingFee.trim() ? Number(shippingFee) : null,
+            }
+          : {}),
+      };
+
+      if (isEdit && event) {
+        const { data: updated, error } = await supabase
+          .from("events")
+          .update(editableFields)
+          .eq("id", event.id)
+          .select()
+          .single();
+        if (error) throw error;
+        toast.success("Group order updated");
+        onSaved(updated);
+        onOpenChange(false);
+        return;
+      }
+
       const { data: created, error } = await supabase
         .from("events")
         .insert({
           store_id: storeId,
-          name: name.trim(),
           job_type: template.jobType,
           payer_mode: template.payerMode,
           collection_mode: template.collectionMode,
           pricing_mode: template.pricingMode,
           turnaround_mode: template.turnaroundMode,
           stage: template.isContract ? "quote" : "live",
-          event_date: eventDate || null,
-          organiser_name: organiserName.trim() || null,
-          organiser_phone: organiserPhone.trim() || null,
-          fabric_description: fabricDescription.trim() || null,
-          styles: styleList,
-          size_chart: sizeList,
-          price_tiers: tierList,
-          price_per_person: pricePerPerson.trim() ? Number(pricePerPerson) : null,
-          deposit_amount: depositAmount.trim() ? Number(depositAmount) : null,
-          measurement_deadline: measurementDeadline || null,
-          delivery_date: deliveryDate || null,
           created_by: userData.user?.id ?? null,
-          ...(template.isContract
-            ? {
-                quantity: quantity.trim() ? Number(quantity) : null,
-                vat_enabled: vatEnabled,
-                vat_percent: vatPercent.trim() ? Number(vatPercent) : 7.5,
-                validity_date: validityDate || null,
-                deposit_percent: depositPercent.trim() ? Number(depositPercent) : null,
-              }
-            : {}),
-          ...(template.jobType === "diaspora"
-            ? {
-                delivery_country: deliveryCountry.trim() || null,
-                delivery_address: deliveryAddress.trim() || null,
-                shipping_fee: shippingFee.trim() ? Number(shippingFee) : null,
-              }
-            : {}),
+          ...editableFields,
         })
         .select()
         .single();
@@ -247,7 +330,9 @@ export function EventForm({
         onOpenChange(false);
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not create this group order"));
+      toast.error(
+        getErrorMessage(error, `Could not ${isEdit ? "save" : "create"} this group order`),
+      );
     } finally {
       setBusy(false);
     }
@@ -271,13 +356,15 @@ export function EventForm({
 
   const body = (
     <form onSubmit={handleSubmit} className="space-y-4">
-      <button
-        type="button"
-        onClick={() => setTemplate(null)}
-        className="text-xs text-muted-foreground underline-offset-2 hover:underline"
-      >
-        &larr; {template?.label}, change
-      </button>
+      {!isEdit && (
+        <button
+          type="button"
+          onClick={() => setTemplate(null)}
+          className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+        >
+          &larr; {template?.label}, change
+        </button>
+      )}
       <div className="space-y-2">
         <Label htmlFor="event-name">Name</Label>
         <Input
@@ -579,7 +666,15 @@ export function EventForm({
 
       {!online && <OfflineNotice />}
       <Button type="submit" className="w-full" disabled={busy || !name.trim() || !online}>
-        {busy ? "Creating..." : template?.isContract ? "Create quote" : "Create group order"}
+        {isEdit
+          ? busy
+            ? "Saving..."
+            : "Save changes"
+          : busy
+            ? "Creating..."
+            : template?.isContract
+              ? "Create quote"
+              : "Create group order"}
       </Button>
     </form>
   );
@@ -630,9 +725,11 @@ export function EventForm({
   const content = quoteLink ? quoteSentView : template ? body : picker;
   const title = quoteLink
     ? "Quote created"
-    : template
-      ? `New ${template.label.toLowerCase()} order`
-      : "What kind of job?";
+    : isEdit
+      ? `Edit ${event?.name ?? "group order"}`
+      : template
+        ? `New ${template.label.toLowerCase()} order`
+        : "What kind of job?";
 
   if (isMobile) {
     return (
