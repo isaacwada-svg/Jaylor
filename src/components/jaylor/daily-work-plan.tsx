@@ -47,19 +47,19 @@ export function DailyWorkPlan({ storeId }: { storeId: string | undefined }) {
               key={o.id}
               to="/orders/$orderId"
               params={{ orderId: o.id }}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-accent/40"
+              className="flex flex-col gap-2 rounded-xl border border-border p-3 transition-colors hover:bg-accent/40 sm:flex-row sm:items-center sm:justify-between"
             >
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium">
                   {o.number} · {o.garment_type}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="truncate text-xs text-muted-foreground">
                   {o.delivery_date
                     ? `Due ${new Date(o.delivery_date).toLocaleDateString()}`
                     : "No due date"}
                 </p>
               </div>
-              <div className="flex shrink-0 items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
                 {o.stuck && (
                   <Badge variant="outline" className="border-owed/40 text-owed">
                     Taking longer than usual
