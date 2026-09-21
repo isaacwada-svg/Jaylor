@@ -9,15 +9,18 @@ directly against the Supabase project). Neither track changed any code, policy,
 setting, grant, bucket, or row — both are audit-only, per the two-phase process
 this was requested under.
 
-## ⚠️ Most urgent finding: L1 (Critical)
+## ⚠️ Most urgent finding: L1 (Critical) — fix written, pending apply
 
 **Any signed-in store owner can grant themselves any paid plan, an unlimited
 trial, or reassign their store to another account, in one request — a
 complete, silent bypass of every plan gate and paid feature in the product.**
-See **L1** in Track B below for the full detail and fix. Given this is a live,
-currently-exploitable privilege escalation, we recommend fixing L1 (and ideally
-L2–L4, all High/Critical) before continuing with the rest of Phase 1's
-lower-severity items — this one shouldn't wait for a full batch review.
+See **L1** in Track B below for the full detail. Given this is a live,
+currently-exploitable privilege escalation, a Phase 2 fix was written and
+delivered directly in chat (a `BEFORE UPDATE` trigger on `stores` blocking
+changes to the eight sensitive columns unless the request runs as
+`service_role` or a platform admin) — **status: delivered, not yet applied**
+(no live DB execution access from this session; the store owner/operator must
+run it). L2–L4 (also High/Critical) are still open and recommended next.
 
 ---
 
@@ -688,6 +691,13 @@ this is stated explicitly in "How verified".
 ---
 
 ### L1 — A store owner can grant themselves any paid plan and unlimited trial
+
+> **Status: fix delivered, not yet applied.** A `BEFORE UPDATE` trigger on
+> `stores` blocking changes to `plan_code`, `trial_ends_at`, `is_active`,
+> `owner_id`, `referral_code`, `referred_by_store_id`, `country_code`, and
+> `currency` unless the request runs as `service_role` or a platform admin
+> was written and handed to the store operator to run — no live DB execution
+> access from the auditing session. Update this line once confirmed applied.
 
 - **Area:** Database access / entitlements
 - **Severity:** Critical
