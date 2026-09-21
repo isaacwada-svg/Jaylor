@@ -207,26 +207,29 @@ export function OrderForm({
         .map((m) => m.yards)
         .filter((y): y is number => typeof y === "number" && y > 0);
 
-      const stats = {
-        avgPrice: prices.reduce((a, b) => a + b, 0) / prices.length,
-        minPrice: Math.min(...prices),
-        maxPrice: Math.max(...prices),
-        count: prices.length,
-        avgYards: yardsList.length ? yardsList.reduce((a, b) => a + b, 0) / yardsList.length : null,
-      };
+      const avgPrice = prices.reduce((a, b) => a + b, 0) / prices.length;
+      const minPrice = Math.min(...prices);
+      const maxPrice = Math.max(...prices);
+      const avgYards = yardsList.length
+        ? yardsList.reduce((a, b) => a + b, 0) / yardsList.length
+        : null;
 
-      const { data, error: fnError } = await supabase.functions.invoke("suggest-pricing", {
-        body: {
-          garmentType,
-          quantity: Number(quantity) || 1,
-          rush,
-          materialSource,
-          styleNotes,
-          stats,
-        },
-      });
-      if (fnError) throw fnError;
-      setSuggestion((data as { result: string }).result);
+      // Plain arithmetic on this shop's own history — no AI call, per the
+      // cost-control rule that pricing guidance must be arithmetic only.
+      const RUSH_PREMIUM = 1.15;
+      const qty = Number(quantity) || 1;
+      const suggested = Math.round((rush ? avgPrice * RUSH_PREMIUM : avgPrice) / 500) * 500;
+
+      const count = prices.length;
+      let text = `Based on ${count} past ${garmentType} order${count === 1 ? "" : "s"}, you usually charge ${formatMoney(avgPrice)} (range ${formatMoney(minPrice)}–${formatMoney(maxPrice)}).`;
+      if (rush) {
+        text += ` For a rush order, consider around ${formatMoney(suggested)}.`;
+      }
+      if (avgYards != null) {
+        text += ` You typically use about ${(avgYards * qty).toFixed(1)} yards for this quantity.`;
+      }
+      text += " This is a suggestion from your own history — review before confirming.";
+      setSuggestion(text);
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not suggest a price"));
     } finally {
@@ -533,7 +536,7 @@ export function OrderForm({
             onClick={suggestPrice}
             disabled={suggesting || !online}
           >
-            {suggesting ? "Thinking..." : "Suggest price with AI"}
+            {suggesting ? "Checking..." : "Suggest a price"}
           </Button>
           {suggestion && (
             <p className="rounded-xl border border-gold/30 bg-accent/30 p-3 text-sm text-muted-foreground">
