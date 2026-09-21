@@ -1,22 +1,21 @@
 import { cn } from "@/lib/utils";
-import logoMark from "@/assets/jaylor-logo-mark.png";
-import logoMarkGold from "@/assets/jaylor-logo-mark-gold.png";
+import officialLogo from "@/assets/jaylor-official-logo.png.asset.json";
 
 /** The Jaylor mannequin, measuring-tape and needle "J" mark. */
 export function LogoMark({
   className,
-  variant = "full",
+  variant: _variant = "full",
 }: {
   className?: string;
   variant?: "full" | "gold";
 }) {
   return (
     <img
-      src={variant === "gold" ? logoMarkGold : logoMark}
+      src="/logo-mark.png"
       alt=""
       width={1024}
       height={1024}
-      loading="lazy"
+      loading="eager"
       className={cn("shrink-0 object-contain", className)}
     />
   );
@@ -35,13 +34,16 @@ export function BrandLogo({
 }) {
   return (
     <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <LogoMark variant={dark ? "gold" : "full"} className={cn("size-10", markClassName)} />
-      <span className="flex flex-col">
-        <span className={cn("font-heading text-2xl leading-none", dark ? "text-foreground" : "text-ink")}>Jaylor</span>
-        {showTagline && (
-          <span className="mt-1 font-sans text-[8px] font-medium uppercase text-gold">Crafted for you</span>
-        )}
-      </span>
+      <img
+        src={officialLogo.url}
+        alt="Jaylor"
+        width={1774}
+        height={887}
+        className={cn("h-12 w-auto object-contain", markClassName)}
+      />
+      {showTagline && (
+        <span className={cn("sr-only", dark && "text-foreground")}>Crafted for you</span>
+      )}
     </span>
   );
 }

@@ -13,7 +13,7 @@
 
 ## Backlog
 - [x] Applied the approved Jaylor brand identity update, reconciled with the uploaded Premium Brand Identity Guidelines.
-- [ ] Replace the reconstructed logo artwork with the official uploaded transparent and 3D logo files.
+- [x] Replaced the reconstructed logo artwork with the official uploaded transparent logo and derived app icons.
 - [x] AI design selfies are now private: bucket is private, uploads go through the server, images are shown with short-lived signed links.
 - [x] Manual cross-shop access pass (staff-level account, two test shops): no cross-shop reads or writes, no admin data, no tokens beyond the user's own session. Fixed along the way: logged-out visitors can again load public shop pages, seeing only public shop details.
 - [ ] Review remaining database security advisories: two intentionally backend-only tables have no user policies; public token functions and signed-in access helpers require callable security functions; one extension remains in the public schema.
