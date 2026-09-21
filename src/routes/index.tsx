@@ -1,25 +1,19 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
+  ArrowRight,
   CalendarClock,
+  Check,
   MessageCircle,
-  Notebook,
   Package,
   Sparkles,
   Store,
   Wallet,
 } from "lucide-react";
 import { LogoMark } from "@/components/jaylor/logo";
-import { Wordmark } from "@/components/jaylor/wordmark";
-import { StitchDivider } from "@/components/jaylor/stitch-divider";
-import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { TierBadge } from "@/components/jaylor/tier-badge";
-import { PhoneMockup } from "@/components/jaylor/phone-mockup";
-import { cn } from "@/lib/utils";
-import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   Accordion,
   AccordionContent,
@@ -32,22 +26,24 @@ import { trackEvent } from "@/lib/analytics";
 import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 import { JOB_LANDING_CONTENT } from "@/lib/job-landing-content";
+import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
+import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
+import garmentEditorial from "@/assets/jaylor-garment-editorial.jpg";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Jaylor — Every order tracked. Every naira collected." },
+      { title: "Jaylor — The modern workroom for fashion businesses" },
       {
         name: "description",
         content:
-          "Jaylor tracks every order, measurement and payment for tailors and fashion houses, and reminds clients on WhatsApp so you get paid on time. Free to start.",
+          "Jaylor brings orders, measurements, payments and client updates into one refined workroom for tailors and fashion houses in Nigeria.",
       },
-      { property: "og:title", content: "Jaylor — Every order tracked. Every naira collected." },
+      { property: "og:title", content: "Jaylor — The modern workroom for fashion businesses" },
       {
         property: "og:description",
-        content:
-          "Orders, measurements, payments and client reminders for tailors and fashion houses in Nigeria.",
+        content: "Every order tracked. Every measurement kept. Every naira accounted for.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -56,83 +52,42 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const PROBLEMS = [
+const OPERATING_SYSTEM = [
   {
-    icon: Notebook,
-    title: "Lost in a notebook",
-    body: "Orders, measurements and promises scattered across pages that get torn, wet or misplaced.",
-  },
-  {
-    icon: Wallet,
-    title: "Balances that slip away",
-    body: "Half-paid orders are easy to forget until a client comes back and you can't remember what they owe.",
-  },
-  {
+    number: "01",
     icon: Package,
-    title: "Clothes nobody comes for",
-    body: "Finished garments sit for weeks because there's no simple way to remind a client to collect them.",
+    title: "Every order, in its place",
+    body: "Follow each garment from received to collected, with fittings, deadlines and responsibilities kept clear.",
+  },
+  {
+    number: "02",
+    icon: Wallet,
+    title: "Every naira, accounted for",
+    body: "Deposits, payments and outstanding balances stay connected to the right client and the right order.",
+  },
+  {
+    number: "03",
+    icon: MessageCircle,
+    title: "Every client, informed",
+    body: "Send considered WhatsApp updates and reminders without leaving the place where the work is managed.",
   },
 ];
 
 const FEATURES = [
   {
-    icon: StitchIcon,
-    title: "Track every order",
-    body: "A clear status track from Received to Collected, so you and your tailors always know what's next.",
-  },
-  {
-    icon: Wallet,
-    title: "Never lose a naira",
-    body: "Every payment and balance owed, always correct, always one tap away from a receipt.",
-  },
-  {
-    icon: MessageCircle,
-    title: "Message clients on WhatsApp",
-    body: "Tap-to-send reminders for ready orders and balances due, pre-written and ready to go.",
-  },
-  {
     icon: Store,
-    title: "Your own shop page",
-    body: "A beautiful storefront link to share on WhatsApp and Instagram. No marketplace, just your business.",
+    title: "A storefront that feels like yours",
+    body: "Share a considered shop page on WhatsApp or Instagram. Your work, your name, your clients.",
   },
-];
-
-const HIGHLIGHTS = [
   {
     icon: CalendarClock,
-    title: "Group and aso-ebi orders",
-    body: "One link for the whole family or bridal party to measure and pay their own share.",
+    title: "One link for group work",
+    body: "Collect measurements and payments from families, bridal parties and aso-ebi groups without the usual chasing.",
   },
   {
     icon: Sparkles,
-    title: "AI that saves time",
-    body: "Scan a page of your notebook, or speak an order out loud, and Jaylor drafts it for you to confirm.",
-  },
-];
-
-const PLANS = PRICE_TIERS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
-
-const TESTIMONIALS = [
-  {
-    name: "Amaka Obi",
-    shop: "Obi Bespoke",
-    city: "Lagos",
-    quote:
-      "I used to keep three notebooks for orders, measurements and money owed. Now it's all in one place and I know exactly who owes what.",
-  },
-  {
-    name: "Ibrahim Sule",
-    shop: "Sule Tailoring House",
-    city: "Kano",
-    quote:
-      "The WhatsApp reminders alone paid for the app. Clients pick up their clothes faster because I remember to remind them.",
-  },
-  {
-    name: "Blessing Eze",
-    shop: "Blessing Couture",
-    city: "Abuja",
-    quote:
-      "My storefront link gets shared around so much that new clients now ask for it by name before they even call.",
+    title: "Less typing, more making",
+    body: "Speak an order or bring in an old notebook page, then review Jaylor's draft before anything is saved.",
   },
 ];
 
@@ -164,495 +119,302 @@ const HOME_FAQ = [
   },
 ];
 
+const PLANS = PRICE_TIERS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
+
 function Home() {
   const [signedIn, setSignedIn] = useState(false);
 
   useEffect(() => {
     void trackEvent("landing_view");
-    supabase.auth.getSession().then(({ data }) => setSignedIn(!!data.session));
+    supabase.auth.getSession().then(({ data }) => setSignedIn(Boolean(data.session)));
     const { data: sub } = supabase.auth.onAuthStateChange((_event, session) =>
-      setSignedIn(!!session),
+      setSignedIn(Boolean(session)),
     );
     return () => sub.subscription.unsubscribe();
   }, []);
 
   return (
-    <main className="linen min-h-screen bg-background">
-      <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-4 py-4 lg:px-8">
-          <Link to="/" className="flex items-center gap-2">
-            <LogoMark className="size-8" />
-            <Wordmark className="text-xl" />
+    <main className="premium-public min-h-screen overflow-hidden bg-background">
+      <header className="absolute inset-x-0 top-0 z-30 border-b border-foreground/10">
+        <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
+          <Link to="/" className="flex items-center gap-3" aria-label="Jaylor home">
+            <LogoMark className="size-9 rounded-sm" />
+            <span className="font-heading text-2xl text-foreground">Jaylor</span>
           </Link>
-          <nav className="flex items-center gap-2">
+          <nav className="hidden items-center gap-8 text-xs uppercase text-foreground/70 md:flex">
+            <a href="#workroom" className="transition-colors hover:text-gold">The workroom</a>
+            <Link to="/features" className="transition-colors hover:text-gold">Features</Link>
+            <a href="#pricing" className="transition-colors hover:text-gold">Pricing</a>
+          </nav>
+          <div className="flex items-center gap-4">
             {signedIn ? (
-              <Button asChild size="sm">
-                <Link to="/dashboard">Go to dashboard</Link>
+              <Button asChild className="rounded-none px-5 uppercase">
+                <Link to="/dashboard">Open Jaylor</Link>
               </Button>
             ) : (
               <>
-                <Button asChild variant="ghost" size="sm" className="hidden sm:inline-flex">
-                  <Link to="/auth">Sign in</Link>
-                </Button>
-                <Button asChild size="sm">
-                  <Link to="/auth" search={{ mode: "signup" }}>
-                    Start free
-                  </Link>
+                <Link to="/auth" className="hidden text-xs uppercase text-foreground/70 hover:text-foreground sm:block">
+                  Sign in
+                </Link>
+                <Button asChild className="rounded-none px-5 uppercase">
+                  <Link to="/auth" search={{ mode: "signup" }}>Start free</Link>
                 </Button>
               </>
             )}
-          </nav>
+          </div>
         </div>
       </header>
 
-      <section className="mx-auto w-full max-w-6xl px-4 pb-16 pt-14 lg:px-8 lg:pb-24 lg:pt-20">
-        <div className="grid items-center gap-12 lg:grid-cols-2">
-          <div>
-            <p className="text-xs uppercase tracking-[0.18em] text-gold">
-              For tailors and fashion houses in Nigeria
-            </p>
-            <h1 className="mt-3 text-4xl leading-tight lg:text-5xl">
-              Run your shop.
-              <br />
-              Collect measurements and money from anyone, anywhere.
+      <section className="relative min-h-[720px] border-b border-foreground/10 sm:min-h-[780px] lg:min-h-[820px]">
+        <img
+          src={atelierHero}
+          alt="A Nigerian fashion designer draping a burgundy gown in her atelier"
+          width={1920}
+          height={1280}
+          fetchPriority="high"
+          className="absolute inset-0 h-full w-full object-cover object-[68%_center]"
+        />
+        <div className="premium-hero-shade-x absolute inset-0" />
+        <div className="premium-hero-shade-y absolute inset-0" />
+
+        <div className="relative mx-auto flex min-h-[720px] w-full max-w-[1440px] items-end px-5 pb-16 pt-32 sm:min-h-[780px] sm:px-8 sm:pb-20 lg:min-h-[820px] lg:items-center lg:px-12 lg:pb-0">
+          <div className="editorial-rise max-w-3xl">
+            <p className="text-[11px] uppercase text-gold">The modern workroom · Nigeria</p>
+            <h1 className="mt-6 text-6xl leading-[0.9] text-foreground sm:text-7xl lg:text-[7.5rem]">
+              Jaylor
+              <span className="mt-3 block max-w-2xl text-[0.56em] italic leading-[1.02] text-foreground/95">
+                The business of style, beautifully managed.
+              </span>
             </h1>
-            <p className="mt-5 max-w-md text-base text-muted-foreground">
-              Orders, measurements and payments for tailors and fashion houses, plus one link that
-              collects from a whole group or a single client who cannot come in.
+            <p className="mt-8 max-w-lg text-base leading-7 text-foreground/70 sm:text-lg">
+              Orders, measurements, payments and client updates—held together in one considered place for tailors and fashion houses.
             </p>
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button asChild size="lg">
+            <div className="mt-9 flex flex-wrap items-center gap-5">
+              <Button asChild size="lg" className="h-12 rounded-none px-7 uppercase">
                 <Link to="/auth" search={{ mode: "signup" }}>
-                  Start free
+                  Start free <ArrowRight />
                 </Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <a href="#how-it-works">See how it works</a>
-              </Button>
+              <a href="#workroom" className="border-b border-gold pb-1 text-xs uppercase text-foreground transition-colors hover:text-gold">
+                Enter the workroom
+              </a>
             </div>
-            <p className="mt-4 text-xs text-muted-foreground">
-              Free forever for small shops. No card required.
-            </p>
+            <p className="mt-5 text-xs text-foreground/50">Free for small shops. No card required.</p>
           </div>
+        </div>
+        <div className="absolute bottom-0 right-5 hidden w-64 border-t border-gold/70 py-5 lg:block lg:right-12">
+          <p className="text-[10px] uppercase text-gold">Made for the craft</p>
+          <p className="mt-2 text-xs leading-5 text-foreground/60">From first measurement to final collection.</p>
+        </div>
+      </section>
 
-          <div className="relative">
-            <Card className="rounded-2xl border-gold/30 shadow-sm">
-              <CardContent className="p-5">
-                <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
-                  You are owed
-                </p>
-                <MoneyText amount={412500} variant="owed" className="mt-1 text-3xl" />
-                <p className="mt-1 text-xs text-muted-foreground">9 clients owing</p>
-                <StitchDivider className="my-4" />
-                <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
-                  Mama Blessing · Aso-oke gown
-                </p>
-                <StitchTrack
-                  steps={ORDER_STATUSES}
-                  currentIndex={ORDER_STATUSES.indexOf("Fitting")}
-                  className="mt-4"
-                />
-                <div className="mt-5 flex items-center justify-between rounded-xl border border-border bg-card p-3">
-                  <span className="text-sm">Collected this month</span>
-                  <MoneyText amount={1285000} variant="paid" />
-                </div>
-              </CardContent>
-            </Card>
-            <div
-              aria-hidden
-              className="absolute -right-6 -top-6 -z-10 size-32 rounded-full bg-gold/10 blur-2xl lg:size-48"
-            />
+      <section id="workroom" className="border-b border-border py-20 lg:py-28">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div>
+              <p className="text-xs uppercase text-gold">Built around the workroom</p>
+              <h2 className="mt-5 max-w-md text-5xl leading-none sm:text-6xl">You know the craft. Jaylor keeps its business in order.</h2>
+            </div>
+            <div className="border-t border-border">
+              {OPERATING_SYSTEM.map(({ number, icon: Icon, title, body }) => (
+                <article key={number} className="group grid gap-5 border-b border-border py-8 sm:grid-cols-[56px_1fr_auto] sm:items-start">
+                  <span className="text-xs text-gold">{number}</span>
+                  <div>
+                    <h3 className="text-3xl">{title}</h3>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">{body}</p>
+                  </div>
+                  <Icon className="size-5 text-gold transition-transform duration-500 group-hover:translate-x-1" />
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="grid border-b border-border lg:grid-cols-2">
+        <div className="relative min-h-[460px] overflow-hidden lg:min-h-[680px]">
+          <img
+            src={measurementDetail}
+            alt="A tailor marking a precise pattern on midnight fabric"
+            width={1600}
+            height={1200}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover transition-transform duration-1000 hover:scale-[1.02]"
+          />
+        </div>
+        <div className="flex items-center bg-card px-5 py-16 sm:px-10 lg:px-16">
+          <div className="max-w-xl">
+            <p className="text-xs uppercase text-gold">Precision, remembered</p>
+            <h2 className="mt-5 text-5xl leading-none sm:text-6xl">A fitting should begin with confidence.</h2>
+            <p className="mt-7 text-base leading-7 text-muted-foreground">
+              Keep each client’s measurements, garment history and fitting notes ready for the next visit. No searching. No second guessing.
+            </p>
+            <div className="mt-10 grid grid-cols-2 border-y border-border py-7">
+              <div className="border-r border-border pr-6">
+                <p className="font-heading text-4xl text-gold">One</p>
+                <p className="mt-2 text-xs uppercase text-muted-foreground">client record</p>
+              </div>
+              <div className="pl-6">
+                <p className="font-heading text-4xl text-gold">Every</p>
+                <p className="mt-2 text-xs uppercase text-muted-foreground">measurement & order</p>
+              </div>
+            </div>
+            <Button asChild variant="outline" size="lg" className="mt-10 rounded-none border-gold text-foreground hover:bg-gold hover:text-accent-foreground">
+              <Link to="/features">Explore the workroom <ArrowRight /></Link>
+            </Button>
           </div>
         </div>
       </section>
 
       <UncollectedCalculator />
 
-      <section className="border-t border-border/60 bg-card/40 py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">
-            You know the business. Jaylor keeps track of it.
-          </h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {PROBLEMS.map(({ icon: Icon, title, body }) => (
-              <Card key={title} className="rounded-2xl">
-                <CardContent className="p-6">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-gold">
-                    <Icon className="size-5" />
-                  </span>
-                  <p className="mt-4 font-medium">{title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-                </CardContent>
-              </Card>
-            ))}
+      <section className="border-b border-border py-20 lg:py-28">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-14 lg:grid-cols-[1.1fr_0.9fr]">
+            <div className="order-2 grid content-start sm:grid-cols-3 lg:order-1">
+              {FEATURES.map(({ icon: Icon, title, body }, index) => (
+                <article key={title} className="border-t border-border py-7 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0">
+                  <Icon className="size-5 text-gold" />
+                  <p className="mt-8 text-[10px] text-muted-foreground">0{index + 1}</p>
+                  <h3 className="mt-3 text-2xl leading-tight">{title}</h3>
+                  <p className="mt-4 text-sm leading-6 text-muted-foreground">{body}</p>
+                </article>
+              ))}
+            </div>
+            <div className="order-1 lg:order-2">
+              <p className="text-xs uppercase text-gold">Beyond the order book</p>
+              <h2 className="mt-5 text-5xl leading-none sm:text-6xl">A composed business makes room for better work.</h2>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="how-it-works" className="py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">How Jaylor helps</h2>
-          <StitchDivider className="mx-auto my-6 w-24" />
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {FEATURES.map(({ icon: Icon, title, body }) => (
-              <Card key={title} className="rounded-2xl">
-                <CardContent className="p-6">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-gold">
-                    <Icon className="size-5" />
+      <section className="grid border-b border-border lg:grid-cols-[0.8fr_1.2fr]">
+        <div className="relative min-h-[620px] overflow-hidden">
+          <img
+            src={garmentEditorial}
+            alt="A finished burgundy and ivory bespoke gown in an elegant atelier"
+            width={1200}
+            height={1600}
+            loading="lazy"
+            className="absolute inset-0 h-full w-full object-cover"
+          />
+        </div>
+        <div className="flex items-center px-5 py-16 sm:px-10 lg:px-16">
+          <div className="w-full max-w-2xl">
+            <p className="text-xs uppercase text-gold">One link. Many possibilities.</p>
+            <h2 className="mt-5 text-5xl leading-none sm:text-6xl">Every kind of commission, held to the same standard.</h2>
+            <div className="mt-10 border-t border-border">
+              {JOB_LANDING_CONTENT.map((job, index) => (
+                <Link
+                  key={job.slug}
+                  to="/jobs/$slug"
+                  params={{ slug: job.slug }}
+                  className="group flex items-center justify-between border-b border-border py-5"
+                >
+                  <span className="flex items-center gap-5">
+                    <span className="text-[10px] text-gold">0{index + 1}</span>
+                    <span className="font-heading text-2xl">{job.tileLabel}</span>
                   </span>
-                  <p className="mt-4 font-medium">{title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-4 grid gap-4 sm:grid-cols-2">
-            {HIGHLIGHTS.map(({ icon: Icon, title, body }) => (
-              <Card key={title} className="rounded-2xl">
-                <CardContent className="p-6">
-                  <span className="flex size-10 items-center justify-center rounded-xl bg-accent text-gold">
-                    <Icon className="size-5" />
-                  </span>
-                  <p className="mt-4 font-medium">{title}</p>
-                  <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-                </CardContent>
-              </Card>
-            ))}
+                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-gold" />
+                </Link>
+              ))}
+            </div>
           </div>
         </div>
       </section>
 
-      <section className="border-y border-border/60 bg-card/40 py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">What kind of job?</h2>
-          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
-            Aso-ebi is the one everyone knows, but the same one link handles any job where people
-            can&apos;t come to you.
-          </p>
-          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-            {JOB_LANDING_CONTENT.map((job) => (
-              <Link key={job.slug} to="/jobs/$slug" params={{ slug: job.slug }}>
-                <Card className="h-full rounded-2xl transition-colors hover:bg-accent/40">
-                  <CardContent className="p-4">
-                    <p className="font-medium">{job.tileLabel}</p>
-                  </CardContent>
-                </Card>
-              </Link>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-border/60 py-14 lg:py-16">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <p className="text-center text-xs uppercase tracking-[0.18em] text-gold">
-            Built around the workroom
-          </p>
-          <h2 className="mx-auto mt-3 max-w-2xl text-center text-2xl lg:text-3xl">
-            Less chasing. More making.
-          </h2>
-          <div className="mt-8 grid gap-6 border-y border-border/70 py-7 sm:grid-cols-3">
+      <section id="pricing" className="border-b border-border bg-card py-20 lg:py-28">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-8 border-b border-border pb-12 lg:grid-cols-2 lg:items-end">
             <div>
-              <p className="font-heading text-xl">Know what is next</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                See every garment move from received to collected without searching through paper.
-              </p>
+              <p className="text-xs uppercase text-gold">Plans for every workroom</p>
+              <h2 className="mt-5 text-5xl leading-none sm:text-6xl">Begin free. Grow with intention.</h2>
             </div>
-            <div className="border-border sm:border-x sm:px-6">
-              <p className="font-heading text-xl">Remember every balance</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Keep deposits, payments and outstanding money tied to the right order.
-              </p>
-            </div>
-            <div>
-              <p className="font-heading text-xl">Keep clients informed</p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Send clear WhatsApp updates from the same place you manage the work.
-              </p>
-            </div>
+            <p className="max-w-lg text-sm leading-6 text-muted-foreground lg:justify-self-end">
+              Every new store receives 14 days of Growth at no cost. If you return to Free, your records remain yours.
+            </p>
           </div>
-        </div>
-      </section>
-
-      <section className="py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">See it in your hands</h2>
-          <div className="mt-10 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
-            <ScreenshotCard caption="Track every order">
-              <div className="space-y-1.5">
-                <div className="rounded-lg border border-border/70 bg-card p-2">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="truncate text-[10px] font-medium">Blessing Eze</p>
-                    <span className="shrink-0 rounded-full bg-gold/15 px-1.5 py-0.5 text-[8px] font-medium text-gold">
-                      Fitting
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
-                    Aso-oke gown · ORD-1042
-                  </p>
-                  <div className="mt-1.5 flex items-center gap-0.5">
-                    {["Received", "Cutting", "Sewing", "Fitting", "Ready"].map((s, i) => (
-                      <span
-                        key={s}
-                        className={cn("h-1 flex-1 rounded-full", i <= 3 ? "bg-gold" : "bg-border")}
-                      />
-                    ))}
-                  </div>
-                </div>
-                <div className="rounded-lg border border-border/70 bg-card p-2">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="truncate text-[10px] font-medium">Amaka Obi</p>
-                    <span className="shrink-0 rounded-full bg-paid/15 px-1.5 py-0.5 text-[8px] font-medium text-paid">
-                      Ready
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
-                    Ankara dress · ORD-1039
-                  </p>
-                </div>
-                <div className="rounded-lg border border-border/70 bg-card p-2">
-                  <div className="flex items-center justify-between gap-1">
-                    <p className="truncate text-[10px] font-medium">Ibrahim Sule</p>
-                    <span className="shrink-0 rounded-full bg-accent px-1.5 py-0.5 text-[8px] font-medium text-muted-foreground">
-                      Cutting
-                    </span>
-                  </div>
-                  <p className="mt-0.5 truncate text-[9px] text-muted-foreground">
-                    Agbada set · ORD-1044
-                  </p>
-                </div>
-              </div>
-            </ScreenshotCard>
-            <ScreenshotCard caption="Never lose a naira">
-              <div className="space-y-1.5">
-                <div className="rounded-lg border border-border/70 bg-card p-2.5">
-                  <p className="text-[8px] uppercase tracking-wide text-muted-foreground">
-                    You are owed
-                  </p>
-                  <p className="figures mt-0.5 text-sm font-medium text-owed">₦145,000</p>
-                  <p className="text-[8px] text-muted-foreground">9 clients owing</p>
-                </div>
-                <div className="rounded-lg border border-border/70 bg-card p-2.5">
-                  <p className="text-[8px] uppercase tracking-wide text-muted-foreground">
-                    Collected this month
-                  </p>
-                  <p className="figures mt-0.5 text-sm font-medium text-paid">₦850,000</p>
-                </div>
-                <div className="rounded-lg border border-border/70 bg-card p-2.5">
-                  <div className="flex justify-between text-[9px]">
-                    <span className="text-muted-foreground">Collection score</span>
-                    <span className="font-medium text-gold">82/100</span>
-                  </div>
-                </div>
-              </div>
-            </ScreenshotCard>
-            <ScreenshotCard caption="Remind clients on WhatsApp">
-              <div className="space-y-2">
-                <div className="ml-auto max-w-[85%] rounded-lg rounded-tr-sm bg-gold/15 p-2 text-[9px] leading-snug">
-                  Hi Blessing, your aso-oke gown is ready for pickup. Balance: ₦15,000.
-                </div>
-                <p className="ml-auto max-w-[85%] text-right text-[7px] text-muted-foreground">
-                  Delivered ✓✓
-                </p>
-                <div className="ml-auto max-w-[85%] rounded-lg rounded-tr-sm bg-gold/15 p-2 text-[9px] leading-snug">
-                  Hi Ibrahim, just a reminder that ₦20,000 is still outstanding on your order.
-                </div>
-              </div>
-            </ScreenshotCard>
-            <ScreenshotCard caption="Your own storefront">
-              <div className="grid grid-cols-2 gap-1.5">
-                {[
-                  { name: "Ankara gown", price: "₦25k–45k", tone: "from-owed/40 to-gold/40" },
-                  { name: "Agbada set", price: "₦40k–60k", tone: "from-gold/40 to-paid/30" },
-                  { name: "Aso-oke", price: "₦32k–50k", tone: "from-paid/30 to-owed/30" },
-                  { name: "Kaftan", price: "₦18k–30k", tone: "from-gold/30 to-owed/40" },
-                ].map((item) => (
-                  <div
-                    key={item.name}
-                    className="overflow-hidden rounded-lg border border-border/70 bg-card"
-                  >
-                    <div className={cn("h-8 bg-gradient-to-br", item.tone)} />
-                    <div className="p-1.5">
-                      <p className="truncate text-[9px] font-medium">{item.name}</p>
-                      <p className="text-[8px] text-muted-foreground">{item.price}</p>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </ScreenshotCard>
-          </div>
-        </div>
-      </section>
-
-      <section className="border-y border-border/60 bg-card/40 py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">Tailors already using Jaylor</h2>
-          <div className="mt-10 grid gap-4 sm:grid-cols-3">
-            {TESTIMONIALS.map((t) => (
-              <Card key={t.name} className="rounded-2xl">
-                <CardContent className="p-6">
-                  <p className="text-sm text-muted-foreground">&ldquo;{t.quote}&rdquo;</p>
-                  <div className="mt-4 flex items-center gap-3">
-                    <Avatar className="size-10">
-                      <AvatarFallback>{initials(t.name)}</AvatarFallback>
-                    </Avatar>
-                    <div>
-                      <p className="text-sm font-medium">{t.name}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {t.shop} · {t.city}
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      <section id="pricing" className="border-t border-border/60 bg-card/40 py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">Simple, honest pricing</h2>
-          <p className="mt-2 text-center text-sm text-muted-foreground">
-            Every new store gets 14 days of Growth free. Downgrading never deletes your data.
-          </p>
-          <p className="mt-2 text-center text-sm">
-            <Link to="/pricing" className="text-gold underline-offset-4 hover:underline">
-              See the full comparison
-            </Link>
-          </p>
-          <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4">
             {PLANS.map((plan) => (
-              <Card
-                key={plan.tier}
-                className={plan.tier === "Growth" ? "rounded-2xl border-gold" : "rounded-2xl"}
-              >
-                <CardContent className="flex h-full flex-col p-6">
-                  <TierBadge tier={plan.tier} />
-                  <p className="mt-3 text-2xl">
-                    {plan.prices.monthly ? plan.prices.monthly.perMonth : "By quote"}
-                  </p>
-                  <p className="mt-3 text-sm text-muted-foreground">{plan.blurb}</p>
-                  <ul className="mt-4 space-y-2 text-sm">
-                    {plan.features.map((f) => (
-                      <li key={f} className="flex items-start gap-2">
-                        <span className="mt-1.5 size-1.5 shrink-0 rounded-full bg-gold" />
-                        {f}
-                      </li>
-                    ))}
-                  </ul>
-                  <div className="mt-6 pt-2">
-                    <Button
-                      asChild
-                      className="w-full"
-                      variant={plan.mostPopular ? "default" : "outline"}
-                    >
-                      {plan.cta === "custom" ? (
-                        <Link to="/custom">Talk to us</Link>
-                      ) : (
-                        <Link to="/auth" search={{ mode: "signup" }}>
-                          {plan.tier === "Free" ? "Start free" : "Start 14-day trial"}
-                        </Link>
-                      )}
-                    </Button>
-                  </div>
-                </CardContent>
-              </Card>
+              <article key={plan.tier} className="flex min-h-[390px] flex-col border-b border-border px-1 py-8 sm:border-r sm:px-6 lg:border-b-0 lg:first:pl-0 lg:last:border-r-0">
+                <TierBadge tier={plan.tier} className="w-fit rounded-none" />
+                <p className="mt-7 font-heading text-3xl text-foreground">
+                  {plan.prices.monthly ? plan.prices.monthly.perMonth : "By quote"}
+                </p>
+                <p className="mt-4 min-h-20 text-sm leading-6 text-muted-foreground">{plan.blurb}</p>
+                <ul className="mt-5 space-y-3 text-xs text-foreground/80">
+                  {plan.features.map((feature) => (
+                    <li key={feature} className="flex items-start gap-2">
+                      <Check className="mt-0.5 size-3.5 shrink-0 text-gold" /> {feature}
+                    </li>
+                  ))}
+                </ul>
+                <Button asChild variant={plan.mostPopular ? "default" : "outline"} className="mt-auto rounded-none">
+                  {plan.cta === "custom" ? (
+                    <Link to="/custom">Talk to us</Link>
+                  ) : (
+                    <Link to="/auth" search={{ mode: "signup" }}>{plan.tier === "Free" ? "Start free" : "Start trial"}</Link>
+                  )}
+                </Button>
+              </article>
             ))}
+          </div>
+          <div className="border-t border-border pt-7 text-right">
+            <Link to="/pricing" className="inline-flex items-center gap-2 text-xs uppercase text-gold hover:text-foreground">
+              Compare every plan <ArrowRight className="size-4" />
+            </Link>
           </div>
         </div>
       </section>
 
-      <section className="py-16 lg:py-20">
-        <div className="mx-auto w-full max-w-2xl px-4 lg:px-8">
-          <h2 className="text-center text-2xl lg:text-3xl">Common questions</h2>
-          <Accordion type="single" collapsible className="mt-8">
-            {HOME_FAQ.map((item, i) => (
-              <AccordionItem key={item.question} value={`home-faq-${i}`}>
-                <AccordionTrigger>{item.question}</AccordionTrigger>
-                <AccordionContent className="text-muted-foreground">{item.answer}</AccordionContent>
+      <section className="py-20 lg:py-28">
+        <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:px-10">
+          <div>
+            <p className="text-xs uppercase text-gold">Considered answers</p>
+            <h2 className="mt-5 text-5xl leading-none">Before you begin.</h2>
+          </div>
+          <Accordion type="single" collapsible className="border-t border-border">
+            {HOME_FAQ.map((item, index) => (
+              <AccordionItem key={item.question} value={`home-faq-${index}`} className="border-border">
+                <AccordionTrigger className="py-6 text-left font-heading text-2xl font-normal hover:text-gold hover:no-underline">
+                  {item.question}
+                </AccordionTrigger>
+                <AccordionContent className="max-w-2xl pb-7 text-sm leading-6 text-muted-foreground">{item.answer}</AccordionContent>
               </AccordionItem>
             ))}
           </Accordion>
         </div>
       </section>
 
-      <section className="py-16 text-center lg:py-20">
-        <div className="mx-auto w-full max-w-2xl px-4 lg:px-8">
-          <h2 className="text-2xl lg:text-3xl">Ready to stop losing track?</h2>
-          <p className="mt-3 text-sm text-muted-foreground">
-            Set up your workroom in a minute. No card required to start.
-          </p>
-          <Button asChild size="lg" className="mt-6">
-            <Link to="/auth" search={{ mode: "signup" }}>
-              Start free
-            </Link>
-          </Button>
-        </div>
+      <section className="border-y border-gold/30 bg-burgundy px-5 py-20 text-center sm:px-8 lg:py-28">
+        <p className="text-xs uppercase text-gold-soft">The next garment deserves a clear beginning</p>
+        <h2 className="mx-auto mt-6 max-w-4xl text-5xl leading-none sm:text-7xl">Every order tracked. Every measurement kept. Every naira accounted for.</h2>
+        <p className="mx-auto mt-6 max-w-xl text-sm leading-6 text-foreground/70">Set up your workroom in a minute. No card required.</p>
+        <Button asChild size="lg" className="mt-9 h-12 rounded-none px-8 uppercase">
+          <Link to="/auth" search={{ mode: "signup" }}>Start free <ArrowRight /></Link>
+        </Button>
       </section>
 
-      <footer className="border-t border-border/60 py-10">
-        <div className="mx-auto flex w-full max-w-6xl flex-col items-center gap-3 px-4 text-center lg:px-8">
-          <div className="flex items-center gap-2">
-            <LogoMark className="size-7" />
-            <Wordmark className="text-lg" />
+      <footer className="py-14">
+        <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-[1fr_auto] lg:px-10">
+          <div>
+            <div className="flex items-center gap-3">
+              <LogoMark className="size-9 rounded-sm" />
+              <span className="font-heading text-2xl">Jaylor</span>
+            </div>
+            <p className="mt-5 max-w-sm text-xs leading-5 text-muted-foreground">{COMPANY_LINE}</p>
           </div>
-          <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
-            <Link to="/features" className="hover:text-foreground">
-              Features
-            </Link>
-            <Link to="/pricing" className="hover:text-foreground">
-              Pricing
-            </Link>
-            <Link to="/about" className="hover:text-foreground">
-              About
-            </Link>
-            <Link to="/privacy-policy" className="hover:text-foreground">
-              Privacy
-            </Link>
-            <Link to="/terms" className="hover:text-foreground">
-              Terms
-            </Link>
-            <Link to="/security" className="hover:text-foreground">
-              Security
-            </Link>
+          <nav className="grid grid-cols-2 gap-x-10 gap-y-3 text-xs text-muted-foreground sm:grid-cols-3">
+            <Link to="/features" className="hover:text-gold">Features</Link>
+            <Link to="/pricing" className="hover:text-gold">Pricing</Link>
+            <Link to="/about" className="hover:text-gold">About</Link>
+            <Link to="/privacy-policy" className="hover:text-gold">Privacy</Link>
+            <Link to="/terms" className="hover:text-gold">Terms</Link>
+            <Link to="/security" className="hover:text-gold">Security</Link>
           </nav>
-          <p className="text-xs text-muted-foreground">{COMPANY_LINE}</p>
         </div>
       </footer>
     </main>
-  );
-}
-
-function initials(name: string) {
-  return name
-    .split(" ")
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase())
-    .join("");
-}
-
-function ScreenshotCard({ caption, children }: { caption: string; children: React.ReactNode }) {
-  return (
-    <div>
-      <PhoneMockup>{children}</PhoneMockup>
-      <p className="mt-3 text-center text-sm text-muted-foreground">{caption}</p>
-    </div>
-  );
-}
-
-function StitchIcon(props: { className?: string }) {
-  return (
-    <svg viewBox="0 0 24 24" fill="none" aria-hidden className={props.className}>
-      <path
-        d="M4 12c4-8 12-8 16 0"
-        stroke="currentColor"
-        strokeWidth="1.6"
-        strokeDasharray="3 3"
-        strokeLinecap="round"
-      />
-    </svg>
   );
 }

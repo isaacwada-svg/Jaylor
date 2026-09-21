@@ -110,7 +110,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600&family=Work+Sans:wght@300;400;500;600&display=swap",
       },
       { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
       { rel: "manifest", href: "/manifest.json" },
@@ -127,13 +127,13 @@ const THEME_BOOTSTRAP = `try{var t=localStorage.getItem("jaylor-theme");var d=t=
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" style={{ backgroundColor: "#F9F6F1" }}>
+    <html lang="en" style={{ backgroundColor: "#141126" }}>
       <head>
         <HeadContent />
         {/* Paint the site background before the stylesheet arrives — no white flash */}
         <style
           dangerouslySetInnerHTML={{
-            __html: "html{background-color:#F9F6F1}html.dark{background-color:#0B091B}",
+            __html: "html{background-color:#141126}html.dark{background-color:#0B091B}",
           }}
         />
         {/* Apply the saved theme before first paint so dark-mode users don't flash either */}
