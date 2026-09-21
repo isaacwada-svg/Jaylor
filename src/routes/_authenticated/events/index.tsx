@@ -81,30 +81,41 @@ function Events() {
           />
         ) : (
           <div className="space-y-3">
-            {events.map((event) => (
-              <Link
-                key={event.id}
-                to="/events/$eventId"
-                params={{ eventId: event.id }}
-                className="block rounded-2xl border border-border p-4 transition-colors hover:bg-accent/40"
-              >
-                <div className="flex items-start justify-between gap-3">
-                  <div className="min-w-0">
-                    <p className="truncate font-medium">{event.name}</p>
-                    <p className="text-sm text-muted-foreground">
-                      {jobTemplate(event.job_type).label}
-                      {" · "}
-                      {event.event_date
-                        ? new Date(event.event_date).toLocaleDateString()
-                        : "No date set"}
-                    </p>
+            {events.map((event) => {
+              const dueForRepeat =
+                !!event.repeat_reminder_date && new Date(event.repeat_reminder_date) <= new Date();
+              return (
+                <Link
+                  key={event.id}
+                  to="/events/$eventId"
+                  params={{ eventId: event.id }}
+                  className="block rounded-2xl border border-border p-4 transition-colors hover:bg-accent/40"
+                >
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{event.name}</p>
+                      <p className="text-sm text-muted-foreground">
+                        {jobTemplate(event.job_type).label}
+                        {" · "}
+                        {event.event_date
+                          ? new Date(event.event_date).toLocaleDateString()
+                          : "No date set"}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 flex-col items-end gap-1">
+                      <Badge variant="outline" className="border-gold text-gold">
+                        {event.status}
+                      </Badge>
+                      {dueForRepeat && (
+                        <Badge variant="outline" className="border-paid/40 text-paid">
+                          Time to repeat
+                        </Badge>
+                      )}
+                    </div>
                   </div>
-                  <Badge variant="outline" className="shrink-0 border-gold text-gold">
-                    {event.status}
-                  </Badge>
-                </div>
-              </Link>
-            ))}
+                </Link>
+              );
+            })}
           </div>
         )}
       </div>

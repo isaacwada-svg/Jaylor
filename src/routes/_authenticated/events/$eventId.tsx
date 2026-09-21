@@ -1,5 +1,5 @@
 import { useMemo, useState, type FormEvent } from "react";
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowLeft, Copy, MessageCircle, Plus } from "lucide-react";
@@ -60,6 +60,7 @@ const STATUSES: { value: string; label: string }[] = [
 
 function EventDetail() {
   const { eventId } = Route.useParams();
+  const navigate = useNavigate();
   const { currentStore, currentRole } = useStore();
   const canManage = currentRole === "owner" || currentRole === "manager";
   const tier = effectiveTier(currentStore);
@@ -69,6 +70,8 @@ function EventDetail() {
   const [name, setName] = useState("");
   const [phoneRaw, setPhoneRaw] = useState("");
   const [busy, setBusy] = useState(false);
+  const [duplicating, setDuplicating] = useState(false);
+  const [reminderMonths, setReminderMonths] = useState("12");
   const [payingParticipant, setPayingParticipant] = useState<ParticipantRow | null>(null);
   const [paidAmountDraft, setPaidAmountDraft] = useState("");
 
@@ -147,6 +150,78 @@ function EventDetail() {
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ["event-participants", eventId] });
+  }
+
+  async function duplicateJob() {
+    if (!event) return;
+    setDuplicating(true);
+    try {
+      const { data: newEvent, error } = await supabase
+        .from("events")
+        .insert({
+          store_id: event.store_id,
+          name: `${event.name} (repeat)`,
+          job_type: event.job_type,
+          payer_mode: event.payer_mode,
+          collection_mode: "none",
+          pricing_mode: event.pricing_mode,
+          turnaround_mode: event.turnaround_mode,
+          organiser_name: event.organiser_name,
+          organiser_phone: event.organiser_phone,
+          fabric_description: event.fabric_description,
+          styles: event.styles,
+          size_chart: event.size_chart,
+          price_tiers: event.price_tiers,
+          price_per_person: event.price_per_person,
+          deposit_amount: event.deposit_amount,
+          delivery_country: event.delivery_country,
+          delivery_address: event.delivery_address,
+          shipping_fee: event.shipping_fee,
+          repeated_from_id: event.id,
+        })
+        .select()
+        .single();
+      if (error) throw error;
+
+      if (participants && participants.length > 0) {
+        const rows = participants.map((p) => ({
+          event_id: newEvent.id,
+          store_id: event.store_id,
+          client_id: p.client_id,
+          full_name: p.full_name,
+          phone: p.phone,
+          style_key: p.style_key,
+          size_key: p.size_key,
+        }));
+        const { error: participantsError } = await supabase.from("event_participants").insert(rows);
+        if (participantsError) throw participantsError;
+      }
+
+      toast.success("Job duplicated — each guest gets a confirm-or-update link");
+      navigate({ to: "/events/$eventId", params: { eventId: newEvent.id } });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not duplicate this job"));
+    } finally {
+      setDuplicating(false);
+    }
+  }
+
+  async function setRepeatReminder() {
+    if (!event) return;
+    const months = Number(reminderMonths) || 12;
+    const date = new Date();
+    date.setMonth(date.getMonth() + months);
+    try {
+      const { error } = await supabase
+        .from("events")
+        .update({ repeat_reminder_date: date.toISOString().slice(0, 10) })
+        .eq("id", event.id);
+      if (error) throw error;
+      toast.success("Reminder set");
+      queryClient.invalidateQueries({ queryKey: ["event", eventId] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not set this reminder"));
+    }
   }
 
   const rushCountdown = useMemo(() => {
@@ -294,9 +369,16 @@ function EventDetail() {
               {event.fabric_description ? ` · ${event.fabric_description}` : ""}
             </p>
           </div>
-          <Badge variant="outline" className="border-gold text-gold">
-            {event.status}
-          </Badge>
+          <div className="flex shrink-0 items-center gap-2">
+            <Badge variant="outline" className="border-gold text-gold">
+              {event.status}
+            </Badge>
+            {canManage && (
+              <Button size="sm" variant="outline" onClick={duplicateJob} disabled={duplicating}>
+                {duplicating ? "Duplicating..." : "Duplicate"}
+              </Button>
+            )}
+          </div>
         </div>
 
         {rushCountdown != null && (
@@ -306,6 +388,31 @@ function EventDetail() {
               : rushCountdown === 0
                 ? "Rush job — due today"
                 : `Rush job — ${Math.abs(rushCountdown)} ${Math.abs(rushCountdown) === 1 ? "day" : "days"} overdue`}
+          </div>
+        )}
+
+        {canManage && (
+          <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
+            {event.repeat_reminder_date ? (
+              <span>
+                We&apos;ll remind you to repeat this on{" "}
+                {new Date(event.repeat_reminder_date).toLocaleDateString()}.
+              </span>
+            ) : (
+              <>
+                <span>Remind me to repeat this in</span>
+                <Input
+                  value={reminderMonths}
+                  onChange={(e) => setReminderMonths(e.target.value)}
+                  inputMode="numeric"
+                  className="h-7 w-14 px-2 py-1"
+                />
+                <span>months</span>
+                <Button size="sm" variant="outline" onClick={setRepeatReminder}>
+                  Set
+                </Button>
+              </>
+            )}
           </div>
         )}
 

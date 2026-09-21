@@ -676,104 +676,119 @@ export type Database = {
       };
       events: {
         Row: {
-          collection_mode: string
-          created_at: string
-          created_by: string | null
-          delivery_date: string | null
-          deposit_amount: number | null
-          deposit_percent: number | null
-          event_date: string | null
-          fabric_description: string | null
-          id: string
-          invoice_number: string | null
-          job_type: string
-          measurement_deadline: string | null
-          name: string
-          organiser_name: string | null
-          organiser_phone: string | null
-          payer_mode: string
-          po_number: string | null
-          price_per_person: number | null
-          price_tiers: Json
-          pricing_mode: string
-          public_token: string
-          quantity: number | null
-          size_chart: Json
-          stage: string
-          status: string
-          store_id: string
-          styles: Json
-          turnaround_mode: string
-          validity_date: string | null
-          vat_enabled: boolean
-          vat_percent: number
-        }
+          collection_mode: string;
+          created_at: string;
+          created_by: string | null;
+          delivery_address: string | null;
+          delivery_country: string | null;
+          delivery_date: string | null;
+          deposit_amount: number | null;
+          deposit_percent: number | null;
+          event_date: string | null;
+          fabric_description: string | null;
+          id: string;
+          invoice_number: string | null;
+          job_type: string;
+          measurement_deadline: string | null;
+          name: string;
+          organiser_name: string | null;
+          organiser_phone: string | null;
+          payer_mode: string;
+          po_number: string | null;
+          price_per_person: number | null;
+          price_tiers: Json;
+          pricing_mode: string;
+          public_token: string;
+          quantity: number | null;
+          repeat_reminder_date: string | null;
+          repeated_from_id: string | null;
+          shipping_fee: number | null;
+          size_chart: Json;
+          stage: string;
+          status: string;
+          store_id: string;
+          styles: Json;
+          turnaround_mode: string;
+          validity_date: string | null;
+          vat_enabled: boolean;
+          vat_percent: number;
+        };
         Insert: {
-          collection_mode?: string
-          created_at?: string
-          created_by?: string | null
-          delivery_date?: string | null
-          deposit_amount?: number | null
-          deposit_percent?: number | null
-          event_date?: string | null
-          fabric_description?: string | null
-          id?: string
-          invoice_number?: string | null
-          job_type?: string
-          measurement_deadline?: string | null
-          name: string
-          organiser_name?: string | null
-          organiser_phone?: string | null
-          payer_mode?: string
-          po_number?: string | null
-          price_per_person?: number | null
-          price_tiers?: Json
-          pricing_mode?: string
-          public_token?: string
-          quantity?: number | null
-          size_chart?: Json
-          stage?: string
-          status?: string
-          store_id: string
-          styles?: Json
-          turnaround_mode?: string
-          validity_date?: string | null
-          vat_enabled?: boolean
-          vat_percent?: number
-        }
+          collection_mode?: string;
+          created_at?: string;
+          created_by?: string | null;
+          delivery_address?: string | null;
+          delivery_country?: string | null;
+          delivery_date?: string | null;
+          deposit_amount?: number | null;
+          deposit_percent?: number | null;
+          event_date?: string | null;
+          fabric_description?: string | null;
+          id?: string;
+          invoice_number?: string | null;
+          job_type?: string;
+          measurement_deadline?: string | null;
+          name: string;
+          organiser_name?: string | null;
+          organiser_phone?: string | null;
+          payer_mode?: string;
+          po_number?: string | null;
+          price_per_person?: number | null;
+          price_tiers?: Json;
+          pricing_mode?: string;
+          public_token?: string;
+          quantity?: number | null;
+          repeat_reminder_date?: string | null;
+          repeated_from_id?: string | null;
+          shipping_fee?: number | null;
+          size_chart?: Json;
+          stage?: string;
+          status?: string;
+          store_id: string;
+          styles?: Json;
+          turnaround_mode?: string;
+          validity_date?: string | null;
+          vat_enabled?: boolean;
+          vat_percent?: number;
+        };
         Update: {
-          collection_mode?: string
-          created_at?: string
-          created_by?: string | null
-          delivery_date?: string | null
-          deposit_amount?: number | null
-          deposit_percent?: number | null
-          event_date?: string | null
-          fabric_description?: string | null
-          id?: string
-          invoice_number?: string | null
-          job_type?: string
-          measurement_deadline?: string | null
-          name?: string
-          organiser_name?: string | null
-          organiser_phone?: string | null
-          payer_mode?: string
-          po_number?: string | null
-          price_per_person?: number | null
-          price_tiers?: Json
-          pricing_mode?: string
-          public_token?: string
-          quantity?: number | null
-          size_chart?: Json
-          stage?: string
-          status?: string
-          store_id?: string
-          styles?: Json
-          turnaround_mode?: string
-          validity_date?: string | null
-          vat_enabled?: boolean
-          vat_percent?: number
-        }
+          collection_mode?: string;
+          created_at?: string;
+          created_by?: string | null;
+          delivery_address?: string | null;
+          delivery_country?: string | null;
+          delivery_date?: string | null;
+          deposit_amount?: number | null;
+          deposit_percent?: number | null;
+          event_date?: string | null;
+          fabric_description?: string | null;
+          id?: string;
+          invoice_number?: string | null;
+          job_type?: string;
+          measurement_deadline?: string | null;
+          name?: string;
+          organiser_name?: string | null;
+          organiser_phone?: string | null;
+          payer_mode?: string;
+          po_number?: string | null;
+          price_per_person?: number | null;
+          price_tiers?: Json;
+          pricing_mode?: string;
+          public_token?: string;
+          quantity?: number | null;
+          repeat_reminder_date?: string | null;
+          repeated_from_id?: string | null;
+          shipping_fee?: number | null;
+          size_chart?: Json;
+          stage?: string;
+          status?: string;
+          store_id?: string;
+          styles?: Json;
+          turnaround_mode?: string;
+          validity_date?: string | null;
+          vat_enabled?: boolean;
+          vat_percent?: number;
+        };
         Relationships: [
           {
             foreignKeyName: "events_store_id_fkey";
@@ -2158,41 +2173,41 @@ export type Database = {
       };
       store_settings: {
         Row: {
-          email: string | null
-          phone: string | null
-          public_location: string | null
-          receipt_footer: string | null
-          registered_address: string | null
-          store_id: string
-          updated_at: string
-          vat_enabled: boolean
-          vat_percent: number
-          whatsapp_number: string | null
-        }
+          email: string | null;
+          phone: string | null;
+          public_location: string | null;
+          receipt_footer: string | null;
+          registered_address: string | null;
+          store_id: string;
+          updated_at: string;
+          vat_enabled: boolean;
+          vat_percent: number;
+          whatsapp_number: string | null;
+        };
         Insert: {
-          email?: string | null
-          phone?: string | null
-          public_location?: string | null
-          receipt_footer?: string | null
-          registered_address?: string | null
-          store_id: string
-          updated_at?: string
-          vat_enabled?: boolean
-          vat_percent?: number
-          whatsapp_number?: string | null
-        }
+          email?: string | null;
+          phone?: string | null;
+          public_location?: string | null;
+          receipt_footer?: string | null;
+          registered_address?: string | null;
+          store_id: string;
+          updated_at?: string;
+          vat_enabled?: boolean;
+          vat_percent?: number;
+          whatsapp_number?: string | null;
+        };
         Update: {
-          email?: string | null
-          phone?: string | null
-          public_location?: string | null
-          receipt_footer?: string | null
-          registered_address?: string | null
-          store_id?: string
-          updated_at?: string
-          vat_enabled?: boolean
-          vat_percent?: number
-          whatsapp_number?: string | null
-        }
+          email?: string | null;
+          phone?: string | null;
+          public_location?: string | null;
+          receipt_footer?: string | null;
+          registered_address?: string | null;
+          store_id?: string;
+          updated_at?: string;
+          vat_enabled?: boolean;
+          vat_percent?: number;
+          whatsapp_number?: string | null;
+        };
         Relationships: [
           {
             foreignKeyName: "store_settings_store_id_fkey";

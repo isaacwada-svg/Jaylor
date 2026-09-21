@@ -67,6 +67,9 @@ export function EventForm({
   const [vatPercent, setVatPercent] = useState("7.5");
   const [validityDate, setValidityDate] = useState("");
   const [depositPercent, setDepositPercent] = useState("60");
+  const [deliveryCountry, setDeliveryCountry] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [shippingFee, setShippingFee] = useState("");
   const [busy, setBusy] = useState(false);
   const [quoteLink, setQuoteLink] = useState<string | null>(null);
 
@@ -90,6 +93,9 @@ export function EventForm({
     setVatPercent("7.5");
     setValidityDate("");
     setDepositPercent("60");
+    setDeliveryCountry("");
+    setDeliveryAddress("");
+    setShippingFee("");
     setQuoteLink(null);
   }, [open]);
 
@@ -203,6 +209,13 @@ export function EventForm({
                 vat_percent: vatPercent.trim() ? Number(vatPercent) : 7.5,
                 validity_date: validityDate || null,
                 deposit_percent: depositPercent.trim() ? Number(depositPercent) : null,
+              }
+            : {}),
+          ...(template.jobType === "diaspora"
+            ? {
+                delivery_country: deliveryCountry.trim() || null,
+                delivery_address: deliveryAddress.trim() || null,
+                shipping_fee: shippingFee.trim() ? Number(shippingFee) : null,
               }
             : {}),
         })
@@ -324,6 +337,36 @@ export function EventForm({
           placeholder="Blue and gold aso-oke, guests to buy from the family"
         />
       </div>
+
+      {template?.jobType === "diaspora" && (
+        <div className="space-y-3 rounded-xl border border-border p-3">
+          <p className="text-sm font-medium">Delivery abroad</p>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="delivery-country">Country</Label>
+              <Input
+                id="delivery-country"
+                value={deliveryCountry}
+                onChange={(e) => setDeliveryCountry(e.target.value)}
+                placeholder="United Kingdom"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="shipping-fee">Shipping fee</Label>
+              <MoneyInput id="shipping-fee" value={shippingFee} onChange={setShippingFee} />
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="delivery-address">Delivery address</Label>
+            <Textarea
+              id="delivery-address"
+              rows={2}
+              value={deliveryAddress}
+              onChange={(e) => setDeliveryAddress(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
 
       {template?.collectionMode === "sizes" && (
         <div className="space-y-2">

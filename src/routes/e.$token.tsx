@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
+import { approximateUsd } from "@/lib/fx";
 import {
   getJobExtras,
   getJobQuote,
@@ -242,7 +243,9 @@ function GuestEventPage() {
   const amountDue = selectedStyle?.price ?? tierPrice ?? event.price_per_person ?? null;
   const usesSizeChart =
     !!extras && extras.collectionMode === "sizes" && extras.sizeChart.length > 0;
+  const usesConfirmOnly = !!extras && extras.collectionMode === "none";
   const sponsored = !!extras && extras.payerMode !== "each_pays" && extras.isSponsored;
+  const isAbroad = !!extras?.deliveryCountry;
 
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
@@ -365,6 +368,39 @@ function GuestEventPage() {
                 I&apos;ve already sent my measurements
               </button>
             </div>
+          ) : usesConfirmOnly ? (
+            <div>
+              <p className="text-sm font-medium">Your measurements on file</p>
+              <p className="mt-1 text-xs text-muted-foreground">
+                We&apos;ll use what we already have for you, unless something has changed.
+              </p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => chooseMeasurement("book")}
+                  className={`rounded-xl border px-3 py-2 text-sm ${
+                    participant.measurement_choice === "book"
+                      ? "border-gold bg-accent"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  Confirm — still the same
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => chooseMeasurement("self")}
+                  className={`rounded-xl border px-3 py-2 text-sm ${
+                    participant.measurement_choice === "self"
+                      ? "border-gold bg-accent"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  I need to update mine
+                </button>
+              </div>
+            </div>
           ) : (
             <div>
               <p className="text-sm font-medium">Your measurements</p>
@@ -406,10 +442,27 @@ function GuestEventPage() {
                 {amountDue != null ? formatMoney(amountDue) : "To be confirmed"}
               </span>
             </div>
+            {isAbroad && amountDue != null && (
+              <p className="mt-0.5 text-right text-xs text-muted-foreground">
+                ≈ {approximateUsd(amountDue + (extras?.shippingFee ?? 0))}
+              </p>
+            )}
+            {isAbroad && extras?.shippingFee && (
+              <div className="mt-1 flex items-center justify-between text-sm">
+                <span className="text-muted-foreground">Shipping</span>
+                <span className="figures">{formatMoney(extras.shippingFee)}</span>
+              </div>
+            )}
             <div className="mt-1 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">Paid so far</span>
               <span className="figures text-paid">{formatMoney(participant.paid_amount)}</span>
             </div>
+            {isAbroad && (
+              <p className="mt-2 text-xs text-muted-foreground">
+                You can pay by card in your own currency — it settles to the shop in naira.
+                {extras?.deliveryAddress ? ` Delivering to: ${extras.deliveryAddress}.` : ""}
+              </p>
+            )}
             {sponsored ? (
               <p className="mt-3 text-xs text-muted-foreground">
                 Your organiser is covering this order — no payment needed from you.

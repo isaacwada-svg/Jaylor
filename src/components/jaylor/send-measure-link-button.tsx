@@ -6,7 +6,10 @@ import { getErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
 import { Button } from "@/components/ui/button";
 import { MoneyInput } from "@/components/ui/money-input";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 /**
@@ -28,11 +31,19 @@ export function SendMeasureLinkButton({
 }) {
   const [open, setOpen] = useState(false);
   const [deposit, setDeposit] = useState("");
+  const [isAbroad, setIsAbroad] = useState(false);
+  const [deliveryCountry, setDeliveryCountry] = useState("");
+  const [deliveryAddress, setDeliveryAddress] = useState("");
+  const [shippingFee, setShippingFee] = useState("");
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState<string | null>(null);
 
   function reset() {
     setDeposit("");
+    setIsAbroad(false);
+    setDeliveryCountry("");
+    setDeliveryAddress("");
+    setShippingFee("");
     setLink(null);
   }
 
@@ -44,11 +55,18 @@ export function SendMeasureLinkButton({
         .insert({
           store_id: storeId,
           name: `Order for ${clientName}`,
-          job_type: "remote_individual",
+          job_type: isAbroad ? "diaspora" : "remote_individual",
           payer_mode: "each_pays",
           collection_mode: "measurements",
           pricing_mode: "flat",
           deposit_amount: deposit.trim() ? Number(deposit) : null,
+          ...(isAbroad
+            ? {
+                delivery_country: deliveryCountry.trim() || null,
+                delivery_address: deliveryAddress.trim() || null,
+                shipping_fee: shippingFee.trim() ? Number(shippingFee) : null,
+              }
+            : {}),
         })
         .select()
         .single();
@@ -143,6 +161,45 @@ export function SendMeasureLinkButton({
                 <Label htmlFor="measure-link-deposit">Deposit (optional)</Label>
                 <MoneyInput id="measure-link-deposit" value={deposit} onChange={setDeposit} />
               </div>
+              <div className="flex items-center justify-between rounded-xl border border-border p-3">
+                <div>
+                  <p className="text-sm font-medium">Client is abroad</p>
+                  <p className="text-xs text-muted-foreground">Add a delivery address and fee</p>
+                </div>
+                <Switch checked={isAbroad} onCheckedChange={setIsAbroad} />
+              </div>
+              {isAbroad && (
+                <div className="space-y-3 rounded-xl border border-border p-3">
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="space-y-2">
+                      <Label htmlFor="measure-link-country">Country</Label>
+                      <Input
+                        id="measure-link-country"
+                        value={deliveryCountry}
+                        onChange={(e) => setDeliveryCountry(e.target.value)}
+                        placeholder="United Kingdom"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="measure-link-shipping">Shipping fee</Label>
+                      <MoneyInput
+                        id="measure-link-shipping"
+                        value={shippingFee}
+                        onChange={setShippingFee}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="measure-link-address">Delivery address</Label>
+                    <Textarea
+                      id="measure-link-address"
+                      rows={2}
+                      value={deliveryAddress}
+                      onChange={(e) => setDeliveryAddress(e.target.value)}
+                    />
+                  </div>
+                </div>
+              )}
               <Button className="w-full" onClick={create} disabled={busy}>
                 {busy ? "Creating..." : "Create link"}
               </Button>

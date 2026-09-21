@@ -46,6 +46,9 @@ export type JobExtras = {
   collectionMode: string;
   pricingMode: string;
   isSponsored: boolean;
+  deliveryCountry: string | null;
+  deliveryAddress: string | null;
+  shippingFee: number | null;
 };
 
 export const getJobExtras = createServerFn({ method: "GET" })
@@ -62,7 +65,9 @@ export const getJobExtras = createServerFn({ method: "GET" })
 
     const { data: event } = await supabaseAdmin
       .from("events")
-      .select("size_chart, price_tiers, payer_mode, collection_mode, pricing_mode")
+      .select(
+        "size_chart, price_tiers, payer_mode, collection_mode, pricing_mode, delivery_country, delivery_address, shipping_fee",
+      )
       .eq("id", participant.event_id)
       .maybeSingle();
     if (!event) return null;
@@ -91,6 +96,9 @@ export const getJobExtras = createServerFn({ method: "GET" })
       collectionMode: event.collection_mode,
       pricingMode: event.pricing_mode,
       isSponsored: participant.is_sponsored,
+      deliveryCountry: event.delivery_country,
+      deliveryAddress: event.delivery_address,
+      shippingFee: event.shipping_fee,
     };
   });
 
