@@ -4,12 +4,32 @@ import { z } from "zod";
 const BUCKET = "ai-design-photos";
 const SIGNED_URL_TTL = 60 * 60; // 1 hour
 const MAX_BYTES = 3 * 1024 * 1024; // 3 MB
+const UPLOAD_RATE_LIMIT_MAX = 20;
+const UPLOAD_RATE_LIMIT_WINDOW_MINUTES = 60;
 
 /** Accepts either a bare storage path or a legacy full public URL. */
 function toStoragePath(value: string): string {
   const marker = `/${BUCKET}/`;
   const at = value.indexOf(marker);
   return at === -1 ? value.replace(/^\/+/, "") : value.slice(at + marker.length);
+}
+
+/**
+ * Both photo uploads here write a real storage object with no other cap on
+ * the caller — check_rate_limit is the same primitive generate-design
+ * already uses for exactly this kind of unauthenticated write. Keyed on
+ * storeId since neither upload has anything more specific (a phone number)
+ * to identify the caller by at this point in the flow.
+ */
+type SupabaseAdmin = typeof import("@/integrations/supabase/client.server").supabaseAdmin;
+async function withinUploadRateLimit(supabaseAdmin: SupabaseAdmin, storeId: string) {
+  const { data } = await supabaseAdmin.rpc("check_rate_limit", {
+    p_bucket: "design_photo_upload",
+    p_key: storeId,
+    p_max_count: UPLOAD_RATE_LIMIT_MAX,
+    p_window_minutes: UPLOAD_RATE_LIMIT_WINDOW_MINUTES,
+  });
+  return data !== false;
 }
 
 const uploadSchema = z.object({
@@ -35,6 +55,10 @@ export const uploadDesignSelfie = createServerFn({ method: "POST" })
       .maybeSingle();
     if (storeError) throw new Error("Could not check this shop right now");
     if (!store) throw new Error("This shop does not exist");
+
+    if (!(await withinUploadRateLimit(supabaseAdmin, data.storeId))) {
+      throw new Error("Too many photo uploads for this shop right now — try again in an hour.");
+    }
 
     const base64 = data.dataUrl.split(",")[1] ?? "";
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
@@ -73,6 +97,10 @@ export const uploadFabricPhoto = createServerFn({ method: "POST" })
       .maybeSingle();
     if (storeError) throw new Error("Could not check this shop right now");
     if (!store) throw new Error("This shop does not exist");
+
+    if (!(await withinUploadRateLimit(supabaseAdmin, data.storeId))) {
+      throw new Error("Too many photo uploads for this shop right now — try again in an hour.");
+    }
 
     const base64 = data.dataUrl.split(",")[1] ?? "";
     const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
