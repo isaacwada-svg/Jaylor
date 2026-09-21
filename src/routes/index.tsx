@@ -147,7 +147,7 @@ function Home() {
           </nav>
           <div className="flex items-center gap-4">
             {signedIn ? (
-              <Button asChild className="rounded-none px-5 uppercase">
+              <Button asChild variant="premium" className="rounded-none px-5 uppercase">
                 <Link to="/dashboard">Open Jaylor</Link>
               </Button>
             ) : (
@@ -155,7 +155,7 @@ function Home() {
                 <Link to="/auth" className="hidden text-xs uppercase text-foreground/70 hover:text-foreground sm:block">
                   Sign in
                 </Link>
-                <Button asChild className="rounded-none px-5 uppercase">
+                <Button asChild variant="premium" className="rounded-none px-5 uppercase">
                   <Link to="/auth" search={{ mode: "signup" }}>Start free</Link>
                 </Button>
               </>
@@ -189,7 +189,7 @@ function Home() {
               Orders, measurements, payments and client updates—held together in one considered place for tailors and fashion houses.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-5">
-              <Button asChild size="lg" className="h-12 rounded-none px-7 uppercase">
+              <Button asChild variant="premium" size="lg" className="h-12 rounded-none px-7 uppercase">
                 <Link to="/auth" search={{ mode: "signup" }}>
                   Start free <ArrowRight />
                 </Link>
@@ -349,7 +349,7 @@ function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button asChild variant={plan.mostPopular ? "default" : "outline"} className="mt-auto rounded-none">
+                <Button asChild variant={plan.mostPopular ? "premium" : "outline"} className="mt-auto rounded-none">
                   {plan.cta === "custom" ? (
                     <Link to="/custom">Talk to us</Link>
                   ) : (
@@ -390,7 +390,7 @@ function Home() {
         <p className="text-xs uppercase text-gold-soft">The next garment deserves a clear beginning</p>
         <h2 className="mx-auto mt-6 max-w-4xl text-5xl leading-none sm:text-7xl">Every order tracked. Every measurement kept. Every naira accounted for.</h2>
         <p className="mx-auto mt-6 max-w-xl text-sm leading-6 text-foreground/70">Set up your workroom in a minute. No card required.</p>
-        <Button asChild size="lg" className="mt-9 h-12 rounded-none px-8 uppercase">
+        <Button asChild variant="premium" size="lg" className="mt-9 h-12 rounded-none px-8 uppercase">
           <Link to="/auth" search={{ mode: "signup" }}>Start free <ArrowRight /></Link>
         </Button>
       </section>

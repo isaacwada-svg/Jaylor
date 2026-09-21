@@ -85,7 +85,7 @@ export function UncollectedCalculator() {
               </p>
             </div>
 
-            <Button asChild size="lg" className="mt-7 w-full rounded-none uppercase">
+            <Button asChild variant="premium" size="lg" className="mt-7 w-full rounded-none uppercase">
               <Link to="/auth" search={{ mode: "signup" }}>
                 Start free
               </Link>
