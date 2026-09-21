@@ -9,36 +9,51 @@ import { Skeleton } from "@/components/ui/skeleton";
 type EventDef = { key: string; label: string; default_enabled: boolean; sort_order: number };
 type EventPref = { event_key: string; enabled: boolean };
 
+/**
+ * The fashion-calendar tables and RPC are not part of the generated database
+ * types yet, so this narrow, untyped view of the client keeps the calls
+ * compiling without loosening types anywhere else.
+ */
+const calendarDb = supabase as unknown as {
+  from: (table: string) => {
+    select: (columns: string) => {
+      order: (column: string) => Promise<{ data: unknown; error: unknown }>;
+      eq: (column: string, value: string) => Promise<{ data: unknown; error: unknown }>;
+    };
+  };
+  rpc: (fn: string, args: Record<string, unknown>) => Promise<{ error: unknown }>;
+};
+
 export function CalendarEventPrefsCard({ storeId }: { storeId: string }) {
   const queryClient = useQueryClient();
 
   const { data: defs, isLoading: defsLoading } = useQuery({
     queryKey: ["calendar-event-defs"],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await calendarDb
         .from("calendar_event_defs")
         .select("key, label, default_enabled, sort_order")
         .order("sort_order");
       if (error) throw error;
-      return data as EventDef[];
+      return (data ?? []) as EventDef[];
     },
   });
 
   const { data: prefs, isLoading: prefsLoading } = useQuery({
     queryKey: ["calendar-event-prefs", storeId],
     queryFn: async () => {
-      const { data, error } = await supabase
+      const { data, error } = await calendarDb
         .from("store_calendar_events")
         .select("event_key, enabled")
         .eq("store_id", storeId);
       if (error) throw error;
-      return data as EventPref[];
+      return (data ?? []) as EventPref[];
     },
   });
 
   async function toggle(eventKey: string, next: boolean) {
     try {
-      const { error } = await supabase.rpc("set_store_calendar_event_enabled", {
+      const { error } = await calendarDb.rpc("set_store_calendar_event_enabled", {
         p_store_id: storeId,
         p_key: eventKey,
         p_enabled: next,
