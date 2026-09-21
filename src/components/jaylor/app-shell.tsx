@@ -249,6 +249,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             open={voiceOrderOpen}
             onOpenChange={setVoiceOrderOpen}
             storeId={currentStore.id}
+            canRecordAudio={tier !== "Free"}
             onParsed={(prefill) => {
               setOrderPrefill(prefill);
               setOrderFormOpen(true);

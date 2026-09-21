@@ -5,7 +5,12 @@
 const LOVABLE_AI_URL = "https://ai.gateway.lovable.dev/v1/chat/completions";
 const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
-export type ChatMessage = { role: "system" | "user"; content: string };
+export type ContentPart =
+  | { type: "text"; text: string }
+  | { type: "image_url"; image_url: { url: string } }
+  | { type: "input_audio"; input_audio: { data: string; format: string } };
+
+export type ChatMessage = { role: "system" | "user"; content: string | ContentPart[] };
 
 export type AiUsage = { prompt_tokens?: number; completion_tokens?: number } | undefined;
 
@@ -55,9 +60,7 @@ export async function callAI(
   return { content, usage: data?.usage };
 }
 
-export type ImageContentPart =
-  | { type: "text"; text: string }
-  | { type: "image_url"; image_url: { url: string } };
+export type ImageContentPart = ContentPart;
 
 /**
  * Generates an image via Lovable AI Gateway's multimodal chat endpoint.

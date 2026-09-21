@@ -55,8 +55,12 @@ async function sha256Hex(input: string): Promise<string> {
     .join("");
 }
 
-function estimateCostUsd(model: string, usage: { prompt_tokens?: number; completion_tokens?: number } | undefined) {
-  const rates = MODEL_COST_PER_1M_TOKENS[model] ?? MODEL_COST_PER_1M_TOKENS["google/gemini-2.5-flash"];
+function estimateCostUsd(
+  model: string,
+  usage: { prompt_tokens?: number; completion_tokens?: number } | undefined,
+) {
+  const rates =
+    MODEL_COST_PER_1M_TOKENS[model] ?? MODEL_COST_PER_1M_TOKENS["google/gemini-2.5-flash"];
   const input = ((usage?.prompt_tokens ?? 0) / 1_000_000) * rates.input;
   const output = ((usage?.completion_tokens ?? 0) / 1_000_000) * rates.output;
   return input + output;
@@ -93,7 +97,11 @@ function maybeAlertAdmin(supabase: SupabaseClient, pctUsed: number) {
     const crossed = pctUsed >= 1 ? 100 : pctUsed >= 0.8 ? 80 : null;
     if (crossed === null) return;
     const key = `ai_budget_alert_${crossed}_${month}`;
-    const { data: existing } = await supabase.from("app_settings").select("key").eq("key", key).maybeSingle();
+    const { data: existing } = await supabase
+      .from("app_settings")
+      .select("key")
+      .eq("key", key)
+      .maybeSingle();
     if (existing) return;
     const { error } = await supabase
       .from("app_settings")
@@ -119,11 +127,18 @@ export async function canUseAi(
   });
   const limit = limitCheck as { allowed?: boolean } | null;
   if (limit && limit.allowed === false) {
-    return { allowed: false, reason: "You've used all of this month's AI credits on your plan. Upgrade for more." };
+    return {
+      allowed: false,
+      reason: "You've used all of this month's AI credits on your plan. Upgrade for more.",
+    };
   }
 
   const { data: planCode } = await supabase.rpc("effective_plan_code", { _store_id: storeId });
-  const { data: plan } = await supabase.from("plans").select("limits").eq("code", planCode ?? "free").maybeSingle();
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("limits")
+    .eq("code", planCode ?? "free")
+    .maybeSingle();
   const limits = (plan?.limits ?? {}) as Record<string, unknown>;
   const perHour = Number(limits.ai_calls_per_hour ?? 20);
   const perDay = Number(limits.ai_calls_per_day ?? 60);
@@ -144,7 +159,10 @@ export async function canUseAi(
     .eq("store_id", storeId)
     .gte("created_at", dayAgo);
   if ((dayCount ?? 0) >= perDay) {
-    return { allowed: false, reason: "Today's AI request limit reached for your plan — try again tomorrow." };
+    return {
+      allowed: false,
+      reason: "Today's AI request limit reached for your plan — try again tomorrow.",
+    };
   }
 
   const budget = await getBudgetState(supabase);
@@ -153,13 +171,15 @@ export async function canUseAi(
     if (planCode === "free" || !ALWAYS_ON_AT_FULL_BUDGET.has(featureKey)) {
       return {
         allowed: false,
-        reason: "AI features are paused for this month while we manage server costs — back next month.",
+        reason:
+          "AI features are paused for this month while we manage server costs — back next month.",
       };
     }
   } else if (budget.pctUsed >= 0.8 && planCode === "free") {
     return {
       allowed: false,
-      reason: "AI features are paused for free-plan shops this month — upgrade to keep using them, or check back next month.",
+      reason:
+        "AI features are paused for free-plan shops this month — upgrade to keep using them, or check back next month.",
     };
   }
 
@@ -207,7 +227,9 @@ export async function runAiGatewayCall(opts: {
   userId: string | null;
   featureKey: AiFeatureKey;
   systemPrompt: string;
-  userMessage: string;
+  userMessage?: string;
+  /** Paid-plan audio path: a short recording, sent instead of a text transcript. */
+  audio?: { base64: string; format: string };
   triggeredByUserAction: boolean;
 }): Promise<{ content: string }> {
   if (!opts.triggeredByUserAction) {
@@ -218,10 +240,13 @@ export async function runAiGatewayCall(opts: {
   if (!gate.allowed) throw new AiGatewayBlockedError(gate.reason);
 
   const config = TASK_CONFIG[opts.featureKey];
-  const normalizedInput = opts.userMessage.trim().replace(/\s+/g, " ");
-  const inputHash = config.cacheable
-    ? await sha256Hex(`${opts.featureKey}:${opts.systemPrompt}:${normalizedInput}`)
-    : null;
+  const normalizedInput = opts.userMessage?.trim().replace(/\s+/g, " ") ?? "";
+  // Audio input is never cached — it's effectively unique every time, and hashing
+  // a large base64 blob just to guarantee a permanent cache miss isn't worth it.
+  const inputHash =
+    config.cacheable && !opts.audio
+      ? await sha256Hex(`${opts.featureKey}:${opts.systemPrompt}:${normalizedInput}`)
+      : null;
 
   if (config.cacheable && inputHash) {
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
@@ -248,9 +273,21 @@ export async function runAiGatewayCall(opts: {
     }
   }
 
+  const userContent: ChatMessage["content"] = opts.audio
+    ? [
+        {
+          type: "text",
+          text: normalizedInput || "Listen to this recording and follow the system instructions.",
+        },
+        {
+          type: "input_audio",
+          input_audio: { data: opts.audio.base64, format: opts.audio.format },
+        },
+      ]
+    : normalizedInput;
   const messages: ChatMessage[] = [
     { role: "system", content: opts.systemPrompt },
-    { role: "user", content: normalizedInput },
+    { role: "user", content: userContent },
   ];
   const { content, usage } = await callAI(messages, { model: config.model, json: config.json });
   const costUsd = estimateCostUsd(config.model, usage);
