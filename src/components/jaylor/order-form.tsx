@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,9 +8,13 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
   GARMENT_TYPES,
   GARMENT_TYPE_CODE_BY_NAME,
+  computeAgeGroup,
+  computeTemplateSex,
   formatMoney,
   planCodeToTier,
 } from "@/lib/jaylor";
+import { pickDefaultTemplate } from "@/lib/measurements";
+import { MeasurementForm } from "@/components/jaylor/measurements-tab";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage, cn } from "@/lib/utils";
@@ -29,7 +33,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Select,
   SelectContent,
@@ -71,6 +82,7 @@ export function OrderForm({
 }) {
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
+  const queryClient = useQueryClient();
   const { data: ordersFeature } = useFeature(open ? storeId : undefined, "orders");
   const [step, setStep] = useState(0);
 
@@ -82,6 +94,9 @@ export function OrderForm({
   const [styleNotes, setStyleNotes] = useState("");
 
   const [measurementSetId, setMeasurementSetId] = useState("");
+  const [measurementMode, setMeasurementMode] = useState<"reuse" | "new">("reuse");
+  const [measurementPromptOpen, setMeasurementPromptOpen] = useState(false);
+  const [promptedForClientId, setPromptedForClientId] = useState<string | null>(null);
 
   const [materialSource, setMaterialSource] = useState<"customer" | "tailor">("customer");
   const [materialDescription, setMaterialDescription] = useState("");
@@ -110,6 +125,9 @@ export function OrderForm({
     setQuantity(prefill?.quantity ? String(prefill.quantity) : "1");
     setStyleNotes(prefill?.style_notes ?? "");
     setMeasurementSetId("");
+    setMeasurementMode("reuse");
+    setPromptedForClientId(null);
+    setMeasurementPromptOpen(false);
     setMaterialSource("customer");
     setMaterialDescription("");
     setMaterialColour("");
@@ -153,11 +171,46 @@ export function OrderForm({
     retry: false,
   });
 
+  const { data: measurementTemplates } = useQuery({
+    queryKey: ["order-form-measurement-templates", storeId],
+    enabled: !!selectedClient,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("measurement_templates")
+        .select("*")
+        .eq("store_id", storeId)
+        .eq("hidden", false);
+      if (error) throw error;
+      return data;
+    },
+    retry: false,
+  });
+
   useEffect(() => {
     const latest = measurementSets?.[0];
     if (latest && !measurementSetId) setMeasurementSetId(latest.id);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [measurementSets]);
+
+  useEffect(() => {
+    if (!selectedClient || !measurementSets) return;
+    if (measurementSets.length === 0) return;
+    if (promptedForClientId === selectedClient.id) return;
+    setPromptedForClientId(selectedClient.id);
+    setMeasurementPromptOpen(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClient, measurementSets]);
+
+  function reuseExistingMeasurements() {
+    setMeasurementMode("reuse");
+    setMeasurementPromptOpen(false);
+  }
+
+  function takeNewMeasurements() {
+    setMeasurementMode("new");
+    setMeasurementSetId("");
+    setMeasurementPromptOpen(false);
+  }
 
   function next() {
     if (step === 0 && !selectedClient) {
@@ -495,31 +548,65 @@ export function OrderForm({
         </div>
       )}
 
-      {step === 2 && (
-        <div className="space-y-3">
-          {measurementSets && measurementSets.length > 0 ? (
-            <div className="space-y-2">
-              <Label>Measurement set</Label>
-              <Select value={measurementSetId} onValueChange={setMeasurementSetId}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {measurementSets.map((s) => (
-                    <SelectItem key={s.id} value={s.id}>
-                      v{s.version} · {new Date(s.taken_at).toLocaleDateString()}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          ) : (
-            <p className="text-sm text-muted-foreground">
-              {selectedClient?.full_name} has no measurements yet. You can add them from their
-              profile after creating this order, or leave this blank for now.
-            </p>
-          )}
-        </div>
+      {step === 2 && selectedClient && measurementMode === "new" ? (
+        <MeasurementForm
+          client={selectedClient}
+          templates={measurementTemplates ?? []}
+          defaultTemplateId={
+            pickDefaultTemplate(
+              measurementTemplates ?? [],
+              computeAgeGroup(selectedClient.birthday),
+              computeTemplateSex(selectedClient.gender),
+            )?.id
+          }
+          previous={measurementSets?.[0]}
+          onCancel={() => setMeasurementMode("reuse")}
+          onSaved={() => {
+            queryClient.invalidateQueries({
+              queryKey: ["order-form-measurement-sets", selectedClient.id],
+            });
+            setMeasurementSetId("");
+            setMeasurementMode("reuse");
+          }}
+        />
+      ) : (
+        step === 2 && (
+          <div className="space-y-3">
+            {measurementSets && measurementSets.length > 0 ? (
+              <div className="space-y-2">
+                <Label>Measurement set</Label>
+                <Select value={measurementSetId} onValueChange={setMeasurementSetId}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {measurementSets.map((s) => (
+                      <SelectItem key={s.id} value={s.id}>
+                        v{s.version} · {new Date(s.taken_at).toLocaleDateString()}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <button
+                  type="button"
+                  onClick={takeNewMeasurements}
+                  className="text-xs text-muted-foreground underline-offset-2 hover:underline"
+                >
+                  Take new measurements instead
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">
+                  {selectedClient?.full_name} has no measurements yet.
+                </p>
+                <Button type="button" variant="outline" size="sm" onClick={takeNewMeasurements}>
+                  Take measurements now
+                </Button>
+              </div>
+            )}
+          </div>
+        )
       )}
 
       {step === 3 && (
@@ -725,27 +812,56 @@ export function OrderForm({
     );
   }
 
+  const measurementPrompt = (
+    <Dialog open={measurementPromptOpen} onOpenChange={setMeasurementPromptOpen}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Use {selectedClient?.full_name}&apos;s existing measurements?</DialogTitle>
+          <DialogDescription>
+            {measurementSets?.[0] &&
+              `Latest set: v${measurementSets[0].version}, taken ${new Date(measurementSets[0].taken_at).toLocaleDateString()}.`}{" "}
+            You can reuse these, or take a fresh set for this order.
+          </DialogDescription>
+        </DialogHeader>
+        <DialogFooter className="flex-col gap-2 sm:flex-col">
+          <Button className="w-full" onClick={reuseExistingMeasurements}>
+            Use existing measurements
+          </Button>
+          <Button className="w-full" variant="outline" onClick={takeNewMeasurements}>
+            Take new measurements
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
-          <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl">New order</SheetTitle>
-          </SheetHeader>
-          <div className="mt-2 pb-4">{body}</div>
-        </SheetContent>
-      </Sheet>
+      <>
+        <Sheet open={open} onOpenChange={onOpenChange}>
+          <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
+            <SheetHeader className="text-left">
+              <SheetTitle className="text-2xl">New order</SheetTitle>
+            </SheetHeader>
+            <div className="mt-2 pb-4">{body}</div>
+          </SheetContent>
+        </Sheet>
+        {measurementPrompt}
+      </>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>New order</DialogTitle>
-        </DialogHeader>
-        {body}
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New order</DialogTitle>
+          </DialogHeader>
+          {body}
+        </DialogContent>
+      </Dialog>
+      {measurementPrompt}
+    </>
   );
 }

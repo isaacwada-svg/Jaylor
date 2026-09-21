@@ -248,7 +248,7 @@ function HistoryList({ sets, templates }: { sets: MeasurementSetRow[]; templates
   );
 }
 
-function MeasurementForm({
+export function MeasurementForm({
   client,
   templates,
   defaultTemplateId,
