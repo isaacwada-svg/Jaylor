@@ -1,4 +1,4 @@
-import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { createClient, type SupabaseClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { isValidWebhookSignature } from "../_shared/paystack.ts";
 
 // Configure this URL as the webhook endpoint in your Paystack dashboard.
@@ -52,7 +52,7 @@ Deno.serve(async (req) => {
 });
 
 async function confirmOrderPayment(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClient,
   reference: string,
 ): Promise<void> {
   const { data: link } = await supabase
