@@ -162,6 +162,20 @@
   letter-spacing: 0;
 }
 
+.premium-hero-shade-x {
+  background: linear-gradient(
+    90deg,
+    var(--background) 0%,
+    color-mix(in oklab, var(--background) 92%, transparent) 34%,
+    color-mix(in oklab, var(--background) 36%, transparent) 68%,
+    color-mix(in oklab, var(--background) 12%, transparent) 100%
+  );
+}
+
+.premium-hero-shade-y {
+  background: linear-gradient(0deg, var(--background) 0%, transparent 40%);
+}
+
 @keyframes editorial-rise {
   from {
     opacity: 0;

@@ -174,8 +174,8 @@ function Home() {
           fetchPriority="high"
           className="absolute inset-0 h-full w-full object-cover object-[68%_center]"
         />
-        <div className="absolute inset-0 bg-[linear-gradient(90deg,var(--color-background)_0%,color-mix(in_oklab,var(--color-background)_94%,transparent)_36%,color-mix(in_oklab,var(--color-background)_34%,transparent)_70%,color-mix(in_oklab,var(--color-background)_18%,transparent)_100%)]" />
-        <div className="absolute inset-0 bg-[linear-gradient(0deg,var(--color-background)_0%,transparent_42%)]" />
+        <div className="premium-hero-shade-x absolute inset-0" />
+        <div className="premium-hero-shade-y absolute inset-0" />
 
         <div className="relative mx-auto flex min-h-[720px] w-full max-w-[1440px] items-end px-5 pb-16 pt-32 sm:min-h-[780px] sm:px-8 sm:pb-20 lg:min-h-[820px] lg:items-center lg:px-12 lg:pb-0">
           <div className="editorial-rise max-w-3xl">
