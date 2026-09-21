@@ -2216,6 +2216,27 @@ export type Database = {
           },
         ]
       }
+      rls_drift_checks: {
+        Row: {
+          checked_at: string
+          id: string
+          ok: boolean
+          report: Json
+        }
+        Insert: {
+          checked_at?: string
+          id?: string
+          ok: boolean
+          report: Json
+        }
+        Update: {
+          checked_at?: string
+          id?: string
+          ok?: boolean
+          report?: Json
+        }
+        Relationships: []
+      }
       sew_requests: {
         Row: {
           client_name: string
@@ -3174,6 +3195,8 @@ export type Database = {
         }
         Returns: boolean
       }
+      check_rls_drift: { Args: never; Returns: Json }
+      check_rls_drift_as_service: { Args: never; Returns: undefined }
       city_price_benchmark: {
         Args: { p_garment_type_code: string; p_store_id: string }
         Returns: Json

@@ -160,7 +160,9 @@ function Admin() {
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
           <div className="flex items-center gap-3">
             <BrandLogo markClassName="h-10 w-auto" />
-            <span className="border-l border-border pl-3 text-sm font-medium text-muted-foreground">Platform admin</span>
+            <span className="border-l border-border pl-3 text-sm font-medium text-muted-foreground">
+              Platform admin
+            </span>
           </div>
           <Button asChild variant="ghost" size="sm">
             <Link to="/dashboard">Exit admin</Link>
@@ -178,6 +180,7 @@ function Admin() {
             <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
+            <TabsTrigger value="security">Security</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -201,6 +204,9 @@ function Admin() {
           </TabsContent>
           <TabsContent value="audit" className="mt-6">
             <AuditTab />
+          </TabsContent>
+          <TabsContent value="security" className="mt-6">
+            <SecurityTab />
           </TabsContent>
         </Tabs>
       </div>
@@ -914,6 +920,107 @@ function AuditTab() {
             </p>
           </div>
         ))
+      )}
+    </div>
+  );
+}
+
+type DriftReport = {
+  checked_at: string;
+  ok: boolean;
+  tables_without_rls: string[];
+  public_role_policies: string[];
+  unexpected_anon_grants: string[];
+  unexpected_authenticated_grants: string[];
+};
+
+const DRIFT_LABELS: Record<keyof Omit<DriftReport, "checked_at" | "ok">, string> = {
+  tables_without_rls: "Tables with RLS disabled",
+  public_role_policies: "Policies targeting the public role instead of anon/authenticated",
+  unexpected_anon_grants: "Grants anon shouldn't hold",
+  unexpected_authenticated_grants: "Grants authenticated shouldn't hold",
+};
+
+function SecurityTab() {
+  const queryClient = useQueryClient();
+  const [running, setRunning] = useState(false);
+
+  const { data: latest, isLoading } = useQuery({
+    queryKey: ["rls-drift-latest"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("rls_drift_checks")
+        .select("*")
+        .order("checked_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  async function runCheck() {
+    setRunning(true);
+    try {
+      const { error } = await rpcAdmin("check_rls_drift", {});
+      if (error) throw error;
+      toast.success("Drift check complete");
+      queryClient.invalidateQueries({ queryKey: ["rls-drift-latest"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not run the check"));
+    } finally {
+      setRunning(false);
+    }
+  }
+
+  const report = latest?.report as unknown as DriftReport | undefined;
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Re-checks the same grant/policy conditions the security audit's L2 and L9 findings fixed —
+        anon holding more than its narrow allowed set, authenticated reaching admin-only tables, a
+        table with RLS disabled, or a policy targeting the bare public role. Scheduled weekly if
+        pg_cron is enabled on this project; run manually any time below.
+      </p>
+      <Button onClick={runCheck} disabled={running}>
+        {running ? "Running..." : "Run check now"}
+      </Button>
+
+      {isLoading ? (
+        <Skeleton className="h-24 rounded-xl" />
+      ) : !report ? (
+        <p className="text-sm text-muted-foreground">No check has run yet.</p>
+      ) : (
+        <div className="rounded-xl border border-border p-4">
+          <div className="flex items-center justify-between">
+            <Badge
+              className={
+                report.ok
+                  ? "border-paid/40 bg-paid/10 text-paid"
+                  : "border-owed/40 bg-owed/10 text-owed"
+              }
+            >
+              {report.ok ? "No drift found" : "Drift found"}
+            </Badge>
+            <span className="text-xs text-muted-foreground">
+              {new Date(report.checked_at).toLocaleString()}
+            </span>
+          </div>
+          {!report.ok && (
+            <div className="mt-3 space-y-2">
+              {(Object.keys(DRIFT_LABELS) as (keyof Omit<DriftReport, "checked_at" | "ok">)[]).map(
+                (key) =>
+                  report[key]?.length > 0 ? (
+                    <div key={key} className="text-sm">
+                      <p className="font-medium">{DRIFT_LABELS[key]}</p>
+                      <p className="text-xs text-muted-foreground">{report[key].join(", ")}</p>
+                    </div>
+                  ) : null,
+              )}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
