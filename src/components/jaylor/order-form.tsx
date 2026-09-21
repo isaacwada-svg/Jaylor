@@ -5,7 +5,12 @@ import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
-import { GARMENT_TYPES, formatMoney, planCodeToTier } from "@/lib/jaylor";
+import {
+  GARMENT_TYPES,
+  GARMENT_TYPE_CODE_BY_NAME,
+  formatMoney,
+  planCodeToTier,
+} from "@/lib/jaylor";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage, cn } from "@/lib/utils";
@@ -300,21 +305,31 @@ export function OrderForm({
         number: "",
         client_id: selectedClient.id,
         garment_type: garmentType,
+        garment_type_code: GARMENT_TYPE_CODE_BY_NAME[garmentType] ?? null,
         style_notes: styleNotes.trim() || null,
         measurement_set_id: measurementSetId || null,
         quantity: Number(quantity) || 1,
         price: Number(price) || 0,
         delivery_date: deliveryDate || null,
+        // No separate instalment schedule exists yet — the balance is expected
+        // by delivery, so that date doubles as the payment-reliability due date.
+        balance_due_date: deliveryDate || null,
         priority: rush ? "rush" : "normal",
         created_by: userData.user?.id ?? null,
       };
+      const materialYardsNum = materialYards.trim() ? Number(materialYards) : null;
+      const materialCostNum = materialSource === "tailor" ? Number(materialCost) || 0 : 0;
       const materialPayload = {
         store_id: storeId,
         source: materialSource,
         description: materialDescription.trim(),
         colour: materialColour.trim() || null,
-        yards: materialYards.trim() ? Number(materialYards) : null,
-        cost: materialSource === "tailor" ? Number(materialCost) || 0 : 0,
+        yards: materialYardsNum,
+        cost: materialCostNum,
+        cost_per_yard:
+          materialSource === "tailor" && materialYardsNum && materialYardsNum > 0
+            ? materialCostNum / materialYardsNum
+            : null,
       };
 
       if (!online) {

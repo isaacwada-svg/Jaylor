@@ -33,16 +33,49 @@ export const GARMENT_TYPES = [
   "Agbada",
   "Kaftan",
   "Senator",
+  "Buba and sokoto",
   "Iro and buba",
   "Gown",
   "Skirt and blouse",
+  "Jumpsuit",
   "Suit",
   "Shirt",
   "Trousers",
   "Bridal",
   "Children's wear",
+  "School uniform",
+  "Corporate uniform",
+  "Alterations",
   "Other",
 ] as const;
+
+/**
+ * Maps each fixed GARMENT_TYPES display name to its garment_types.code —
+ * the fixed taxonomy from Predictive Features P0. New orders record both
+ * the free-text garment_type (kept for every existing display/report call
+ * site) and this code (for taxonomy-based aggregation); a store's own
+ * historical free-text names that don't match exactly are resolved via the
+ * garment type mapping screen instead.
+ */
+export const GARMENT_TYPE_CODE_BY_NAME: Record<string, string> = {
+  Agbada: "agbada",
+  Kaftan: "kaftan",
+  Senator: "senator",
+  "Buba and sokoto": "buba_sokoto",
+  "Iro and buba": "iro_buba",
+  Gown: "gown",
+  "Skirt and blouse": "skirt_blouse",
+  Jumpsuit: "jumpsuit",
+  Suit: "suit",
+  Shirt: "shirt",
+  Trousers: "trousers",
+  Bridal: "bridal",
+  "Children's wear": "childrens_wear",
+  "School uniform": "school_uniform",
+  "Corporate uniform": "corporate_uniform",
+  Alterations: "alterations",
+  Other: "other",
+};
 
 /** Formats an amount using the store currency, e.g. ₦85,000 */
 export function formatMoney(amount: number, currency = "NGN", locale = "en-NG") {

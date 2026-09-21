@@ -1399,11 +1399,13 @@ export type Database = {
         Row: {
           colour: string | null
           cost: number
+          cost_per_yard: number | null
           created_at: string
           description: string | null
           id: string
           order_id: string
           photo_url: string | null
+          purchased_at: string
           source: string
           store_id: string
           yards: number | null
@@ -1411,11 +1413,13 @@ export type Database = {
         Insert: {
           colour?: string | null
           cost?: number
+          cost_per_yard?: number | null
           created_at?: string
           description?: string | null
           id?: string
           order_id: string
           photo_url?: string | null
+          purchased_at?: string
           source: string
           store_id: string
           yards?: number | null
@@ -1423,11 +1427,13 @@ export type Database = {
         Update: {
           colour?: string | null
           cost?: number
+          cost_per_yard?: number | null
           created_at?: string
           description?: string | null
           id?: string
           order_id?: string
           photo_url?: string | null
+          purchased_at?: string
           source?: string
           store_id?: string
           yards?: number | null
@@ -1594,12 +1600,14 @@ export type Database = {
       orders: {
         Row: {
           assigned_to: string | null
+          balance_due_date: string | null
           client_id: string
           collected_at: string | null
           created_at: string
           created_by: string | null
           delivery_date: string | null
           garment_type: string
+          garment_type_code: string | null
           id: string
           measurement_set_id: string | null
           number: string
@@ -1614,12 +1622,14 @@ export type Database = {
         }
         Insert: {
           assigned_to?: string | null
+          balance_due_date?: string | null
           client_id: string
           collected_at?: string | null
           created_at?: string
           created_by?: string | null
           delivery_date?: string | null
           garment_type: string
+          garment_type_code?: string | null
           id?: string
           measurement_set_id?: string | null
           number: string
@@ -1634,12 +1644,14 @@ export type Database = {
         }
         Update: {
           assigned_to?: string | null
+          balance_due_date?: string | null
           client_id?: string
           collected_at?: string | null
           created_at?: string
           created_by?: string | null
           delivery_date?: string | null
           garment_type?: string
+          garment_type_code?: string | null
           id?: string
           measurement_set_id?: string | null
           number?: string
@@ -1659,6 +1671,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_garment_type_code_fkey"
+            columns: ["garment_type_code"]
+            isOneToOne: false
+            referencedRelation: "garment_types"
+            referencedColumns: ["code"]
           },
           {
             foreignKeyName: "orders_measurement_set_id_fkey"
@@ -2349,8 +2368,11 @@ export type Database = {
       stores: {
         Row: {
           accent_color: string | null
+          area: string | null
           bio: string | null
           city: string | null
+          consent_benchmark_sharing: boolean
+          consent_benchmark_sharing_at: string | null
           country_code: string
           cover_url: string | null
           created_at: string
@@ -2369,6 +2391,7 @@ export type Database = {
           referred_by_store_id: string | null
           sews_for: string | null
           slug: string
+          state: string | null
           timezone: string
           trial_ends_at: string
           unit: Database["public"]["Enums"]["measurement_unit"]
@@ -2377,8 +2400,11 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          area?: string | null
           bio?: string | null
           city?: string | null
+          consent_benchmark_sharing?: boolean
+          consent_benchmark_sharing_at?: string | null
           country_code?: string
           cover_url?: string | null
           created_at?: string
@@ -2397,6 +2423,7 @@ export type Database = {
           referred_by_store_id?: string | null
           sews_for?: string | null
           slug: string
+          state?: string | null
           timezone?: string
           trial_ends_at?: string
           unit?: Database["public"]["Enums"]["measurement_unit"]
@@ -2405,8 +2432,11 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          area?: string | null
           bio?: string | null
           city?: string | null
+          consent_benchmark_sharing?: boolean
+          consent_benchmark_sharing_at?: string | null
           country_code?: string
           cover_url?: string | null
           created_at?: string
@@ -2425,6 +2455,7 @@ export type Database = {
           referred_by_store_id?: string | null
           sews_for?: string | null
           slug?: string
+          state?: string | null
           timezone?: string
           trial_ends_at?: string
           unit?: Database["public"]["Enums"]["measurement_unit"]
@@ -2681,6 +2712,76 @@ export type Database = {
           output?: Json
         }
         Relationships: []
+      }
+      garment_types: {
+        Row: {
+          category: string
+          code: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          code: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          code?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      garment_type_aliases: {
+        Row: {
+          alias_text: string
+          created_at: string
+          garment_type_code: string
+          id: string
+          store_id: string
+        }
+        Insert: {
+          alias_text: string
+          created_at?: string
+          garment_type_code: string
+          id?: string
+          store_id: string
+        }
+        Update: {
+          alias_text?: string
+          created_at?: string
+          garment_type_code?: string
+          id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garment_type_aliases_garment_type_code_fkey"
+            columns: ["garment_type_code"]
+            isOneToOne: false
+            referencedRelation: "garment_types"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "garment_type_aliases_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "garment_type_aliases_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
@@ -2980,6 +3081,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      resolve_garment_type_mapping: {
+        Args: { p_alias_text: string; p_garment_type_code: string; p_store_id: string }
+        Returns: undefined
+      }
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
       revoke_measurement_passport_by_store: {
@@ -2993,6 +3098,10 @@ export type Database = {
       set_participant_style: {
         Args: { p_style_key: string; p_token: string }
         Returns: undefined
+      }
+      unmapped_garment_type_names: {
+        Args: { p_store_id: string }
+        Returns: { garment_type: string; order_count: number }[]
       }
     }
     Enums: {
