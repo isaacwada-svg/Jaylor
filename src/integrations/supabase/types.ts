@@ -3195,8 +3195,7 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_rls_drift: { Args: never; Returns: Json }
-      check_rls_drift_as_service: { Args: never; Returns: undefined }
+      check_rls_drift: { Args: never; Returns: undefined }
       city_price_benchmark: {
         Args: { p_garment_type_code: string; p_store_id: string }
         Returns: Json
@@ -3329,7 +3328,7 @@ export type Database = {
         Returns: undefined
       }
       set_participant_measurements: {
-        Args: { p_token: string; p_unit?: string; p_values: Json }
+        Args: { p_token: string; p_unit: string; p_values: Json }
         Returns: undefined
       }
       set_participant_style: {
