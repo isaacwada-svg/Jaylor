@@ -92,7 +92,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
         name: "google-site-verification",
         content: "H-1CL08KeAR17NLjndzxUVRIepeEU8CLkiYwZhMUdpA",
       },
-      { name: "theme-color", content: "#1B1A3A" },
+      { name: "theme-color", content: "#111F39" },
       { property: "og:title", content: "Jaylor" },
       {
         property: "og:description",
@@ -110,9 +110,9 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600&family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600&family=Work+Sans:wght@300;400;500;600&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Playfair+Display:ital,wght@0,500;0,600;1,500&display=swap",
       },
-      { rel: "icon", href: "/favicon.ico", type: "image/x-icon" },
+      { rel: "icon", href: "/favicon.png", type: "image/png" },
       { rel: "manifest", href: "/manifest.json" },
       { rel: "apple-touch-icon", href: "/icon-192.png" },
     ],
@@ -127,13 +127,13 @@ const THEME_BOOTSTRAP = `try{var t=localStorage.getItem("jaylor-theme");var d=t=
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" style={{ backgroundColor: "#141126" }}>
+    <html lang="en" style={{ backgroundColor: "#111F39" }}>
       <head>
         <HeadContent />
         {/* Paint the site background before the stylesheet arrives — no white flash */}
         <style
           dangerouslySetInnerHTML={{
-            __html: "html{background-color:#141126}html.dark{background-color:#0B091B}",
+            __html: "html{background-color:#111F39}html.dark{background-color:#111F39}",
           }}
         />
         {/* Apply the saved theme before first paint so dark-mode users don't flash either */}

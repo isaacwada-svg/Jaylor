@@ -10,7 +10,7 @@ import {
   Store,
   Wallet,
 } from "lucide-react";
-import { LogoMark } from "@/components/jaylor/logo";
+import { BrandLogo } from "@/components/jaylor/logo";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Button } from "@/components/ui/button";
@@ -137,9 +137,8 @@ function Home() {
     <main className="premium-public min-h-screen overflow-hidden bg-background">
       <header className="absolute inset-x-0 top-0 z-30 border-b border-foreground/10">
         <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
-          <Link to="/" className="flex items-center gap-3" aria-label="Jaylor home">
-            <LogoMark className="size-9 rounded-sm" />
-            <span className="font-heading text-2xl text-foreground">Jaylor</span>
+          <Link to="/" aria-label="Jaylor home">
+            <BrandLogo dark showTagline markClassName="size-11" />
           </Link>
           <nav className="hidden items-center gap-8 text-xs uppercase text-foreground/70 md:flex">
             <a href="#workroom" className="transition-colors hover:text-gold">The workroom</a>
@@ -399,10 +398,7 @@ function Home() {
       <footer className="py-14">
         <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-[1fr_auto] lg:px-10">
           <div>
-            <div className="flex items-center gap-3">
-              <LogoMark className="size-9 rounded-sm" />
-              <span className="font-heading text-2xl">Jaylor</span>
-            </div>
+            <BrandLogo dark showTagline markClassName="size-12" />
             <p className="mt-5 max-w-sm text-xs leading-5 text-muted-foreground">{COMPANY_LINE}</p>
           </div>
           <nav className="grid grid-cols-2 gap-x-10 gap-y-3 text-xs text-muted-foreground sm:grid-cols-3">

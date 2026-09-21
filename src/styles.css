@@ -5,8 +5,8 @@
 @custom-variant dark (&:is(.dark *));
 
 /*
- * Jaylor design system — quiet luxury atelier.
- * Deep ink, warm ivory, a thread of gold.
+ * Jaylor official identity — crafted luxury.
+ * Navy, cream and luxury gold from the supplied brand guidelines.
  * All colours in oklch. Never hardcode colours in components.
  */
 
@@ -19,11 +19,11 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  --font-display: "Fraunces", ui-serif, Georgia, serif;
-  --font-heading: "Fraunces", ui-serif, Georgia, serif;
-  --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
-  --font-editorial: "Instrument Serif", ui-serif, Georgia, serif;
-  --font-work: "Work Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Playfair Display", ui-serif, Georgia, serif;
+  --font-heading: "Playfair Display", ui-serif, Georgia, serif;
+  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  --font-editorial: "Playfair Display", ui-serif, Georgia, serif;
+  --font-work: "Montserrat", ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -77,14 +77,14 @@
 :root {
   --radius: 0.75rem;
 
-  --ink: oklch(0.24 0.062 287);
-  --ivory: oklch(0.975 0.008 85);
+  --ink: oklch(0.2419 0.0536 261.8);
+  --ivory: oklch(0.9672 0.0152 90.23);
   --surface: oklch(1 0 0);
-  --gold: oklch(0.66 0.105 84);
-  --gold-soft: oklch(0.88 0.05 88);
+  --gold: oklch(0.7665 0.1387 91.06);
+  --gold-soft: oklch(0.86 0.085 91.06);
   --owed: oklch(0.53 0.138 42);
   --paid: oklch(0.5 0.095 162);
-  --burgundy: oklch(0.34 0.1 3);
+  --burgundy: oklch(0.29 0.055 261.8);
 
   --background: var(--ivory);
   --foreground: var(--ink);
@@ -122,14 +122,14 @@
   --sidebar-ring: var(--gold);
 }
 
-/* Public-facing editorial system — Midnight Atelier. */
+/* Public-facing identity — official navy and gold. */
 .premium-public {
-  --ink: oklch(0.18 0.038 294);
-  --ivory: oklch(0.965 0.012 84);
-  --surface: oklch(0.215 0.035 294);
-  --gold: oklch(0.69 0.085 80);
-  --gold-soft: oklch(0.79 0.055 80);
-  --burgundy: oklch(0.34 0.105 4);
+  --ink: oklch(0.2419 0.0536 261.8);
+  --ivory: oklch(0.9672 0.0152 90.23);
+  --surface: oklch(0.285 0.052 261.8);
+  --gold: oklch(0.7665 0.1387 91.06);
+  --gold-soft: oklch(0.86 0.085 91.06);
+  --burgundy: oklch(0.29 0.055 261.8);
   --background: var(--ink);
   --foreground: var(--ivory);
   --card: var(--surface);
@@ -138,14 +138,14 @@
   --popover-foreground: var(--ivory);
   --primary: var(--ivory);
   --primary-foreground: var(--ink);
-  --secondary: oklch(0.25 0.035 294);
+  --secondary: oklch(0.29 0.05 261.8);
   --secondary-foreground: var(--ivory);
-  --muted: oklch(0.245 0.03 294);
+  --muted: oklch(0.285 0.045 261.8);
   --muted-foreground: oklch(0.72 0.018 82);
   --accent: var(--gold);
   --accent-foreground: var(--ink);
-  --border: oklch(0.4 0.025 294 / 0.55);
-  --input: oklch(0.4 0.025 294 / 0.7);
+  --border: oklch(0.48 0.04 261.8 / 0.55);
+  --input: oklch(0.48 0.04 261.8 / 0.7);
   --ring: var(--gold);
   background: var(--background);
   color: var(--foreground);
@@ -192,10 +192,10 @@
 }
 
 .dark {
-  --ink: oklch(0.93 0.018 291);
-  --ivory: oklch(0.155 0.038 285);
-  --surface: oklch(0.225 0.045 287);
-  --gold: oklch(0.77 0.107 87);
+  --ink: oklch(0.9672 0.0152 90.23);
+  --ivory: oklch(0.205 0.047 261.8);
+  --surface: oklch(0.255 0.05 261.8);
+  --gold: oklch(0.7665 0.1387 91.06);
   --gold-soft: oklch(0.45 0.07 87);
   --owed: oklch(0.7 0.135 45);
   --paid: oklch(0.73 0.128 163);
