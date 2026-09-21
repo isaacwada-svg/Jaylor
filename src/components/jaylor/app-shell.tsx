@@ -324,7 +324,7 @@ function StoreSwitcher({
 function Wordmark() {
   return (
     <Link to="/" aria-label="Jaylor home">
-      <BrandLogo markClassName="size-9" />
+      <BrandLogo markClassName="h-10 w-auto" />
     </Link>
   );
 }

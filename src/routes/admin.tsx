@@ -159,7 +159,7 @@ function Admin() {
       <header className="border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
           <div className="flex items-center gap-3">
-            <BrandLogo markClassName="size-9" />
+            <BrandLogo markClassName="h-10 w-auto" />
             <span className="border-l border-border pl-3 text-sm font-medium text-muted-foreground">Platform admin</span>
           </div>
           <Button asChild variant="ghost" size="sm">

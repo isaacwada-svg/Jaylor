@@ -18,7 +18,7 @@ export function LegalLayout({
       <header className="border-b border-border/60 bg-background/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-3xl items-center justify-between px-4 py-4 lg:px-8">
           <Link to="/" aria-label="Jaylor home">
-            <BrandLogo markClassName="size-9" />
+            <BrandLogo markClassName="h-10 w-auto" />
           </Link>
           <nav className="flex gap-4 text-sm text-muted-foreground">
             <Link to="/privacy-policy" className="hover:text-foreground">
