@@ -1,6 +1,20 @@
 import type { AgeGroup, TemplateSex } from "@/lib/jaylor";
 import type { Tables } from "@/integrations/supabase/types";
 
+/** Also used for the growing-child re-measure warning in measurements-tab.tsx. */
+export const RE_MEASURE_MS = 1000 * 60 * 60 * 24 * 90; // 90 days
+
+/**
+ * Bridal measurements can go stale relative to the wedding date itself, not
+ * just relative to today - a bride's body can change in the run-up to her
+ * wedding, so a measurement taken well ahead of the due date should be
+ * retaken (or a fitting booked) rather than trusted as-is.
+ */
+export function isBridalRemeasureDue(measurementTakenAt: string, dueDate: string | null): boolean {
+  if (!dueDate) return false;
+  return new Date(dueDate).getTime() - new Date(measurementTakenAt).getTime() > RE_MEASURE_MS;
+}
+
 export type TemplateField = {
   key: string;
   label: string;

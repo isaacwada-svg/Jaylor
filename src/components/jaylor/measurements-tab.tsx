@@ -10,6 +10,7 @@ import {
   measurementRatioWarnings,
   pickDefaultTemplate,
   templateFields,
+  RE_MEASURE_MS,
   type TemplateField,
 } from "@/lib/measurements";
 import { getErrorMessage, cn } from "@/lib/utils";
@@ -35,8 +36,6 @@ import {
 type ClientRow = Tables<"clients">;
 type TemplateRow = Tables<"measurement_templates">;
 type MeasurementSetRow = Tables<"measurement_sets">;
-
-const RE_MEASURE_MS = 1000 * 60 * 60 * 24 * 90; // 3 months
 
 function isReMeasureDue(set: MeasurementSetRow, ageGroup: AgeGroup) {
   if (ageGroup === "adult") return false;

@@ -13,7 +13,7 @@ import {
   formatMoney,
   planCodeToTier,
 } from "@/lib/jaylor";
-import { pickDefaultTemplate } from "@/lib/measurements";
+import { isBridalRemeasureDue, pickDefaultTemplate } from "@/lib/measurements";
 import { MeasurementForm } from "@/components/jaylor/measurements-tab";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
@@ -731,6 +731,22 @@ export function OrderForm({
               />
             </div>
           </div>
+
+          {garmentType === "Bridal" &&
+            deliveryDate &&
+            (() => {
+              const chosenSet = measurementSets?.find((s) => s.id === measurementSetId);
+              if (!chosenSet || !isBridalRemeasureDue(chosenSet.taken_at, deliveryDate)) {
+                return null;
+              }
+              return (
+                <p className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
+                  These measurements were taken more than 3 months before the wedding date. A
+                  bride&apos;s measurements can change — take a fresh set or book another fitting
+                  before this order goes into production.
+                </p>
+              );
+            })()}
 
           <Button
             type="button"
