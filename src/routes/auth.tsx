@@ -13,6 +13,7 @@ import { COMPANY_LINE, PENDING_INVITE_KEY, PENDING_REFERRAL_KEY } from "@/lib/ja
 import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { normalizePhoneNG } from "@/lib/phone";
+import { resolveLoginEmail } from "@/lib/auth-lookup.functions";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
@@ -177,11 +178,7 @@ function AuthPage() {
           setBusy(false);
           return;
         }
-        const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
-          "resolve_login_email",
-          { p_phone: phone },
-        );
-        if (resolveError) throw resolveError;
+        const { email: resolvedEmail } = await resolveLoginEmail({ data: { phone } });
         if (!resolvedEmail) {
           toast.error("We couldn't find an account with that WhatsApp number");
           setBusy(false);
