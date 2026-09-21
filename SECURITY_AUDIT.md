@@ -889,6 +889,20 @@ this is stated explicitly in "How verified".
 
 ### L5 — `check_feature_limit`, `effective_plan_code` and `can_use_feature` do not check the caller
 
+> **Status: fix delivered, not yet applied** (migration `20260921170000_...sql`).
+> Added the same guard `feature_usage` already has —
+> `IF auth.uid() IS NULL OR NOT public.is_store_member(p_store_id) THEN
+> RAISE EXCEPTION 'Not authorized' USING ERRCODE = '42501'; END IF;` — to
+> `check_feature_limit`, as the very first statement in its body. The rest
+> of the function is reproduced verbatim from the live `pg_get_functiondef`
+> capture below (including the two secondary quirks noted there, which are
+> left as-is — they're not the security gap this closes). `effective_plan_code`
+> and `can_use_feature` are NOT changed: their live bodies were never
+> captured (unlike `check_feature_limit`'s), so per this project's own rule
+> against guess-rewriting unknown live function bodies, they're left alone —
+> and since both remain `service_role`-only (not reachable from the browser
+> at all), there's no exploitable path through them today regardless.
+
 - **Area:** Plan limits and entitlements
 - **Severity:** Medium
 - **Location:** functions `public.check_feature_limit(uuid, text, integer)` (EXECUTE granted to
