@@ -1,5 +1,6 @@
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 import { CORS_HEADERS, errorResponse, generateImage, jsonResponse } from "../_shared/ai.ts";
+import { AiGatewayBlockedError, gateAndLogImageCall } from "../_shared/ai-gateway.ts";
 
 const DESIGN_FEE_KOBO = 30000; // ₦300
 const BUCKET = "ai-design-photos";
@@ -192,7 +193,13 @@ Deno.serve(async (req) => {
   }
 
   try {
-    const dataUrl = await generateImage(parts);
+    const dataUrl = await gateAndLogImageCall({
+      supabase,
+      storeId: body.storeId,
+      userId: null, // customer-facing public form — no signed-in staff user to attribute this to
+      featureKey: "style_cards",
+      run: () => generateImage(parts),
+    });
     const imagePath = await uploadGeneratedImage(supabase, body.storeId, dataUrl);
 
     const { data: design, error: insertError } = await supabase
@@ -222,6 +229,7 @@ Deno.serve(async (req) => {
       result: { ...design, image_url: signedImage ?? "" },
     });
   } catch (error) {
+    if (error instanceof AiGatewayBlockedError) return errorResponse(error.message, 429);
     return errorResponse(
       error instanceof Error ? error.message : "Could not generate this design",
       500,

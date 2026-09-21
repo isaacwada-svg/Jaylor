@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
 export function AiReplyDraftButton({
+  storeId,
   phone,
   consentWhatsapp,
   clientName,
@@ -19,6 +20,7 @@ export function AiReplyDraftButton({
   balance,
   deliveryDate,
 }: {
+  storeId: string;
   phone: string;
   consentWhatsapp: boolean;
   clientName: string;
@@ -38,12 +40,14 @@ export function AiReplyDraftButton({
     try {
       const { data, error } = await supabase.functions.invoke("whatsapp-reply-draft", {
         body: {
+          storeId,
           clientName,
           garmentType,
           orderStatus,
           balance,
           deliveryDate,
           incomingMessage: incoming.trim() || null,
+          triggeredByUserAction: true,
         },
       });
       if (error) throw error;

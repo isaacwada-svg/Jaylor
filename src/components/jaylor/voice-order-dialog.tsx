@@ -16,10 +16,12 @@ export function VoiceOrderDialog({
   open,
   onOpenChange,
   onParsed,
+  storeId,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onParsed: (prefill: OrderPrefill) => void;
+  storeId: string;
 }) {
   const online = useOnlineStatus();
   const supported = isSpeechRecognitionSupported();
@@ -68,9 +70,11 @@ export function VoiceOrderDialog({
     try {
       const { data, error } = await supabase.functions.invoke("voice-order", {
         body: {
+          storeId,
           transcript: transcript.trim(),
           garmentTypes: GARMENT_TYPES,
           today: new Date().toISOString().slice(0, 10),
+          triggeredByUserAction: true,
         },
       });
       if (error) throw error;

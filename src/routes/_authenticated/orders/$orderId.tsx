@@ -380,6 +380,7 @@ function OrderDetail() {
                       }
                     />
                     <AiReplyDraftButton
+                      storeId={currentStore.id}
                       phone={client.whatsapp_phone ?? client.phone}
                       consentWhatsapp={client.consent_whatsapp}
                       clientName={client.full_name ?? ""}

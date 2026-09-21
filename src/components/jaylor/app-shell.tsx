@@ -248,6 +248,7 @@ export function AppShell({ children }: { children: ReactNode }) {
           <VoiceOrderDialog
             open={voiceOrderOpen}
             onOpenChange={setVoiceOrderOpen}
+            storeId={currentStore.id}
             onParsed={(prefill) => {
               setOrderPrefill(prefill);
               setOrderFormOpen(true);

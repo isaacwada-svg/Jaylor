@@ -7,6 +7,10 @@ const DEFAULT_MODEL = "google/gemini-2.5-flash";
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 
+export type AiUsage = { prompt_tokens?: number; completion_tokens?: number } | undefined;
+
+export type AiCallResult = { content: string; usage: AiUsage };
+
 export const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
@@ -15,7 +19,7 @@ export const CORS_HEADERS = {
 export async function callAI(
   messages: ChatMessage[],
   opts?: { model?: string; json?: boolean },
-): Promise<string> {
+): Promise<AiCallResult> {
   const apiKey = Deno.env.get("LOVABLE_API_KEY");
   if (!apiKey) {
     throw new Error("AI is not enabled for this project yet.");
@@ -48,7 +52,7 @@ export async function callAI(
   const data = await res.json();
   const content = data?.choices?.[0]?.message?.content;
   if (typeof content !== "string") throw new Error("AI returned an unexpected response");
-  return content;
+  return { content, usage: data?.usage };
 }
 
 export type ImageContentPart =

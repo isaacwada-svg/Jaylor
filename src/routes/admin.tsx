@@ -567,6 +567,139 @@ type AiUsageRow = {
   cost_ngn: number;
 };
 
+type AiBudgetStatus = {
+  budget_usd: number;
+  spent_usd: number;
+  pct_used: number;
+  total_calls: number;
+  cached_calls: number;
+  cache_hit_rate: number;
+  projected_month_end_usd: number;
+};
+
+type AiRateLimitedStore = {
+  store_id: string;
+  store_name: string;
+  plan_code: string;
+  calls_last_hour: number;
+  hourly_limit: number;
+  calls_last_day: number;
+  daily_limit: number;
+};
+
+function AiBudgetPanel() {
+  const queryClient = useQueryClient();
+  const [budgetInput, setBudgetInput] = useState("");
+  const [savingBudget, setSavingBudget] = useState(false);
+
+  const { data: status, isLoading } = useQuery({
+    queryKey: ["admin-ai-budget-status"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_ai_budget_status", {});
+      if (error) throw error;
+      return data as unknown as AiBudgetStatus;
+    },
+  });
+
+  const { data: rateLimited } = useQuery({
+    queryKey: ["admin-ai-rate-limited-stores"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_ai_rate_limited_stores", {});
+      if (error) throw error;
+      return data as unknown as AiRateLimitedStore[];
+    },
+  });
+
+  async function saveBudget() {
+    const value = Number(budgetInput);
+    if (!Number.isFinite(value) || value < 0) {
+      toast.error("Enter a valid budget in USD");
+      return;
+    }
+    setSavingBudget(true);
+    try {
+      const { error } = await rpcAdmin("admin_set_ai_budget", { p_budget_usd: value });
+      if (error) throw error;
+      toast.success("Monthly AI budget updated");
+      setBudgetInput("");
+      queryClient.invalidateQueries({ queryKey: ["admin-ai-budget-status"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update the budget"));
+    } finally {
+      setSavingBudget(false);
+    }
+  }
+
+  if (isLoading || !status) {
+    return <Skeleton className="h-40 rounded-xl" />;
+  }
+
+  const pctLabel = `${Math.round(status.pct_used * 100)}%`;
+  const nearBudget = status.pct_used >= 0.8;
+
+  return (
+    <div className="space-y-4 rounded-2xl border border-border p-4">
+      <div className="flex items-center justify-between">
+        <p className="font-medium">This month's global AI budget</p>
+        <Badge variant="outline" className={nearBudget ? "border-owed/40 text-owed" : undefined}>
+          {pctLabel} used
+        </Badge>
+      </div>
+      <div className="grid grid-cols-2 gap-4 text-sm sm:grid-cols-4">
+        <div>
+          <p className="text-xs text-muted-foreground">Budget</p>
+          <p className="figures font-medium">${status.budget_usd.toFixed(0)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Spent</p>
+          <p className="figures font-medium">${status.spent_usd.toFixed(2)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Projected month-end</p>
+          <p className="figures font-medium">${status.projected_month_end_usd.toFixed(2)}</p>
+        </div>
+        <div>
+          <p className="text-xs text-muted-foreground">Cache hit rate</p>
+          <p className="figures font-medium">
+            {Math.round(status.cache_hit_rate * 100)}% ({status.cached_calls}/{status.total_calls})
+          </p>
+        </div>
+      </div>
+      <div className="flex items-end gap-2">
+        <div className="flex-1 space-y-1">
+          <Label htmlFor="ai-budget-input">Set monthly budget (USD)</Label>
+          <Input
+            id="ai-budget-input"
+            inputMode="decimal"
+            placeholder={status.budget_usd.toFixed(0)}
+            value={budgetInput}
+            onChange={(e) => setBudgetInput(e.target.value)}
+          />
+        </div>
+        <Button onClick={saveBudget} disabled={savingBudget || !budgetInput.trim()}>
+          {savingBudget ? "Saving..." : "Save"}
+        </Button>
+      </div>
+      {rateLimited && rateLimited.length > 0 && (
+        <div className="space-y-2 border-t border-border pt-4">
+          <p className="text-xs text-muted-foreground">Currently rate-limited shops</p>
+          {rateLimited.map((r) => (
+            <div key={r.store_id} className="flex items-center justify-between text-sm">
+              <span>
+                {r.store_name}{" "}
+                <span className="text-xs text-muted-foreground">({r.plan_code})</span>
+              </span>
+              <span className="figures text-xs text-muted-foreground">
+                {r.calls_last_hour}/{r.hourly_limit} hr · {r.calls_last_day}/{r.daily_limit} day
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 function AiUsageTab() {
   const { data: rows, isLoading } = useQuery({
     queryKey: ["admin-ai-usage"],
@@ -577,6 +710,15 @@ function AiUsageTab() {
     },
   });
 
+  return (
+    <div className="space-y-4">
+      <AiBudgetPanel />
+      <AiUsageRows rows={rows} isLoading={isLoading} />
+    </div>
+  );
+}
+
+function AiUsageRows({ rows, isLoading }: { rows: AiUsageRow[] | undefined; isLoading: boolean }) {
   if (isLoading) {
     return (
       <div className="space-y-2">

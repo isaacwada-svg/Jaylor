@@ -2600,31 +2600,46 @@ export type Database = {
       }
       usage_log: {
         Row: {
+          cached: boolean
           created_at: string
           estimated_cost_ngn: number
           estimated_cost_usd: number
           feature_key: string
           id: string
+          input_hash: string | null
+          input_tokens: number | null
+          model: string | null
+          output_tokens: number | null
           quantity: number
           store_id: string
           user_id: string | null
         }
         Insert: {
+          cached?: boolean
           created_at?: string
           estimated_cost_ngn?: number
           estimated_cost_usd?: number
           feature_key: string
           id?: string
+          input_hash?: string | null
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
           quantity?: number
           store_id: string
           user_id?: string | null
         }
         Update: {
+          cached?: boolean
           created_at?: string
           estimated_cost_ngn?: number
           estimated_cost_usd?: number
           feature_key?: string
           id?: string
+          input_hash?: string | null
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
           quantity?: number
           store_id?: string
           user_id?: string | null
@@ -2645,6 +2660,27 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      ai_response_cache: {
+        Row: {
+          created_at: string
+          feature_key: string
+          input_hash: string
+          output: Json
+        }
+        Insert: {
+          created_at?: string
+          feature_key: string
+          input_hash: string
+          output: Json
+        }
+        Update: {
+          created_at?: string
+          feature_key?: string
+          input_hash?: string
+          output?: Json
+        }
+        Relationships: []
       }
     }
     Views: {
@@ -2819,10 +2855,24 @@ export type Database = {
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string }
       accept_passport_share: { Args: { p_share_id: string }; Returns: string }
+      admin_ai_budget_status: { Args: never; Returns: Json }
+      admin_ai_rate_limited_stores: {
+        Args: never
+        Returns: {
+          calls_last_day: number
+          calls_last_hour: number
+          daily_limit: number
+          hourly_limit: number
+          plan_code: string
+          store_id: string
+          store_name: string
+        }[]
+      }
       admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_stores: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
+      admin_set_ai_budget: { Args: { p_budget_usd: number }; Returns: undefined }
       admin_store_ai_usage: { Args: { p_since?: string }; Returns: Json }
       admin_store_message_usage: { Args: never; Returns: Json }
       admin_update_plan: {
