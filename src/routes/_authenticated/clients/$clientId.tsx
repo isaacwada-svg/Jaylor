@@ -75,7 +75,9 @@ function ClientProfile() {
     if (!client) return;
     setDeleting(true);
     try {
-      const { error } = await supabase.from("clients").delete().eq("id", client.id);
+      const { error } = await supabase.functions.invoke("delete-client", {
+        body: { storeId: client.store_id, clientId: client.id },
+      });
       if (error) throw error;
       toast.success("Client deleted");
       navigate({ to: "/clients" });

@@ -1038,6 +1038,32 @@ genuine error inside `effective_plan_code` by silently recomputing the plan.
 
 ### L7 — Client deletion leaves photographs in storage and severs history silently
 
+> **Status: fix delivered, not yet applied/deployed.** New edge function
+> `supabase/functions/delete-client/index.ts` (same pattern as
+> `connect-payment-account`: `getRequestUser` + explicit owner/manager
+> membership check, since it runs as `service_role` and bypasses RLS).
+> Before deleting the client row it: refuses with a clear message if the
+> client has any orders (mirrors the existing `RESTRICT` behaviour, but with
+> readable text instead of a raw FK-violation error); finds `ai_designs`
+> rows for that store matching the client's `phone`/`whatsapp_phone`,
+> removes their storage objects (`image_url`, `selfie_url`) from
+> `ai-design-photos`, and deletes those rows; best-effort removes
+> `clients.photo_url`'s storage object if set (that column has no wired-up
+> upload path anywhere in the app today, so this is speculative but
+> harmless). `clients/$clientId.tsx`'s delete button now calls this
+> function instead of a raw `.from("clients").delete()`. The client row
+> itself is still hard-deleted (not anonymised in place) once storage
+> cleanup succeeds — anonymising in place was considered but rejected: it
+> would leave `measurement_sets` (real body measurements) still attached
+> under an "anonymised" name, which doesn't actually erase the sensitive
+> data the finding is about; the existing cascade/null FK behaviour on hard
+> delete already handles the linked tables correctly. L3's new
+> `client_deleted` audit trigger fires automatically on the final delete, so
+> no separate audit-logging code was needed here. Needs the edge function
+> deployed (not just the migration files this session has been tracking) —
+> flag to the store operator that this one requires a Supabase Edge
+> Function deploy, not a SQL editor run.
+
 - **Area:** Data export and deletion / NDPA erasure
 - **Severity:** Medium
 - **Location:** `src/routes/_authenticated/clients/$clientId.tsx` (`handleDelete` →
