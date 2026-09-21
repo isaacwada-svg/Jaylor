@@ -35,6 +35,8 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 import { jobTemplate } from "@/lib/job-templates";
 import { QuoteDocument, type QuoteData } from "@/components/jaylor/quote-document";
+import { MeasuringDayPanel } from "@/components/jaylor/measuring-day-panel";
+import { JobBatchesPanel } from "@/components/jaylor/job-batches-panel";
 
 export const Route = createFileRoute("/_authenticated/events/$eventId")({
   staticData: { sitemap: false },
@@ -146,6 +148,14 @@ function EventDetail() {
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ["event-participants", eventId] });
   }
+
+  const rushCountdown = useMemo(() => {
+    if (event?.turnaround_mode !== "rush") return null;
+    const target = event.delivery_date ?? event.measurement_deadline;
+    if (!target) return null;
+    const days = Math.ceil((new Date(target).getTime() - Date.now()) / 86400000);
+    return days;
+  }, [event]);
 
   async function handleAddParticipant(formEvent: FormEvent) {
     formEvent.preventDefault();
@@ -289,6 +299,16 @@ function EventDetail() {
           </Badge>
         </div>
 
+        {rushCountdown != null && (
+          <div className="mt-4 rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm text-owed">
+            {rushCountdown > 0
+              ? `Rush job — ${rushCountdown} ${rushCountdown === 1 ? "day" : "days"} left`
+              : rushCountdown === 0
+                ? "Rush job — due today"
+                : `Rush job — ${Math.abs(rushCountdown)} ${Math.abs(rushCountdown) === 1 ? "day" : "days"} overdue`}
+          </div>
+        )}
+
         <StitchDivider className="my-6" />
 
         <div className="grid grid-cols-3 gap-3 sm:grid-cols-4 lg:grid-cols-7">
@@ -385,6 +405,24 @@ function EventDetail() {
             </div>
           </div>
         )}
+
+        <MeasuringDayPanel
+          eventId={event.id}
+          storeId={event.store_id}
+          canManage={canManage}
+          participants={participants ?? []}
+          onChanged={invalidate}
+        />
+
+        <JobBatchesPanel
+          eventId={event.id}
+          storeId={event.store_id}
+          canManage={canManage}
+          participants={participants ?? []}
+          organiserPhone={event.organiser_phone}
+          jobName={event.name}
+          onChanged={invalidate}
+        />
 
         <div className="mt-8 flex items-center justify-between gap-3">
           <h2 className="text-xl">Guests</h2>

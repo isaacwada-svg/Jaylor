@@ -222,3 +222,84 @@ export const acceptJobQuote = createServerFn({ method: "POST" })
 
     return { ok: true };
   });
+
+export type MeasuringSessionOption = {
+  id: string;
+  sessionDate: string;
+  sessionTime: string | null;
+  venue: string | null;
+  bookedCount: number;
+};
+
+export type MeasuringSessions = {
+  sessions: MeasuringSessionOption[];
+  chosenSessionId: string | null;
+};
+
+export const getMeasuringSessions = createServerFn({ method: "GET" })
+  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .handler(async ({ data }): Promise<MeasuringSessions | null> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: participant, error } = await supabaseAdmin
+      .from("event_participants")
+      .select("event_id, measuring_session_id")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (error || !participant) return null;
+
+    const { data: sessions } = await supabaseAdmin
+      .from("event_measuring_sessions")
+      .select("id, session_date, session_time, venue")
+      .eq("event_id", participant.event_id)
+      .order("session_date", { ascending: true });
+    if (!sessions || sessions.length === 0) {
+      return { sessions: [], chosenSessionId: participant.measuring_session_id };
+    }
+
+    const { data: booked } = await supabaseAdmin
+      .from("event_participants")
+      .select("measuring_session_id")
+      .eq("event_id", participant.event_id)
+      .not("measuring_session_id", "is", null);
+    const counts: Record<string, number> = {};
+    for (const row of booked ?? []) {
+      if (row.measuring_session_id) {
+        counts[row.measuring_session_id] = (counts[row.measuring_session_id] ?? 0) + 1;
+      }
+    }
+
+    return {
+      sessions: sessions.map((s) => ({
+        id: s.id,
+        sessionDate: s.session_date,
+        sessionTime: s.session_time,
+        venue: s.venue,
+        bookedCount: counts[s.id] ?? 0,
+      })),
+      chosenSessionId: participant.measuring_session_id,
+    };
+  });
+
+const sessionSchema = z.object({
+  token: z.string().min(10).max(200),
+  sessionId: z.string().uuid(),
+});
+
+export const setMeasuringSession = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => sessionSchema.parse(data))
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (!(await withinRateLimit("job_measuring_session", data.token))) {
+      throw new Error("Too many requests. Please try again later.");
+    }
+
+    const { error } = await supabaseAdmin
+      .from("event_participants")
+      .update({ measuring_session_id: data.sessionId })
+      .eq("token", data.token);
+    if (error) throw new Error("Could not save your slot");
+
+    return { ok: true };
+  });

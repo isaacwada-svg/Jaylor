@@ -16,6 +16,8 @@ import {
   getJobQuote,
   acceptJobQuote,
   setParticipantSize,
+  getMeasuringSessions,
+  setMeasuringSession,
 } from "@/lib/jobs.functions";
 import { QuoteDocument } from "@/components/jaylor/quote-document";
 
@@ -108,10 +110,28 @@ function GuestEventPage() {
     queryFn: () => getJobQuote({ data: { token } }),
   });
 
+  const { data: measuringSessions } = useQuery({
+    queryKey: ["job-measuring-sessions", token],
+    queryFn: () => getMeasuringSessions({ data: { token } }),
+  });
+
   async function refetch() {
     await queryClient.invalidateQueries({ queryKey: ["guest-participant", token] });
     await queryClient.invalidateQueries({ queryKey: ["job-extras", token] });
     await queryClient.invalidateQueries({ queryKey: ["job-quote", token] });
+    await queryClient.invalidateQueries({ queryKey: ["job-measuring-sessions", token] });
+  }
+
+  async function chooseSession(sessionId: string) {
+    setBusy(true);
+    try {
+      await setMeasuringSession({ data: { token, sessionId } });
+      await refetch();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not save your slot"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function acceptQuote() {
@@ -309,6 +329,40 @@ function GuestEventPage() {
                 className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
               >
                 My size isn&apos;t listed — take my measurements instead
+              </button>
+            </div>
+          ) : measuringSessions && measuringSessions.sessions.length > 0 ? (
+            <div>
+              <p className="text-sm font-medium">Pick a measuring day slot</p>
+              <div className="mt-2 space-y-2">
+                {measuringSessions.sessions.map((session) => (
+                  <button
+                    key={session.id}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => chooseSession(session.id)}
+                    className={`flex w-full items-center justify-between rounded-xl border px-3 py-2 text-left text-sm ${
+                      measuringSessions.chosenSessionId === session.id
+                        ? "border-gold bg-accent"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    <span className="text-foreground">
+                      {new Date(session.sessionDate).toLocaleDateString()}
+                      {session.sessionTime ? ` · ${session.sessionTime}` : ""}
+                      {session.venue ? ` · ${session.venue}` : ""}
+                    </span>
+                    <span className="figures shrink-0 text-xs">{session.bookedCount} booked</span>
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                disabled={busy}
+                onClick={() => chooseMeasurement("book")}
+                className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
+              >
+                I&apos;ve already sent my measurements
               </button>
             </div>
           ) : (
