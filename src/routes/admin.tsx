@@ -941,6 +941,154 @@ const DRIFT_LABELS: Record<keyof Omit<DriftReport, "checked_at" | "ok">, string>
   unexpected_authenticated_grants: "Grants authenticated shouldn't hold",
 };
 
+function MfaSection() {
+  const queryClient = useQueryClient();
+  const [enrolling, setEnrolling] = useState(false);
+  const [factorId, setFactorId] = useState<string | null>(null);
+  const [qrCode, setQrCode] = useState<string | null>(null);
+  const [secret, setSecret] = useState<string | null>(null);
+  const [code, setCode] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const { data: factors, isLoading } = useQuery({
+    queryKey: ["mfa-factors"],
+    queryFn: async () => {
+      const { data, error } = await supabase.auth.mfa.listFactors();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const enabled = (factors?.totp.length ?? 0) > 0;
+
+  async function startEnrollment() {
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.mfa.enroll({ factorType: "totp" });
+      if (error) throw error;
+      setFactorId(data.id);
+      setQrCode(data.totp.qr_code);
+      setSecret(data.totp.secret);
+      setEnrolling(true);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not start enrollment"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function verifyEnrollment() {
+    if (!factorId || code.trim().length !== 6) {
+      toast.error("Enter the 6-digit code from your authenticator app");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: code.trim() });
+      if (error) throw error;
+      toast.success("Two-factor authentication enabled");
+      setEnrolling(false);
+      setFactorId(null);
+      setQrCode(null);
+      setSecret(null);
+      setCode("");
+      queryClient.invalidateQueries({ queryKey: ["mfa-factors"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "That code didn't match — try again"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function disable() {
+    const existing = factors?.totp[0];
+    if (!existing) return;
+    setBusy(true);
+    try {
+      const { error } = await supabase.auth.mfa.unenroll({ factorId: existing.id });
+      if (error) throw error;
+      toast.success("Two-factor authentication turned off");
+      queryClient.invalidateQueries({ queryKey: ["mfa-factors"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not turn this off"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (isLoading) return <Skeleton className="h-24 rounded-xl" />;
+
+  return (
+    <div className="rounded-xl border border-border p-4">
+      <div className="flex items-center justify-between">
+        <p className="font-medium">Two-factor authentication</p>
+        <Badge
+          className={
+            enabled ? "border-paid/40 bg-paid/10 text-paid" : "border-border text-muted-foreground"
+          }
+          variant={enabled ? undefined : "outline"}
+        >
+          {enabled ? "Enabled" : "Not enabled"}
+        </Badge>
+      </div>
+      <p className="mt-1 text-sm text-muted-foreground">
+        Adds a code from an authenticator app (Google Authenticator, Authy, 1Password, etc.) on top
+        of your password when you sign in. Optional, for your own admin account only.
+      </p>
+
+      {enabled ? (
+        <Button variant="outline" className="mt-3" onClick={disable} disabled={busy}>
+          {busy ? "Turning off..." : "Turn off two-factor authentication"}
+        </Button>
+      ) : enrolling ? (
+        <div className="mt-3 space-y-3">
+          {qrCode && (
+            <img
+              src={qrCode}
+              alt="Scan this QR code in your authenticator app"
+              className="size-40"
+            />
+          )}
+          {secret && (
+            <p className="text-xs text-muted-foreground">
+              Or enter this code manually: <span className="figures">{secret}</span>
+            </p>
+          )}
+          <div className="space-y-2">
+            <Label htmlFor="mfa-code">6-digit code</Label>
+            <Input
+              id="mfa-code"
+              inputMode="numeric"
+              maxLength={6}
+              value={code}
+              onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
+            />
+          </div>
+          <div className="flex gap-2">
+            <Button
+              variant="outline"
+              onClick={() => {
+                setEnrolling(false);
+                setFactorId(null);
+              }}
+              disabled={busy}
+            >
+              Cancel
+            </Button>
+            <Button onClick={verifyEnrollment} disabled={busy}>
+              {busy ? "Verifying..." : "Verify and enable"}
+            </Button>
+          </div>
+        </div>
+      ) : (
+        <Button className="mt-3" onClick={startEnrollment} disabled={busy}>
+          {busy ? "Starting..." : "Enable two-factor authentication"}
+        </Button>
+      )}
+    </div>
+  );
+}
+
 function SecurityTab() {
   const queryClient = useQueryClient();
   const [running, setRunning] = useState(false);
@@ -977,6 +1125,8 @@ function SecurityTab() {
 
   return (
     <div className="space-y-4">
+      <MfaSection />
+      <StitchDivider />
       <p className="text-sm text-muted-foreground">
         Re-checks the same grant/policy conditions the security audit's L2 and L9 findings fixed —
         anon holding more than its narrow allowed set, authenticated reaching admin-only tables, a
