@@ -1008,6 +1008,12 @@ genuine error inside `effective_plan_code` by silently recomputing the plan.
 
 ### L6 — Legacy `sew_requests` policies cancel out the validated ones
 
+> **Status: fix delivered, not yet applied** (migration `20260921180000_...sql`).
+> Drops the two named legacy policies (`Anyone can submit a sew request`,
+> `Store members update sew requests`), leaving only the validated pair
+> (`sew_requests_public_insert`, `sew_requests_member_update`) in effect —
+> matching the cleanup already done for `consultation_requests`.
+
 - **Area:** Database access / policies
 - **Severity:** Medium
 - **Location:** table `public.sew_requests`, policies `Anyone can submit a sew request`
