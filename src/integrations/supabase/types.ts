@@ -3254,10 +3254,17 @@ export type Database = {
       }
       next_calendar_occurrence: {
         Args: { p_from_date?: string; p_key: string; p_store_id?: string }
-        Returns: { event_date: string; event_end_date: string | null }[]
+        Returns: {
+          event_date: string
+          event_end_date: string
+        }[]
       }
       next_islamic_event: {
-        Args: { p_from_date?: string; p_hijri_day: number; p_hijri_month: number }
+        Args: {
+          p_from_date?: string
+          p_hijri_day: number
+          p_hijri_month: number
+        }
         Returns: string
       }
       nth_weekday_date: {
@@ -3312,12 +3319,12 @@ export type Database = {
         Returns: {
           days_away: number
           event_date: string
-          event_end_date: string | null
+          event_end_date: string
           event_key: string
           label: string
           last_year_order_count: number
-          last_year_top_garment_types: string | null
-          lead_weeks_message: string | null
+          last_year_top_garment_types: string
+          lead_weeks_message: string
         }[]
       }
     }
