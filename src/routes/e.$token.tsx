@@ -1,17 +1,21 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { MessageCircle } from "lucide-react";
+import { ImagePlus, Loader2, MessageCircle, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 import { approximateUsd } from "@/lib/fx";
+import { resizeImageFile } from "@/lib/image";
+import { uploadFabricPhoto } from "@/lib/design-photos.functions";
 import {
   getJobExtras,
   getJobQuote,
@@ -21,6 +25,16 @@ import {
   setMeasuringSession,
 } from "@/lib/jobs.functions";
 import { QuoteDocument } from "@/components/jaylor/quote-document";
+import { AiDesignGenerator } from "@/components/jaylor/ai-design-generator";
+
+const SELF_MEASUREMENT_FIELDS = [
+  { key: "chest", label: "Chest / bust" },
+  { key: "waist", label: "Waist" },
+  { key: "hip", label: "Hip" },
+  { key: "shoulder", label: "Shoulder" },
+  { key: "sleeve", label: "Sleeve length" },
+  { key: "length", label: "Garment length" },
+] as const;
 
 export const Route = createFileRoute("/e/$token")({
   staticData: { sitemap: false },
@@ -91,6 +105,11 @@ function GuestEventPage() {
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [showMeasureFallback, setShowMeasureFallback] = useState(false);
+  const [fabricPreview, setFabricPreview] = useState<string | null>(null);
+  const [uploadingFabric, setUploadingFabric] = useState(false);
+  const fabricInputRef = useRef<HTMLInputElement>(null);
+  const [measurementValues, setMeasurementValues] = useState<Record<string, string>>({});
+  const [savingMeasurements, setSavingMeasurements] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["guest-participant", token],
@@ -115,6 +134,10 @@ function GuestEventPage() {
     queryKey: ["job-measuring-sessions", token],
     queryFn: () => getMeasuringSessions({ data: { token } }),
   });
+
+  useEffect(() => {
+    if (extras?.selfMeasurements) setMeasurementValues(extras.selfMeasurements);
+  }, [extras?.selfMeasurements]);
 
   async function refetch() {
     await queryClient.invalidateQueries({ queryKey: ["guest-participant", token] });
@@ -189,6 +212,54 @@ function GuestEventPage() {
       toast.error(getErrorMessage(error, "Could not save your choice"));
     } finally {
       setBusy(false);
+    }
+  }
+
+  async function handleFabricPhoto(file: File | null) {
+    if (!file || !extras) return;
+    setUploadingFabric(true);
+    try {
+      const resized = await resizeImageFile(file, 1000, 0.8);
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result));
+        reader.onerror = () => reject(new Error("Could not read that photo"));
+        reader.readAsDataURL(resized);
+      });
+      if (!dataUrl.startsWith("data:image/jpeg;base64,")) {
+        throw new Error("Please choose a photo in JPG format");
+      }
+      const { path } = await uploadFabricPhoto({ data: { storeId: extras.storeId, dataUrl } });
+      const { error } = await supabase.rpc("set_participant_fabric_photo", {
+        p_token: token,
+        p_path: path,
+      });
+      if (error) throw error;
+      setFabricPreview(dataUrl);
+      await refetch();
+      toast.success("Fabric photo sent");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not upload your fabric photo"));
+    } finally {
+      setUploadingFabric(false);
+    }
+  }
+
+  async function submitMeasurements() {
+    setSavingMeasurements(true);
+    try {
+      const { error } = await supabase.rpc("set_participant_measurements", {
+        p_token: token,
+        p_values: measurementValues,
+        p_unit: "in",
+      });
+      if (error) throw error;
+      await refetch();
+      toast.success("Measurements sent");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not save your measurements"));
+    } finally {
+      setSavingMeasurements(false);
     }
   }
 
@@ -300,6 +371,74 @@ function GuestEventPage() {
               ))}
             </div>
           </div>
+
+          <StitchDivider className="my-5" />
+
+          <div className="rounded-xl border border-border p-3">
+            <p className="text-sm font-medium">Fabric photo (optional)</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              Send a photo of your fabric so {event.store_name} can see it before they start.
+            </p>
+            {fabricPreview || extras?.fabricPhotoPath ? (
+              <div className="relative mt-2 w-24">
+                {fabricPreview && (
+                  <img src={fabricPreview} alt="" className="size-24 rounded-xl object-cover" />
+                )}
+                {!fabricPreview && (
+                  <div className="flex size-24 items-center justify-center rounded-xl border border-dashed border-border text-xs text-muted-foreground">
+                    Sent
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => {
+                    setFabricPreview(null);
+                    fabricInputRef.current?.click();
+                  }}
+                  aria-label="Replace fabric photo"
+                  className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-background shadow-sm"
+                >
+                  <X className="size-3.5" />
+                </button>
+              </div>
+            ) : (
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                className="mt-2"
+                disabled={uploadingFabric || !extras}
+                onClick={() => fabricInputRef.current?.click()}
+              >
+                {uploadingFabric ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <ImagePlus className="size-4" />
+                )}
+                Add fabric photo
+              </Button>
+            )}
+            <input
+              ref={fabricInputRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={(e) => {
+                void handleFabricPhoto(e.target.files?.[0] ?? null);
+                e.target.value = "";
+              }}
+            />
+          </div>
+
+          {extras && (
+            <div className="mt-3">
+              <AiDesignGenerator
+                storeId={extras.storeId}
+                storeName={event.store_name}
+                whatsappNumber={event.store_whatsapp}
+              />
+            </div>
+          )}
 
           <StitchDivider className="my-5" />
 
@@ -432,6 +571,42 @@ function GuestEventPage() {
               </div>
             </div>
           )}
+
+          <StitchDivider className="my-5" />
+
+          <div className="rounded-xl border border-border p-3">
+            <p className="text-sm font-medium">Or type your measurements here</p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {extras?.selfMeasurementsSubmittedAt
+                ? "You've already sent these — update and send again if anything's changed."
+                : "In inches, if you have a measuring tape handy."}
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              {SELF_MEASUREMENT_FIELDS.map((f) => (
+                <div key={f.key} className="space-y-1">
+                  <Label htmlFor={`sm-${f.key}`} className="text-xs">
+                    {f.label}
+                  </Label>
+                  <Input
+                    id={`sm-${f.key}`}
+                    inputMode="decimal"
+                    value={measurementValues[f.key] ?? ""}
+                    onChange={(e) =>
+                      setMeasurementValues((v) => ({ ...v, [f.key]: e.target.value }))
+                    }
+                  />
+                </div>
+              ))}
+            </div>
+            <Button
+              className="mt-3 w-full"
+              variant="outline"
+              disabled={savingMeasurements}
+              onClick={submitMeasurements}
+            >
+              {savingMeasurements ? "Sending..." : "Send my measurements"}
+            </Button>
+          </div>
 
           <StitchDivider className="my-5" />
 

@@ -287,6 +287,18 @@ function EventDetail() {
       .catch(() => toast.error("Could not copy link"));
   }
 
+  async function viewFabricPhoto(participant: ParticipantRow) {
+    if (!participant.fabric_photo_path) return;
+    const { data, error } = await supabase.storage
+      .from("ai-design-photos")
+      .createSignedUrl(participant.fabric_photo_path, 60 * 10);
+    if (error || !data) {
+      toast.error("Could not open this photo");
+      return;
+    }
+    window.open(data.signedUrl, "_blank", "noreferrer");
+  }
+
   function openPaymentDialog(participant: ParticipantRow) {
     setPayingParticipant(participant);
     setPaidAmountDraft(String(participant.paid_amount));
@@ -581,6 +593,31 @@ function EventDetail() {
                     <MoneyText paid={participant.paid_amount} />
                   </div>
                 </div>
+                {(participant.fabric_photo_path ||
+                  (participant.self_measurements &&
+                    Object.keys(participant.self_measurements as Record<string, string>).length >
+                      0)) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+                    {participant.fabric_photo_path && (
+                      <button
+                        type="button"
+                        onClick={() => viewFabricPhoto(participant)}
+                        className="rounded-full border border-border px-2 py-1 hover:bg-accent"
+                      >
+                        View fabric photo
+                      </button>
+                    )}
+                    {participant.self_measurements &&
+                      Object.entries(participant.self_measurements as Record<string, string>)
+                        .filter(([, v]) => v)
+                        .map(([key, value]) => (
+                          <span key={key} className="rounded-full border border-border px-2 py-1">
+                            {key}: {value}
+                            {participant.self_measurements_unit ?? ""}
+                          </span>
+                        ))}
+                  </div>
+                )}
                 {canManage && (
                   <div className="mt-3 flex flex-wrap items-center gap-2">
                     <Select

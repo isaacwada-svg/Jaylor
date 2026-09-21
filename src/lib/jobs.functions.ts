@@ -37,6 +37,7 @@ export type SizeOption = {
 export type PriceTier = { minQty: number; maxQty: number | null; price: number };
 
 export type JobExtras = {
+  storeId: string;
   sizeChart: SizeOption[];
   sizeKey: string | null;
   priceTiers: PriceTier[];
@@ -49,6 +50,10 @@ export type JobExtras = {
   deliveryCountry: string | null;
   deliveryAddress: string | null;
   shippingFee: number | null;
+  fabricPhotoPath: string | null;
+  selfMeasurements: Record<string, string> | null;
+  selfMeasurementsUnit: string | null;
+  selfMeasurementsSubmittedAt: string | null;
 };
 
 export const getJobExtras = createServerFn({ method: "GET" })
@@ -58,7 +63,9 @@ export const getJobExtras = createServerFn({ method: "GET" })
 
     const { data: participant, error } = await supabaseAdmin
       .from("event_participants")
-      .select("event_id, size_key, is_sponsored")
+      .select(
+        "event_id, size_key, is_sponsored, fabric_photo_path, self_measurements, self_measurements_unit, self_measurements_submitted_at",
+      )
       .eq("token", data.token)
       .maybeSingle();
     if (error || !participant) return null;
@@ -66,7 +73,7 @@ export const getJobExtras = createServerFn({ method: "GET" })
     const { data: event } = await supabaseAdmin
       .from("events")
       .select(
-        "size_chart, price_tiers, payer_mode, collection_mode, pricing_mode, delivery_country, delivery_address, shipping_fee",
+        "store_id, size_chart, price_tiers, payer_mode, collection_mode, pricing_mode, delivery_country, delivery_address, shipping_fee",
       )
       .eq("id", participant.event_id)
       .maybeSingle();
@@ -87,6 +94,7 @@ export const getJobExtras = createServerFn({ method: "GET" })
     );
 
     return {
+      storeId: event.store_id,
       sizeChart: (event.size_chart as SizeOption[] | null) ?? [],
       sizeKey: participant.size_key,
       priceTiers: tiers,
@@ -99,6 +107,10 @@ export const getJobExtras = createServerFn({ method: "GET" })
       deliveryCountry: event.delivery_country,
       deliveryAddress: event.delivery_address,
       shippingFee: event.shipping_fee,
+      fabricPhotoPath: participant.fabric_photo_path,
+      selfMeasurements: (participant.self_measurements as Record<string, string> | null) ?? null,
+      selfMeasurementsUnit: participant.self_measurements_unit,
+      selfMeasurementsSubmittedAt: participant.self_measurements_submitted_at,
     };
   });
 

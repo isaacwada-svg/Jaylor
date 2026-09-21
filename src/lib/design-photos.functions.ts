@@ -50,6 +50,44 @@ export const uploadDesignSelfie = createServerFn({ method: "POST" })
     return { path };
   });
 
+const fabricUploadSchema = z.object({
+  storeId: z.string().uuid(),
+  /** JPEG image encoded as a data URL. */
+  dataUrl: z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/),
+});
+
+/**
+ * A guest measure-link submission's fabric photo. Uploaded server-side and
+ * shares the same private bucket/read policy as design selfies (store
+ * members only) rather than opening a new one for a single extra photo type.
+ */
+export const uploadFabricPhoto = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => fabricUploadSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: store, error: storeError } = await supabaseAdmin
+      .from("stores")
+      .select("id")
+      .eq("id", data.storeId)
+      .maybeSingle();
+    if (storeError) throw new Error("Could not check this shop right now");
+    if (!store) throw new Error("This shop does not exist");
+
+    const base64 = data.dataUrl.split(",")[1] ?? "";
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    if (bytes.byteLength === 0) throw new Error("That photo appears to be empty");
+    if (bytes.byteLength > MAX_BYTES) throw new Error("That photo is too large");
+
+    const path = `${data.storeId}/fabric/${crypto.randomUUID()}.jpg`;
+    const { error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .upload(path, bytes, { contentType: "image/jpeg", upsert: false });
+    if (error) throw new Error("Could not upload your photo");
+
+    return { path };
+  });
+
 export type SharedDesign = {
   id: string;
   store_name: string;
