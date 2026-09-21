@@ -9,18 +9,32 @@ directly against the Supabase project). Neither track changed any code, policy,
 setting, grant, bucket, or row — both are audit-only, per the two-phase process
 this was requested under.
 
-## ⚠️ Most urgent finding: L1 (Critical) — fix written, pending apply
+## ✅ L1 (Critical) — fixed and confirmed closed
 
-**Any signed-in store owner can grant themselves any paid plan, an unlimited
-trial, or reassign their store to another account, in one request — a
-complete, silent bypass of every plan gate and paid feature in the product.**
-See **L1** in Track B below for the full detail. Given this is a live,
-currently-exploitable privilege escalation, a Phase 2 fix was written and
-delivered directly in chat (a `BEFORE UPDATE` trigger on `stores` blocking
-changes to the eight sensitive columns unless the request runs as
-`service_role` or a platform admin) — **status: delivered, not yet applied**
-(no live DB execution access from this session; the store owner/operator must
-run it). L2–L4 (also High/Critical) are still open and recommended next.
+**Any signed-in store owner could grant themselves any paid plan, an
+unlimited trial, or reassign their store to another account, in one
+request — a complete, silent bypass of every plan gate and paid feature in
+the product.** See **L1** in Track B below for the full detail. Fixed via a
+`BEFORE UPDATE` trigger on `stores` (`public.prevent_unauthorized_stores_update`
++ `stores_guard_sensitive_columns`, tracked in migration
+`20260921125959_...sql`) blocking changes to the eight sensitive columns
+unless the request runs as `service_role` or a platform admin.
+
+The first version of this fix had a real bug, caught during the store
+operator's own test run: `auth.role() = 'service_role'` returns `NULL`
+(not `false`) whenever there is no JWT context at all, and that `NULL`
+propagated through `OR`/`NOT` into the trigger's `IF` condition, which
+plpgsql treats as "not true" — silently letting the write through instead
+of blocking it. Patched by wrapping both guard checks in
+`COALESCE(..., false)` so an unknown caller fails closed. Verified live:
+`UPDATE stores SET plan_code = 'business' WHERE id = '<a real store>'`
+now raises `42501: Not authorized to change plan, trial, active status,
+ownership, referral, country or currency fields directly`, while
+`UPDATE stores SET bio = '...'` on the same row still succeeds. The store
+used for testing had its `plan_code` restored to its pre-test value
+(`free`) afterward.
+
+L2–L4 (also High/Critical) are still open and recommended next.
 
 ---
 
@@ -692,12 +706,17 @@ this is stated explicitly in "How verified".
 
 ### L1 — A store owner can grant themselves any paid plan and unlimited trial
 
-> **Status: fix delivered, not yet applied.** A `BEFORE UPDATE` trigger on
-> `stores` blocking changes to `plan_code`, `trial_ends_at`, `is_active`,
-> `owner_id`, `referral_code`, `referred_by_store_id`, `country_code`, and
-> `currency` unless the request runs as `service_role` or a platform admin
-> was written and handed to the store operator to run — no live DB execution
-> access from the auditing session. Update this line once confirmed applied.
+> **Status: fixed and confirmed closed** (migration
+> `20260921125959_...sql`). A `BEFORE UPDATE` trigger on `stores` blocks
+> changes to `plan_code`, `trial_ends_at`, `is_active`, `owner_id`,
+> `referral_code`, `referred_by_store_id`, `country_code`, and `currency`
+> unless the request runs as `service_role` or a platform admin. A
+> three-valued-logic bug in the first version (`auth.role() = 'service_role'`
+> is `NULL`, not `false`, with no JWT context, and that `NULL` silently
+> defeated the `IF` check) was caught by the operator's own live test and
+> patched with `COALESCE(..., false)` around both guard checks. Verified
+> live: the sensitive-column update now raises `42501`, an ordinary column
+> update still succeeds.
 
 - **Area:** Database access / entitlements
 - **Severity:** Critical
@@ -1074,7 +1093,7 @@ prerequisite for meeting the NDPA notification duty.
 
 | ID | Severity | Area | Finding |
 |----|----------|------|---------|
-| L1 | Critical | Entitlements | `stores_update_owner` + full-column UPDATE grant lets an owner set their own `plan_code`, `trial_ends_at`, `is_active`, `owner_id` |
+| L1 | Critical | Entitlements | ✅ Fixed — `stores_update_owner` + full-column UPDATE grant let an owner set their own `plan_code`, `trial_ends_at`, `is_active`, `owner_id` |
 | L2 | High | Grants | `anon`/`authenticated` hold blanket INSERT/UPDATE/DELETE on 45 of 47 tables; RLS is the only layer |
 | L3 | High | Audit logging | `audit_logs` has zero rows; no role, payout, support, deletion, export or admin action is recorded |
 | L4 | High | Payout accounts | Payout account can be repointed with a normal owner/manager session — no re-auth, cooldown, history or notification |
@@ -1092,7 +1111,7 @@ No changes were made to code, policies, settings, grants, buckets or data during
 
 | ID | Severity | Track | One-line summary |
 |----|----------|-------|-------------------|
-| L1 | **Critical** | B | Any store owner can self-escalate plan/trial/active status/ownership via `stores` UPDATE — no column-level check |
+| L1 | **Critical** | B | ✅ Fixed — any store owner could self-escalate plan/trial/active status/ownership via `stores` UPDATE — no column-level check |
 | L2 | High | B | `anon`/`authenticated` hold blanket INSERT/UPDATE/DELETE on 45 of 47 tables; RLS is the only real layer |
 | L3 | High | B | `audit_logs` has zero rows — no role/payout/support/deletion/export/admin action is recorded anywhere |
 | L4 | High | B | Payout account can be repointed with a normal owner/manager session — no re-auth, cooldown, history, or notification |
