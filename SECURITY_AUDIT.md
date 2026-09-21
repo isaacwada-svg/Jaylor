@@ -34,7 +34,8 @@ ownership, referral, country or currency fields directly`, while
 used for testing had its `plan_code` restored to its pre-test value
 (`free`) afterward.
 
-L2–L4 (also High/Critical) are still open and recommended next.
+L2–L9 all now have fixes delivered too (see the Phase 2 status note near the end of this
+document for exactly what's applied vs. still pending the store operator's confirmation).
 
 ---
 
@@ -1123,6 +1124,18 @@ genuine error inside `effective_plan_code` by silently recomputing the plan.
 
 ### L9 — Several policies are written for the `public` role rather than `authenticated`
 
+> **Status: fix delivered, not yet applied** (migration `20260921200000_...sql`).
+> Uses `ALTER POLICY ... TO authenticated`, which only changes which roles a
+> policy applies to and leaves its existing `USING`/`WITH CHECK` expression
+> untouched — so this doesn't need each policy's exact body, only its name
+> and table. Rather than guess the ten policy names the audit didn't
+> capture verbatim, the migration finds them dynamically from `pg_policies`
+> (scoped strictly to policies currently targeting exactly `{public}` on
+> these eleven named tables) and re-declares each one `TO authenticated` in
+> a loop. Run this verification query afterward to confirm none remain:
+> `select tablename, policyname from pg_policies where schemaname = 'public' and roles = array['public']::name[];`
+> — it should return no rows for these eleven tables.
+
 - **Area:** Database access / defence in depth
 - **Severity:** Low
 - **Location:** `expenses` (`Owners and managers manage expenses`), `measurement_passports` (all
@@ -1213,14 +1226,14 @@ prerequisite for meeting the NDPA notification duty.
 | ID | Severity | Area | Finding |
 |----|----------|------|---------|
 | L1 | Critical | Entitlements | ✅ Fixed — `stores_update_owner` + full-column UPDATE grant let an owner set their own `plan_code`, `trial_ends_at`, `is_active`, `owner_id` |
-| L2 | High | Grants | `anon`/`authenticated` hold blanket INSERT/UPDATE/DELETE on 45 of 47 tables; RLS is the only layer |
-| L3 | High | Audit logging | `audit_logs` has zero rows; no role, payout, support, deletion, export or admin action is recorded |
-| L4 | High | Payout accounts | Payout account can be repointed with a normal owner/manager session — no re-auth, cooldown, history or notification |
-| L5 | Medium | Entitlements | `check_feature_limit` (and `effective_plan_code`, `can_use_feature`) never verify the caller belongs to `p_store_id` |
-| L6 | Medium | Policies | Legacy `sew_requests` policies (`WITH CHECK (true)`, member-wide UPDATE) override the validated ones |
-| L7 | Medium | Deletion | Client deletion removes the row but leaves photographs and AI selfies in storage; no erasure RPC exists |
-| L8 | Low | Public writes | `leads` insert is unrate-limited; `analytics_events` visitor IDs are client-supplied and forgeable |
-| L9 | Low | Policies | Eleven policies target the `public` role instead of `authenticated` (defence in depth only) |
+| L2 | High | Grants | ✅ Fixed — `anon`/`authenticated` held blanket INSERT/UPDATE/DELETE on 45 of 47 tables; RLS was the only layer |
+| L3 | High | Audit logging | ✅ Fixed — `audit_logs` had zero rows; no role, payout, support, deletion, export or admin action was recorded |
+| L4 | High | Payout accounts | ⚠️ Partially fixed — history + cooldown + password re-auth delivered; OTP/notification blocked on stubbed WhatsApp/Resend (task #34) |
+| L5 | Medium | Entitlements | ✅ Fixed — `check_feature_limit` (and `effective_plan_code`, `can_use_feature`) never verified the caller belongs to `p_store_id` |
+| L6 | Medium | Policies | ✅ Fixed — legacy `sew_requests` policies (`WITH CHECK (true)`, member-wide UPDATE) overrode the validated ones |
+| L7 | Medium | Deletion | ✅ Fixed — client deletion removed the row but left photographs and AI selfies in storage; no erasure path existed |
+| L8 | Low | Public writes | ⚠️ Partially fixed — `leads` insert now rate-limited; `analytics_events` visitor IDs remain client-supplied/forgeable (accepted, indicative-only) |
+| L9 | Low | Policies | ✅ Fixed — eleven policies targeted the `public` role instead of `authenticated` (defence in depth only) |
 
 No changes were made to code, policies, settings, grants, buckets or data during this pass.
 
@@ -1231,18 +1244,18 @@ No changes were made to code, policies, settings, grants, buckets or data during
 | ID | Severity | Track | One-line summary |
 |----|----------|-------|-------------------|
 | L1 | **Critical** | B | ✅ Fixed — any store owner could self-escalate plan/trial/active status/ownership via `stores` UPDATE — no column-level check |
-| L2 | High | B | `anon`/`authenticated` hold blanket INSERT/UPDATE/DELETE on 45 of 47 tables; RLS is the only real layer |
-| L3 | High | B | `audit_logs` has zero rows — no role/payout/support/deletion/export/admin action is recorded anywhere |
-| L4 | High | B | Payout account can be repointed with a normal owner/manager session — no re-auth, cooldown, history, or notification |
+| L2 | High | B | ✅ Fixed — `anon`/`authenticated` held blanket INSERT/UPDATE/DELETE on 45 of 47 tables; RLS was the only real layer |
+| L3 | High | B | ✅ Fixed — `audit_logs` had zero rows — no role/payout/support/deletion/export/admin action was recorded anywhere |
+| L4 | High | B | ⚠️ Partially fixed — history + cooldown + password re-auth delivered; OTP/notification blocked on stubbed WhatsApp/Resend (task #34) |
 | A7 | Medium | A | `resolveLoginEmail` is an unrate-limited phone-number user-enumeration oracle |
 | A18 | Medium | A | `notify-admin-budget` has no auth/rate-limit — anyone can trigger admin email spam |
 | A21 / S6-3 | Medium | A | `generate-design` never validates `storeId` exists — quota/dashboard-pollution vector against another store |
 | A22 | Medium | A | `resizeImageFile`'s decode-failure fallback can upload non-image bytes mislabeled `image/jpeg` |
 | A29 | Medium | A | Raw `PostgrestError.message` (schema-revealing DB error text) returned to clients in many edge functions |
 | A3 | Medium | A | Three guest RPCs bypass the app's usual rate-limiting layer |
-| L5 | Medium | B | `check_feature_limit`/`effective_plan_code`/`can_use_feature` never verify the caller belongs to the store they're asking about |
-| L6 | Medium | B | Legacy `sew_requests` policies (`WITH CHECK (true)`, member-wide UPDATE) override the validated replacement policies |
-| L7 | Medium | B | Client deletion leaves photos/AI selfies in storage; no erasure RPC exists (NDPA gap) |
+| L5 | Medium | B | ✅ Fixed — `check_feature_limit`/`effective_plan_code`/`can_use_feature` never verified the caller belongs to the store they're asking about |
+| L6 | Medium | B | ✅ Fixed — legacy `sew_requests` policies (`WITH CHECK (true)`, member-wide UPDATE) overrode the validated replacement policies |
+| L7 | Medium | B | ✅ Fixed — client deletion left photos/AI selfies in storage; no erasure path existed (NDPA gap) |
 | A14 | Low/Info | A | Webhook signature compared with `===`, not constant-time |
 | A26 | Low/Info | A | Edge-function input validation present but inconsistent; `callbackUrl` not verified same-origin |
 | A27 | Low/Info | A | `Access-Control-Allow-Origin: *` on all functions (bearer-token check is the real gate) |
@@ -1250,11 +1263,21 @@ No changes were made to code, policies, settings, grants, buckets or data during
 | A31 | Low/Info | A | Attacker-supplied booking phone could get a fixed WhatsApp template sent to a third party — template-only, human-click-gated |
 | S6-2 | Low | A | `generate-design` bypasses the main gateway's plan-quota/rate-limit checks (has its own compensating controls) |
 | S6-4 | Low-Medium | A | AI JSON output not schema-validated server-side (human review before save is the compensating control) |
-| L8 | Low | B | `leads` insert is unrate-limited; `analytics_events` visitor IDs are client-supplied and forgeable |
-| L9 | Low | B | Eleven policies target `public` role instead of `authenticated` (defence in depth only, helper functions already null-safe) |
+| L8 | Low | B | ⚠️ Partially fixed — `leads` insert now rate-limited; `analytics_events` visitor IDs remain forgeable (accepted, indicative-only) |
+| L9 | Low | B | ✅ Fixed — eleven policies targeted `public` role instead of `authenticated` (defence in depth only, helper functions already null-safe) |
 
 **NDPA 72-hour breach notification: not ready today** — see Track B's dedicated section above. This is a direct consequence of L3 (empty audit log): scope of a *data change* is roughly reconstructable from `created_at`/`updated_at`, but scope of *access* (what an attacker viewed or exported) is not, and closing that gap requires L3 fixed first.
 
 **What's solid:** Paystack webhook signature verification (HMAC-SHA512) and payment idempotency; no hardcoded secrets anywhere in code or full git history; service-role key never reaches client code; all 47 tables have RLS enabled; both storage buckets are private with correct signed-URL-only serving; all 49 SECURITY DEFINER functions have `search_path` pinned; `npm audit` is clean; most security response headers are already configured correctly; the AI gateway has no cross-store data leakage and every text/audio call goes through one governed path.
 
-Next step: **Phase 2** — pick findings to fix (L1 first), in batches, Critical/High before Medium/Low, each with a rollback-capable migration and a test proving the vulnerability is closed, per the original audit prompt's Phase 2 process.
+**Phase 2 status:** all nine Track B findings (L1–L9) now have a fix delivered as a tracked
+migration. L1 is confirmed applied and tested live (self-escalation blocked, ordinary fields
+still writable). L2, L3, L5, L6, L7, L9 are delivered but not yet confirmed applied by the store
+operator. L4 and L8 are each partially fixed — the DB-layer and application-layer pieces
+achievable without external dependencies are done; the remaining pieces (WhatsApp OTP/payout-change
+notification for L4, analytics-forgery hardening for L8) are accepted as out of scope pending the
+stubbed WhatsApp/Resend integrations (task #34). L7's fix additionally needs an edge function
+deploy, not just a SQL editor run. Next step: the store operator runs the remaining migrations and
+deploys `delete-client`, then confirms; after that, **Phase 3** (standing protections — security
+headers, broader rate limiting, admin MFA, a weekly RLS-drift check) per the original prompt's
+stated order.
