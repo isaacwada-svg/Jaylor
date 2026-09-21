@@ -56,15 +56,15 @@ export function PassportShareInbox({ storeId }: { storeId: string }) {
         {shares.map((s) => (
           <div
             key={s.id}
-            className="flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3"
+            className="flex flex-col gap-2 rounded-xl border border-border bg-card p-3 sm:flex-row sm:items-center sm:justify-between"
           >
-            <div>
-              <p className="text-sm font-medium">{s.full_name}</p>
-              <p className="text-xs text-muted-foreground">
+            <div className="min-w-0">
+              <p className="truncate text-sm font-medium">{s.full_name}</p>
+              <p className="truncate text-xs text-muted-foreground">
                 {new Date(s.created_at).toLocaleDateString()}
               </p>
             </div>
-            <div className="flex gap-2">
+            <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
               <Button size="sm" variant="outline" onClick={() => decline(s.id)}>
                 Decline
               </Button>

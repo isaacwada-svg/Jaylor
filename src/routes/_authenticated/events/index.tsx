@@ -91,10 +91,10 @@ function Events() {
                   params={{ eventId: event.id }}
                   className="block rounded-2xl border border-border p-4 transition-colors hover:bg-accent/40"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <p className="truncate font-medium">{event.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="truncate text-sm text-muted-foreground">
                         {jobTemplate(event.job_type).label}
                         {" · "}
                         {event.event_date
@@ -102,7 +102,7 @@ function Events() {
                           : "No date set"}
                       </p>
                     </div>
-                    <div className="flex shrink-0 flex-col items-end gap-1">
+                    <div className="flex flex-col items-end gap-1 sm:shrink-0">
                       <Badge variant="outline" className="border-gold text-gold">
                         {event.status}
                       </Badge>

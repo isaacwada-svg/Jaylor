@@ -164,9 +164,9 @@ function AiDesigns() {
                     />
                   </button>
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center justify-between gap-2">
-                      <p className="font-medium">{design.client_name}</p>
-                      <div className="flex shrink-0 gap-1">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                      <p className="truncate font-medium">{design.client_name}</p>
+                      <div className="flex flex-wrap items-center gap-1 sm:shrink-0">
                         {design.selected_at && (
                           <Badge className="border-paid/40 bg-paid/10 text-paid">Selected</Badge>
                         )}

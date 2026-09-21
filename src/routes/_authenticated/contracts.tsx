@@ -120,15 +120,15 @@ function Contracts() {
                   params={{ eventId: job.id }}
                   className="block rounded-2xl border border-border p-4 transition-colors hover:bg-accent/40"
                 >
-                  <div className="flex items-start justify-between gap-3">
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div className="min-w-0">
                       <p className="truncate font-medium">{job.name}</p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="truncate text-sm text-muted-foreground">
                         {jobTemplate(job.job_type).label}
                         {job.organiser_name ? ` · ${job.organiser_name}` : ""}
                       </p>
                       {job.delivery_date && (
-                        <p className="mt-1 text-xs text-muted-foreground">
+                        <p className="mt-1 truncate text-xs text-muted-foreground">
                           Delivery {new Date(job.delivery_date).toLocaleDateString()}
                         </p>
                       )}
@@ -137,8 +137,8 @@ function Contracts() {
                       variant="outline"
                       className={
                         depositStatus === "Deposit paid"
-                          ? "shrink-0 border-paid/40 text-paid"
-                          : "shrink-0 border-gold text-gold"
+                          ? "sm:shrink-0 border-paid/40 text-paid"
+                          : "sm:shrink-0 border-gold text-gold"
                       }
                     >
                       {depositStatus}

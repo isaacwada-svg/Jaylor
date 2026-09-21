@@ -348,13 +348,13 @@ function Shop() {
               <div className="space-y-3">
                 {requests.map((request) => (
                   <div key={request.id} className="rounded-2xl border border-border p-4">
-                    <div className="flex items-start justify-between gap-3">
+                    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                       <div className="min-w-0">
-                        <p className="font-medium">{request.client_name}</p>
-                        <p className="figures text-sm text-muted-foreground">
+                        <p className="truncate font-medium">{request.client_name}</p>
+                        <p className="figures truncate text-sm text-muted-foreground">
                           {formatPhoneNG(request.phone)}
                         </p>
-                        <p className="mt-1 text-sm text-muted-foreground">
+                        <p className="mt-1 truncate text-sm text-muted-foreground">
                           {request.fabric_source === "customer"
                             ? "Has their own fabric"
                             : "Needs fabric bought"}{" "}
@@ -364,10 +364,14 @@ function Shop() {
                             : "Will measure themselves"}
                         </p>
                         {request.notes && (
-                          <p className="mt-2 text-sm text-muted-foreground">{request.notes}</p>
+                          <p className="mt-2 truncate text-sm text-muted-foreground">
+                            {request.notes}
+                          </p>
                         )}
                       </div>
-                      <Badge variant="outline">{request.status}</Badge>
+                      <Badge variant="outline" className="sm:shrink-0">
+                        {request.status}
+                      </Badge>
                     </div>
                     {canManage && request.status === "new" && (
                       <div className="mt-3 flex gap-2">

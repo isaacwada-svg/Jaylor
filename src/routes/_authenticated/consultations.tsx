@@ -276,14 +276,14 @@ function Consultations() {
           <div className="mt-3 space-y-3">
             {upcoming.map((c) => (
               <div key={c.id} className="rounded-2xl border border-border p-4">
-                <div className="flex items-start justify-between gap-3">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                   <div className="min-w-0">
-                    <p className="font-medium">{clientName(c.client_id)}</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="truncate font-medium">{clientName(c.client_id)}</p>
+                    <p className="truncate text-sm text-muted-foreground">
                       {TYPE_LABELS[c.type] ?? c.type} · {new Date(c.starts_at).toLocaleString()}
                     </p>
                   </div>
-                  <Badge variant="outline" className="border-gold text-gold">
+                  <Badge variant="outline" className="border-gold text-gold sm:shrink-0">
                     {c.status}
                   </Badge>
                 </div>

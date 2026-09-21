@@ -361,17 +361,17 @@ function EventDetail() {
           Events
         </Link>
 
-        <div className="mt-4 flex items-start justify-between gap-3">
-          <div>
-            <h1 className="text-2xl">{event.name}</h1>
-            <p className="mt-1 text-sm text-muted-foreground">
+        <div className="mt-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+          <div className="min-w-0">
+            <h1 className="truncate text-2xl">{event.name}</h1>
+            <p className="mt-1 truncate text-sm text-muted-foreground">
               {jobTemplate(event.job_type).label}
               {" · "}
               {event.event_date ? new Date(event.event_date).toLocaleDateString() : "No date set"}
               {event.fabric_description ? ` · ${event.fabric_description}` : ""}
             </p>
           </div>
-          <div className="flex shrink-0 items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 sm:shrink-0">
             <Badge variant="outline" className="border-gold text-gold">
               {event.status}
             </Badge>
