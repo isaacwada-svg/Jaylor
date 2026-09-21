@@ -31,6 +31,7 @@ import { COMPANY_LINE, ORDER_STATUSES } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
 import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
+import { JOB_LANDING_CONTENT } from "@/lib/job-landing-content";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -211,13 +212,13 @@ function Home() {
               For tailors and fashion houses in Nigeria
             </p>
             <h1 className="mt-3 text-4xl leading-tight lg:text-5xl">
-              Every order tracked.
+              Run your shop.
               <br />
-              Every naira collected.
+              Collect measurements and money from anyone, anywhere.
             </h1>
             <p className="mt-5 max-w-md text-base text-muted-foreground">
-              Jaylor is a calm business app for orders, measurements, payments and WhatsApp
-              reminders, built for how you actually work.
+              Orders, measurements and payments for tailors and fashion houses, plus one link that
+              collects from a whole group or a single client who cannot come in.
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Button asChild size="lg">
@@ -317,6 +318,27 @@ function Home() {
                   <p className="mt-1 text-sm text-muted-foreground">{body}</p>
                 </CardContent>
               </Card>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-y border-border/60 bg-card/40 py-16 lg:py-20">
+        <div className="mx-auto w-full max-w-6xl px-4 lg:px-8">
+          <h2 className="text-center text-2xl lg:text-3xl">What kind of job?</h2>
+          <p className="mx-auto mt-2 max-w-xl text-center text-sm text-muted-foreground">
+            Aso-ebi is the one everyone knows, but the same one link handles any job where people
+            can&apos;t come to you.
+          </p>
+          <div className="mt-8 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+            {JOB_LANDING_CONTENT.map((job) => (
+              <Link key={job.slug} to="/jobs/$slug" params={{ slug: job.slug }}>
+                <Card className="h-full rounded-2xl transition-colors hover:bg-accent/40">
+                  <CardContent className="p-4">
+                    <p className="font-medium">{job.tileLabel}</p>
+                  </CardContent>
+                </Card>
+              </Link>
             ))}
           </div>
         </div>

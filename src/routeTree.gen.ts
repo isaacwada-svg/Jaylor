@@ -41,6 +41,7 @@ import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/
 import { Route as BookHandleRouteImport } from './routes/book.$handle'
 import { Route as DesignTokenRouteImport } from './routes/design.$token'
 import { Route as ETokenRouteImport } from './routes/e.$token'
+import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as PassportTokenRouteImport } from './routes/passport.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
@@ -210,6 +211,11 @@ const ETokenRoute = ETokenRouteImport.update({
   path: '/e/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const JobsSlugRoute = JobsSlugRouteImport.update({
+  id: '/jobs/$slug',
+  path: '/jobs/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const JoinTokenRoute = JoinTokenRouteImport.update({
   id: '/join/$token',
   path: '/join/$token',
@@ -289,6 +295,7 @@ export interface FileRoutesByFullPath {
   '/book/$handle': typeof BookHandleRoute
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
@@ -330,6 +337,7 @@ export interface FileRoutesByTo {
   '/book/$handle': typeof BookHandleRoute
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
@@ -373,6 +381,7 @@ export interface FileRoutesById {
   '/book/$handle': typeof BookHandleRoute
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
+  '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/book/$handle'
     | '/design/$token'
     | '/e/$token'
+    | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
     | '/clients/$clientId'
@@ -457,6 +467,7 @@ export interface FileRouteTypes {
     | '/book/$handle'
     | '/design/$token'
     | '/e/$token'
+    | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
     | '/clients/$clientId'
@@ -499,6 +510,7 @@ export interface FileRouteTypes {
     | '/book/$handle'
     | '/design/$token'
     | '/e/$token'
+    | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
     | '/_authenticated/clients/$clientId'
@@ -531,6 +543,7 @@ export interface RootRouteChildren {
   BookHandleRoute: typeof BookHandleRoute
   DesignTokenRoute: typeof DesignTokenRoute
   ETokenRoute: typeof ETokenRoute
+  JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   PassportTokenRoute: typeof PassportTokenRoute
 }
@@ -761,6 +774,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ETokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/jobs/$slug': {
+      id: '/jobs/$slug'
+      path: '/jobs/$slug'
+      fullPath: '/jobs/$slug'
+      preLoaderRoute: typeof JobsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/join/$token': {
       id: '/join/$token'
       path: '/join/$token'
@@ -885,6 +905,7 @@ const rootRouteChildren: RootRouteChildren = {
   BookHandleRoute: BookHandleRoute,
   DesignTokenRoute: DesignTokenRoute,
   ETokenRoute: ETokenRoute,
+  JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   PassportTokenRoute: PassportTokenRoute,
 }
