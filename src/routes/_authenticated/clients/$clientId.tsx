@@ -7,6 +7,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { ClientForm } from "@/components/jaylor/client-form";
 import { MeasurementsTab } from "@/components/jaylor/measurements-tab";
+import { SendMeasureLinkButton } from "@/components/jaylor/send-measure-link-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -155,6 +156,12 @@ function ClientProfile() {
                 <MessageCircle className="size-4" />
               </a>
             </Button>
+            <SendMeasureLinkButton
+              storeId={client.store_id}
+              clientId={client.id}
+              clientName={client.full_name}
+              clientPhone={client.phone}
+            />
             <Button
               variant="outline"
               size="icon"
