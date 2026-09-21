@@ -27,3 +27,15 @@ export function balanceDueMessage(
 ): string {
   return `Hello ${firstNameOf(clientName)}, your balance for ${garment} at ${storeName} is ${formatMoney(balance)}. Reply STOP to opt out.`;
 }
+
+/** A self-reminder message, tap-to-send to the shop's own WhatsApp number. */
+export function seasonAlertMessage(
+  eventLabel: string,
+  weeksAway: number,
+  suggestion: string | null,
+): string {
+  const whenText =
+    weeksAway <= 0 ? "is this week" : `is in ${weeksAway} week${weeksAway === 1 ? "" : "s"}`;
+  const suggestionLine = suggestion ? ` ${suggestion}` : "";
+  return `Reminder: ${eventLabel} ${whenText}.${suggestionLine}`;
+}

@@ -11,6 +11,7 @@ import { MessageTopupButton } from "@/components/jaylor/message-topup-button";
 import { StoreProfileSettings } from "@/components/jaylor/store-profile-settings";
 import { StoreLocationSettings } from "@/components/jaylor/store-location-settings";
 import { GarmentTypeMappingCard } from "@/components/jaylor/garment-type-mapping-card";
+import { CalendarEventPrefsCard } from "@/components/jaylor/calendar-event-prefs-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -168,6 +169,7 @@ function Billing() {
               consentBenchmarkSharing={currentStore.consent_benchmark_sharing}
             />
             <GarmentTypeMappingCard storeId={currentStore.id} />
+            <CalendarEventPrefsCard storeId={currentStore.id} />
             <PaymentAccountSettings storeId={currentStore.id} tier={tier} />
             <ReferralCard storeId={currentStore.id} referralCode={currentStore.referral_code} />
           </div>

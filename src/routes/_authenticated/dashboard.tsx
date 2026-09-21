@@ -11,6 +11,7 @@ import { LockedFeature } from "@/components/jaylor/locked-feature";
 import { RemindButton } from "@/components/jaylor/remind-button";
 import { CollectionScoreCard } from "@/components/jaylor/collection-score";
 import { DailyWorkPlan } from "@/components/jaylor/daily-work-plan";
+import { ComingUpCard } from "@/components/jaylor/coming-up-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -364,7 +365,8 @@ function Home() {
           </div>
         )}
 
-        <div className="mb-6">
+        <div className="mb-6 space-y-6">
+          <ComingUpCard storeId={storeId} />
           <DailyWorkPlan storeId={storeId} />
         </div>
 
