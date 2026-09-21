@@ -14,4 +14,6 @@
 - [x] AI design selfies are now private: bucket is private, uploads go through the server, images are shown with short-lived signed links.
 - [x] Manual cross-shop access pass (staff-level account, two test shops): no cross-shop reads or writes, no admin data, no tokens beyond the user's own session. Fixed along the way: logged-out visitors can again load public shop pages, seeing only public shop details.
 - [ ] Review remaining database security advisories: two intentionally backend-only tables have no user policies; public token functions and signed-in access helpers require callable security functions; one extension remains in the public schema.
+- [ ] Ad tracking activation: Google Ads connection linked but setup card skipped — reopen google_ads account setup (new account, NGN, Africa/Lagos) when the user is ready; conversion tracking + consent route still to settle before any campaign spends.
+- [ ] Microsoft (Bing) Ads: no Lovable connector — needs the user's UET tag ID from a Microsoft Advertising account, then install the tag and map conversions manually.
 - [ ] (From earlier discussion, not started) Next-step direction for the app: make data live / order creation / publish / polish empty pages — user pivoted to DB work; revisit later.
