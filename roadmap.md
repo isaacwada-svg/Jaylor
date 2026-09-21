@@ -1,6 +1,7 @@
 # Roadmap
 
 ## Done
+- [x] Premium public redesign: Midnight Atelier palette, editorial homepage, premium imagery, refined calculator, pricing, and shared marketing shell.
 - [x] Launch-readiness update: legal copy, verified contact details, truthful proof section, safer WhatsApp allowances, first-party tracking, and private admin analytics.
 - [x] DB-only change set (no UI) — applied and verified:
   - [x] `stores`: cover_url, legal_line (default Jaylor RC line), timezone (Africa/Lagos), garment_types text[], sews_for (female/male/both), accent_color, onboarding_completed

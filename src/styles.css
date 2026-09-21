@@ -22,6 +22,8 @@
   --font-display: "Fraunces", ui-serif, Georgia, serif;
   --font-heading: "Fraunces", ui-serif, Georgia, serif;
   --font-sans: "Plus Jakarta Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-editorial: "Instrument Serif", ui-serif, Georgia, serif;
+  --font-work: "Work Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -52,6 +54,7 @@
   --color-gold-soft: var(--gold-soft);
   --color-owed: var(--owed);
   --color-paid: var(--paid);
+  --color-burgundy: var(--burgundy);
 
   --color-chart-1: var(--chart-1);
   --color-chart-2: var(--chart-2);
@@ -81,6 +84,7 @@
   --gold-soft: oklch(0.88 0.05 88);
   --owed: oklch(0.53 0.138 42);
   --paid: oklch(0.5 0.095 162);
+  --burgundy: oklch(0.34 0.1 3);
 
   --background: var(--ivory);
   --foreground: var(--ink);
@@ -116,6 +120,75 @@
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: oklch(0.91 0.016 85);
   --sidebar-ring: var(--gold);
+}
+
+/* Public-facing editorial system — Midnight Atelier. */
+.premium-public {
+  --ink: oklch(0.18 0.038 294);
+  --ivory: oklch(0.965 0.012 84);
+  --surface: oklch(0.215 0.035 294);
+  --gold: oklch(0.69 0.085 80);
+  --gold-soft: oklch(0.79 0.055 80);
+  --burgundy: oklch(0.34 0.105 4);
+  --background: var(--ink);
+  --foreground: var(--ivory);
+  --card: var(--surface);
+  --card-foreground: var(--ivory);
+  --popover: var(--surface);
+  --popover-foreground: var(--ivory);
+  --primary: var(--ivory);
+  --primary-foreground: var(--ink);
+  --secondary: oklch(0.25 0.035 294);
+  --secondary-foreground: var(--ivory);
+  --muted: oklch(0.245 0.03 294);
+  --muted-foreground: oklch(0.72 0.018 82);
+  --accent: var(--gold);
+  --accent-foreground: var(--ink);
+  --border: oklch(0.4 0.025 294 / 0.55);
+  --input: oklch(0.4 0.025 294 / 0.7);
+  --ring: var(--gold);
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-work);
+}
+
+.premium-public h1,
+.premium-public h2,
+.premium-public h3,
+.premium-public .font-heading,
+.premium-public .font-display {
+  font-family: var(--font-editorial);
+  font-weight: 400;
+  letter-spacing: 0;
+}
+
+.premium-hero-shade-x {
+  background: linear-gradient(
+    90deg,
+    var(--background) 0%,
+    color-mix(in oklab, var(--background) 92%, transparent) 34%,
+    color-mix(in oklab, var(--background) 36%, transparent) 68%,
+    color-mix(in oklab, var(--background) 12%, transparent) 100%
+  );
+}
+
+.premium-hero-shade-y {
+  background: linear-gradient(0deg, var(--background) 0%, transparent 40%);
+}
+
+@keyframes editorial-rise {
+  from {
+    opacity: 0;
+    transform: translateY(18px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility editorial-rise {
+  animation: editorial-rise 0.8s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .dark {
