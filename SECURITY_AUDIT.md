@@ -1090,6 +1090,19 @@ genuine error inside `effective_plan_code` by silently recomputing the plan.
 
 ### L8 — `anon` can insert unlimited leads and forge analytics events
 
+> **Status: partially fixed, delivered pending apply** (migration
+> `20260921190000_...sql`). Added a `BEFORE INSERT` rate-limit trigger to
+> `leads` using the same `check_rate_limit` RPC `sew_requests`/
+> `consultation_requests` already use (5 per hour, keyed on whichever of
+> phone/email/name was actually submitted, since `leads` has no `store_id`
+> to bucket by and both phone and email are optional — a determined
+> attacker varying every field can still get through, but naive flooding is
+> stopped, which matches the Low severity here). The `analytics_events`
+> half is **not changed**: per this finding's own recommendation, those
+> figures are treated as indicative rather than authoritative — moving
+> `signup_completed` to a server-side write would mean hooking `auth.users`,
+> disproportionate effort for a Low-severity, internal-metrics-only issue.
+
 - **Area:** Database access / public write surface
 - **Severity:** Low
 - **Location:** policy `Anyone can submit a lead` on `public.leads`
