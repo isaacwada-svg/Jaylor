@@ -138,6 +138,27 @@ export type Database = {
           },
         ]
       }
+      ai_response_cache: {
+        Row: {
+          created_at: string
+          feature_key: string
+          input_hash: string
+          output: Json
+        }
+        Insert: {
+          created_at?: string
+          feature_key: string
+          input_hash: string
+          output: Json
+        }
+        Update: {
+          created_at?: string
+          feature_key?: string
+          input_hash?: string
+          output?: Json
+        }
+        Relationships: []
+      }
       analytics_events: {
         Row: {
           event_name: string
@@ -953,6 +974,76 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      garment_type_aliases: {
+        Row: {
+          alias_text: string
+          created_at: string
+          garment_type_code: string
+          id: string
+          store_id: string
+        }
+        Insert: {
+          alias_text: string
+          created_at?: string
+          garment_type_code: string
+          id?: string
+          store_id: string
+        }
+        Update: {
+          alias_text?: string
+          created_at?: string
+          garment_type_code?: string
+          id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "garment_type_aliases_garment_type_code_fkey"
+            columns: ["garment_type_code"]
+            isOneToOne: false
+            referencedRelation: "garment_types"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "garment_type_aliases_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "garment_type_aliases_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      garment_types: {
+        Row: {
+          category: string
+          code: string
+          is_active: boolean
+          name: string
+          sort_order: number
+        }
+        Insert: {
+          category: string
+          code: string
+          is_active?: boolean
+          name: string
+          sort_order?: number
+        }
+        Update: {
+          category?: string
+          code?: string
+          is_active?: boolean
+          name?: string
+          sort_order?: number
+        }
+        Relationships: []
       }
       leads: {
         Row: {
@@ -2695,240 +2786,6 @@ export type Database = {
           },
         ]
       }
-      ai_response_cache: {
-        Row: {
-          created_at: string
-          feature_key: string
-          input_hash: string
-          output: Json
-        }
-        Insert: {
-          created_at?: string
-          feature_key: string
-          input_hash: string
-          output: Json
-        }
-        Update: {
-          created_at?: string
-          feature_key?: string
-          input_hash?: string
-          output?: Json
-        }
-        Relationships: []
-      }
-      garment_types: {
-        Row: {
-          category: string
-          code: string
-          is_active: boolean
-          name: string
-          sort_order: number
-        }
-        Insert: {
-          category: string
-          code: string
-          is_active?: boolean
-          name: string
-          sort_order?: number
-        }
-        Update: {
-          category?: string
-          code?: string
-          is_active?: boolean
-          name?: string
-          sort_order?: number
-        }
-        Relationships: []
-      }
-      garment_type_aliases: {
-        Row: {
-          alias_text: string
-          created_at: string
-          garment_type_code: string
-          id: string
-          store_id: string
-        }
-        Insert: {
-          alias_text: string
-          created_at?: string
-          garment_type_code: string
-          id?: string
-          store_id: string
-        }
-        Update: {
-          alias_text?: string
-          created_at?: string
-          garment_type_code?: string
-          id?: string
-          store_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "garment_type_aliases_garment_type_code_fkey"
-            columns: ["garment_type_code"]
-            isOneToOne: false
-            referencedRelation: "garment_types"
-            referencedColumns: ["code"]
-          },
-          {
-            foreignKeyName: "garment_type_aliases_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "garment_type_aliases_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      calendar_event_defs: {
-        Row: {
-          default_enabled: boolean
-          easter_offset_days: number | null
-          fixed_day: number | null
-          fixed_month: number | null
-          hijri_day: number | null
-          hijri_month: number | null
-          key: string
-          kind: string
-          label: string
-          lead_weeks_message: string | null
-          nth_weekday_dow: number | null
-          nth_weekday_month: number | null
-          nth_weekday_n: number | null
-          sort_order: number
-        }
-        Insert: {
-          default_enabled?: boolean
-          easter_offset_days?: number | null
-          fixed_day?: number | null
-          fixed_month?: number | null
-          hijri_day?: number | null
-          hijri_month?: number | null
-          key: string
-          kind: string
-          label: string
-          lead_weeks_message?: string | null
-          nth_weekday_dow?: number | null
-          nth_weekday_month?: number | null
-          nth_weekday_n?: number | null
-          sort_order?: number
-        }
-        Update: {
-          default_enabled?: boolean
-          easter_offset_days?: number | null
-          fixed_day?: number | null
-          fixed_month?: number | null
-          hijri_day?: number | null
-          hijri_month?: number | null
-          key?: string
-          kind?: string
-          label?: string
-          lead_weeks_message?: string | null
-          nth_weekday_dow?: number | null
-          nth_weekday_month?: number | null
-          nth_weekday_n?: number | null
-          sort_order?: number
-        }
-        Relationships: []
-      }
-      calendar_event_overrides: {
-        Row: {
-          created_at: string
-          event_date: string
-          event_end_date: string | null
-          id: string
-          key: string
-          store_id: string | null
-          year: number
-        }
-        Insert: {
-          created_at?: string
-          event_date: string
-          event_end_date?: string | null
-          id?: string
-          key: string
-          store_id?: string | null
-          year: number
-        }
-        Update: {
-          created_at?: string
-          event_date?: string
-          event_end_date?: string | null
-          id?: string
-          key?: string
-          store_id?: string | null
-          year?: number
-        }
-        Relationships: [
-          {
-            foreignKeyName: "calendar_event_overrides_key_fkey"
-            columns: ["key"]
-            isOneToOne: false
-            referencedRelation: "calendar_event_defs"
-            referencedColumns: ["key"]
-          },
-          {
-            foreignKeyName: "calendar_event_overrides_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "calendar_event_overrides_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      store_calendar_events: {
-        Row: {
-          enabled: boolean
-          event_key: string
-          store_id: string
-        }
-        Insert: {
-          enabled?: boolean
-          event_key: string
-          store_id: string
-        }
-        Update: {
-          enabled?: boolean
-          event_key?: string
-          store_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "store_calendar_events_event_key_fkey"
-            columns: ["event_key"]
-            isOneToOne: false
-            referencedRelation: "calendar_event_defs"
-            referencedColumns: ["key"]
-          },
-          {
-            foreignKeyName: "store_calendar_events_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "store_calendar_events_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores_public"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
     }
     Views: {
       order_balances: {
@@ -3119,14 +2976,8 @@ export type Database = {
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_stores: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
-      admin_set_ai_budget: { Args: { p_budget_usd: number }; Returns: undefined }
-      admin_set_calendar_override: {
-        Args: {
-          p_event_date: string
-          p_event_end_date?: string
-          p_key: string
-          p_year: number
-        }
+      admin_set_ai_budget: {
+        Args: { p_budget_usd: number }
         Returns: undefined
       }
       admin_store_ai_usage: { Args: { p_since?: string }; Returns: Json }
@@ -3146,11 +2997,6 @@ export type Database = {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
       }
-      city_price_benchmark: {
-        Args: { p_garment_type_code: string; p_store_id: string }
-        Returns: Json
-      }
-      client_payment_reliability: { Args: { p_client_id: string }; Returns: Json }
       check_feature_limit: {
         Args: { p_feature: string; p_quantity?: number; p_store_id: string }
         Returns: Json
@@ -3164,11 +3010,18 @@ export type Database = {
         }
         Returns: boolean
       }
+      city_price_benchmark: {
+        Args: { p_garment_type_code: string; p_store_id: string }
+        Returns: Json
+      }
+      client_payment_reliability: {
+        Args: { p_client_id: string }
+        Returns: Json
+      }
       decline_passport_share: {
         Args: { p_share_id: string }
         Returns: undefined
       }
-      easter_date: { Args: { p_year: number }; Returns: string }
       effective_plan_code: { Args: { _store_id: string }; Returns: string }
       feature_usage: {
         Args: { p_feature: string; p_store_id: string }
@@ -3216,10 +3069,6 @@ export type Database = {
         Args: { p_column: string; p_store_id: string }
         Returns: undefined
       }
-      islamic_to_gregorian: {
-        Args: { p_day: number; p_month: number; p_year: number }
-        Returns: string
-      }
       is_platform_admin: { Args: never; Returns: boolean }
       is_store_member: { Args: { _store_id: string }; Returns: boolean }
       issue_measurement_passport: {
@@ -3246,20 +3095,12 @@ export type Database = {
         }
         Returns: undefined
       }
-      next_calendar_occurrence: {
-        Args: { p_from_date?: string; p_key: string; p_store_id?: string }
-        Returns: { event_date: string; event_end_date: string | null }[]
-      }
-      next_islamic_event: {
-        Args: { p_from_date?: string; p_hijri_day: number; p_hijri_month: number }
-        Returns: string
-      }
-      nth_weekday_date: {
-        Args: { p_dow: number; p_month: number; p_n: number; p_year: number }
-        Returns: string
-      }
       resolve_garment_type_mapping: {
-        Args: { p_alias_text: string; p_garment_type_code: string; p_store_id: string }
+        Args: {
+          p_alias_text: string
+          p_garment_type_code: string
+          p_store_id: string
+        }
         Returns: undefined
       }
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
@@ -3276,25 +3117,11 @@ export type Database = {
         Args: { p_style_key: string; p_token: string }
         Returns: undefined
       }
-      set_store_calendar_event_enabled: {
-        Args: { p_enabled: boolean; p_key: string; p_store_id: string }
-        Returns: undefined
-      }
       unmapped_garment_type_names: {
         Args: { p_store_id: string }
-        Returns: { garment_type: string; order_count: number }[]
-      }
-      upcoming_calendar_events: {
-        Args: { p_store_id: string; p_weeks_ahead?: number }
         Returns: {
-          days_away: number
-          event_date: string
-          event_end_date: string | null
-          event_key: string
-          label: string
-          last_year_order_count: number
-          last_year_top_garment_types: string | null
-          lead_weeks_message: string | null
+          garment_type: string
+          order_count: number
         }[]
       }
     }
