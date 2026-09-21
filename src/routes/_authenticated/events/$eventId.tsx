@@ -29,10 +29,11 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStore } from "@/lib/store-context";
-import { formatMoney } from "@/lib/jaylor";
+import { effectiveTier, formatMoney, jaylorPayFeePercent } from "@/lib/jaylor";
 import { normalizePhoneNG, formatPhoneNG } from "@/lib/phone";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
+import { jobTemplate } from "@/lib/job-templates";
 
 export const Route = createFileRoute("/_authenticated/events/$eventId")({
   staticData: { sitemap: false },
@@ -56,8 +57,9 @@ const STATUSES: { value: string; label: string }[] = [
 
 function EventDetail() {
   const { eventId } = Route.useParams();
-  const { currentRole } = useStore();
+  const { currentStore, currentRole } = useStore();
   const canManage = currentRole === "owner" || currentRole === "manager";
+  const tier = effectiveTier(currentStore);
   const queryClient = useQueryClient();
 
   const [addOpen, setAddOpen] = useState(false);
@@ -90,7 +92,10 @@ function EventDetail() {
   });
 
   const styles = useMemo(
-    () => (Array.isArray(event?.styles) ? (event.styles as { key: string; label: string }[]) : []),
+    () =>
+      Array.isArray(event?.styles)
+        ? (event.styles as { key: string; label: string; price: number | null }[])
+        : [],
     [event],
   );
   const styleLabel = (key: string | null) =>
@@ -104,6 +109,38 @@ function EventDetail() {
     }
     return base;
   }, [participants]);
+
+  const priceTiers = useMemo(
+    () =>
+      Array.isArray(event?.price_tiers)
+        ? (event.price_tiers as { minQty: number; maxQty: number | null; price: number }[])
+        : [],
+    [event],
+  );
+  const tierPrice = useMemo(() => {
+    if (event?.pricing_mode !== "quantity_tiers" || priceTiers.length === 0) return null;
+    const count = (participants ?? []).length;
+    const tier = [...priceTiers]
+      .sort((a, b) => a.minQty - b.minQty)
+      .find((t) => count >= t.minQty && (t.maxQty == null || count <= t.maxQty));
+    return tier?.price ?? null;
+  }, [event, priceTiers, participants]);
+
+  function amountDueFor(participant: ParticipantRow) {
+    const style = styles.find((s) => s.key === participant.style_key);
+    return style?.price ?? tierPrice ?? event?.price_per_person ?? 0;
+  }
+
+  const moneySummary = useMemo(() => {
+    const rows = participants ?? [];
+    const expected = rows.reduce((sum, p) => sum + amountDueFor(p), 0);
+    const collected = rows.reduce((sum, p) => sum + p.paid_amount, 0);
+    const outstanding = Math.max(0, expected - collected);
+    const feePercent = jaylorPayFeePercent(tier);
+    const fee = Math.round(collected * (feePercent / 100));
+    return { expected, collected, outstanding, fee, feePercent };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [participants, styles, tierPrice, event, tier]);
 
   function invalidate() {
     queryClient.invalidateQueries({ queryKey: ["event-participants", eventId] });
@@ -167,6 +204,19 @@ function EventDetail() {
     setPaidAmountDraft(String(participant.paid_amount));
   }
 
+  async function toggleSponsored(participant: ParticipantRow) {
+    try {
+      const { error } = await supabase
+        .from("event_participants")
+        .update({ is_sponsored: !participant.is_sponsored })
+        .eq("id", participant.id);
+      if (error) throw error;
+      invalidate();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update this guest"));
+    }
+  }
+
   async function savePaidAmount() {
     if (!payingParticipant) return;
     try {
@@ -227,6 +277,8 @@ function EventDetail() {
           <div>
             <h1 className="text-2xl">{event.name}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
+              {jobTemplate(event.job_type).label}
+              {" · "}
               {event.event_date ? new Date(event.event_date).toLocaleDateString() : "No date set"}
               {event.fabric_description ? ` · ${event.fabric_description}` : ""}
             </p>
@@ -245,6 +297,52 @@ function EventDetail() {
               <p className="mt-1 text-xs text-muted-foreground">{s.label}</p>
             </div>
           ))}
+        </div>
+
+        <div className="mt-6 rounded-2xl border border-border p-4">
+          <p className="text-sm font-medium">Money summary</p>
+          {tierPrice != null && (
+            <p className="mt-1 text-xs text-muted-foreground">
+              Current price band: {formatMoney(tierPrice)} per person at{" "}
+              {(participants ?? []).length} {(participants ?? []).length === 1 ? "guest" : "guests"}
+            </p>
+          )}
+          <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Expected</p>
+              <p className="figures mt-0.5 font-medium">{formatMoney(moneySummary.expected)}</p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Collected</p>
+              <p className="figures mt-0.5 font-medium text-paid">
+                {formatMoney(moneySummary.collected)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                Outstanding
+              </p>
+              <p className="figures mt-0.5 font-medium text-owed">
+                {formatMoney(moneySummary.outstanding)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                Our fee (est.)
+              </p>
+              <p className="figures mt-0.5 font-medium">
+                {formatMoney(moneySummary.fee)}{" "}
+                <span className="text-xs text-muted-foreground">({moneySummary.feePercent}%)</span>
+              </p>
+            </div>
+          </div>
+          {event.payer_mode !== "each_pays" && (
+            <p className="mt-3 text-xs text-muted-foreground">
+              {event.payer_mode === "single_payer"
+                ? "One payer covers this whole job."
+                : "Mixed: mark which guests the payer is covering below."}
+            </p>
+          )}
         </div>
 
         <div className="mt-8 flex items-center justify-between gap-3">
@@ -331,6 +429,15 @@ function EventDetail() {
                         Remind
                       </a>
                     </Button>
+                    {event.payer_mode === "mixed" && (
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => toggleSponsored(participant)}
+                      >
+                        {participant.is_sponsored ? "Payer covers this" : "Pays themself"}
+                      </Button>
+                    )}
                   </div>
                 )}
               </div>

@@ -11,6 +11,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
+import { getJobExtras, setParticipantSize } from "@/lib/jobs.functions";
 
 export const Route = createFileRoute("/e/$token")({
   staticData: { sitemap: false },
@@ -80,6 +81,7 @@ function GuestEventPage() {
   const { token } = Route.useParams();
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
+  const [showMeasureFallback, setShowMeasureFallback] = useState(false);
 
   const { data, isLoading } = useQuery({
     queryKey: ["guest-participant", token],
@@ -90,8 +92,26 @@ function GuestEventPage() {
     },
   });
 
+  const { data: extras } = useQuery({
+    queryKey: ["job-extras", token],
+    queryFn: () => getJobExtras({ data: { token } }),
+  });
+
   async function refetch() {
     await queryClient.invalidateQueries({ queryKey: ["guest-participant", token] });
+    await queryClient.invalidateQueries({ queryKey: ["job-extras", token] });
+  }
+
+  async function chooseSize(sizeKey: string) {
+    setBusy(true);
+    try {
+      await setParticipantSize({ data: { token, sizeKey } });
+      await refetch();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not save your size"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function chooseStyle(styleKey: string) {
@@ -155,7 +175,11 @@ function GuestEventPage() {
   const statusIndex = Math.max(0, STATUS_KEYS.indexOf(participant.status));
   const whatsappTarget = event.store_whatsapp;
   const selectedStyle = event.styles.find((s) => s.key === participant.style_key);
-  const amountDue = selectedStyle?.price ?? event.price_per_person ?? null;
+  const tierPrice = extras?.pricingMode === "quantity_tiers" ? extras.currentTierPrice : null;
+  const amountDue = selectedStyle?.price ?? tierPrice ?? event.price_per_person ?? null;
+  const usesSizeChart =
+    !!extras && extras.collectionMode === "sizes" && extras.sizeChart.length > 0;
+  const sponsored = !!extras && extras.payerMode !== "each_pays" && extras.isSponsored;
 
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
@@ -213,35 +237,68 @@ function GuestEventPage() {
 
           <StitchDivider className="my-5" />
 
-          <div>
-            <p className="text-sm font-medium">Your measurements</p>
-            <div className="mt-2 grid grid-cols-2 gap-2">
+          {extras && usesSizeChart && !showMeasureFallback ? (
+            <div>
+              <p className="text-sm font-medium">Choose your size</p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                {extras.sizeChart.map((size) => (
+                  <button
+                    key={size.key}
+                    type="button"
+                    disabled={busy}
+                    onClick={() => chooseSize(size.key)}
+                    className={`rounded-xl border px-3 py-2 text-left text-sm ${
+                      extras.sizeKey === size.key
+                        ? "border-gold bg-accent"
+                        : "border-border text-muted-foreground"
+                    }`}
+                  >
+                    <span className="block text-foreground">{size.label}</span>
+                    <span className="block text-xs text-muted-foreground">
+                      Chest {size.chest} · Waist {size.waist} · Length {size.length}
+                    </span>
+                  </button>
+                ))}
+              </div>
               <button
                 type="button"
-                disabled={busy}
-                onClick={() => chooseMeasurement("self")}
-                className={`rounded-xl border px-3 py-2 text-sm ${
-                  participant.measurement_choice === "self"
-                    ? "border-gold bg-accent"
-                    : "border-border text-muted-foreground"
-                }`}
+                onClick={() => setShowMeasureFallback(true)}
+                className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
               >
-                I&apos;ll come in to be measured
-              </button>
-              <button
-                type="button"
-                disabled={busy}
-                onClick={() => chooseMeasurement("book")}
-                className={`rounded-xl border px-3 py-2 text-sm ${
-                  participant.measurement_choice === "book"
-                    ? "border-gold bg-accent"
-                    : "border-border text-muted-foreground"
-                }`}
-              >
-                I&apos;ve already sent my measurements
+                My size isn&apos;t listed — take my measurements instead
               </button>
             </div>
-          </div>
+          ) : (
+            <div>
+              <p className="text-sm font-medium">Your measurements</p>
+              <div className="mt-2 grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => chooseMeasurement("self")}
+                  className={`rounded-xl border px-3 py-2 text-sm ${
+                    participant.measurement_choice === "self"
+                      ? "border-gold bg-accent"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  I&apos;ll come in to be measured
+                </button>
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() => chooseMeasurement("book")}
+                  className={`rounded-xl border px-3 py-2 text-sm ${
+                    participant.measurement_choice === "book"
+                      ? "border-gold bg-accent"
+                      : "border-border text-muted-foreground"
+                  }`}
+                >
+                  I&apos;ve already sent my measurements
+                </button>
+              </div>
+            </div>
+          )}
 
           <StitchDivider className="my-5" />
 
@@ -256,7 +313,11 @@ function GuestEventPage() {
               <span className="text-muted-foreground">Paid so far</span>
               <span className="figures text-paid">{formatMoney(participant.paid_amount)}</span>
             </div>
-            {whatsappTarget ? (
+            {sponsored ? (
+              <p className="mt-3 text-xs text-muted-foreground">
+                Your organiser is covering this order — no payment needed from you.
+              </p>
+            ) : whatsappTarget ? (
               <Button asChild className="mt-3 w-full">
                 <a
                   href={whatsappLink(

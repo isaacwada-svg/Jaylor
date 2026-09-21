@@ -86,6 +86,18 @@ export function effectiveTier(
   return planCodeToTier(store.plan_code);
 }
 
+/** Jaylor Pay platform fee percent by tier, mirroring supabase/functions/_shared/plan.ts. */
+export function jaylorPayFeePercent(tier: Tier): number {
+  switch (tier) {
+    case "Business":
+      return 0.7;
+    case "Custom":
+      return 1; // negotiated elsewhere; default conservatively to Growth's rate
+    default:
+      return tier === "Free" ? 1.5 : 1;
+  }
+}
+
 /** Age in whole years as of today, from an ISO date string. */
 export function ageInYears(birthday: string | null | undefined): number | null {
   if (!birthday) return null;

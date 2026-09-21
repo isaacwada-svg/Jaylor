@@ -19,6 +19,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/u
 type EventRow = Tables<"events">;
 
 type StyleRow = { key: string; label: string; price: string };
+type SizeRow = { key: string; label: string; chest: string; waist: string; length: string };
+type TierRow = { minQty: string; maxQty: string; price: string };
 
 function slugify(value: string) {
   return value
@@ -53,6 +55,10 @@ export function EventForm({
   const [measurementDeadline, setMeasurementDeadline] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
   const [styles, setStyles] = useState<StyleRow[]>([{ key: "", label: "", price: "" }]);
+  const [sizes, setSizes] = useState<SizeRow[]>([
+    { key: "", label: "", chest: "", waist: "", length: "" },
+  ]);
+  const [tiers, setTiers] = useState<TierRow[]>([{ minQty: "1", maxQty: "", price: "" }]);
   const [busy, setBusy] = useState(false);
 
   useEffect(() => {
@@ -68,6 +74,8 @@ export function EventForm({
     setMeasurementDeadline("");
     setDeliveryDate("");
     setStyles([{ key: "", label: "", price: "" }]);
+    setSizes([{ key: "", label: "", chest: "", waist: "", length: "" }]);
+    setTiers([{ minQty: "1", maxQty: "", price: "" }]);
   }, [open]);
 
   function updateStyle(index: number, patch: Partial<StyleRow>) {
@@ -80,6 +88,30 @@ export function EventForm({
 
   function removeStyleRow(index: number) {
     setStyles((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateSize(index: number, patch: Partial<SizeRow>) {
+    setSizes((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
+  }
+
+  function addSizeRow() {
+    setSizes((prev) => [...prev, { key: "", label: "", chest: "", waist: "", length: "" }]);
+  }
+
+  function removeSizeRow(index: number) {
+    setSizes((prev) => prev.filter((_, i) => i !== index));
+  }
+
+  function updateTier(index: number, patch: Partial<TierRow>) {
+    setTiers((prev) => prev.map((t, i) => (i === index ? { ...t, ...patch } : t)));
+  }
+
+  function addTierRow() {
+    setTiers((prev) => [...prev, { minQty: "", maxQty: "", price: "" }]);
+  }
+
+  function removeTierRow(index: number) {
+    setTiers((prev) => prev.filter((_, i) => i !== index));
   }
 
   async function handleSubmit(event: FormEvent) {
@@ -98,6 +130,30 @@ export function EventForm({
           return { key, label: s.label.trim(), price: s.price.trim() ? Number(s.price) : null };
         });
 
+      const usedSizeKeys = new Set<string>();
+      const sizeList = sizes
+        .filter((s) => s.label.trim())
+        .map((s) => {
+          let key = slugify(s.label);
+          while (usedSizeKeys.has(key)) key = `${key}-2`;
+          usedSizeKeys.add(key);
+          return {
+            key,
+            label: s.label.trim(),
+            chest: s.chest.trim(),
+            waist: s.waist.trim(),
+            length: s.length.trim(),
+          };
+        });
+
+      const tierList = tiers
+        .filter((t) => t.minQty.trim() && t.price.trim())
+        .map((t) => ({
+          minQty: Number(t.minQty),
+          maxQty: t.maxQty.trim() ? Number(t.maxQty) : null,
+          price: Number(t.price),
+        }));
+
       const { data: created, error } = await supabase
         .from("events")
         .insert({
@@ -113,6 +169,8 @@ export function EventForm({
           organiser_phone: organiserPhone.trim() || null,
           fabric_description: fabricDescription.trim() || null,
           styles: styleList,
+          size_chart: sizeList,
+          price_tiers: tierList,
           price_per_person: pricePerPerson.trim() ? Number(pricePerPerson) : null,
           deposit_amount: depositAmount.trim() ? Number(depositAmount) : null,
           measurement_deadline: measurementDeadline || null,
@@ -217,39 +275,132 @@ export function EventForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label>Styles on offer</Label>
+      {template?.collectionMode === "sizes" && (
         <div className="space-y-2">
-          {styles.map((style, index) => (
-            <div key={index} className="flex items-center gap-2">
-              <Input
-                value={style.label}
-                onChange={(e) => updateStyle(index, { label: e.target.value })}
-                placeholder="Style name"
-                className="flex-1"
-              />
-              <MoneyInput
-                value={style.price}
-                onChange={(v) => updateStyle(index, { price: v })}
-                className="w-32"
-              />
-              <Button
-                type="button"
-                variant="ghost"
-                size="icon"
-                onClick={() => removeStyleRow(index)}
-                aria-label="Remove style"
-              >
-                <Trash2 className="size-4 text-owed" />
-              </Button>
-            </div>
-          ))}
+          <Label>Size chart</Label>
+          <div className="space-y-2">
+            {sizes.map((size, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={size.label}
+                  onChange={(e) => updateSize(index, { label: e.target.value })}
+                  placeholder="Size (e.g. Small)"
+                  className="w-28"
+                />
+                <Input
+                  value={size.chest}
+                  onChange={(e) => updateSize(index, { chest: e.target.value })}
+                  placeholder="Chest"
+                  className="flex-1"
+                />
+                <Input
+                  value={size.waist}
+                  onChange={(e) => updateSize(index, { waist: e.target.value })}
+                  placeholder="Waist"
+                  className="flex-1"
+                />
+                <Input
+                  value={size.length}
+                  onChange={(e) => updateSize(index, { length: e.target.value })}
+                  placeholder="Length"
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeSizeRow(index)}
+                  aria-label="Remove size"
+                >
+                  <Trash2 className="size-4 text-owed" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={addSizeRow}>
+            <Plus className="size-4" />
+            Add a size
+          </Button>
         </div>
-        <Button type="button" variant="outline" size="sm" onClick={addStyleRow}>
-          <Plus className="size-4" />
-          Add a style
-        </Button>
-      </div>
+      )}
+
+      {template?.pricingMode === "quantity_tiers" ? (
+        <div className="space-y-2">
+          <Label>Price bands (by number of people)</Label>
+          <div className="space-y-2">
+            {tiers.map((tier, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={tier.minQty}
+                  onChange={(e) => updateTier(index, { minQty: e.target.value })}
+                  placeholder="From"
+                  inputMode="numeric"
+                  className="w-20"
+                />
+                <Input
+                  value={tier.maxQty}
+                  onChange={(e) => updateTier(index, { maxQty: e.target.value })}
+                  placeholder="To (blank = +)"
+                  inputMode="numeric"
+                  className="w-28"
+                />
+                <MoneyInput
+                  value={tier.price}
+                  onChange={(v) => updateTier(index, { price: v })}
+                  className="flex-1"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeTierRow(index)}
+                  aria-label="Remove band"
+                >
+                  <Trash2 className="size-4 text-owed" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={addTierRow}>
+            <Plus className="size-4" />
+            Add a band
+          </Button>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          <Label>Styles on offer</Label>
+          <div className="space-y-2">
+            {styles.map((style, index) => (
+              <div key={index} className="flex items-center gap-2">
+                <Input
+                  value={style.label}
+                  onChange={(e) => updateStyle(index, { label: e.target.value })}
+                  placeholder="Style name"
+                  className="flex-1"
+                />
+                <MoneyInput
+                  value={style.price}
+                  onChange={(v) => updateStyle(index, { price: v })}
+                  className="w-32"
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => removeStyleRow(index)}
+                  aria-label="Remove style"
+                >
+                  <Trash2 className="size-4 text-owed" />
+                </Button>
+              </div>
+            ))}
+          </div>
+          <Button type="button" variant="outline" size="sm" onClick={addStyleRow}>
+            <Plus className="size-4" />
+            Add a style
+          </Button>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
