@@ -794,6 +794,30 @@ this is stated explicitly in "How verified".
 
 ### L3 — Audit logging exists but captures nothing
 
+> **Status: fix delivered, not yet applied** (migration `20260921150000_...sql`).
+> `log_audit_event(p_store_id, p_action, p_entity, p_entity_id, p_metadata)`
+> already existed and was already called from one place (granting support
+> access in `privacy.tsx`) — reused as-is (its body wasn't touched, only its
+> public contract), now called from new `AFTER` triggers on `store_members`
+> (member added/role changed/removed), `payment_accounts` (payout account
+> added/updated/removed), `support_grants` (granted/revoked — the redundant
+> manual call in `privacy.tsx` was removed in favour of the trigger), and
+> `stores` (plan changed, complementing L1's blocking trigger). Triggers
+> guarantee coverage regardless of which code path performs the write,
+> rather than depending on every future call site remembering to log; each
+> wraps its call in its own exception handler so logging can never block the
+> underlying operation. Client/order deletion covered the same way
+> (`AFTER DELETE` on `clients`/`orders`). Data export isn't a table write, so
+> `privacy.tsx`'s `exportAllData` now calls `log_audit_event` directly with
+> a row-count-per-table metadata payload after the export completes.
+> Platform-admin RPC calls already have a working read path
+> (`admin_list_audit_logs`, `SECURITY DEFINER`, checked live) — logging
+> *reads* by `admin_list_stores`/`admin_platform_stats`/etc. is not yet
+> done, since it would mean editing those functions' unknown existing
+> bodies; flagged as a smaller remaining gap, not attempted here. The
+> client-forgeable-actor_id risk this finding also flagged is already closed
+> by L2 (`authenticated` now has zero direct grants on `audit_logs`).
+
 - **Area:** Audit logging / NDPA readiness
 - **Severity:** High
 - **Location:** table `public.audit_logs`; function `log_audit_event(uuid, text, text, uuid, jsonb)`

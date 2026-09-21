@@ -61,13 +61,6 @@ function Privacy() {
         expires_at: expiresAt,
       });
       if (error) throw error;
-      await supabase.rpc("log_audit_event", {
-        p_store_id: storeId,
-        p_action: "support_access_granted",
-        p_entity: "support_grants",
-        p_entity_id: null as unknown as string,
-        p_metadata: { hours },
-      });
       toast.success(`Support access granted for ${hours} hours`);
       queryClient.invalidateQueries({ queryKey: ["support-grants", storeId] });
     } catch (error) {
@@ -103,9 +96,11 @@ function Privacy() {
         "expenses",
       ] as const;
 
+      const rowCounts: Record<string, number> = {};
       for (const table of tables) {
         const { data, error } = await supabase.from(table).select("*").eq("store_id", storeId);
         if (error) throw error;
+        rowCounts[table] = data?.length ?? 0;
         if (!data || data.length === 0) continue;
         const headers = Object.keys(data[0] as Record<string, unknown>);
         const rows = [
@@ -118,6 +113,13 @@ function Privacy() {
         // stagger downloads slightly so the browser doesn't block multiple auto-downloads
         await new Promise((resolve) => setTimeout(resolve, 300));
       }
+      await supabase.rpc("log_audit_event", {
+        p_store_id: storeId,
+        p_action: "data_exported",
+        p_entity: "store",
+        p_entity_id: storeId,
+        p_metadata: rowCounts,
+      });
       toast.success("Export complete — check your downloads");
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not export your data"));
