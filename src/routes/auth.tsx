@@ -177,11 +177,7 @@ function AuthPage() {
           setBusy(false);
           return;
         }
-        const { data: resolvedEmail, error: resolveError } = await supabase.rpc(
-          "resolve_login_email",
-          { p_phone: phone },
-        );
-        if (resolveError) throw resolveError;
+        const { email: resolvedEmail } = await resolveLoginEmail({ data: { phone } });
         if (!resolvedEmail) {
           toast.error("We couldn't find an account with that WhatsApp number");
           setBusy(false);
