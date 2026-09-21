@@ -10,6 +10,7 @@ import { EmptyState } from "@/components/jaylor/empty-state";
 import { LockedFeature } from "@/components/jaylor/locked-feature";
 import { RemindButton } from "@/components/jaylor/remind-button";
 import { CollectionScoreCard } from "@/components/jaylor/collection-score";
+import { DailyWorkPlan } from "@/components/jaylor/daily-work-plan";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -362,6 +363,10 @@ function Home() {
             </Button>
           </div>
         )}
+
+        <div className="mb-6">
+          <DailyWorkPlan storeId={storeId} />
+        </div>
 
         {canSeeMoney ? (
           <>

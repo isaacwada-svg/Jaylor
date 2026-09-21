@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { computeAgeGroup, computeTemplateSex, isMinor, type AgeGroup } from "@/lib/jaylor";
 import {
   changeThreshold,
+  measurementRatioWarnings,
   pickDefaultTemplate,
   templateFields,
   type TemplateField,
@@ -277,6 +278,12 @@ function MeasurementForm({
   const showGrowth = ageGroup === "child" || ageGroup === "teen";
   const threshold = changeThreshold(ageGroup);
   const previousValues = (previous?.values ?? {}) as Record<string, number>;
+  const numericValues: Record<string, number> = {};
+  for (const f of fields) {
+    const raw = values[f.key];
+    if (raw?.trim() && !Number.isNaN(Number(raw))) numericValues[f.key] = Number(raw);
+  }
+  const ratioWarnings = measurementRatioWarnings(fields, numericValues);
 
   useEffect(() => {
     setValues({});
@@ -452,6 +459,16 @@ function MeasurementForm({
           );
         })}
       </div>
+
+      {ratioWarnings.length > 0 && (
+        <div className="space-y-1 rounded-xl border border-owed/40 bg-owed/10 p-3">
+          {ratioWarnings.map((w) => (
+            <p key={w} className="text-xs text-owed">
+              {w}
+            </p>
+          ))}
+        </div>
+      )}
 
       <ExtraFieldsEditor value={extraFields} onChange={setExtraFields} />
 

@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { GARMENT_TYPES, formatMoney, planCodeToTier } from "@/lib/jaylor";
+import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage, cn } from "@/lib/utils";
 import { useFeature } from "@/lib/use-feature";
@@ -80,6 +81,10 @@ export function OrderForm({
   const [materialColour, setMaterialColour] = useState("");
   const [materialYards, setMaterialYards] = useState("");
   const [materialCost, setMaterialCost] = useState("");
+  const [fabricWidth, setFabricWidth] = useState("45");
+  const [fabricPattern, setFabricPattern] = useState<FabricPattern>("plain");
+  const [estimatingFabric, setEstimatingFabric] = useState(false);
+  const [fabricNote, setFabricNote] = useState<string | null>(null);
 
   const [price, setPrice] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
@@ -234,6 +239,52 @@ export function OrderForm({
       toast.error(getErrorMessage(error, "Could not suggest a price"));
     } finally {
       setSuggesting(false);
+    }
+  }
+
+  async function estimateFabric() {
+    if (!garmentType) return;
+    setEstimatingFabric(true);
+    setFabricNote(null);
+    try {
+      const { data: pastOrders, error } = await supabase
+        .from("orders")
+        .select("id")
+        .eq("store_id", storeId)
+        .eq("garment_type", garmentType)
+        .limit(50);
+      if (error) throw error;
+
+      const orderIds = (pastOrders ?? []).map((o) => o.id);
+      const { data: materials } = orderIds.length
+        ? await supabase.from("order_materials").select("yards").in("order_id", orderIds)
+        : { data: [] };
+      const yardsList = (materials ?? [])
+        .map((m) => m.yards)
+        .filter((y): y is number => typeof y === "number" && y > 0);
+      const storeAverage = yardsList.length
+        ? yardsList.reduce((a, b) => a + b, 0) / yardsList.length
+        : null;
+
+      const estimate = estimateFabricYards({
+        garmentType,
+        quantity: Number(quantity) || 1,
+        fabricWidth: Number(fabricWidth) || 45,
+        pattern: fabricPattern,
+        storeAverage,
+        storeAverageCount: yardsList.length,
+      });
+
+      setMaterialYards(String(estimate.suggestedPurchase));
+      setFabricNote(
+        estimate.source === "history"
+          ? `Based on this shop's own past ${garmentType} orders (${estimate.perPiece.toFixed(1)} yards each). Includes 10% waste allowance.`
+          : `Estimate from a standard formula for ${garmentType} — no order history yet for this garment type. Includes 10% waste allowance.`,
+      );
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not estimate fabric"));
+    } finally {
+      setEstimatingFabric(false);
     }
   }
 
@@ -508,6 +559,51 @@ export function OrderForm({
               </div>
             )}
           </div>
+
+          {garmentType && (
+            <div className="space-y-3 rounded-xl border border-border p-3">
+              <p className="text-sm font-medium">Not sure how much fabric to buy?</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label htmlFor="fabric-width">Fabric width (inches)</Label>
+                  <Input
+                    id="fabric-width"
+                    inputMode="decimal"
+                    value={fabricWidth}
+                    onChange={(e) => setFabricWidth(e.target.value)}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="fabric-pattern">Pattern</Label>
+                  <Select
+                    value={fabricPattern}
+                    onValueChange={(v) => setFabricPattern(v as FabricPattern)}
+                  >
+                    <SelectTrigger id="fabric-pattern">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FABRIC_PATTERNS.map((p) => (
+                        <SelectItem key={p.value} value={p.value}>
+                          {p.label}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={estimateFabric}
+                disabled={estimatingFabric || !online}
+              >
+                {estimatingFabric ? "Calculating..." : "Estimate fabric needed"}
+              </Button>
+              {fabricNote && <p className="text-xs text-muted-foreground">{fabricNote}</p>}
+            </div>
+          )}
         </div>
       )}
 

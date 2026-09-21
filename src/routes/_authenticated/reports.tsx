@@ -2,7 +2,8 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMonths, format, parse, subMonths } from "date-fns";
-import { ChevronLeft, ChevronRight, Download, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, Plus, Share2 } from "lucide-react";
+import { toast } from "sonner";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
@@ -114,7 +115,7 @@ function Reports() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, assigned_to, created_at, ready_at, collected_at")
+        .select("id, assigned_to, created_at, ready_at, collected_at, delivery_date")
         .eq("store_id", storeId as string)
         .gte("collected_at", monthStart.toISOString())
         .lt("collected_at", monthEndExclusive.toISOString());
@@ -242,6 +243,21 @@ function Reports() {
   const expensesTotal = (expensesInMonth ?? []).reduce((sum, e) => sum + e.amount, 0);
   const netProfit = collectedRevenue - expensesTotal;
   const outstandingBalance = (outstandingRows ?? []).reduce((sum, r) => sum + (r.balance ?? 0), 0);
+
+  // Monthly review, rule-based (no AI): a text template filled with this month's own figures.
+  const ordersCompletedCount = ordersCollected?.length ?? 0;
+  const onTimeCount = (ordersCollected ?? []).filter(
+    (o) => o.delivery_date && o.collected_at && o.collected_at <= `${o.delivery_date}T23:59:59`,
+  ).length;
+  const onTimeRate =
+    ordersCompletedCount > 0 ? Math.round((onTimeCount / ordersCompletedCount) * 100) : null;
+  const monthlyReviewTip =
+    onTimeRate != null && onTimeRate < 80
+      ? "A number of orders finished after their due date this month — consider building in more buffer time when you promise a date."
+      : outstandingBalance > collectedRevenue
+        ? "You're owed more than you collected this month — sending balance reminders could recover some of this."
+        : "Keep it up — collection and delivery both look healthy this month.";
+  const monthlyReviewText = `${format(monthStart, "MMMM yyyy")} at ${currentStore?.name ?? "your shop"}: collected ${formatMoney(collectedRevenue)}, ${formatMoney(outstandingBalance)} still owed, ${ordersCompletedCount} order${ordersCompletedCount === 1 ? "" : "s"} completed${onTimeRate != null ? `, ${onTimeRate}% on time` : ""}. ${monthlyReviewTip}`;
 
   const trendMonths = useMemo(() => {
     const months: Date[] = [];
@@ -377,6 +393,35 @@ function Reports() {
           </div>
         </div>
         <StitchDivider className="my-6" />
+
+        {!isLoading && (
+          <Card className="mb-6 rounded-2xl border-gold/30">
+            <CardContent className="p-5">
+              <p className="font-medium">Monthly review</p>
+              <p className="mt-2 text-sm text-muted-foreground">{monthlyReviewText}</p>
+              <Button
+                size="sm"
+                variant="outline"
+                className="mt-3"
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator
+                      .share({ title: "Monthly review", text: monthlyReviewText })
+                      .catch(() => {});
+                    return;
+                  }
+                  navigator.clipboard
+                    .writeText(monthlyReviewText)
+                    .then(() => toast.success("Review copied"))
+                    .catch(() => toast.error("Could not copy"));
+                }}
+              >
+                <Share2 className="size-4" />
+                Share
+              </Button>
+            </CardContent>
+          </Card>
+        )}
 
         {isLoading ? (
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
