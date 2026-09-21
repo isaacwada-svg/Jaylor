@@ -24,7 +24,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { LogoMark } from "./logo";
+import { BrandLogo, LogoMark } from "./logo";
 import { OfflineBanner } from "./offline-banner";
 import { StitchDivider } from "./stitch-divider";
 import { ThemeToggle } from "./theme-toggle";
@@ -323,9 +323,8 @@ function StoreSwitcher({
 
 function Wordmark() {
   return (
-    <Link to="/" className="flex items-center gap-2">
-      <LogoMark className="size-8" />
-      <span className="font-display text-lg font-semibold tracking-tight">Jaylor</span>
+    <Link to="/" aria-label="Jaylor home">
+      <BrandLogo markClassName="size-9" />
     </Link>
   );
 }

@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { MessageCircle } from "lucide-react";
-import { LogoMark } from "@/components/jaylor/logo";
+import { BrandLogo } from "@/components/jaylor/logo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE } from "@/lib/jaylor";
@@ -35,9 +35,8 @@ function SharedDesign() {
   return (
     <main className="linen flex min-h-screen flex-col items-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2">
-          <LogoMark className="size-9" />
-          <span className="font-heading text-2xl">Jaylor</span>
+        <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
+          <BrandLogo showTagline markClassName="size-12" />
         </Link>
 
         <div className="mt-8 space-y-4">
