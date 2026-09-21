@@ -19,6 +19,7 @@ import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
 import { PaymentReliabilityBadge } from "@/components/jaylor/payment-reliability-badge";
+import { PriceGuidancePanel } from "@/components/jaylor/price-guidance-panel";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -659,6 +660,14 @@ export function OrderForm({
             </p>
           )}
           {!online && <OfflineNotice label="Price suggestions need an internet connection." />}
+
+          {online && (
+            <PriceGuidancePanel
+              storeId={storeId}
+              garmentTypeCode={GARMENT_TYPE_CODE_BY_NAME[garmentType] ?? null}
+              currentPrice={price.trim() ? Number(price) : null}
+            />
+          )}
 
           <label className="flex items-center justify-between rounded-xl border border-border p-3">
             <span className="text-sm">Rush order</span>

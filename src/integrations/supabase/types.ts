@@ -3146,6 +3146,10 @@ export type Database = {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
       }
+      city_price_benchmark: {
+        Args: { p_garment_type_code: string; p_store_id: string }
+        Returns: Json
+      }
       client_payment_reliability: { Args: { p_client_id: string }; Returns: Json }
       check_feature_limit: {
         Args: { p_feature: string; p_quantity?: number; p_store_id: string }
