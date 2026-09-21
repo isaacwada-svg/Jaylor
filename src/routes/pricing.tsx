@@ -144,7 +144,7 @@ function Pricing() {
                       <Button
                         asChild
                         className="w-full"
-                        variant={plan.mostPopular ? "default" : "outline"}
+                        variant={plan.mostPopular ? "premium" : "outline"}
                       >
                         <Link to="/auth" search={{ mode: "signup" }}>
                           {plan.tier === "Free" ? "Start free" : "Start 14-day trial"}
