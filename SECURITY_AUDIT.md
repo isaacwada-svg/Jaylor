@@ -1278,6 +1278,28 @@ achievable without external dependencies are done; the remaining pieces (WhatsAp
 notification for L4, analytics-forgery hardening for L8) are accepted as out of scope pending the
 stubbed WhatsApp/Resend integrations (task #34). L7's fix additionally needs an edge function
 deploy, not just a SQL editor run. Next step: the store operator runs the remaining migrations and
-deploys `delete-client`, then confirms; after that, **Phase 3** (standing protections — security
-headers, broader rate limiting, admin MFA, a weekly RLS-drift check) per the original prompt's
-stated order.
+deploys `delete-client`, then confirms.
+
+**Phase 3 status: all four items delivered.**
+- **Security headers** — a full Content-Security-Policy added (`src/server.ts`), shipped as
+  `Content-Security-Policy-Report-Only` first (script-src/style-src both need `'unsafe-inline'` —
+  TanStack Start's hydration emits per-request inline scripts a hash allowlist can't cover, and
+  React's `style` prop, used throughout including by Radix UI, renders as literal inline
+  attributes — but everything else is locked to `'self'` plus the two real external origins,
+  Google Fonts and Supabase). Check the browser console for violations after normal use, then flip
+  `CSP_REPORT_ONLY` to `false`. The five headers from the original Prompt 20/21 hardening pass
+  (HSTS, X-Content-Type-Options, X-Frame-Options, Referrer-Policy, Permissions-Policy) were already
+  in place before this session.
+- **Broader rate limiting** — `uploadDesignSelfie` and the new `uploadFabricPhoto` had no rate
+  limit at all (each writes a real storage object with no cap on the caller); both now use the
+  same `check_rate_limit` primitive `generate-design` already used, 20/hour per store.
+- **Weekly RLS-drift check** — `check_rls_drift()` re-verifies L2 and L9 stay closed (RLS still
+  enabled everywhere, no policy targets the bare `public` role, `anon`/`authenticated` grants
+  match their expected sets), recorded in a new `rls_drift_checks` table and surfaced in a new
+  Security tab on the platform admin page. Scheduled weekly via `pg_cron`/`pg_net` if both
+  extensions are enabled on this project (a no-op migration block otherwise — verify manually via
+  the admin page's "Run check now" button either way).
+- **Admin MFA** — optional TOTP two-factor authentication for platform admins, via Supabase Auth's
+  built-in MFA API (enroll/verify/unenroll), also in the Security tab. Scoped deliberately as
+  optional rather than enforced, per the store operator's own choice, since requiring it before
+  live testing risks locking an admin out of their own account.
