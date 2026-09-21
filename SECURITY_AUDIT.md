@@ -845,6 +845,24 @@ this is stated explicitly in "How verified".
 
 ### L4 — Payout account changes need only a normal session and are invisible afterwards
 
+> **Status: partially fixed, delivered pending apply** (migration
+> `20260921160000_...sql`). Delivered: an append-only `payment_account_changes`
+> history table (owner-only read) written by a `BEFORE INSERT OR UPDATE`
+> trigger on `payment_accounts`, which also rejects a change within 24 hours
+> of the previous one — deliberately not exempted for `service_role`, since
+> `connect-payment-account` always writes as `service_role`, so the cooldown
+> would apply to nothing if it were exempted the way L1's trigger is.
+> Password re-entry before calling the edge function is added at the
+> application layer (`payment-account-settings.tsx`: a "Change payout
+> account" affordance — previously absent, the form only ever showed for a
+> not-yet-connected store — now gated behind a password-confirmation dialog
+> using `supabase.auth.signInWithPassword`). **Not delivered:** an OTP to the
+> registered WhatsApp number, and notifying the owner on change — both need
+> the WhatsApp Business API / Resend integrations, which remain stubbed
+> pending the store operator's own API keys (task #34 in the build tracker).
+> Update this line once the store operator confirms the migration applies
+> cleanly and the password-reentry flow works end-to-end.
+
 - **Area:** Payout accounts
 - **Severity:** High
 - **Location:** table `public.payment_accounts` (single policy `payment_accounts_member_select`,

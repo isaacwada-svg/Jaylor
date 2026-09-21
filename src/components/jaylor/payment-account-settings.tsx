@@ -9,6 +9,14 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -24,6 +32,9 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
   const [bankCode, setBankCode] = useState("");
   const [accountNumber, setAccountNumber] = useState("");
   const [busy, setBusy] = useState(false);
+  const [reauthOpen, setReauthOpen] = useState(false);
+  const [password, setPassword] = useState("");
+  const [reauthed, setReauthed] = useState(false);
 
   const { data: account } = useQuery({
     queryKey: ["payment-account", storeId],
@@ -48,6 +59,28 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
     },
   });
 
+  async function reauthenticate() {
+    if (!password) {
+      toast.error("Enter your password");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { data: userData } = await supabase.auth.getUser();
+      const email = userData.user?.email;
+      if (!email) throw new Error("Could not confirm your account");
+      const { error } = await supabase.auth.signInWithPassword({ email, password });
+      if (error) throw new Error("Incorrect password");
+      setReauthed(true);
+      setReauthOpen(false);
+      setPassword("");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not confirm your password"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function connect() {
     if (!bankCode || accountNumber.trim().length < 10) {
       toast.error("Choose a bank and enter a valid 10-digit account number");
@@ -62,6 +95,7 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
       if (error) throw error;
       const result = data as { result: { account_name: string } };
       toast.success(`Connected — ${result.result.account_name}`);
+      setReauthed(false);
       queryClient.invalidateQueries({ queryKey: ["payment-account", storeId] });
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not connect this account"));
@@ -91,11 +125,13 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
           naira.
         </p>
 
-        {account?.status === "active" ? (
+        {account?.status === "active" && (
           <p className="mt-4 rounded-xl border border-border p-3 text-sm">
             {account.account_name} · {account.bank_name} ····{account.account_number?.slice(-4)}
           </p>
-        ) : (
+        )}
+
+        {reauthed ? (
           <div className="mt-4 space-y-3">
             <div className="space-y-2">
               <Label>Bank</Label>
@@ -113,7 +149,9 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
               </Select>
             </div>
             <div className="space-y-2">
-              <Label htmlFor="account-number">Account number</Label>
+              <Label htmlFor="account-number">
+                {account?.status === "active" ? "New account number" : "Account number"}
+              </Label>
               <Input
                 id="account-number"
                 inputMode="numeric"
@@ -124,10 +162,49 @@ export function PaymentAccountSettings({ storeId, tier }: { storeId: string; tie
               />
             </div>
             <Button onClick={connect} disabled={busy} className="w-full">
-              {busy ? "Connecting..." : "Connect account"}
+              {busy
+                ? "Saving..."
+                : account?.status === "active"
+                  ? "Save new account"
+                  : "Connect account"}
             </Button>
           </div>
+        ) : (
+          <Button
+            variant={account?.status === "active" ? "outline" : "default"}
+            className="mt-3 w-full"
+            onClick={() => setReauthOpen(true)}
+          >
+            {account?.status === "active" ? "Change payout account" : "Connect account"}
+          </Button>
         )}
+
+        <Dialog open={reauthOpen} onOpenChange={setReauthOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Confirm your password</DialogTitle>
+              <DialogDescription>
+                For your security, re-enter your password before changing where your money settles.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-2">
+              <Label htmlFor="reauth-password">Password</Label>
+              <Input
+                id="reauth-password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && reauthenticate()}
+                autoFocus
+              />
+            </div>
+            <DialogFooter>
+              <Button onClick={reauthenticate} disabled={busy} className="w-full">
+                {busy ? "Confirming..." : "Confirm"}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardContent>
     </Card>
   );
