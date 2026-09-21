@@ -28,11 +28,7 @@ export function ComingUpCard({ storeId }: { storeId: string | undefined }) {
     queryKey: ["upcoming-calendar-events", storeId],
     enabled: !!storeId,
     queryFn: async () => {
-      // Not in the generated database types yet, so call through an untyped view.
-      const calendarRpc = supabase as unknown as {
-        rpc: (fn: string, args: Record<string, unknown>) => Promise<{ data: unknown; error: unknown }>;
-      };
-      const { data, error } = await calendarRpc.rpc("upcoming_calendar_events", {
+      const { data, error } = await supabase.rpc("upcoming_calendar_events", {
         p_store_id: storeId as string,
         p_weeks_ahead: 8,
       });
