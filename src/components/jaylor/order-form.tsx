@@ -18,6 +18,7 @@ import { useFeature } from "@/lib/use-feature";
 import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
+import { PaymentReliabilityBadge } from "@/components/jaylor/payment-reliability-badge";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -452,6 +453,9 @@ export function OrderForm({
 
       {step === 1 && (
         <div className="space-y-4">
+          {selectedClient && (
+            <PaymentReliabilityBadge clientId={selectedClient.id} showDepositHint />
+          )}
           <div className="space-y-2">
             <Label>Garment</Label>
             <Select value={garmentType} onValueChange={setGarmentType}>

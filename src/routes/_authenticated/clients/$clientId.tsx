@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/jaylor/empty-state";
 import { ClientForm } from "@/components/jaylor/client-form";
 import { MeasurementsTab } from "@/components/jaylor/measurements-tab";
 import { SendMeasureLinkButton } from "@/components/jaylor/send-measure-link-button";
+import { PaymentReliabilityBadge } from "@/components/jaylor/payment-reliability-badge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -134,6 +135,9 @@ function ClientProfile() {
             <div>
               <h1 className="text-2xl">{client.full_name}</h1>
               <p className="figures text-sm text-muted-foreground">{formatPhoneNG(client.phone)}</p>
+              <div className="mt-2">
+                <PaymentReliabilityBadge clientId={client.id} showDepositHint />
+              </div>
               {client.tags.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1">
                   {client.tags.map((tag) => (

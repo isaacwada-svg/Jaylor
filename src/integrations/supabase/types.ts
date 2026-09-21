@@ -2248,6 +2248,7 @@ export type Database = {
       store_settings: {
         Row: {
           email: string | null
+          late_payer_deposit_percent: number
           phone: string | null
           public_location: string | null
           receipt_footer: string | null
@@ -2260,6 +2261,7 @@ export type Database = {
         }
         Insert: {
           email?: string | null
+          late_payer_deposit_percent?: number
           phone?: string | null
           public_location?: string | null
           receipt_footer?: string | null
@@ -2272,6 +2274,7 @@ export type Database = {
         }
         Update: {
           email?: string | null
+          late_payer_deposit_percent?: number
           phone?: string | null
           public_location?: string | null
           receipt_footer?: string | null
@@ -3143,6 +3146,7 @@ export type Database = {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
       }
+      client_payment_reliability: { Args: { p_client_id: string }; Returns: Json }
       check_feature_limit: {
         Args: { p_feature: string; p_quantity?: number; p_store_id: string }
         Returns: Json
