@@ -9,6 +9,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 type EventDef = { key: string; label: string; default_enabled: boolean; sort_order: number };
 type EventPref = { event_key: string; enabled: boolean };
 
+/**
+ * The fashion-calendar tables and RPC are not part of the generated database
+ * types yet, so this narrow, untyped view of the client keeps the calls
+ * compiling without loosening types anywhere else.
+ */
+const calendarDb = supabase as unknown as {
+  from: (table: string) => {
+    select: (columns: string) => {
+      order: (column: string) => Promise<{ data: unknown; error: unknown }>;
+      eq: (column: string, value: string) => Promise<{ data: unknown; error: unknown }>;
+    };
+  };
+  rpc: (fn: string, args: Record<string, unknown>) => Promise<{ error: unknown }>;
+};
+
 export function CalendarEventPrefsCard({ storeId }: { storeId: string }) {
   const queryClient = useQueryClient();
 
