@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { LogoMark } from "@/components/jaylor/logo";
+import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { cn, getErrorMessage } from "@/lib/utils";
@@ -23,10 +23,10 @@ export const Route = createFileRoute("/onboarding")({
 const STEPS = ["Your store", "Your look", "What you sew", "First win"] as const;
 
 const ACCENT_COLORS = [
-  { name: "Gold", value: "#B8902F" },
-  { name: "Terracotta", value: "#B4532A" },
+  { name: "Jaylor gold", value: "#D4AF37" },
+  { name: "Jaylor navy", value: "#111F39" },
+  { name: "Charcoal", value: "#1A1A1A" },
   { name: "Emerald", value: "#1F7A5A" },
-  { name: "Ink", value: "#1B1A3A" },
   { name: "Plum", value: "#6B3F69" },
   { name: "Teal", value: "#1F6B6B" },
 ] as const;
@@ -231,9 +231,8 @@ function Onboarding() {
   return (
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <div className="flex items-center justify-center gap-2">
-          <LogoMark className="size-9" />
-          <span className="font-display text-2xl">Jaylor</span>
+        <div className="flex items-center justify-center">
+          <BrandLogo showTagline markClassName="h-12 w-auto" />
         </div>
         <p className="mt-3 text-center text-sm text-muted-foreground">
           Let&apos;s set up your workroom.

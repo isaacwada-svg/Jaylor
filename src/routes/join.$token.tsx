@@ -3,7 +3,7 @@ import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { LogoMark } from "@/components/jaylor/logo";
+import { BrandLogo } from "@/components/jaylor/logo";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getErrorMessage } from "@/lib/utils";
@@ -77,9 +77,8 @@ function JoinInvite() {
   return (
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
-        <Link to="/" className="flex items-center justify-center gap-2">
-          <LogoMark className="size-9" />
-          <span className="font-heading text-2xl">Jaylor</span>
+        <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
+          <BrandLogo showTagline markClassName="h-12 w-auto" />
         </Link>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm text-center">
