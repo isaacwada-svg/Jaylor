@@ -13,8 +13,11 @@ import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { MessageCircle } from "lucide-react";
+import { whatsappLink } from "@/lib/whatsapp";
 
 type EventRow = Tables<"events">;
 
@@ -59,7 +62,13 @@ export function EventForm({
     { key: "", label: "", chest: "", waist: "", length: "" },
   ]);
   const [tiers, setTiers] = useState<TierRow[]>([{ minQty: "1", maxQty: "", price: "" }]);
+  const [quantity, setQuantity] = useState("");
+  const [vatEnabled, setVatEnabled] = useState(false);
+  const [vatPercent, setVatPercent] = useState("7.5");
+  const [validityDate, setValidityDate] = useState("");
+  const [depositPercent, setDepositPercent] = useState("60");
   const [busy, setBusy] = useState(false);
+  const [quoteLink, setQuoteLink] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) return;
@@ -76,6 +85,12 @@ export function EventForm({
     setStyles([{ key: "", label: "", price: "" }]);
     setSizes([{ key: "", label: "", chest: "", waist: "", length: "" }]);
     setTiers([{ minQty: "1", maxQty: "", price: "" }]);
+    setQuantity("");
+    setVatEnabled(false);
+    setVatPercent("7.5");
+    setValidityDate("");
+    setDepositPercent("60");
+    setQuoteLink(null);
   }, [open]);
 
   function updateStyle(index: number, patch: Partial<StyleRow>) {
@@ -117,6 +132,10 @@ export function EventForm({
   async function handleSubmit(event: FormEvent) {
     event.preventDefault();
     if (!template) return;
+    if (template.isContract && !organiserPhone.trim()) {
+      toast.error("Enter the client or organisation's phone number to send the quote");
+      return;
+    }
     setBusy(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -164,6 +183,7 @@ export function EventForm({
           collection_mode: template.collectionMode,
           pricing_mode: template.pricingMode,
           turnaround_mode: template.turnaroundMode,
+          stage: template.isContract ? "quote" : "live",
           event_date: eventDate || null,
           organiser_name: organiserName.trim() || null,
           organiser_phone: organiserPhone.trim() || null,
@@ -176,13 +196,43 @@ export function EventForm({
           measurement_deadline: measurementDeadline || null,
           delivery_date: deliveryDate || null,
           created_by: userData.user?.id ?? null,
+          ...(template.isContract
+            ? {
+                quantity: quantity.trim() ? Number(quantity) : null,
+                vat_enabled: vatEnabled,
+                vat_percent: vatPercent.trim() ? Number(vatPercent) : 7.5,
+                validity_date: validityDate || null,
+                deposit_percent: depositPercent.trim() ? Number(depositPercent) : null,
+              }
+            : {}),
         })
         .select()
         .single();
       if (error) throw error;
-      toast.success("Group order created");
-      onSaved(created);
-      onOpenChange(false);
+
+      if (template.isContract) {
+        const phone = organiserPhone.trim();
+        const { data: participant, error: participantError } = await supabase
+          .from("event_participants")
+          .insert({
+            event_id: created.id,
+            store_id: storeId,
+            client_id: null,
+            full_name: organiserName.trim() || name.trim(),
+            phone,
+          })
+          .select()
+          .single();
+        if (participantError) throw participantError;
+
+        toast.success("Quote created");
+        setQuoteLink(`${window.location.origin}/e/${participant.token}`);
+        onSaved(created);
+      } else {
+        toast.success("Group order created");
+        onSaved(created);
+        onOpenChange(false);
+      }
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not create this group order"));
     } finally {
@@ -402,16 +452,78 @@ export function EventForm({
         </div>
       )}
 
-      <div className="grid grid-cols-2 gap-3">
-        <div className="space-y-2">
-          <Label htmlFor="price-per-person">Price per person</Label>
-          <MoneyInput id="price-per-person" value={pricePerPerson} onChange={setPricePerPerson} />
+      {template?.isContract ? (
+        <>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="quantity">Quantity</Label>
+              <Input
+                id="quantity"
+                value={quantity}
+                onChange={(e) => setQuantity(e.target.value)}
+                inputMode="numeric"
+                placeholder="e.g. 120"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="price-per-person">Unit price</Label>
+              <MoneyInput
+                id="price-per-person"
+                value={pricePerPerson}
+                onChange={setPricePerPerson}
+              />
+            </div>
+          </div>
+          <div className="flex items-center justify-between rounded-xl border border-border p-3">
+            <div>
+              <p className="text-sm font-medium">Add VAT</p>
+              <p className="text-xs text-muted-foreground">Shown as a separate line on the quote</p>
+            </div>
+            <div className="flex items-center gap-2">
+              {vatEnabled && (
+                <Input
+                  value={vatPercent}
+                  onChange={(e) => setVatPercent(e.target.value)}
+                  inputMode="decimal"
+                  className="w-16"
+                />
+              )}
+              <Switch checked={vatEnabled} onCheckedChange={setVatEnabled} />
+            </div>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label htmlFor="deposit-percent">Deposit %</Label>
+              <Input
+                id="deposit-percent"
+                value={depositPercent}
+                onChange={(e) => setDepositPercent(e.target.value)}
+                inputMode="numeric"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="validity-date">Quote valid until</Label>
+              <Input
+                id="validity-date"
+                type="date"
+                value={validityDate}
+                onChange={(e) => setValidityDate(e.target.value)}
+              />
+            </div>
+          </div>
+        </>
+      ) : (
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-2">
+            <Label htmlFor="price-per-person">Price per person</Label>
+            <MoneyInput id="price-per-person" value={pricePerPerson} onChange={setPricePerPerson} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="deposit-amount">Deposit</Label>
+            <MoneyInput id="deposit-amount" value={depositAmount} onChange={setDepositAmount} />
+          </div>
         </div>
-        <div className="space-y-2">
-          <Label htmlFor="deposit-amount">Deposit</Label>
-          <MoneyInput id="deposit-amount" value={depositAmount} onChange={setDepositAmount} />
-        </div>
-      </div>
+      )}
       <div className="space-y-2">
         <Label htmlFor="measurement-deadline">Measurement deadline</Label>
         <Input
@@ -424,13 +536,60 @@ export function EventForm({
 
       {!online && <OfflineNotice />}
       <Button type="submit" className="w-full" disabled={busy || !name.trim() || !online}>
-        {busy ? "Creating..." : "Create group order"}
+        {busy ? "Creating..." : template?.isContract ? "Create quote" : "Create group order"}
       </Button>
     </form>
   );
 
-  const content = template ? body : picker;
-  const title = template ? `New ${template.label.toLowerCase()} order` : "What kind of job?";
+  const quoteSentView = quoteLink && (
+    <div className="space-y-3">
+      <p className="text-sm text-muted-foreground">
+        Share this link with {organiserName || "the client"} to view and accept the quote.
+      </p>
+      <div className="rounded-xl border border-border bg-accent/30 p-3 text-sm break-all">
+        {quoteLink}
+      </div>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          className="flex-1"
+          onClick={() => {
+            navigator.clipboard
+              .writeText(quoteLink)
+              .then(() => toast.success("Link copied"))
+              .catch(() => toast.error("Could not copy link"));
+          }}
+        >
+          Copy link
+        </Button>
+        {organiserPhone.trim() && (
+          <Button asChild className="flex-1">
+            <a
+              href={whatsappLink(
+                organiserPhone,
+                `Hi ${organiserName || ""}, here's your quote from us: ${quoteLink}`,
+              )}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <MessageCircle className="size-4" />
+              Send
+            </a>
+          </Button>
+        )}
+      </div>
+      <Button variant="outline" className="w-full" onClick={() => onOpenChange(false)}>
+        Done
+      </Button>
+    </div>
+  );
+
+  const content = quoteLink ? quoteSentView : template ? body : picker;
+  const title = quoteLink
+    ? "Quote created"
+    : template
+      ? `New ${template.label.toLowerCase()} order`
+      : "What kind of job?";
 
   if (isMobile) {
     return (

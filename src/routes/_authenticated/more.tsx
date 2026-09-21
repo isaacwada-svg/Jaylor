@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldCheck,
   Wallet,
+  FileText,
 } from "lucide-react";
 import type { Tier } from "@/lib/jaylor";
 
@@ -42,6 +43,12 @@ const ITEMS: { label: string; hint: string; icon: typeof Users2; tier?: Tier }[]
     tier: "Growth",
   },
   { label: "Group events", hint: "Aso-ebi and family sets", icon: Users2, tier: "Growth" },
+  {
+    label: "Contracts",
+    hint: "School and company uniform jobs",
+    icon: FileText,
+    tier: "Business",
+  },
   {
     label: "Staff and job board",
     hint: "Assign work, see workload",
@@ -103,6 +110,15 @@ function More() {
             if (label === "Group events") {
               return (
                 <Link key={label} to="/events">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Contracts") {
+              return (
+                <Link key={label} to="/contracts">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

@@ -36,6 +36,8 @@ export type JobTemplate = {
   turnaroundMode: TurnaroundMode;
   /** Shown on the public /e/:token guest page, {name} is the participant's first name. */
   guestWelcomeLine: string;
+  /** Starts as a quote needing client acceptance, with a formal invoice once live (G3). */
+  isContract: boolean;
 };
 
 export const JOB_TEMPLATES: JobTemplate[] = [
@@ -49,6 +51,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, welcome to the group order.",
+    isContract: false,
   },
   {
     jobType: "burial",
@@ -60,6 +63,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "rush",
     guestWelcomeLine: "Hi {name}, our condolences. Here's the group order for the burial.",
+    isContract: false,
   },
   {
     jobType: "family_occasion",
@@ -71,6 +75,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, please confirm your measurements for this occasion.",
+    isContract: false,
   },
   {
     jobType: "association",
@@ -82,6 +87,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, welcome to the group uniform order.",
+    isContract: false,
   },
   {
     jobType: "school_uniform",
@@ -93,6 +99,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "quantity_tiers",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, please confirm your size for the school uniform.",
+    isContract: true,
   },
   {
     jobType: "corporate_uniform",
@@ -104,6 +111,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "quantity_tiers",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, please confirm your size for the staff uniform.",
+    isContract: true,
   },
   {
     jobType: "sports_team",
@@ -115,6 +123,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, please confirm your size for the team kit.",
+    isContract: false,
   },
   {
     jobType: "diaspora",
@@ -126,6 +135,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, welcome — let's get your measurements for your order abroad.",
+    isContract: false,
   },
   {
     jobType: "remote_individual",
@@ -137,6 +147,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, welcome — let's get your measurements sorted remotely.",
+    isContract: false,
   },
   {
     jobType: "ready_to_wear",
@@ -148,6 +159,7 @@ export const JOB_TEMPLATES: JobTemplate[] = [
     pricingMode: "flat",
     turnaroundMode: "standard",
     guestWelcomeLine: "Hi {name}, welcome — pick your size to pre-order.",
+    isContract: false,
   },
 ];
 

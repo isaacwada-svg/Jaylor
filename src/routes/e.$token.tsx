@@ -11,7 +11,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
-import { getJobExtras, setParticipantSize } from "@/lib/jobs.functions";
+import {
+  getJobExtras,
+  getJobQuote,
+  acceptJobQuote,
+  setParticipantSize,
+} from "@/lib/jobs.functions";
+import { QuoteDocument } from "@/components/jaylor/quote-document";
 
 export const Route = createFileRoute("/e/$token")({
   staticData: { sitemap: false },
@@ -97,9 +103,28 @@ function GuestEventPage() {
     queryFn: () => getJobExtras({ data: { token } }),
   });
 
+  const { data: quote, isLoading: quoteLoading } = useQuery({
+    queryKey: ["job-quote", token],
+    queryFn: () => getJobQuote({ data: { token } }),
+  });
+
   async function refetch() {
     await queryClient.invalidateQueries({ queryKey: ["guest-participant", token] });
     await queryClient.invalidateQueries({ queryKey: ["job-extras", token] });
+    await queryClient.invalidateQueries({ queryKey: ["job-quote", token] });
+  }
+
+  async function acceptQuote() {
+    setBusy(true);
+    try {
+      await acceptJobQuote({ data: { token } });
+      toast.success("Quote accepted");
+      await refetch();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not accept this quote"));
+    } finally {
+      setBusy(false);
+    }
   }
 
   async function chooseSize(sizeKey: string) {
@@ -146,12 +171,30 @@ function GuestEventPage() {
     }
   }
 
-  if (isLoading) {
+  if (isLoading || quoteLoading) {
     return (
       <main className="linen min-h-screen bg-background px-4 py-10">
         <div className="mx-auto w-full max-w-md space-y-4">
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-40 rounded-2xl" />
+        </div>
+      </main>
+    );
+  }
+
+  if (quote?.stage === "quote") {
+    return (
+      <main className="linen min-h-screen bg-background px-4 py-10">
+        <div className="mx-auto w-full max-w-md">
+          <div className="text-center">
+            <p className="text-xs uppercase tracking-[0.18em] text-gold">{quote.storeName}</p>
+            <h1 className="mt-2 font-heading text-2xl">{quote.jobName}</h1>
+          </div>
+          <QuoteDocument data={quote} variant="quote" />
+          <Button className="mt-4 w-full" onClick={acceptQuote} disabled={busy}>
+            {busy ? "Accepting..." : "Accept this quote"}
+          </Button>
+          <p className="mt-8 text-center text-xs text-muted-foreground">{COMPANY_LINE}</p>
         </div>
       </main>
     );

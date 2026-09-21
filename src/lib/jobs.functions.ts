@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
+import { nextInvoiceNumber } from "@/lib/quote";
 
 /**
  * The guest page (e.$token.tsx) reads its core data through the existing
@@ -112,6 +113,112 @@ export const setParticipantSize = createServerFn({ method: "POST" })
       .update({ size_key: data.sizeKey })
       .eq("token", data.token);
     if (error) throw new Error("Could not save your size");
+
+    return { ok: true };
+  });
+
+export type JobQuoteView = {
+  stage: string;
+  storeName: string;
+  storeLogoUrl: string | null;
+  storeCity: string | null;
+  storeWhatsapp: string | null;
+  jobName: string;
+  organiserName: string | null;
+  organiserPhone: string | null;
+  description: string | null;
+  quantity: number | null;
+  unitPrice: number | null;
+  vatEnabled: boolean;
+  vatPercent: number;
+  validityDate: string | null;
+  deliveryDate: string | null;
+  depositPercent: number | null;
+  invoiceNumber: string | null;
+  poNumber: string | null;
+  paidAmount: number;
+};
+
+export const getJobQuote = createServerFn({ method: "GET" })
+  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .handler(async ({ data }): Promise<JobQuoteView | null> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: participant, error } = await supabaseAdmin
+      .from("event_participants")
+      .select("event_id, paid_amount")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (error || !participant) return null;
+
+    const { data: event } = await supabaseAdmin
+      .from("events")
+      .select(
+        "name, organiser_name, organiser_phone, fabric_description, quantity, price_per_person, vat_enabled, vat_percent, validity_date, delivery_date, deposit_percent, invoice_number, po_number, stage, store_id",
+      )
+      .eq("id", participant.event_id)
+      .maybeSingle();
+    if (!event) return null;
+
+    const { data: store } = await supabaseAdmin
+      .from("stores")
+      .select("name, logo_url, city, whatsapp_phone")
+      .eq("id", event.store_id)
+      .maybeSingle();
+
+    return {
+      stage: event.stage,
+      storeName: store?.name ?? "",
+      storeLogoUrl: store?.logo_url ?? null,
+      storeCity: store?.city ?? null,
+      storeWhatsapp: store?.whatsapp_phone ?? null,
+      jobName: event.name,
+      organiserName: event.organiser_name,
+      organiserPhone: event.organiser_phone,
+      description: event.fabric_description,
+      quantity: event.quantity,
+      unitPrice: event.price_per_person,
+      vatEnabled: event.vat_enabled,
+      vatPercent: event.vat_percent,
+      validityDate: event.validity_date,
+      deliveryDate: event.delivery_date,
+      depositPercent: event.deposit_percent,
+      invoiceNumber: event.invoice_number,
+      poNumber: event.po_number,
+      paidAmount: participant.paid_amount,
+    };
+  });
+
+export const acceptJobQuote = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .handler(async ({ data }): Promise<{ ok: true }> => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    if (!(await withinRateLimit("job_quote_accept", data.token))) {
+      throw new Error("Too many requests. Please try again later.");
+    }
+
+    const { data: participant } = await supabaseAdmin
+      .from("event_participants")
+      .select("event_id")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (!participant) throw new Error("This quote was not found");
+
+    const { data: event } = await supabaseAdmin
+      .from("events")
+      .select("id, stage")
+      .eq("id", participant.event_id)
+      .maybeSingle();
+    if (!event) throw new Error("This quote was not found");
+    if (event.stage !== "quote") return { ok: true };
+
+    const invoiceNumber = nextInvoiceNumber(event.id);
+    const { error } = await supabaseAdmin
+      .from("events")
+      .update({ stage: "live", invoice_number: invoiceNumber })
+      .eq("id", event.id);
+    if (error) throw new Error("Could not accept this quote");
 
     return { ok: true };
   });

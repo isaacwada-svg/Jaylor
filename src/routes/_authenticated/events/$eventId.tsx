@@ -34,6 +34,7 @@ import { normalizePhoneNG, formatPhoneNG } from "@/lib/phone";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 import { jobTemplate } from "@/lib/job-templates";
+import { QuoteDocument, type QuoteData } from "@/components/jaylor/quote-document";
 
 export const Route = createFileRoute("/_authenticated/events/$eventId")({
   staticData: { sitemap: false },
@@ -344,6 +345,46 @@ function EventDetail() {
             </p>
           )}
         </div>
+
+        {jobTemplate(event.job_type).isContract && currentStore && (
+          <div className="mt-6">
+            <p className="text-sm font-medium">
+              {event.stage === "quote" ? "Quote" : "Invoice"}
+              {event.stage === "quote" && (
+                <span className="ml-2 font-normal text-muted-foreground">
+                  Awaiting client acceptance
+                </span>
+              )}
+            </p>
+            <div className="mt-2">
+              <QuoteDocument
+                variant={event.stage === "quote" ? "quote" : "invoice"}
+                data={
+                  {
+                    storeName: currentStore.name,
+                    storeLogoUrl: currentStore.logo_url,
+                    storeCity: currentStore.city,
+                    storeWhatsapp: currentStore.whatsapp_phone,
+                    jobName: event.name,
+                    organiserName: event.organiser_name,
+                    organiserPhone: event.organiser_phone,
+                    description: event.fabric_description,
+                    quantity: event.quantity,
+                    unitPrice: event.price_per_person,
+                    vatEnabled: event.vat_enabled,
+                    vatPercent: event.vat_percent,
+                    validityDate: event.validity_date,
+                    deliveryDate: event.delivery_date,
+                    depositPercent: event.deposit_percent,
+                    invoiceNumber: event.invoice_number,
+                    poNumber: event.po_number,
+                    paidAmount: (participants ?? []).reduce((sum, p) => sum + p.paid_amount, 0),
+                  } satisfies QuoteData
+                }
+              />
+            </div>
+          </div>
+        )}
 
         <div className="mt-8 flex items-center justify-between gap-3">
           <h2 className="text-xl">Guests</h2>
