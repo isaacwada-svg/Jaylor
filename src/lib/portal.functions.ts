@@ -165,7 +165,7 @@ export const getPortalData = createServerFn({ method: "POST" })
     const { data: stores } = storeIds.size
       ? await supabaseAdmin
           .from("stores")
-          .select("id, name, handle, city, area, whatsapp_phone, phone")
+          .select("id, name, slug, city, area, whatsapp_phone")
           .in("id", [...storeIds])
       : { data: [] };
 
@@ -232,10 +232,10 @@ export const getPortalData = createServerFn({ method: "POST" })
       shops: (stores ?? []).map((store) => ({
         id: store.id,
         name: store.name,
-        handle: store.handle,
+        handle: store.slug,
         city: store.city,
         area: store.area,
-        phone: store.whatsapp_phone ?? store.phone ?? null,
+        phone: store.whatsapp_phone ?? null,
       })),
     };
   });
