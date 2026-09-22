@@ -1908,6 +1908,78 @@ export type Database = {
           },
         ]
       }
+      payment_account_changes: {
+        Row: {
+          changed_at: string
+          changed_by: string | null
+          id: string
+          new_account_name: string | null
+          new_account_number: string | null
+          new_bank_code: string | null
+          new_bank_name: string | null
+          new_provider: string | null
+          new_status: string | null
+          old_account_name: string | null
+          old_account_number: string | null
+          old_bank_code: string | null
+          old_bank_name: string | null
+          old_provider: string | null
+          old_status: string | null
+          store_id: string
+        }
+        Insert: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_account_name?: string | null
+          new_account_number?: string | null
+          new_bank_code?: string | null
+          new_bank_name?: string | null
+          new_provider?: string | null
+          new_status?: string | null
+          old_account_name?: string | null
+          old_account_number?: string | null
+          old_bank_code?: string | null
+          old_bank_name?: string | null
+          old_provider?: string | null
+          old_status?: string | null
+          store_id: string
+        }
+        Update: {
+          changed_at?: string
+          changed_by?: string | null
+          id?: string
+          new_account_name?: string | null
+          new_account_number?: string | null
+          new_bank_code?: string | null
+          new_bank_name?: string | null
+          new_provider?: string | null
+          new_status?: string | null
+          old_account_name?: string | null
+          old_account_number?: string | null
+          old_bank_code?: string | null
+          old_bank_name?: string | null
+          old_provider?: string | null
+          old_status?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_account_changes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_account_changes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_accounts: {
         Row: {
           account_name: string | null
