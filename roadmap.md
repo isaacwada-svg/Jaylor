@@ -27,3 +27,5 @@
 - [ ] Customer portal (phone + one-time code; orders, payment status, measurements, shop details) — BLOCKED: no SMS/WhatsApp sending service connected, so codes cannot be delivered.
 - [ ] Paystack live webhook — BLOCKED: PAYSTACK_SECRET_KEY not provided.
 - [x] Sitemap + robots already submitted to Search Console; no manual action outstanding ("No issues detected").
+- [ ] Add database-backed first-use discovery cues and a one-time owner tour for AI Design, Voice Order, measurement passports, and group-order links.
+- [ ] Add the owner/manager-only Ask Jaylor advisor with separate store-scoped conversations, persisted history, real business context, and plan limits.
