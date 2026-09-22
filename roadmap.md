@@ -20,3 +20,10 @@
 - [ ] Ad tracking activation: Google Ads connection linked but setup card skipped — reopen google_ads account setup (new account, NGN, Africa/Lagos) when the user is ready; conversion tracking + consent route still to settle before any campaign spends.
 - [ ] Microsoft (Bing) Ads: no Lovable connector — needs the user's UET tag ID from a Microsoft Advertising account, then install the tag and map conversions manually.
 - [ ] (From earlier discussion, not started) Next-step direction for the app: make data live / order creation / publish / polish empty pages — user pivoted to DB work; revisit later.
+
+## Requested 2026-09-22
+- [x] Published live site (jaylor.com.ng + www) with security and button changes.
+- [x] Verified manager guardrails at the access-rule level (managers can only add/edit tailors; cannot touch owner or other managers).
+- [ ] Customer portal (phone + one-time code; orders, payment status, measurements, shop details) — BLOCKED: no SMS/WhatsApp sending service connected, so codes cannot be delivered.
+- [ ] Paystack live webhook — BLOCKED: PAYSTACK_SECRET_KEY not provided.
+- [x] Sitemap + robots already submitted to Search Console; no manual action outstanding ("No issues detected").
