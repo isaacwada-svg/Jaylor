@@ -22,6 +22,7 @@ import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
 import { Route as MeasurementPassportRouteImport } from './routes/measurement-passport'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -114,6 +115,11 @@ const MeasurementPassportRoute = MeasurementPassportRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -283,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
@@ -326,6 +333,7 @@ export interface FileRoutesByTo {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
@@ -371,6 +379,7 @@ export interface FileRoutesById {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
@@ -416,6 +425,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
@@ -459,6 +469,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
@@ -503,6 +514,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
@@ -548,6 +560,7 @@ export interface RootRouteChildren {
   MeasureGuideRoute: typeof MeasureGuideRoute
   MeasurementPassportRoute: typeof MeasurementPassportRoute
   OnboardingRoute: typeof OnboardingRoute
+  PortalRoute: typeof PortalRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SecurityRoute: typeof SecurityRoute
@@ -653,6 +666,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -918,6 +938,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeasureGuideRoute: MeasureGuideRoute,
   MeasurementPassportRoute: MeasurementPassportRoute,
   OnboardingRoute: OnboardingRoute,
+  PortalRoute: PortalRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SecurityRoute: SecurityRoute,
