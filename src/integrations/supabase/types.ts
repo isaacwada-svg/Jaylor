@@ -2184,6 +2184,60 @@ export type Database = {
         }
         Relationships: []
       }
+      portal_login_codes: {
+        Row: {
+          attempts: number
+          code_hash: string
+          consumed_at: string | null
+          created_at: string
+          expires_at: string
+          id: string
+          phone: string
+        }
+        Insert: {
+          attempts?: number
+          code_hash: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at: string
+          id?: string
+          phone: string
+        }
+        Update: {
+          attempts?: number
+          code_hash?: string
+          consumed_at?: string | null
+          created_at?: string
+          expires_at?: string
+          id?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      portal_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          last_seen_at: string
+          phone: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          last_seen_at?: string
+          phone: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          last_seen_at?: string
+          phone?: string
+          token?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
@@ -3033,6 +3087,84 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      whatsapp_contact_windows: {
+        Row: {
+          last_inbound_at: string
+          phone: string
+        }
+        Insert: {
+          last_inbound_at?: string
+          phone: string
+        }
+        Update: {
+          last_inbound_at?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      whatsapp_outbound_messages: {
+        Row: {
+          created_at: string
+          error: string | null
+          id: string
+          purpose: string
+          status: string
+          to_phone: string
+          updated_at: string
+          wa_message_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          purpose: string
+          status?: string
+          to_phone: string
+          updated_at?: string
+          wa_message_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          id?: string
+          purpose?: string
+          status?: string
+          to_phone?: string
+          updated_at?: string
+          wa_message_id?: string | null
+        }
+        Relationships: []
+      }
+      whatsapp_webhook_events: {
+        Row: {
+          delivery_id: string
+          event: string
+          id: string
+          payload: Json
+          processed_at: string | null
+          processing_error: string | null
+          received_at: string
+        }
+        Insert: {
+          delivery_id: string
+          event: string
+          id?: string
+          payload: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          received_at?: string
+        }
+        Update: {
+          delivery_id?: string
+          event?: string
+          id?: string
+          payload?: Json
+          processed_at?: string | null
+          processing_error?: string | null
+          received_at?: string
+        }
+        Relationships: []
       }
     }
     Views: {

@@ -22,6 +22,7 @@ import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
 import { Route as MeasurementPassportRouteImport } from './routes/measurement-passport'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PortalRouteImport } from './routes/portal'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as SecurityRouteImport } from './routes/security'
@@ -50,6 +51,7 @@ import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events/$eventId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
+import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -113,6 +115,11 @@ const MeasurementPassportRoute = MeasurementPassportRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PortalRoute = PortalRouteImport.update({
+  id: '/portal',
+  path: '/portal',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PricingRoute = PricingRouteImport.update({
@@ -262,6 +269,12 @@ const AuthenticatedOrdersOrderIdRoute =
     path: '/orders/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ApiPublicWhatsappWebhookRoute =
+  ApiPublicWhatsappWebhookRouteImport.update({
+    id: '/api/public/whatsapp/webhook',
+    path: '/api/public/whatsapp/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -276,6 +289,7 @@ export interface FileRoutesByFullPath {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
@@ -304,6 +318,7 @@ export interface FileRoutesByFullPath {
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -318,6 +333,7 @@ export interface FileRoutesByTo {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
@@ -346,6 +362,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -362,6 +379,7 @@ export interface FileRoutesById {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
@@ -390,6 +408,7 @@ export interface FileRoutesById {
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -406,6 +425,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
@@ -434,6 +454,7 @@ export interface FileRouteTypes {
     | '/clients/'
     | '/events/'
     | '/orders/'
+    | '/api/public/whatsapp/webhook'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -448,6 +469,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
@@ -476,6 +498,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/events'
     | '/orders'
+    | '/api/public/whatsapp/webhook'
   id:
     | '__root__'
     | '/'
@@ -491,6 +514,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
@@ -519,6 +543,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/'
     | '/_authenticated/events/'
     | '/_authenticated/orders/'
+    | '/api/public/whatsapp/webhook'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -535,6 +560,7 @@ export interface RootRouteChildren {
   MeasureGuideRoute: typeof MeasureGuideRoute
   MeasurementPassportRoute: typeof MeasurementPassportRoute
   OnboardingRoute: typeof OnboardingRoute
+  PortalRoute: typeof PortalRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SecurityRoute: typeof SecurityRoute
@@ -546,6 +572,7 @@ export interface RootRouteChildren {
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   PassportTokenRoute: typeof PassportTokenRoute
+  ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -639,6 +666,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/portal': {
+      id: '/portal'
+      path: '/portal'
+      fullPath: '/portal'
+      preLoaderRoute: typeof PortalRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/pricing': {
@@ -837,6 +871,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/api/public/whatsapp/webhook': {
+      id: '/api/public/whatsapp/webhook'
+      path: '/api/public/whatsapp/webhook'
+      fullPath: '/api/public/whatsapp/webhook'
+      preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -897,6 +938,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeasureGuideRoute: MeasureGuideRoute,
   MeasurementPassportRoute: MeasurementPassportRoute,
   OnboardingRoute: OnboardingRoute,
+  PortalRoute: PortalRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SecurityRoute: SecurityRoute,
@@ -908,6 +950,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   PassportTokenRoute: PassportTokenRoute,
+  ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
