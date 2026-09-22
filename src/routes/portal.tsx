@@ -19,6 +19,7 @@ import {
 const TOKEN_KEY = "jaylor:portal-token";
 
 export const Route = createFileRoute("/portal")({
+  staticData: { sitemap: true },
   head: () => ({
     meta: [
       { title: "My orders — Jaylor customer portal" },

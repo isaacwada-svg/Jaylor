@@ -36,13 +36,16 @@ async function processDelivery(event: string, payload: unknown) {
 }
 
 export const Route = createFileRoute("/api/public/whatsapp/webhook")({
+  staticData: { sitemap: false },
   server: {
     handlers: {
       POST: async ({ request }) => {
         const secret = process.env["WHATSAPP_API_KEY"];
         if (!secret) return new Response("Not configured", { status: 500 });
 
-        const verified = await verifyWebhookRequest(request, secret, {
+        const verified = await verifyWebhookRequest({
+          req: request,
+          secret,
           maxBodyBytes: 4 * 1024 * 1024,
         }).catch(() => null);
         if (!verified) return new Response("Invalid signature", { status: 401 });
