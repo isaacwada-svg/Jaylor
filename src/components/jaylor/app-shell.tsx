@@ -35,6 +35,7 @@ import { VoiceOrderDialog } from "./voice-order-dialog";
 import { DiscoveryCue } from "./discovery-cue";
 import { FeatureTour } from "./feature-tour";
 import { AdvisorPanel } from "./advisor-panel";
+import { NotificationBell } from "./notification-bell";
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
 import { useFeatureDiscovery, type DiscoveryFeature } from "@/lib/feature-discovery";
@@ -154,7 +155,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <div className="mt-auto space-y-3">
               {!collapsed && <TierBadge tier={tier} />}
-              <ThemeToggle />
+              <div className="flex items-center gap-1">
+                {currentStore && canManageOrders && <NotificationBell storeId={currentStore.id} />}
+                <ThemeToggle />
+              </div>
             </div>
           </div>
         </aside>
@@ -170,6 +174,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             />
             <div className="flex shrink-0 items-center gap-1">
               <TierBadge tier={tier} />
+              {currentStore && canManageOrders && <NotificationBell storeId={currentStore.id} />}
               <ThemeToggle />
             </div>
           </header>
