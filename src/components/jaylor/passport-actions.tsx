@@ -5,6 +5,7 @@ import { QrCode, Send, ShieldOff } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
+import { useFeatureDiscovery } from "@/lib/feature-discovery";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -25,6 +26,7 @@ export function SendPassportButton({
   phone: string;
 }) {
   const queryClient = useQueryClient();
+  const discovery = useFeatureDiscovery();
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
@@ -69,6 +71,7 @@ export function SendPassportButton({
         `Hi ${firstName}, here is your measurement card. Keep the link: you can show it to any Jaylor shop instead of measuring again, or ask for an update any time. ${url}`,
       );
       setOpen(true);
+      void discovery.markUsed("measurement_passport");
       queryClient.invalidateQueries({ queryKey: ["measurement-passport", clientId] });
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not create the measurement card"));

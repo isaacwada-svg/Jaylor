@@ -2,6 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
+import { DiscoveryCue } from "@/components/jaylor/discovery-cue";
+import { useFeatureDiscovery } from "@/lib/feature-discovery";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   CalendarClock,
@@ -14,6 +16,7 @@ import {
   FileText,
 } from "lucide-react";
 import type { Tier } from "@/lib/jaylor";
+import type { DiscoveryFeature } from "@/lib/feature-discovery";
 
 export const Route = createFileRoute("/_authenticated/more")({
   staticData: { sitemap: false },
@@ -35,14 +38,26 @@ export const Route = createFileRoute("/_authenticated/more")({
   component: More,
 });
 
-const ITEMS: { label: string; hint: string; icon: typeof Users2; tier?: Tier }[] = [
+const ITEMS: {
+  label: string;
+  hint: string;
+  icon: typeof Users2;
+  tier?: Tier;
+  feature?: DiscoveryFeature;
+}[] = [
   {
     label: "Consultations",
     hint: "Bookings and video fittings",
     icon: CalendarClock,
     tier: "Growth",
   },
-  { label: "Group events", hint: "Aso-ebi and family sets", icon: Users2, tier: "Growth" },
+  {
+    label: "Group events",
+    hint: "Aso-ebi and family sets",
+    icon: Users2,
+    tier: "Growth",
+    feature: "group_orders",
+  },
   {
     label: "Contracts",
     hint: "School and company uniform jobs",
@@ -62,24 +77,39 @@ const ITEMS: { label: string; hint: string; icon: typeof Users2; tier?: Tier }[]
     hint: "Customer style requests from your shop",
     icon: Sparkles,
     tier: "Growth",
+    feature: "ai_design",
   },
   { label: "Privacy and data", hint: "Consent, exports, support access", icon: ShieldCheck },
   { label: "Settings and billing", hint: "Store, plan, team", icon: Settings },
 ];
 
 function More() {
+  const discovery = useFeatureDiscovery();
+
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <h1 className="text-3xl">More</h1>
         <StitchDivider className="my-6" />
         <div className="grid gap-3 sm:grid-cols-2">
-          {ITEMS.map(({ label, hint, icon: Icon, tier }) => {
+          {ITEMS.map(({ label, hint, icon: Icon, tier, feature }) => {
+            const iconSpan = (
+              <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-gold">
+                {feature ? (
+                  <DiscoveryCue
+                    show={discovery.isUnseen(feature)}
+                    pulse={discovery.shouldPulse(feature)}
+                  >
+                    <Icon className="size-5" />
+                  </DiscoveryCue>
+                ) : (
+                  <Icon className="size-5" />
+                )}
+              </span>
+            );
             const content = (
               <CardContent className="flex items-start gap-3 p-4">
-                <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-gold">
-                  <Icon className="size-5" />
-                </span>
+                {iconSpan}
                 <div className="min-w-0">
                   <div className="flex items-center gap-2">
                     <p className="truncate font-medium">{label}</p>
@@ -154,7 +184,11 @@ function More() {
             }
             if (label === "AI tools") {
               return (
-                <Link key={label} to="/ai-designs">
+                <Link
+                  key={label}
+                  to="/ai-designs"
+                  onClick={() => void discovery.markUsed("ai_design")}
+                >
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

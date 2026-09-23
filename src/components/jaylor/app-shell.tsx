@@ -32,8 +32,11 @@ import { TierBadge } from "./tier-badge";
 import { ClientForm } from "./client-form";
 import { OrderForm, type OrderPrefill } from "./order-form";
 import { VoiceOrderDialog } from "./voice-order-dialog";
+import { DiscoveryCue } from "./discovery-cue";
+import { FeatureTour } from "./feature-tour";
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
+import { useFeatureDiscovery, type DiscoveryFeature } from "@/lib/feature-discovery";
 import { cn } from "@/lib/utils";
 import { initOutboxSync } from "@/lib/offline/outbox";
 
@@ -58,10 +61,16 @@ export function AppShell({ children }: { children: ReactNode }) {
   const { memberships, currentStore, currentRole, setCurrentStoreId } = useStore();
   const tier = effectiveTier(currentStore);
   const canManageOrders = currentRole === "owner" || currentRole === "manager";
+  const discovery = useFeatureDiscovery();
 
   useEffect(() => initOutboxSync(), []);
 
-  const newActions: { label: string; icon: typeof Scissors; onClick: () => void }[] = [
+  const newActions: {
+    label: string;
+    icon: typeof Scissors;
+    onClick: () => void;
+    feature?: DiscoveryFeature;
+  }[] = [
     ...(canManageOrders
       ? [{ label: "New order", icon: Scissors, onClick: () => setOrderFormOpen(true) }]
       : []),
@@ -70,7 +79,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       ? [{ label: "Record payment", icon: Banknote, onClick: () => navigate({ to: "/orders" }) }]
       : []),
     ...(canManageOrders
-      ? [{ label: "Voice order", icon: Mic, onClick: () => setVoiceOrderOpen(true) }]
+      ? [
+          {
+            label: "Voice order",
+            icon: Mic,
+            onClick: () => setVoiceOrderOpen(true),
+            feature: "voice_order" as const,
+          },
+        ]
       : []),
   ];
 
@@ -203,7 +219,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <SheetTitle className="text-2xl">Create</SheetTitle>
           </SheetHeader>
           <div className="grid gap-2 px-4 pb-4">
-            {newActions.map(({ label, icon: Icon, onClick }) => (
+            {newActions.map(({ label, icon: Icon, onClick, feature }) => (
               <Button
                 key={label}
                 variant="outline"
@@ -213,7 +229,16 @@ export function AppShell({ children }: { children: ReactNode }) {
                   onClick();
                 }}
               >
-                <Icon className="size-5 text-gold" />
+                {feature ? (
+                  <DiscoveryCue
+                    show={discovery.isUnseen(feature)}
+                    pulse={discovery.shouldPulse(feature)}
+                  >
+                    <Icon className="size-5 text-gold" />
+                  </DiscoveryCue>
+                ) : (
+                  <Icon className="size-5 text-gold" />
+                )}
                 {label}
               </Button>
             ))}
@@ -251,12 +276,15 @@ export function AppShell({ children }: { children: ReactNode }) {
             storeId={currentStore.id}
             canRecordAudio={tier !== "Free"}
             onParsed={(prefill) => {
+              void discovery.markUsed("voice_order");
               setOrderPrefill(prefill);
               setOrderFormOpen(true);
             }}
           />
         </>
       )}
+
+      <FeatureTour />
     </div>
   );
 }

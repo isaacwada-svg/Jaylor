@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { jobTemplate } from "@/lib/job-templates";
+import { useFeatureDiscovery } from "@/lib/feature-discovery";
 
 export const Route = createFileRoute("/_authenticated/events/")({
   staticData: { sitemap: false },
@@ -33,6 +34,7 @@ function Events() {
   const storeId = currentStore?.id;
   const canCreate = currentRole === "owner" || currentRole === "manager";
   const queryClient = useQueryClient();
+  const discovery = useFeatureDiscovery();
   const [formOpen, setFormOpen] = useState(false);
 
   const { data: events, isLoading } = useQuery({
@@ -125,7 +127,10 @@ function Events() {
           open={formOpen}
           onOpenChange={setFormOpen}
           storeId={storeId}
-          onSaved={() => queryClient.invalidateQueries({ queryKey: ["events", storeId] })}
+          onSaved={() => {
+            void discovery.markUsed("group_orders");
+            queryClient.invalidateQueries({ queryKey: ["events", storeId] });
+          }}
         />
       )}
     </AppShell>
