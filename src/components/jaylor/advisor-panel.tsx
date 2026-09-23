@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { Plus, Send, Trash2 } from "lucide-react";
+import { Plus, Send, Sparkles, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { LogoMark } from "@/components/jaylor/logo";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { Textarea } from "@/components/ui/textarea";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -88,7 +87,7 @@ export function AdvisorPanel({
         aria-label="Ask Jaylor"
         className="fixed bottom-36 right-4 z-40 gap-2 rounded-none shadow-float lg:bottom-8 lg:right-8"
       >
-        <LogoMark className="size-5" />
+        <Sparkles className="size-4" />
         Ask Jaylor
       </Button>
 

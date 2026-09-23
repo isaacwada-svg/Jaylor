@@ -269,7 +269,7 @@ function GuestEventPage() {
       <main className="linen min-h-screen bg-background px-4 py-10">
         <div className="mx-auto w-full max-w-md space-y-4">
           <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-            <BrandLogo markClassName="h-20 w-auto" />
+            <BrandLogo markClassName="h-12 w-auto" />
           </Link>
           <Skeleton className="h-8 w-2/3" />
           <Skeleton className="h-40 rounded-2xl" />
@@ -283,7 +283,7 @@ function GuestEventPage() {
       <main className="linen min-h-screen bg-background px-4 py-10">
         <div className="mx-auto w-full max-w-md">
           <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-            <BrandLogo showTagline markClassName="h-20 w-auto" />
+            <BrandLogo showTagline markClassName="h-12 w-auto" />
           </Link>
           <div className="mt-8 text-center">
             <p className="text-xs uppercase tracking-[0.18em] text-gold">{quote.storeName}</p>
@@ -303,7 +303,7 @@ function GuestEventPage() {
     return (
       <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10 text-center">
         <Link to="/" aria-label="Jaylor home">
-          <BrandLogo markClassName="h-20 w-auto" />
+          <BrandLogo markClassName="h-12 w-auto" />
         </Link>
         <h1 className="mt-8 text-xl">We couldn&apos;t find your invite</h1>
         <p className="mt-2 text-sm text-muted-foreground">
@@ -332,7 +332,7 @@ function GuestEventPage() {
     <main className="linen min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-md">
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-          <BrandLogo markClassName="h-20 w-auto" />
+          <BrandLogo markClassName="h-12 w-auto" />
         </Link>
         <div className="mt-8 text-center">
           <p className="text-xs uppercase tracking-[0.18em] text-gold">{event.store_name}</p>

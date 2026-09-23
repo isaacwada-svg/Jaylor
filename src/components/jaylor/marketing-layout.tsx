@@ -9,7 +9,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
           <Link to="/" aria-label="Jaylor home">
-            <BrandLogo dark showTagline markClassName="h-20 w-auto" />
+            <BrandLogo dark showTagline markClassName="h-10 w-auto" />
           </Link>
           <nav className="flex items-center gap-6 text-xs uppercase text-muted-foreground">
             <Link
@@ -41,7 +41,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
 
       <footer className="border-t border-border py-14">
         <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-4 px-5 text-center lg:px-10">
-          <BrandLogo dark showTagline markClassName="h-20 w-auto" />
+          <BrandLogo dark showTagline markClassName="h-11 w-auto" />
           <nav className="flex flex-wrap justify-center gap-4 text-sm text-muted-foreground">
             <Link to="/features" className="hover:text-foreground">
               Features

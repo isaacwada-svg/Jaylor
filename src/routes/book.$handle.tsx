@@ -120,7 +120,7 @@ function BookConsultation() {
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-          <BrandLogo showTagline markClassName="h-20 w-auto" />
+          <BrandLogo showTagline markClassName="h-12 w-auto" />
         </Link>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">

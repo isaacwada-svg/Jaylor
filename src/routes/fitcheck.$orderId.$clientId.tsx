@@ -88,7 +88,7 @@ function FitCheckPage() {
     <main className="linen flex min-h-screen flex-col items-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-          <BrandLogo markClassName="h-20 w-auto" />
+          <BrandLogo markClassName="h-12 w-auto" />
         </Link>
 
         <div className="mt-8">
