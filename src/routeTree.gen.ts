@@ -51,6 +51,7 @@ import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events/$eventId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
+import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -269,6 +270,11 @@ const AuthenticatedOrdersOrderIdRoute =
     path: '/orders/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AdminStoresStoreIdRoute = AdminStoresStoreIdRouteImport.update({
+  id: '/stores/$storeId',
+  path: '/stores/$storeId',
+  getParentRoute: () => AdminRoute,
+} as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
@@ -280,7 +286,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
@@ -315,6 +321,7 @@ export interface FileRoutesByFullPath {
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -324,7 +331,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
@@ -359,6 +366,7 @@ export interface FileRoutesByTo {
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
@@ -370,7 +378,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRoute
+  '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
@@ -405,6 +413,7 @@ export interface FileRoutesById {
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -451,6 +460,7 @@ export interface FileRouteTypes {
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
+    | '/admin/stores/$storeId'
     | '/clients/'
     | '/events/'
     | '/orders/'
@@ -495,6 +505,7 @@ export interface FileRouteTypes {
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
+    | '/admin/stores/$storeId'
     | '/clients'
     | '/events'
     | '/orders'
@@ -540,6 +551,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
+    | '/admin/stores/$storeId'
     | '/_authenticated/clients/'
     | '/_authenticated/events/'
     | '/_authenticated/orders/'
@@ -551,7 +563,7 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   HandleRoute: typeof HandleRoute
   AboutRoute: typeof AboutRoute
-  AdminRoute: typeof AdminRoute
+  AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
   CookiesRoute: typeof CookiesRoute
   CustomRoute: typeof CustomRoute
@@ -871,6 +883,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/admin/stores/$storeId': {
+      id: '/admin/stores/$storeId'
+      path: '/stores/$storeId'
+      fullPath: '/admin/stores/$storeId'
+      preLoaderRoute: typeof AdminStoresStoreIdRouteImport
+      parentRoute: typeof AdminRoute
+    }
     '/api/public/whatsapp/webhook': {
       id: '/api/public/whatsapp/webhook'
       path: '/api/public/whatsapp/webhook'
@@ -924,12 +943,22 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
 const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
+interface AdminRouteChildren {
+  AdminStoresStoreIdRoute: typeof AdminStoresStoreIdRoute
+}
+
+const AdminRouteChildren: AdminRouteChildren = {
+  AdminStoresStoreIdRoute: AdminStoresStoreIdRoute,
+}
+
+const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   HandleRoute: HandleRoute,
   AboutRoute: AboutRoute,
-  AdminRoute: AdminRoute,
+  AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
   CookiesRoute: CookiesRoute,
   CustomRoute: CustomRoute,

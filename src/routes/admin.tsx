@@ -52,6 +52,14 @@ type Stats = {
   mrr_estimate: number;
 };
 
+type PlatformTotals = {
+  total_clients: number;
+  total_orders: number;
+  total_users: number;
+  total_visitors_30d: number;
+  gmv_collected: number;
+};
+
 // Admin RPCs that exist in the database but aren't in the generated Database types yet.
 const rpcAdmin = supabase.rpc as unknown as (
   fn: string,
@@ -365,6 +373,15 @@ function OverviewTab() {
     },
   });
 
+  const { data: totals, isLoading: totalsLoading } = useQuery({
+    queryKey: ["admin-platform-totals"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_platform_totals", {});
+      if (error) throw error;
+      return data as unknown as PlatformTotals;
+    },
+  });
+
   const { data: stores, isLoading: storesLoading } = useQuery({
     queryKey: ["admin-stores"],
     queryFn: async () => {
@@ -376,24 +393,37 @@ function OverviewTab() {
 
   return (
     <div>
-      {statsLoading ? (
+      {statsLoading || totalsLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
             <Skeleton key={i} className="h-24 rounded-2xl" />
           ))}
         </div>
-      ) : stats ? (
+      ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat label="Total stores" value={String(stats.total_stores)} />
-          <Stat label="New in 30 days" value={String(stats.new_stores_30d)} />
-          <Stat label="Trials ending in 7 days" value={String(stats.trials_ending_7d)} />
-          <Stat label="Active this week" value={String(stats.active_this_week)} />
-          <Stat label="Estimated MRR" value={formatMoney(stats.mrr_estimate)} />
-          {Object.entries(stats.stores_by_plan).map(([plan, count]) => (
-            <Stat key={plan} label={`On ${planCodeToTier(plan)}`} value={String(count)} />
-          ))}
+          {stats && (
+            <>
+              <Stat label="Total stores" value={String(stats.total_stores)} />
+              <Stat label="New in 30 days" value={String(stats.new_stores_30d)} />
+              <Stat label="Trials ending in 7 days" value={String(stats.trials_ending_7d)} />
+              <Stat label="Active this week" value={String(stats.active_this_week)} />
+              <Stat label="Estimated MRR" value={formatMoney(stats.mrr_estimate)} />
+              {Object.entries(stats.stores_by_plan).map(([plan, count]) => (
+                <Stat key={plan} label={`On ${planCodeToTier(plan)}`} value={String(count)} />
+              ))}
+            </>
+          )}
+          {totals && (
+            <>
+              <Stat label="Total clients" value={String(totals.total_clients)} />
+              <Stat label="Total orders" value={String(totals.total_orders)} />
+              <Stat label="Registered users" value={String(totals.total_users)} />
+              <Stat label="Visitors (30 days)" value={String(totals.total_visitors_30d)} />
+              <Stat label="Collected all-time" value={formatMoney(totals.gmv_collected)} />
+            </>
+          )}
         </div>
-      ) : null}
+      )}
 
       <h2 className="mt-8 text-xl">Stores</h2>
       {storesLoading ? (
@@ -405,9 +435,11 @@ function OverviewTab() {
       ) : (
         <div className="mt-3 space-y-2">
           {(stores ?? []).map((store) => (
-            <div
+            <Link
               key={store.id}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border p-3"
+              to="/admin/stores/$storeId"
+              params={{ storeId: store.id }}
+              className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-accent/40"
             >
               <div className="min-w-0">
                 <p className="truncate font-medium">{store.name}</p>
@@ -422,7 +454,7 @@ function OverviewTab() {
                   {new Date(store.created_at).toLocaleDateString()}
                 </span>
               </div>
-            </div>
+            </Link>
           ))}
         </div>
       )}
