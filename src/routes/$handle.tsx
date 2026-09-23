@@ -92,6 +92,7 @@ function PublicStorefront() {
   const photoUrl = useStorefrontPhotoUrls([
     ...(items?.flatMap((item) => item.photos) ?? []),
     store?.logo_url ?? null,
+    store?.cover_url ?? null,
   ]);
 
   if (storeLoading) {
@@ -127,9 +128,9 @@ function PublicStorefront() {
       <div
         className="flex h-40 items-end bg-gradient-to-br from-primary to-primary/70 lg:h-56"
         style={
-          store.cover_url
+          store.cover_url && photoUrl(store.cover_url)
             ? {
-                backgroundImage: `url(${store.cover_url})`,
+                backgroundImage: `url(${photoUrl(store.cover_url)})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }
