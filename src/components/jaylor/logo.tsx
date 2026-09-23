@@ -2,17 +2,25 @@ import { cn } from "@/lib/utils";
 import logoMarkNavy from "@/assets/jaylor-logo-mark.png";
 import logoMarkGold from "@/assets/jaylor-logo-mark-gold.png";
 
-/** The Jaylor mannequin, measuring-tape and needle "J" mark. */
+/**
+ * The Jaylor mannequin, measuring-tape and needle "J" mark. This used to
+ * render a separate photorealistic 3D rendition of the mark from a public
+ * static file, while every other use of the mark (BrandLogo) rendered the
+ * flat vector version -- the two looked like different logos depending on
+ * where you saw them. Unified on the flat vector version everywhere.
+ * "gold" is the default since the one place this renders (the sidebar
+ * store-switcher badge) has a dark background, same as BrandLogo's `dark`.
+ */
 export function LogoMark({
   className,
-  variant: _variant = "full",
+  variant = "gold",
 }: {
   className?: string;
   variant?: "full" | "gold";
 }) {
   return (
     <img
-      src="/logo-mark.png"
+      src={variant === "gold" ? logoMarkGold : logoMarkNavy}
       alt=""
       width={1024}
       height={1024}
