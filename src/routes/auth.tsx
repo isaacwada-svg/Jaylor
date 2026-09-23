@@ -309,7 +309,7 @@ function AuthPage() {
                         id="name"
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        placeholder="Isaac Wada"
+                        placeholder="Chioma Eze"
                         autoComplete="name"
                         required
                       />
@@ -321,7 +321,7 @@ function AuthPage() {
                         type="tel"
                         value={whatsappRaw}
                         onChange={(e) => setWhatsappRaw(e.target.value)}
-                        placeholder="0803 123 4567"
+                        placeholder="0800 000 0000"
                         autoComplete="tel"
                         required
                       />
@@ -348,7 +348,7 @@ function AuthPage() {
                       id="identifier"
                       value={identifier}
                       onChange={(e) => setIdentifier(e.target.value)}
-                      placeholder="you@example.com or 0803 123 4567"
+                      placeholder="you@example.com or 0800 000 0000"
                       autoComplete="username"
                       required
                     />
