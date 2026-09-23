@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import logoMarkNavy from "@/assets/jaylor-logo-mark.png";
 import logoMarkGold from "@/assets/jaylor-logo-mark-gold.png";
-import primaryLogo from "@/assets/jaylor-primary-logo-v2.png";
-import primaryLogoGold from "@/assets/jaylor-primary-logo-gold.png";
+import primaryLogo from "@/assets/jaylor-official-logo.png";
+import primaryLogoGold from "@/assets/jaylor-official-logo-gold.png";
 
 /**
  * The Jaylor mannequin, measuring-tape and needle "J" mark. This used to
@@ -33,11 +33,10 @@ export function LogoMark({
 }
 
 /**
- * Renders the brand's actual primary lockup from the Jaylor brand
- * guidelines -- the mannequin/tape/needle "J" fused directly with the
- * "aylor" wordmark as one image, rather than an icon next to a
- * separately-styled text span, so every full "Jaylor" wordmark in the
- * app matches the guide exactly.
+ * Renders the brand's official lockup -- the mannequin/tape/needle "J"
+ * fused directly with the "aylor" wordmark as one image, rather than an
+ * icon next to a separately-styled text span, so every full "Jaylor"
+ * wordmark in the app matches exactly.
  *
  * `dark` (true on the navy premium-public background) uses a solid-gold
  * monochrome rendition of the same lockup -- generated from the same
@@ -63,8 +62,8 @@ export function BrandLogo({
       <img
         src={dark ? primaryLogoGold : primaryLogo}
         alt="Jaylor"
-        width={1376}
-        height={768}
+        width={1774}
+        height={887}
         loading="eager"
         className={cn("h-12 w-auto object-contain", markClassName)}
       />
