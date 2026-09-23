@@ -2,7 +2,7 @@ import type { ReactNode } from "react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
-export function DiscoveryBadge({ label = "Try this" }: { label?: string }) {
+export function DiscoveryBadge({ label = "Try this" }: { label?: string | undefined }) {
   return (
     <Badge
       variant="outline"

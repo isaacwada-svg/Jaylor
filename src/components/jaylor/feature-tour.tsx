@@ -44,7 +44,7 @@ export function FeatureTour() {
   const discovery = useFeatureDiscovery();
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const current = STEPS[step];
+  const current = STEPS[step] ?? STEPS[0];
   const Icon = current.icon;
   const last = step === STEPS.length - 1;
 
