@@ -2488,6 +2488,48 @@ export type Database = {
           },
         ]
       }
+      store_feature_discovery: {
+        Row: {
+          created_at: string
+          features_used: string[]
+          store_id: string
+          tour_completed_at: string | null
+          tour_dismissed_at: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          features_used?: string[]
+          store_id: string
+          tour_completed_at?: string | null
+          tour_dismissed_at?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          features_used?: string[]
+          store_id?: string
+          tour_completed_at?: string | null
+          tour_dismissed_at?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_feature_discovery_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_feature_discovery_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_invites: {
         Row: {
           accepted_by: string | null
