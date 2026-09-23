@@ -1,5 +1,6 @@
 import { useEffect } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import type { RealtimeChannel } from "@supabase/supabase-js";
 import { supabase } from "@/integrations/supabase/client";
 
 export type StoreNotification = {
@@ -18,6 +19,49 @@ export type StoreNotification = {
 const db = supabase as unknown as { from(table: "notifications"): any };
 
 const NOTIFICATIONS_KEY = (storeId: string | undefined) => ["notifications", storeId];
+
+// AppShell renders NotificationBell twice (desktop + mobile header, both
+// mounted at once, one just CSS-hidden), so two useNotifications(storeId)
+// instances share the same storeId and would otherwise both try to
+// `.channel(topic).on(...).subscribe()` the same topic -- supabase-js
+// returns the SAME channel object for a repeated topic, and calling `.on()`
+// on a channel that's already `.subscribe()`d throws. Ref-count instead: only
+// the first mount actually subscribes, later mounts just piggyback on it
+// (their invalidateQueries call is redundant but harmless), and the channel
+// is only removed once every mount has unmounted.
+const notificationChannels = new Map<string, { channel: RealtimeChannel; refCount: number }>();
+
+function subscribeToStoreNotifications(storeId: string, onInsert: () => void) {
+  const topic = `notifications:${storeId}`;
+  const existing = notificationChannels.get(topic);
+  if (existing) {
+    existing.refCount += 1;
+  } else {
+    const channel = supabase
+      .channel(topic)
+      .on(
+        "postgres_changes",
+        {
+          event: "INSERT",
+          schema: "public",
+          table: "notifications",
+          filter: `store_id=eq.${storeId}`,
+        },
+        onInsert,
+      )
+      .subscribe();
+    notificationChannels.set(topic, { channel, refCount: 1 });
+  }
+  return () => {
+    const entry = notificationChannels.get(topic);
+    if (!entry) return;
+    entry.refCount -= 1;
+    if (entry.refCount <= 0) {
+      void supabase.removeChannel(entry.channel);
+      notificationChannels.delete(topic);
+    }
+  };
+}
 
 export function useNotifications(storeId: string | undefined) {
   const queryClient = useQueryClient();
@@ -39,22 +83,9 @@ export function useNotifications(storeId: string | undefined) {
 
   useEffect(() => {
     if (!storeId) return;
-    const channel = supabase
-      .channel(`notifications:${storeId}`)
-      .on(
-        "postgres_changes",
-        {
-          event: "INSERT",
-          schema: "public",
-          table: "notifications",
-          filter: `store_id=eq.${storeId}`,
-        },
-        () => queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY(storeId) }),
-      )
-      .subscribe();
-    return () => {
-      void supabase.removeChannel(channel);
-    };
+    return subscribeToStoreNotifications(storeId, () =>
+      queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_KEY(storeId) }),
+    );
   }, [storeId, queryClient]);
 
   return query;
