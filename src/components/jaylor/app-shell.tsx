@@ -34,6 +34,7 @@ import { OrderForm, type OrderPrefill } from "./order-form";
 import { VoiceOrderDialog } from "./voice-order-dialog";
 import { DiscoveryCue } from "./discovery-cue";
 import { FeatureTour } from "./feature-tour";
+import { AdvisorPanel } from "./advisor-panel";
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore } from "@/lib/store-context";
 import { useFeatureDiscovery, type DiscoveryFeature } from "@/lib/feature-discovery";
@@ -282,6 +283,10 @@ export function AppShell({ children }: { children: ReactNode }) {
             }}
           />
         </>
+      )}
+
+      {currentStore && canManageOrders && (
+        <AdvisorPanel storeId={currentStore.id} storeCreatedAt={currentStore.created_at} />
       )}
 
       <FeatureTour />

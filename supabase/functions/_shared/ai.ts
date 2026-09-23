@@ -10,7 +10,10 @@ export type ContentPart =
   | { type: "image_url"; image_url: { url: string } }
   | { type: "input_audio"; input_audio: { data: string; format: string } };
 
-export type ChatMessage = { role: "system" | "user"; content: string | ContentPart[] };
+export type ChatMessage = {
+  role: "system" | "user" | "assistant";
+  content: string | ContentPart[];
+};
 
 export type AiUsage = { prompt_tokens?: number; completion_tokens?: number } | undefined;
 

@@ -12,7 +12,7 @@ type SupabaseClient = ReturnType<typeof createClient>;
 // by hand, same as _shared/plan.ts mirrors src/lib/pricing-content.ts.
 const APPROX_USD_NGN_RATE = 1600;
 
-export type AiFeatureKey = "voice_entry" | "ai_replies" | "style_cards";
+export type AiFeatureKey = "voice_entry" | "ai_replies" | "style_cards" | "advisor_messages";
 
 /** Feature keys allowed to keep running once the monthly budget hits 100% (paid plans only). */
 const ALWAYS_ON_AT_FULL_BUDGET = new Set<AiFeatureKey>(["voice_entry"]);
@@ -33,7 +33,26 @@ const TASK_CONFIG: Record<AiFeatureKey, TaskConfig> = {
   voice_entry: { model: "google/gemini-2.5-flash", json: true, cacheable: false },
   ai_replies: { model: "google/gemini-2.5-flash", json: false, cacheable: false },
   style_cards: { model: "google/gemini-2.5-flash-image-preview", json: false, cacheable: false },
+  advisor_messages: { model: "google/gemini-2.5-flash", json: false, cacheable: false },
 };
+
+/**
+ * Per-plan model override for the Business Advisor, so upgrading a tier's
+ * model later is a config-only change here rather than touching call sites.
+ * Every tier currently points at the one model this project's Lovable AI
+ * Gateway plan has confirmed available — raise growth/business to a
+ * stronger model ID once one is confirmed on the account's gateway plan.
+ */
+const ADVISOR_MODEL_BY_PLAN: Record<string, string> = {
+  free: "google/gemini-2.5-flash",
+  growth: "google/gemini-2.5-flash",
+  business: "google/gemini-2.5-flash",
+  custom: "google/gemini-2.5-flash",
+};
+
+export function advisorModelForPlan(planCode: string | null | undefined): string {
+  return ADVISOR_MODEL_BY_PLAN[planCode ?? "free"] ?? ADVISOR_MODEL_BY_PLAN.free;
+}
 
 // Rough $/1M-token estimate per model, for the usage_log's estimated cost
 // columns — not an authoritative invoice figure, same spirit as the
@@ -119,18 +138,21 @@ export async function canUseAi(
   supabase: SupabaseClient,
   storeId: string,
   featureKey: AiFeatureKey,
+  opts?: { bypassPlanLimit?: boolean },
 ): Promise<GatewayGate> {
-  const { data: limitCheck } = await supabase.rpc("check_feature_limit", {
-    p_store_id: storeId,
-    p_feature: featureKey,
-    p_quantity: 1,
-  });
-  const limit = limitCheck as { allowed?: boolean } | null;
-  if (limit && limit.allowed === false) {
-    return {
-      allowed: false,
-      reason: "You've used all of this month's AI credits on your plan. Upgrade for more.",
-    };
+  if (!opts?.bypassPlanLimit) {
+    const { data: limitCheck } = await supabase.rpc("check_feature_limit", {
+      p_store_id: storeId,
+      p_feature: featureKey,
+      p_quantity: 1,
+    });
+    const limit = limitCheck as { allowed?: boolean } | null;
+    if (limit && limit.allowed === false) {
+      return {
+        allowed: false,
+        reason: "You've used all of this month's AI credits on your plan. Upgrade for more.",
+      };
+    }
   }
 
   const { data: planCode } = await supabase.rpc("effective_plan_code", { _store_id: storeId });
@@ -228,27 +250,39 @@ export async function runAiGatewayCall(opts: {
   featureKey: AiFeatureKey;
   systemPrompt: string;
   userMessage?: string;
+  /** Prior turns of a multi-turn conversation, oldest first. Never cached. */
+  history?: { role: "user" | "assistant"; content: string }[];
   /** Paid-plan audio path: a short recording, sent instead of a text transcript. */
   audio?: { base64: string; format: string };
   triggeredByUserAction: boolean;
+  /** Skip the plan's monthly quota check (e.g. a time-limited trial window). Rate limits and the global budget still apply. */
+  bypassPlanLimit?: boolean;
+  /** Overrides TASK_CONFIG's model for this call only (e.g. per-plan model selection). */
+  modelOverride?: string;
 }): Promise<{ content: string }> {
   if (!opts.triggeredByUserAction) {
     throw new AiGatewayBlockedError("AI features only run on an explicit user action.");
   }
 
-  const gate = await canUseAi(opts.supabase, opts.storeId, opts.featureKey);
+  const gate = await canUseAi(opts.supabase, opts.storeId, opts.featureKey, {
+    bypassPlanLimit: opts.bypassPlanLimit,
+  });
   if (!gate.allowed) throw new AiGatewayBlockedError(gate.reason);
 
-  const config = TASK_CONFIG[opts.featureKey];
+  const config = {
+    ...TASK_CONFIG[opts.featureKey],
+    model: opts.modelOverride ?? TASK_CONFIG[opts.featureKey].model,
+  };
+  const isMultiTurn = (opts.history?.length ?? 0) > 0;
   const normalizedInput = opts.userMessage?.trim().replace(/\s+/g, " ") ?? "";
   // Audio input is never cached — it's effectively unique every time, and hashing
   // a large base64 blob just to guarantee a permanent cache miss isn't worth it.
   const inputHash =
-    config.cacheable && !opts.audio
+    config.cacheable && !opts.audio && !isMultiTurn
       ? await sha256Hex(`${opts.featureKey}:${opts.systemPrompt}:${normalizedInput}`)
       : null;
 
-  if (config.cacheable && inputHash) {
+  if (config.cacheable && !isMultiTurn && inputHash) {
     const ninetyDaysAgo = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString();
     const { data: cached } = await opts.supabase
       .from("ai_response_cache")
@@ -287,6 +321,9 @@ export async function runAiGatewayCall(opts: {
     : normalizedInput;
   const messages: ChatMessage[] = [
     { role: "system", content: opts.systemPrompt },
+    ...(opts.history ?? []).map(
+      (turn) => ({ role: turn.role, content: turn.content }) as ChatMessage,
+    ),
     { role: "user", content: userContent },
   ];
   const { content, usage } = await callAI(messages, { model: config.model, json: config.json });
@@ -304,7 +341,7 @@ export async function runAiGatewayCall(opts: {
     inputHash,
   });
 
-  if (config.cacheable && inputHash) {
+  if (config.cacheable && !isMultiTurn && inputHash) {
     await opts.supabase
       .from("ai_response_cache")
       .upsert({ input_hash: inputHash, feature_key: opts.featureKey, output: { content } });
