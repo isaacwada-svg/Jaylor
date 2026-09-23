@@ -161,6 +161,7 @@ function Billing() {
               storeId={currentStore.id}
               storeName={currentStore.name}
               logoUrl={currentStore.logo_url}
+              coverUrl={currentStore.cover_url}
             />
             <StoreLocationSettings
               storeId={currentStore.id}
