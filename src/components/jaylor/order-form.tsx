@@ -25,6 +25,7 @@ import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
 import { PaymentReliabilityBadge } from "@/components/jaylor/payment-reliability-badge";
 import { PriceGuidancePanel } from "@/components/jaylor/price-guidance-panel";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -857,7 +858,13 @@ export function OrderForm({
         <Sheet open={open} onOpenChange={onOpenChange}>
           <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
             <SheetHeader className="text-left">
-              <SheetTitle className="text-2xl">New order</SheetTitle>
+              <SheetTitle className="flex items-center gap-2 text-2xl">
+                New order
+                <HelpTooltip>
+                  Pick a client and garment, then add measurements and a price. Balances and due
+                  dates update automatically as you record payments.
+                </HelpTooltip>
+              </SheetTitle>
             </SheetHeader>
             <div className="mt-2 pb-4">{body}</div>
           </SheetContent>
@@ -872,7 +879,13 @@ export function OrderForm({
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
-            <DialogTitle>New order</DialogTitle>
+            <DialogTitle className="flex items-center gap-2">
+              New order
+              <HelpTooltip>
+                Pick a client and garment, then add measurements and a price. Balances and due dates
+                update automatically as you record payments.
+              </HelpTooltip>
+            </DialogTitle>
           </DialogHeader>
           {body}
         </DialogContent>

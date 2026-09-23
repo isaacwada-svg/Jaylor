@@ -10,6 +10,7 @@ import { getErrorMessage } from "@/lib/utils";
 import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -369,7 +370,15 @@ export function ClientForm({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
           <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl">{isEdit ? "Edit client" : "New client"}</SheetTitle>
+            <SheetTitle className="flex items-center gap-2 text-2xl">
+              {isEdit ? "Edit client" : "New client"}
+              {!isEdit && (
+                <HelpTooltip>
+                  Save a client once and reuse their measurements for every future order — including
+                  sending them a measurement card by WhatsApp.
+                </HelpTooltip>
+              )}
+            </SheetTitle>
           </SheetHeader>
           <div className="mt-2 pb-4">{body}</div>
         </SheetContent>
@@ -381,7 +390,15 @@ export function ClientForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{isEdit ? "Edit client" : "New client"}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {isEdit ? "Edit client" : "New client"}
+            {!isEdit && (
+              <HelpTooltip>
+                Save a client once and reuse their measurements for every future order — including
+                sending them a measurement card by WhatsApp.
+              </HelpTooltip>
+            )}
+          </DialogTitle>
         </DialogHeader>
         {body}
       </DialogContent>

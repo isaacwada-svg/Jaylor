@@ -8,6 +8,7 @@ import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { JOB_TEMPLATES, jobTemplate, type JobTemplate } from "@/lib/job-templates";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -731,12 +732,23 @@ export function EventForm({
         ? `New ${template.label.toLowerCase()} order`
         : "What kind of job?";
 
+  const showPickerHelp = title === "What kind of job?";
+  const titleHelp = (
+    <HelpTooltip>
+      One link collects measurements, style choices and each person's own payment — for aso-ebi,
+      uniforms, burials, or any group that can't all come in to your shop.
+    </HelpTooltip>
+  );
+
   if (isMobile) {
     return (
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
           <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl">{title}</SheetTitle>
+            <SheetTitle className="flex items-center gap-2 text-2xl">
+              {title}
+              {showPickerHelp && titleHelp}
+            </SheetTitle>
           </SheetHeader>
           <div className="mt-2 pb-4">{content}</div>
         </SheetContent>
@@ -748,7 +760,10 @@ export function EventForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            {title}
+            {showPickerHelp && titleHelp}
+          </DialogTitle>
         </DialogHeader>
         {content}
       </DialogContent>

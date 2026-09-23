@@ -8,6 +8,7 @@ import { whatsappLink } from "@/lib/whatsapp";
 import { useFeatureDiscovery } from "@/lib/feature-discovery";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
+import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import {
   Dialog,
   DialogContent,
@@ -88,6 +89,10 @@ export function SendPassportButton({
         <QrCode className="size-4" />
         Send measurement card
       </Button>
+      <HelpTooltip>
+        A reusable link with this client's measurements. They can show it to any Jaylor shop instead
+        of measuring again, and it stays up to date if you re-measure them later.
+      </HelpTooltip>
       {isActive && (
         <Button type="button" variant="ghost" className="text-owed" onClick={turnOff}>
           <ShieldOff className="size-4" />

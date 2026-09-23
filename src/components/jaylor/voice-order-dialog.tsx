@@ -8,6 +8,7 @@ import { isSpeechRecognitionSupported, startSpeechRecognition } from "@/lib/voic
 import { GARMENT_TYPES } from "@/lib/jaylor";
 import type { OrderPrefill } from "@/components/jaylor/order-form";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
@@ -203,7 +204,13 @@ export function VoiceOrderDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Voice order</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Voice order
+            <HelpTooltip>
+              Speak the order naturally — garment, client name, price, delivery date. Jaylor fills
+              in the New order form for you to check and save.
+            </HelpTooltip>
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           {!online ? (

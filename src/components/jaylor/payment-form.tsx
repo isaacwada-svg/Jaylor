@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MoneyText } from "@/components/jaylor/money-text";
+import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 
 type Method = "cash" | "transfer" | "pos" | "paystack";
 
@@ -183,7 +184,13 @@ export function PaymentForm({
       <Sheet open={open} onOpenChange={onOpenChange}>
         <SheetContent side="bottom" className="rounded-t-2xl">
           <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl">Record payment</SheetTitle>
+            <SheetTitle className="flex items-center gap-2 text-2xl">
+              Record payment
+              <HelpTooltip>
+                Log a deposit or balance payment against this order. The client's balance, receipt
+                and payment history update immediately.
+              </HelpTooltip>
+            </SheetTitle>
           </SheetHeader>
           <div className="mt-2 pb-4">{body}</div>
         </SheetContent>
@@ -195,7 +202,13 @@ export function PaymentForm({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Record payment</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            Record payment
+            <HelpTooltip>
+              Log a deposit or balance payment against this order. The client's balance, receipt and
+              payment history update immediately.
+            </HelpTooltip>
+          </DialogTitle>
         </DialogHeader>
         {body}
       </DialogContent>
