@@ -28,6 +28,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
+import { useClientMoments, MOMENT_TYPE_LABELS } from "@/lib/moments";
 
 export const Route = createFileRoute("/_authenticated/clients/$clientId")({
   staticData: { sitemap: false },
@@ -247,10 +248,7 @@ function ClientProfile() {
             />
           </TabsContent>
           <TabsContent value="messages" className="mt-6">
-            <EmptyState
-              title="No messages yet"
-              description="WhatsApp reminders you send to this client will be logged here."
-            />
+            <ClientMomentsLog clientId={clientId} />
           </TabsContent>
         </Tabs>
       </div>
@@ -305,6 +303,41 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-border p-3">
       <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm">{value}</p>
+    </div>
+  );
+}
+
+function ClientMomentsLog({ clientId }: { clientId: string }) {
+  const { data: moments, isLoading } = useClientMoments(clientId);
+
+  if (isLoading) return <Skeleton className="h-24 rounded-2xl" />;
+
+  if (!moments || moments.length === 0) {
+    return (
+      <EmptyState
+        title="No moments yet"
+        description="Birthdays, festive greetings and check-ins you send this client will be logged here."
+      />
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {moments.map((moment) => (
+        <div
+          key={moment.id}
+          className="flex items-start justify-between gap-3 rounded-xl border border-border p-3 text-sm"
+        >
+          <div className="min-w-0">
+            <p className="font-medium">{MOMENT_TYPE_LABELS[moment.type]}</p>
+            <p className="mt-0.5 truncate text-muted-foreground">{moment.message}</p>
+          </div>
+          <div className="shrink-0 text-right text-xs text-muted-foreground">
+            <p className="capitalize">{moment.status}</p>
+            <p>{new Date(moment.sent_at ?? moment.created_at).toLocaleDateString()}</p>
+          </div>
+        </div>
+      ))}
     </div>
   );
 }

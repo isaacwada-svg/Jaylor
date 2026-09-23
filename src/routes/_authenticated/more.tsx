@@ -14,6 +14,7 @@ import {
   ShieldCheck,
   Wallet,
   FileText,
+  Gift,
 } from "lucide-react";
 import type { Tier } from "@/lib/jaylor";
 import type { DiscoveryFeature } from "@/lib/feature-discovery";
@@ -72,6 +73,7 @@ const ITEMS: {
   },
   { label: "Expenses and reports", hint: "Costs and net profit", icon: Receipt, tier: "Business" },
   { label: "Payments and receipts", hint: "Balances and receipts", icon: Wallet },
+  { label: "Moments", hint: "Birthdays, festive greetings, check-ins", icon: Gift },
   {
     label: "AI tools",
     hint: "Customer style requests from your shop",
@@ -176,6 +178,15 @@ function More() {
             if (label === "Payments and receipts") {
               return (
                 <Link key={label} to="/payments">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Moments") {
+              return (
+                <Link key={label} to="/moments">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>
