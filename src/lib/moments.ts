@@ -115,6 +115,54 @@ export function useMarkMoment(storeId: string | undefined) {
   });
 }
 
+export type FitFeedback = {
+  area: string;
+  result: "perfect" | "too_tight" | "too_loose" | "too_short" | "too_long";
+  created_at: string;
+};
+
+const FIT_RESULT_LABEL: Record<FitFeedback["result"], string> = {
+  perfect: "perfect",
+  too_tight: "too tight",
+  too_loose: "too loose",
+  too_short: "too short",
+  too_long: "too long",
+};
+
+const FIT_SUGGESTION: Record<FitFeedback["result"], string | null> = {
+  perfect: null,
+  too_tight: "Consider adding a little room.",
+  too_loose: "Consider taking it in slightly.",
+  too_short: "Consider adding some length.",
+  too_long: "Consider shortening slightly.",
+};
+
+export function fitFeedbackHint(feedback: FitFeedback): string | null {
+  if (feedback.result === "perfect") return null;
+  const suggestion = FIT_SUGGESTION[feedback.result];
+  return `Last time: ${feedback.area.toLowerCase()} ${FIT_RESULT_LABEL[feedback.result]}.${
+    suggestion ? ` ${suggestion}` : ""
+  }`;
+}
+
+export function useLatestFitFeedback(clientId: string | undefined) {
+  return useQuery({
+    queryKey: ["fit-feedback-latest", clientId],
+    enabled: !!clientId,
+    queryFn: async () => {
+      const { data, error } = await db
+        .from("client_fit_feedback")
+        .select("area, result, created_at")
+        .eq("client_id", clientId as string)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data as FitFeedback | null;
+    },
+  });
+}
+
 export function useMomentSettings(storeId: string | undefined) {
   return useQuery({
     queryKey: ["moment-settings", storeId],

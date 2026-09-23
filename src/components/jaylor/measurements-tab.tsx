@@ -14,6 +14,7 @@ import {
   type TemplateField,
 } from "@/lib/measurements";
 import { getErrorMessage, cn } from "@/lib/utils";
+import { useLatestFitFeedback, fitFeedbackHint } from "@/lib/moments";
 import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { EmptyState } from "@/components/jaylor/empty-state";
@@ -270,6 +271,8 @@ export function MeasurementForm({
   const [extraFields, setExtraFields] = useState<{ label: string; value: string }[]>([]);
   const [notes, setNotes] = useState("");
   const [busy, setBusy] = useState(false);
+  const { data: fitFeedback } = useLatestFitFeedback(client.id);
+  const fitHint = fitFeedback ? fitFeedbackHint(fitFeedback) : null;
 
   const template = templates.find((t) => t.id === templateId);
   const fields = template ? templateFields(template) : [];
@@ -376,6 +379,9 @@ export function MeasurementForm({
 
   return (
     <form onSubmit={handleSave} className="space-y-5">
+      {fitHint && (
+        <div className="rounded-xl border border-gold/40 bg-accent/30 p-3 text-sm">{fitHint}</div>
+      )}
       <div className="flex flex-wrap items-end gap-3">
         <div className="min-w-[200px] flex-1 space-y-2">
           <Label>Template</Label>

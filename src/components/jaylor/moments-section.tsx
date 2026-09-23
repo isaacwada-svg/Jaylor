@@ -41,7 +41,11 @@ export function MomentsSection({ storeId }: { storeId: string | undefined }) {
       <div className="mt-3 space-y-3">
         {moments.map((moment) => {
           const Icon = ICON_BY_TYPE[moment.type];
-          const draft = drafts[moment.id] ?? moment.message;
+          const defaultMessage =
+            moment.type === "fitcheck" && moment.order_id
+              ? `${moment.message} ${window.location.origin}/fitcheck/${moment.order_id}/${moment.client_id}`
+              : moment.message;
+          const draft = drafts[moment.id] ?? defaultMessage;
           return (
             <Card key={moment.id} className="rounded-2xl border-gold/30">
               <CardContent className="p-4">

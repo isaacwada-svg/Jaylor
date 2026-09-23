@@ -53,6 +53,7 @@ import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
 import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
+import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -281,6 +282,11 @@ const AdminStoresStoreIdRoute = AdminStoresStoreIdRouteImport.update({
   path: '/stores/$storeId',
   getParentRoute: () => AdminRoute,
 } as any)
+const FitcheckOrderIdClientIdRoute = FitcheckOrderIdClientIdRouteImport.update({
+  id: '/fitcheck/$orderId/$clientId',
+  path: '/fitcheck/$orderId/$clientId',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
@@ -329,6 +335,7 @@ export interface FileRoutesByFullPath {
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -375,6 +382,7 @@ export interface FileRoutesByTo {
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
@@ -423,6 +431,7 @@ export interface FileRoutesById {
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -471,6 +480,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/orders/$orderId'
     | '/admin/stores/$storeId'
+    | '/fitcheck/$orderId/$clientId'
     | '/clients/'
     | '/events/'
     | '/orders/'
@@ -517,6 +527,7 @@ export interface FileRouteTypes {
     | '/events/$eventId'
     | '/orders/$orderId'
     | '/admin/stores/$storeId'
+    | '/fitcheck/$orderId/$clientId'
     | '/clients'
     | '/events'
     | '/orders'
@@ -564,6 +575,7 @@ export interface FileRouteTypes {
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
     | '/admin/stores/$storeId'
+    | '/fitcheck/$orderId/$clientId'
     | '/_authenticated/clients/'
     | '/_authenticated/events/'
     | '/_authenticated/orders/'
@@ -596,6 +608,7 @@ export interface RootRouteChildren {
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   PassportTokenRoute: typeof PassportTokenRoute
+  FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
 
@@ -909,6 +922,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStoresStoreIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/fitcheck/$orderId/$clientId': {
+      id: '/fitcheck/$orderId/$clientId'
+      path: '/fitcheck/$orderId/$clientId'
+      fullPath: '/fitcheck/$orderId/$clientId'
+      preLoaderRoute: typeof FitcheckOrderIdClientIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/whatsapp/webhook': {
       id: '/api/public/whatsapp/webhook'
       path: '/api/public/whatsapp/webhook'
@@ -1000,6 +1020,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   PassportTokenRoute: PassportTokenRoute,
+  FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }
 export const routeTree = rootRouteImport
