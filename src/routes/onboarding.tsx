@@ -234,8 +234,9 @@ function Onboarding() {
         <div className="flex items-center justify-center">
           <BrandLogo showTagline markClassName="h-12 w-auto" />
         </div>
-        <p className="mt-3 text-center text-sm text-muted-foreground">
-          Let&apos;s set up your workroom.
+        <h1 className="mt-4 text-center text-2xl">Register your shop</h1>
+        <p className="mt-1 text-center text-sm text-muted-foreground">
+          A few quick steps to set up your workroom on Jaylor.
         </p>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">
@@ -243,7 +244,7 @@ function Onboarding() {
 
           {step === 0 && (
             <>
-              <h1 className="text-xl">Your store</h1>
+              <h2 className="text-xl">Shop details</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 You can add your logo and more once you&apos;re in.
               </p>
@@ -310,7 +311,7 @@ function Onboarding() {
 
           {step === 1 && (
             <>
-              <h1 className="text-xl">Your look</h1>
+              <h2 className="text-xl">Your look</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 Pick an accent colour. You can add your logo any time from Settings.
               </p>
@@ -352,7 +353,7 @@ function Onboarding() {
 
           {step === 2 && (
             <>
-              <h1 className="text-xl">What you sew</h1>
+              <h2 className="text-xl">What you sew</h2>
               <p className="mt-1 text-sm text-muted-foreground">
                 We&apos;ll set up measurement templates that fit what you make.
               </p>
@@ -417,7 +418,7 @@ function Onboarding() {
 
           {step === 3 && (
             <>
-              <h1 className="text-xl">First win</h1>
+              <h2 className="text-xl">First win</h2>
               <p className="mt-1 text-sm text-muted-foreground">What would you like to do first?</p>
               <StitchDivider className="my-6" />
               <div className="space-y-3">
