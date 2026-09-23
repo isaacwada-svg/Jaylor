@@ -232,7 +232,7 @@ function Onboarding() {
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <div className="flex items-center justify-center">
-          <BrandLogo showTagline markClassName="h-12 w-auto" />
+          <BrandLogo showTagline markClassName="h-20 w-auto" />
         </div>
         <p className="mt-3 text-center text-sm text-muted-foreground">
           Let&apos;s set up your workroom.

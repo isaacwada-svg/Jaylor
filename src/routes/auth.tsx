@@ -217,7 +217,7 @@ function AuthPage() {
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-          <BrandLogo showTagline markClassName="h-12 w-auto" />
+          <BrandLogo showTagline markClassName="h-20 w-auto" />
         </Link>
         <p className="mt-3 text-center text-sm text-muted-foreground">
           Every order tracked. Every naira collected.
