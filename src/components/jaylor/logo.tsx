@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import logoMarkNavy from "@/assets/jaylor-logo-mark.png";
 import logoMarkGold from "@/assets/jaylor-logo-mark-gold.png";
+import primaryLogo from "@/assets/jaylor-primary-logo-v2.png";
 
 /**
  * The Jaylor mannequin, measuring-tape and needle "J" mark. This used to
@@ -31,11 +32,16 @@ export function LogoMark({
 }
 
 /**
- * The mark image is a static PNG, so `dark` (true on the navy premium-public
- * background) picks the gold-on-transparent variant instead of the
- * navy-on-transparent one. The "Jaylor" wordmark next to it is real text
- * colored via `text-foreground`, which `.premium-public` already redefines
- * to the cream tone for that whole subtree — no separate dark styling needed.
+ * On light/cream backgrounds this renders the brand's actual primary
+ * lockup from the Jaylor brand guidelines -- the mannequin/tape/needle
+ * "J" fused directly with the "aylor" wordmark as one image, rather than
+ * an icon next to a separately-styled text span, so every full "Jaylor"
+ * wordmark in the app matches the guide exactly.
+ *
+ * The guide has no fused gold-on-navy lockup asset in this repo (only the
+ * navy-on-transparent one), so `dark` (true on the navy premium-public
+ * background) falls back to the gold icon next to real gold text instead
+ * of reusing the light lockup image, which would be illegible on navy.
  */
 export function BrandLogo({
   className,
@@ -48,19 +54,35 @@ export function BrandLogo({
   dark?: boolean;
   showTagline?: boolean;
 }) {
+  if (dark) {
+    return (
+      <span className={cn("inline-flex items-center gap-2.5", className)}>
+        <img
+          src={logoMarkGold}
+          alt=""
+          width={1024}
+          height={1024}
+          loading="eager"
+          className={cn("h-12 w-auto object-contain", markClassName)}
+        />
+        <span className="font-display text-2xl font-semibold leading-none tracking-tight text-gold">
+          Jaylor
+        </span>
+        {showTagline && <span className="sr-only">Crafted for you</span>}
+      </span>
+    );
+  }
+
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
+    <span className={cn("inline-flex items-center", className)}>
       <img
-        src={dark ? logoMarkGold : logoMarkNavy}
-        alt=""
-        width={1024}
-        height={1024}
+        src={primaryLogo}
+        alt="Jaylor"
+        width={1376}
+        height={768}
         loading="eager"
         className={cn("h-12 w-auto object-contain", markClassName)}
       />
-      <span className="font-display text-2xl font-semibold leading-none tracking-tight text-foreground">
-        Jaylor
-      </span>
       {showTagline && <span className="sr-only">Crafted for you</span>}
     </span>
   );
