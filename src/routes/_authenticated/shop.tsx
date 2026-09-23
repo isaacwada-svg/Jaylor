@@ -4,6 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowDown, ArrowUp, ExternalLink, Loader2, Pencil, Plus, Trash2 } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
+import { StoreProfileSettings } from "@/components/jaylor/store-profile-settings";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StorefrontItemForm } from "@/components/jaylor/storefront-item-form";
@@ -389,7 +390,15 @@ function Shop() {
             )}
           </TabsContent>
 
-          <TabsContent value="profile" className="mt-6">
+          <TabsContent value="profile" className="mt-6 space-y-6">
+            {currentStore && (
+              <StoreProfileSettings
+                storeId={currentStore.id}
+                storeName={currentStore.name}
+                logoUrl={currentStore.logo_url}
+                coverUrl={currentStore.cover_url}
+              />
+            )}
             {currentStore && <ShopProfileForm storeId={currentStore.id} onSaved={refetchStore} />}
           </TabsContent>
         </Tabs>

@@ -8,7 +8,6 @@ import { TierBadge } from "@/components/jaylor/tier-badge";
 import { PaymentAccountSettings } from "@/components/jaylor/payment-account-settings";
 import { ReferralCard } from "@/components/jaylor/referral-card";
 import { MessageTopupButton } from "@/components/jaylor/message-topup-button";
-import { StoreProfileSettings } from "@/components/jaylor/store-profile-settings";
 import { StoreLocationSettings } from "@/components/jaylor/store-location-settings";
 import { GarmentTypeMappingCard } from "@/components/jaylor/garment-type-mapping-card";
 import { CalendarEventPrefsCard } from "@/components/jaylor/calendar-event-prefs-card";
@@ -157,12 +156,6 @@ function Billing() {
 
         {currentStore && (
           <div className="mt-6 space-y-6">
-            <StoreProfileSettings
-              storeId={currentStore.id}
-              storeName={currentStore.name}
-              logoUrl={currentStore.logo_url}
-              coverUrl={currentStore.cover_url}
-            />
             <StoreLocationSettings
               storeId={currentStore.id}
               city={currentStore.city}
