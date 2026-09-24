@@ -16,7 +16,9 @@ Deno.serve(async (req) => {
   } catch {
     return errorResponse("Invalid JSON body");
   }
-  if (!body.reference) return errorResponse("reference is required");
+  if (!body.reference || typeof body.reference !== "string" || body.reference.length > 200) {
+    return errorResponse("reference is required");
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -25,16 +27,32 @@ Deno.serve(async (req) => {
 
   const { data: topup } = await supabase
     .from("message_topups")
-    .select("id, status")
+    .select("id, status, store_id, amount")
     .eq("reference", body.reference)
     .maybeSingle();
   if (!topup) return errorResponse("Top-up not found", 404);
+
+  // Only an active owner/manager of the store that bought the top-up may confirm it.
+  const { data: membership } = await supabase
+    .from("store_members")
+    .select("role, status")
+    .eq("store_id", topup.store_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (
+    !membership ||
+    membership.status !== "active" ||
+    !["owner", "manager"].includes(membership.role)
+  ) {
+    return errorResponse("Top-up not found", 404);
+  }
 
   if (topup.status === "success") return jsonResponse({ status: "success" });
 
   try {
     const transaction = await verifyTransaction(body.reference);
-    if (transaction.status !== "success") {
+    const expectedKobo = Math.round(Number(topup.amount) * 100);
+    if (transaction.status !== "success" || Number(transaction.amount ?? 0) < expectedKobo) {
       return jsonResponse({ status: "failed" });
     }
 
@@ -47,9 +65,7 @@ Deno.serve(async (req) => {
 
     return jsonResponse({ status: "success" });
   } catch (error) {
-    return errorResponse(
-      error instanceof Error ? error.message : "Could not verify this payment",
-      500,
-    );
+    console.error("[verify-message-topup]", error);
+    return errorResponse("Could not verify this payment", 500);
   }
 });

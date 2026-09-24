@@ -294,9 +294,7 @@ Deno.serve(async (req) => {
     return jsonResponse({ threadId, reply: content });
   } catch (error) {
     if (error instanceof AiGatewayBlockedError) return errorResponse(error.message, 429);
-    return errorResponse(
-      error instanceof Error ? error.message : "Could not reach the advisor",
-      500,
-    );
+    console.error("[advisor-chat] AI call failed", error);
+    return errorResponse("The advisor couldn't answer right now. Please try again shortly.", 500);
   }
 });

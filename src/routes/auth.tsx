@@ -13,7 +13,7 @@ import { COMPANY_LINE, PENDING_INVITE_KEY, PENDING_REFERRAL_KEY } from "@/lib/ja
 import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { normalizePhoneNG } from "@/lib/phone";
-import { resolveLoginEmail } from "@/lib/auth-lookup.functions";
+import { signInWithPhone } from "@/lib/auth-lookup.functions";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
@@ -170,7 +170,7 @@ function AuthPage() {
 
     setBusy(true);
     try {
-      let loginEmail = identifier.trim();
+      const loginEmail = identifier.trim();
       if (!loginEmail.includes("@")) {
         const phone = normalizePhoneNG(loginEmail);
         if (!phone) {
@@ -178,13 +178,19 @@ function AuthPage() {
           setBusy(false);
           return;
         }
-        const { email: resolvedEmail } = await resolveLoginEmail({ data: { phone } });
-        if (!resolvedEmail) {
-          toast.error("We couldn't find an account with that WhatsApp number");
+        const result = await signInWithPhone({ data: { phone, password } });
+        if (!result.ok) {
+          toast.error("That WhatsApp number and password don't match an account");
           setBusy(false);
           return;
         }
-        loginEmail = resolvedEmail;
+        const { error: sessionError } = await supabase.auth.setSession({
+          access_token: result.access_token,
+          refresh_token: result.refresh_token,
+        });
+        if (sessionError) throw sessionError;
+        goToPostAuthDestination();
+        return;
       }
       const { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
