@@ -13,6 +13,7 @@ import { CollectionScoreCard } from "@/components/jaylor/collection-score";
 import { DailyWorkPlan } from "@/components/jaylor/daily-work-plan";
 import { ComingUpCard } from "@/components/jaylor/coming-up-card";
 import { MomentsSection } from "@/components/jaylor/moments-section";
+import { MilestoneCelebration } from "@/components/jaylor/milestone-celebration";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -366,6 +367,7 @@ function Home() {
           </div>
         )}
 
+        {canSeeMoney && <MilestoneCelebration storeId={storeId} />}
         {canSeeMoney && <MomentsSection storeId={storeId} />}
 
         <div className="mb-6 space-y-6">

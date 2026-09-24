@@ -247,7 +247,8 @@ function ClientProfile() {
               description="Payments recorded against this client's orders will appear here."
             />
           </TabsContent>
-          <TabsContent value="messages" className="mt-6">
+          <TabsContent value="messages" className="mt-6 space-y-6">
+            <StyleBookCard clientId={clientId} />
             <ClientMomentsLog clientId={clientId} />
           </TabsContent>
         </Tabs>
@@ -303,6 +304,93 @@ function InfoRow({ label, value }: { label: string; value: string }) {
     <div className="rounded-xl border border-border p-3">
       <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">{label}</p>
       <p className="mt-1 text-sm">{value}</p>
+    </div>
+  );
+}
+
+// clients.style_book_token/style_book_revoked are new columns generated
+// Supabase types won't know about until types.ts is regenerated -- same
+// drift as every other freshly-migrated column this session.
+type StyleBookClient = { style_book_token: string; style_book_revoked: boolean };
+const styleBookDb = supabase as unknown as {
+  from(table: "clients"): {
+    select(cols: string): {
+      eq(
+        col: string,
+        value: string,
+      ): {
+        single(): Promise<{ data: StyleBookClient | null; error: { message: string } | null }>;
+      };
+    };
+  };
+};
+const styleBookRpc = supabase.rpc as unknown as (
+  fn: "set_style_book_revoked",
+  args: { p_client_id: string; p_revoked: boolean },
+) => Promise<{ error: { message: string } | null }>;
+
+function StyleBookCard({ clientId }: { clientId: string }) {
+  const queryClient = useQueryClient();
+  const [busy, setBusy] = useState(false);
+
+  const { data } = useQuery({
+    queryKey: ["style-book-token", clientId],
+    queryFn: async () => {
+      const { data, error } = await styleBookDb
+        .from("clients")
+        .select("style_book_token, style_book_revoked")
+        .eq("id", clientId)
+        .single();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  async function handleToggle(revoked: boolean) {
+    setBusy(true);
+    try {
+      const { error } = await styleBookRpc("set_style_book_revoked", {
+        p_client_id: clientId,
+        p_revoked: revoked,
+      });
+      if (error) throw new Error(error.message);
+      await queryClient.invalidateQueries({ queryKey: ["style-book-token", clientId] });
+      toast.success(revoked ? "Style Book link turned off" : "Style Book link turned on");
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Could not update the link");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function handleCopy() {
+    if (!data || data.style_book_revoked) return;
+    const url = `${window.location.origin}/style/${data.style_book_token}`;
+    await navigator.clipboard.writeText(url);
+    toast.success("Link copied");
+  }
+
+  if (!data) return null;
+
+  return (
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <p className="font-medium">Style Book</p>
+      <p className="mt-1 text-sm text-muted-foreground">
+        A private link showing every garment made for this client, with photos and dates. No prices.
+      </p>
+      <div className="mt-3 flex flex-wrap gap-2">
+        <Button size="sm" variant="outline" disabled={data.style_book_revoked} onClick={handleCopy}>
+          Copy link
+        </Button>
+        <Button
+          size="sm"
+          variant="ghost"
+          disabled={busy}
+          onClick={() => handleToggle(!data.style_book_revoked)}
+        >
+          {data.style_book_revoked ? "Turn on" : "Turn off"}
+        </Button>
+      </div>
     </div>
   );
 }

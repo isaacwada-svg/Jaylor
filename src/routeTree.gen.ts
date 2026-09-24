@@ -46,6 +46,7 @@ import { Route as ETokenRouteImport } from './routes/e.$token'
 import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as PassportTokenRouteImport } from './routes/passport.$token'
+import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events/index'
@@ -241,6 +242,11 @@ const PassportTokenRoute = PassportTokenRouteImport.update({
   path: '/passport/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const StyleTokenRoute = StyleTokenRouteImport.update({
+  id: '/style/$token',
+  path: '/style/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -331,6 +337,7 @@ export interface FileRoutesByFullPath {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/style/$token': typeof StyleTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -378,6 +385,7 @@ export interface FileRoutesByTo {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/style/$token': typeof StyleTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -427,6 +435,7 @@ export interface FileRoutesById {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/style/$token': typeof StyleTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -476,6 +485,7 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/style/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -523,6 +533,7 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/style/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -571,6 +582,7 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/style/$token'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
@@ -608,6 +620,7 @@ export interface RootRouteChildren {
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   PassportTokenRoute: typeof PassportTokenRoute
+  StyleTokenRoute: typeof StyleTokenRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
@@ -873,6 +886,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassportTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/style/$token': {
+      id: '/style/$token'
+      path: '/style/$token'
+      fullPath: '/style/$token'
+      preLoaderRoute: typeof StyleTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -1020,6 +1040,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   PassportTokenRoute: PassportTokenRoute,
+  StyleTokenRoute: StyleTokenRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }

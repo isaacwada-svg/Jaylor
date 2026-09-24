@@ -38,6 +38,7 @@ export type Moment = {
 export type MomentWithClient = Moment & {
   client_name: string;
   client_phone: string;
+  garment_type: string | null;
 };
 
 // moments/moment_settings/client_fit_feedback are new tables that generated
@@ -55,7 +56,7 @@ export function usePendingMoments(storeId: string | undefined) {
       const { data, error } = await db
         .from("moments")
         .select(
-          "id, client_id, order_id, type, due_date, status, message, photo_url, created_at, sent_at, clients(full_name, whatsapp_phone, phone)",
+          "id, client_id, order_id, type, due_date, status, message, photo_url, created_at, sent_at, clients(full_name, whatsapp_phone, phone), orders(garment_type)",
         )
         .eq("store_id", storeId as string)
         .eq("status", "pending")
@@ -64,11 +65,13 @@ export function usePendingMoments(storeId: string | undefined) {
       if (error) throw error;
       type RawRow = Moment & {
         clients: { full_name: string; whatsapp_phone: string | null; phone: string } | null;
+        orders: { garment_type: string } | null;
       };
       return (data ?? []).map((row: RawRow) => ({
         ...row,
         client_name: row.clients?.full_name ?? "",
         client_phone: row.clients?.whatsapp_phone ?? row.clients?.phone ?? "",
+        garment_type: row.orders?.garment_type ?? null,
       })) as MomentWithClient[];
     },
   });

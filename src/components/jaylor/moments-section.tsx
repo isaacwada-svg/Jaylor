@@ -7,13 +7,16 @@ import {
   Ruler,
   UserX,
   Gift,
+  ImagePlus,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { whatsappLink } from "@/lib/whatsapp";
+import { useStore } from "@/lib/store-context";
 import { usePendingMoments, useMarkMoment, type MomentType } from "@/lib/moments";
+import { ShareCardDialog } from "@/components/jaylor/share-card-dialog";
 
 const ICON_BY_TYPE: Record<MomentType, LucideIcon> = {
   birthday: Cake,
@@ -26,11 +29,15 @@ const ICON_BY_TYPE: Record<MomentType, LucideIcon> = {
 };
 
 export function MomentsSection({ storeId }: { storeId: string | undefined }) {
+  const { currentStore } = useStore();
   const { data: moments, isLoading } = usePendingMoments(storeId);
   const mark = useMarkMoment(storeId);
   const [drafts, setDrafts] = useState<Record<string, string>>({});
+  const [cardMomentId, setCardMomentId] = useState<string | null>(null);
 
   if (isLoading || !moments || moments.length === 0) return null;
+
+  const cardMoment = moments.find((m) => m.id === cardMomentId) ?? null;
 
   return (
     <section className="mb-6">
@@ -80,6 +87,12 @@ export function MomentsSection({ storeId }: { storeId: string | undefined }) {
                       <span>No WhatsApp number</span>
                     )}
                   </Button>
+                  {moment.type === "ready" && (
+                    <Button size="sm" variant="outline" onClick={() => setCardMomentId(moment.id)}>
+                      <ImagePlus className="size-4" />
+                      Share card
+                    </Button>
+                  )}
                   <Button
                     size="sm"
                     variant="ghost"
@@ -93,6 +106,19 @@ export function MomentsSection({ storeId }: { storeId: string | undefined }) {
           );
         })}
       </div>
+      {cardMoment && (
+        <ShareCardDialog
+          open={!!cardMoment}
+          onOpenChange={(open) => !open && setCardMomentId(null)}
+          spec={{
+            eyebrow: "Ready for collection",
+            headline: `${cardMoment.client_name.split(" ")[0]}'s ${cardMoment.garment_type ?? "order"} is ready`,
+            subline: "Come through whenever suits you.",
+            storeName: currentStore?.name ?? "Jaylor",
+          }}
+          fileName="jaylor-ready.png"
+        />
+      )}
     </section>
   );
 }
