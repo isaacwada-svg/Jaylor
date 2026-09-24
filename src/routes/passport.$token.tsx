@@ -90,8 +90,16 @@ function PassportPage() {
     ) {
       return;
     }
+    const phoneLast4 = window
+      .prompt("To confirm it's you, enter the last 4 digits of your phone number")
+      ?.trim();
+    if (!phoneLast4) return;
+    if (!/^[0-9]{4}$/.test(phoneLast4)) {
+      toast.error("Enter exactly 4 digits");
+      return;
+    }
     try {
-      await revokePassportByClient({ data: { token } });
+      await revokePassportByClient({ data: { token, phoneLast4 } });
       toast.success("Your measurement card has been turned off");
       window.location.reload();
     } catch (error) {
