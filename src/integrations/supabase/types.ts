@@ -14,6 +14,77 @@ export type Database = {
   }
   public: {
     Tables: {
+      advisor_messages: {
+        Row: {
+          content: string
+          created_at: string
+          id: string
+          role: string
+          thread_id: string
+        }
+        Insert: {
+          content: string
+          created_at?: string
+          id?: string
+          role: string
+          thread_id: string
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          id?: string
+          role?: string
+          thread_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_messages_thread_id_fkey"
+            columns: ["thread_id"]
+            isOneToOne: false
+            referencedRelation: "advisor_threads"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      advisor_threads: {
+        Row: {
+          created_at: string
+          id: string
+          store_id: string
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          store_id: string
+          title?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          store_id?: string
+          title?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "advisor_threads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "advisor_threads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_design_payments: {
         Row: {
           amount: number
@@ -1594,6 +1665,51 @@ export type Database = {
           },
           {
             foreignKeyName: "messages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          link: string | null
+          message: string
+          read_at: string | null
+          store_id: string
+          type: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message: string
+          read_at?: string | null
+          store_id: string
+          type: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link?: string | null
+          message?: string
+          read_at?: string | null
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "notifications_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -3441,7 +3557,8 @@ export type Database = {
         }
         Returns: boolean
       }
-      check_rls_drift: { Args: never; Returns: undefined }
+      check_rls_drift: { Args: never; Returns: Json }
+      check_rls_drift_as_service: { Args: never; Returns: undefined }
       city_price_benchmark: {
         Args: { p_garment_type_code: string; p_store_id: string }
         Returns: Json
@@ -3449,6 +3566,15 @@ export type Database = {
       client_payment_reliability: {
         Args: { p_client_id: string }
         Returns: Json
+      }
+      create_notification: {
+        Args: {
+          p_link?: string
+          p_message: string
+          p_store_id: string
+          p_type: string
+        }
+        Returns: undefined
       }
       decline_passport_share: {
         Args: { p_share_id: string }
@@ -3460,6 +3586,15 @@ export type Database = {
         Args: { p_feature: string; p_store_id: string }
         Returns: Json
       }
+      generate_delivery_reminder_notifications: {
+        Args: never
+        Returns: undefined
+      }
+      generate_overdue_balance_notifications: {
+        Args: never
+        Returns: undefined
+      }
+      generate_plan_limit_notifications: { Args: never; Returns: undefined }
       get_design_by_token: {
         Args: { p_token: string }
         Returns: {
@@ -3472,6 +3607,10 @@ export type Database = {
           selfie_url: string
           store_name: string
         }[]
+      }
+      get_fitcheck_context: {
+        Args: { p_client_id: string; p_order_id: string }
+        Returns: Json
       }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
@@ -3486,6 +3625,10 @@ export type Database = {
           _store_id: string
         }
         Returns: boolean
+      }
+      increment_advisor_usage: {
+        Args: { p_store_id: string }
+        Returns: undefined
       }
       increment_feature_usage: {
         Args: {
