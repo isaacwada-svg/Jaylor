@@ -4,10 +4,29 @@ import { initializeTransaction } from "../_shared/paystack.ts";
 
 const DESIGN_FEE_KOBO = 30000; // ₦300
 
+const ALLOWED_ORIGINS = [
+  "https://jaylor.com.ng",
+  "https://www.jaylor.com.ng",
+  "https://jaylor.lovable.app",
+];
+
+/** Payment redirects may only return to Jaylor's own sites (and Lovable previews). */
+function isAllowedCallbackUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 500) return false;
+  try {
+    const url = new URL(value);
+    if (url.hostname === "localhost") return true;
+    if (url.protocol !== "https:") return false;
+    return ALLOWED_ORIGINS.includes(url.origin) || url.hostname.endsWith(".lovable.app");
+  } catch {
+    return false;
+  }
+}
+
 type RequestBody = {
-  storeId: string;
-  phone: string;
-  callbackUrl: string;
+  storeId?: string;
+  phone?: string;
+  callbackUrl?: string;
 };
 
 Deno.serve(async (req) => {
@@ -20,17 +39,28 @@ Deno.serve(async (req) => {
   } catch {
     return errorResponse("Invalid JSON body");
   }
-  if (!body.storeId || !body.phone?.trim() || !body.callbackUrl) {
+  if (typeof body.storeId !== "string" || typeof body.phone !== "string" || !body.callbackUrl) {
     return errorResponse("storeId, phone and callbackUrl are required");
   }
+  const phone = body.phone.trim();
+  if (!/^\+?[0-9]{8,15}$/.test(phone)) return errorResponse("Invalid phone number");
+  if (!isAllowedCallbackUrl(body.callbackUrl)) return errorResponse("Invalid callbackUrl");
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
+  // Guests can only pay for designs from a real, active shop.
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id, is_active")
+    .eq("id", body.storeId)
+    .maybeSingle();
+  if (!store || !store.is_active) return errorResponse("Shop not found", 404);
+
   const reference = `design_${crypto.randomUUID().replace(/-/g, "")}`;
-  const digitsOnly = body.phone.replace(/\D/g, "");
+  const digitsOnly = phone.replace(/\D/g, "");
 
   try {
     const transaction = await initializeTransaction({
@@ -41,8 +71,8 @@ Deno.serve(async (req) => {
     });
 
     const { error } = await supabase.from("ai_design_payments").insert({
-      store_id: body.storeId,
-      phone: body.phone,
+      store_id: store.id,
+      phone,
       reference: transaction.reference,
       amount: DESIGN_FEE_KOBO,
     });
@@ -53,9 +83,7 @@ Deno.serve(async (req) => {
       reference: transaction.reference,
     });
   } catch (error) {
-    return errorResponse(
-      error instanceof Error ? error.message : "Could not start payment",
-      500,
-    );
+    console.error("[create-design-payment]", error);
+    return errorResponse("Could not start payment", 500);
   }
 });
