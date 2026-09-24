@@ -81,7 +81,7 @@ export function AiDesignGenerator({
     (async () => {
       try {
         const { data, error } = await supabase.functions.invoke("verify-design-payment", {
-          body: { reference },
+          body: { reference, phone: draft.phone },
         });
         if (error) throw error;
         if ((data as { status: string }).status !== "success") {
@@ -234,13 +234,13 @@ export function AiDesignGenerator({
   }
 
   async function markSelected() {
-    if (!resultDesignId || selected) return;
+    if (!resultDesignId || !resultToken || selected) return;
     const phone = normalizePhoneNG(phoneRaw);
     if (!phone) return;
     setSelected(true);
     try {
       await supabase.functions.invoke("select-ai-design", {
-        body: { designId: resultDesignId, phone },
+        body: { designId: resultDesignId, phone, shareToken: resultToken },
       });
     } catch {
       // Best-effort — the store owner already sees every generated design either way.

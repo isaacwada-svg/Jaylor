@@ -167,8 +167,13 @@ export const requestPassportUpdate = createServerFn({ method: "POST" })
     };
   });
 
+const revokeSchema = z.object({
+  token: z.string().min(20).max(200),
+  phoneLast4: z.string().regex(/^[0-9]{4}$/),
+});
+
 export const revokePassportByClient = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .inputValidator((data: unknown) => revokeSchema.parse(data))
   .handler(async ({ data }): Promise<{ ok: true }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -178,6 +183,19 @@ export const revokePassportByClient = createServerFn({ method: "POST" })
 
     const passport = await loadPassport(data.token);
     if (!passport) throw new Error("This measurement card was not found");
+
+    // Holding the link isn't enough: the card owner must confirm their phone number.
+    const { data: client } = await supabaseAdmin
+      .from("clients")
+      .select("phone, whatsapp_phone")
+      .eq("id", passport.client_id)
+      .maybeSingle();
+    const phones = [client?.phone, client?.whatsapp_phone]
+      .filter((p): p is string => !!p)
+      .map((p) => p.replace(/\D/g, ""));
+    if (!phones.some((p) => p.length >= 4 && p.endsWith(data.phoneLast4))) {
+      throw new Error("That phone number doesn't match this measurement card");
+    }
 
     await supabaseAdmin
       .from("measurement_passports")

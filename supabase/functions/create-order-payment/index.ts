@@ -4,6 +4,25 @@ import { getRequestUser } from "../_shared/auth.ts";
 import { initializeTransaction } from "../_shared/paystack.ts";
 import { planFeePercent } from "../_shared/plan.ts";
 
+const ALLOWED_ORIGINS = [
+  "https://jaylor.com.ng",
+  "https://www.jaylor.com.ng",
+  "https://jaylor.lovable.app",
+];
+
+/** Payment redirects may only return to Jaylor's own sites (and Lovable previews). */
+function isAllowedCallbackUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 500) return false;
+  try {
+    const url = new URL(value);
+    if (url.hostname === "localhost") return true;
+    if (url.protocol !== "https:") return false;
+    return ALLOWED_ORIGINS.includes(url.origin) || url.hostname.endsWith(".lovable.app");
+  } catch {
+    return false;
+  }
+}
+
 type RequestBody = {
   orderId: string;
   amount: number;
@@ -23,9 +42,16 @@ Deno.serve(async (req) => {
   } catch {
     return errorResponse("Invalid JSON body");
   }
-  if (!body.orderId || !body.amount || body.amount <= 0 || !body.callbackUrl) {
+  if (
+    !body.orderId ||
+    typeof body.amount !== "number" ||
+    !Number.isFinite(body.amount) ||
+    body.amount <= 0 ||
+    !body.callbackUrl
+  ) {
     return errorResponse("orderId, a positive amount and callbackUrl are required");
   }
+  if (!isAllowedCallbackUrl(body.callbackUrl)) return errorResponse("Invalid callbackUrl");
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -51,6 +77,18 @@ Deno.serve(async (req) => {
     !["owner", "manager"].includes(membership.role)
   ) {
     return errorResponse("You don't have permission to do this", 403);
+  }
+
+  // The request can never charge more than what the client still owes on this order.
+  const { data: balanceRow } = await supabase
+    .from("order_balances")
+    .select("balance")
+    .eq("order_id", order.id)
+    .maybeSingle();
+  const outstanding = Number(balanceRow?.balance ?? 0);
+  if (!(outstanding > 0)) return errorResponse("This order has nothing left to pay", 400);
+  if (body.amount > outstanding) {
+    return errorResponse("The amount can't be more than the balance owed on this order", 400);
   }
 
   const { data: account } = await supabase
@@ -106,9 +144,7 @@ Deno.serve(async (req) => {
       reference: transaction.reference,
     });
   } catch (error) {
-    return errorResponse(
-      error instanceof Error ? error.message : "Could not start this payment",
-      500,
-    );
+    console.error("[create-order-payment]", error);
+    return errorResponse("Could not start this payment", 500);
   }
 });

@@ -74,7 +74,35 @@ Deno.serve(async (req) => {
     return errorResponse("storeId, clientName, phone and description are required");
   }
 
+  if (
+    body.clientName.length > 120 ||
+    body.description.length > 2000 ||
+    !/^\+?[0-9]{8,15}$/.test(body.phone.trim())
+  ) {
+    return errorResponse("Please check your details and try again");
+  }
+
   const supabase = serviceClient();
+
+  // Public guest feature: only real, active shops on a plan that includes AI designs.
+  const { data: store } = await supabase
+    .from("stores")
+    .select("id, is_active")
+    .eq("id", body.storeId)
+    .maybeSingle();
+  if (!store || !store.is_active) return errorResponse("Shop not found", 404);
+  const { data: planCode } = await supabase.rpc("effective_plan_code", {
+    _store_id: body.storeId,
+  });
+  const { data: plan } = await supabase
+    .from("plans")
+    .select("features")
+    .eq("code", (planCode as string | null) ?? "")
+    .maybeSingle();
+  const features = (plan?.features ?? {}) as Record<string, unknown>;
+  if (!plan || features["ai_designs"] === false || features["style_cards"] === false) {
+    return errorResponse("This shop doesn't offer AI design previews", 403);
+  }
 
   // The selfie must belong to this store's folder in the private bucket.
   let selfiePath: string | null = null;
@@ -230,9 +258,7 @@ Deno.serve(async (req) => {
     });
   } catch (error) {
     if (error instanceof AiGatewayBlockedError) return errorResponse(error.message, 429);
-    return errorResponse(
-      error instanceof Error ? error.message : "Could not generate this design",
-      500,
-    );
+    console.error("[generate-design]", error);
+    return errorResponse("Could not generate this design", 500);
   }
 });

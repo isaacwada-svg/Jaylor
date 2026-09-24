@@ -16,7 +16,9 @@ Deno.serve(async (req) => {
   } catch {
     return errorResponse("Invalid JSON body");
   }
-  if (!body.reference) return errorResponse("reference is required");
+  if (!body.reference || typeof body.reference !== "string" || body.reference.length > 200) {
+    return errorResponse("reference is required");
+  }
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
@@ -30,36 +32,52 @@ Deno.serve(async (req) => {
     .maybeSingle();
   if (!link) return errorResponse("Payment link not found", 404);
 
+  // Only active staff of the store that owns this payment link may confirm it.
+  const { data: membership } = await supabase
+    .from("store_members")
+    .select("role, status")
+    .eq("store_id", link.store_id)
+    .eq("user_id", user.id)
+    .maybeSingle();
+  if (!membership || membership.status !== "active") {
+    return errorResponse("Payment link not found", 404);
+  }
+
   if (link.status === "success") return jsonResponse({ status: "success" });
 
   try {
-    const transaction = await verifyTransaction(body.reference);
-    if (transaction.status !== "success") {
+    const transaction = (await verifyTransaction(body.reference)) as {
+      status: string;
+      amount?: number;
+    };
+    const expectedKobo = Math.round(Number(link.amount) * 100);
+    if (transaction.status !== "success" || Number(transaction.amount ?? 0) < expectedKobo) {
       return jsonResponse({ status: "failed" });
     }
 
     const paidAt = new Date().toISOString();
-    const { error } = await supabase
+    const { data: updated, error } = await supabase
       .from("order_payment_links")
       .update({ status: "success", paid_at: paidAt })
       .eq("id", link.id)
-      .eq("status", "pending");
+      .eq("status", "pending")
+      .select("id");
     if (error) throw error;
 
-    await supabase.from("payments").insert({
-      store_id: link.store_id,
-      order_id: link.order_id,
-      amount: link.amount,
-      method: "paystack",
-      reference: body.reference,
-      paid_at: paidAt,
-    });
+    if (updated && updated.length > 0) {
+      await supabase.from("payments").insert({
+        store_id: link.store_id,
+        order_id: link.order_id,
+        amount: link.amount,
+        method: "paystack",
+        reference: body.reference,
+        paid_at: paidAt,
+      });
+    }
 
     return jsonResponse({ status: "success" });
   } catch (error) {
-    return errorResponse(
-      error instanceof Error ? error.message : "Could not verify this payment",
-      500,
-    );
+    console.error("[verify-order-payment]", error);
+    return errorResponse("Could not verify this payment", 500);
   }
 });
