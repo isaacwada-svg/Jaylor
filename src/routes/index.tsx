@@ -192,12 +192,8 @@ function Home() {
             <h1 className="mt-6 text-5xl leading-[0.95] text-foreground sm:text-6xl lg:text-[5.5rem]">
               Run your tailoring business without the chaos.
             </h1>
-            <p className="mt-4 max-w-xl text-sm italic leading-6 text-foreground/70 sm:text-base">
-              Jaylor — the business of style, beautifully managed.
-            </p>
             <p className="mt-6 max-w-lg text-base leading-7 text-foreground/70 sm:text-lg">
-              Orders, measurements, payments and client updates—all held together in one considered
-              place.
+              Track orders, measurements and payments from your phone. Built for Nigerian tailors.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-5">
               <Button
@@ -210,16 +206,16 @@ function Home() {
                   Start free <ArrowRight />
                 </Link>
               </Button>
-              <a
-                href="#workroom"
-                className="border-b border-gold pb-1 text-xs uppercase text-foreground transition-colors hover:text-gold"
-              >
-                See how it works
-              </a>
             </div>
             <p className="mt-5 text-xs text-foreground/50">
               Free for small shops. No card required.
             </p>
+            <a
+              href="#workroom"
+              className="mt-3 inline-block text-[11px] uppercase text-foreground/50 transition-colors hover:text-gold"
+            >
+              See how it works
+            </a>
           </div>
         </div>
         <div className="absolute bottom-0 right-5 hidden w-64 border-t border-gold/70 py-5 lg:block lg:right-12">
