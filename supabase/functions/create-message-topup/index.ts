@@ -50,8 +50,13 @@ Deno.serve(async (req) => {
   const reference = `topup_${crypto.randomUUID().replace(/-/g, "")}`;
 
   try {
+    // Paystack requires a real customer email — the synthetic guest fallback is rejected.
+    const { data: authUser } = await supabase.auth.admin.getUserById(user.id);
+    const email = authUser?.user?.email;
+    if (!email) return errorResponse("Your account needs an email address to make payments", 400);
+
     const transaction = await initializeTransaction({
-      email: `${user.email ?? "store"}@guest.jaylor.app`,
+      email,
       amountKobo: TOPUP_AMOUNT_NGN * 100,
       reference,
       callbackUrl: body.callbackUrl,
