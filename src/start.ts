@@ -25,7 +25,30 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
+// Browser security headers on every server response. Framing is limited to
+// our own site and the Lovable editor preview (DENY would break the preview).
+const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => {
+  const result = await next();
+  const res = (result as { response?: Response }).response;
+  if (res instanceof Response) {
+    try {
+      const h = res.headers;
+      h.set("X-Content-Type-Options", "nosniff");
+      h.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+      h.set("Referrer-Policy", "strict-origin-when-cross-origin");
+      h.set("Permissions-Policy", "camera=(self), microphone=(self), geolocation=()");
+      h.set(
+        "Content-Security-Policy",
+        "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev; object-src 'none'; base-uri 'self'",
+      );
+    } catch {
+      // immutable headers (e.g. proxied responses) — skip
+    }
+  }
+  return result;
+});
+
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [securityHeadersMiddleware, errorMiddleware, csrfMiddleware],
 }));
