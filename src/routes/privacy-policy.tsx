@@ -148,6 +148,22 @@ function PrivacyPolicy() {
       </section>
 
       <section>
+        <h2>Essential storage and optional analytics</h2>
+        <p>
+          <strong>Essential:</strong> we use session tokens to keep you signed in and to make sure
+          each shop only ever sees its own data. These are always on because the app cannot work
+          without them.
+        </p>
+        <p>
+          <strong>Optional, only if you tap &quot;Accept All&quot;:</strong> Google Analytics helps
+          us understand which pages are used, and Microsoft Clarity helps us see where screens are
+          confusing and catch errors on phones. These tools are provided by Google and Microsoft and
+          may process data outside Nigeria. If you tap &quot;Reject All&quot;, none of them load.
+          You can change your choice at any time by clearing this site&apos;s data in your browser.
+        </p>
+      </section>
+
+      <section>
         <h2>Changes and complaints</h2>
         <p>
           We will post material changes here and, where appropriate, notify account holders. If we
