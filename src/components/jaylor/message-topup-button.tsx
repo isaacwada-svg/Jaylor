@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import { getErrorMessage } from "@/lib/utils";
+import { getFunctionErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 
 export function MessageTopupButton({ storeId }: { storeId: string }) {
@@ -17,7 +17,7 @@ export function MessageTopupButton({ storeId }: { storeId: string }) {
       const { authorization_url } = data as { authorization_url: string };
       window.location.href = authorization_url;
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not start this payment"));
+      toast.error(await getFunctionErrorMessage(error, "Could not start this payment"));
       setBusy(false);
     }
   }

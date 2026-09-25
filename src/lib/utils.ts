@@ -1,5 +1,6 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
+import { FunctionsHttpError } from "@supabase/supabase-js";
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
@@ -71,4 +72,27 @@ export function getErrorMessage(error: unknown, fallback: string): string {
     }
   }
   return fallback;
+}
+
+/**
+ * `supabase.functions.invoke` never puts the edge function's own JSON error
+ * body on `error.message` -- a FunctionsHttpError's message is always the
+ * literal string "Edge Function returned a non-2xx status code", with the
+ * real reason (our `errorResponse()` shape, `{ error: string }`) sitting
+ * unread on `error.context` (the raw Response). Every call site that invokes
+ * a function should await this instead of the sync getErrorMessage, or it
+ * silently shows that generic string instead of the actual reason.
+ */
+export async function getFunctionErrorMessage(error: unknown, fallback: string): Promise<string> {
+  if (error instanceof FunctionsHttpError) {
+    try {
+      const body = await error.context.clone().json();
+      if (body && typeof body.error === "string" && body.error.length > 0) {
+        return getErrorMessage({ message: body.error }, fallback);
+      }
+    } catch {
+      // Response body wasn't JSON -- fall through to the generic message below.
+    }
+  }
+  return getErrorMessage(error, fallback);
 }

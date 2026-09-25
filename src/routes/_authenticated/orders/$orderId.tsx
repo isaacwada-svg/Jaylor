@@ -30,7 +30,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
 import { isBridalRemeasureDue } from "@/lib/measurements";
 import { orderReadyMessage, balanceDueMessage } from "@/lib/whatsapp";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   staticData: { sitemap: false },
@@ -72,7 +72,7 @@ function OrderDetail() {
           toast.error("Payment wasn't confirmed");
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, "Could not confirm this payment"));
+        toast.error(await getFunctionErrorMessage(error, "Could not confirm this payment"));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

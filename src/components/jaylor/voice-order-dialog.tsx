@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Mic, Square } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { getErrorMessage } from "@/lib/utils";
+import { getFunctionErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { isSpeechRecognitionSupported, startSpeechRecognition } from "@/lib/voice-recognition";
 import { GARMENT_TYPES } from "@/lib/jaylor";
@@ -169,7 +169,7 @@ export function VoiceOrderDialog({
       if (error) throw error;
       handleParsed((data as { result: ParsedOrderResult }).result);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not understand this recording"));
+      toast.error(await getFunctionErrorMessage(error, "Could not understand this recording"));
     } finally {
       setParsing(false);
     }
@@ -194,7 +194,7 @@ export function VoiceOrderDialog({
       if (error) throw error;
       handleParsed((data as { result: ParsedOrderResult }).result);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not understand this order"));
+      toast.error(await getFunctionErrorMessage(error, "Could not understand this order"));
     } finally {
       setParsing(false);
     }

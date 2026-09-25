@@ -1,5 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
+import { getFunctionErrorMessage } from "@/lib/utils";
 
 export type AdvisorThread = { id: string; title: string; updated_at: string };
 export type AdvisorMessage = { id: string; role: "user" | "assistant"; content: string };
@@ -44,19 +45,6 @@ export function useAdvisorMessages(threadId: string | null) {
   });
 }
 
-async function extractEdgeFunctionError(error: unknown, fallback: string): Promise<string> {
-  const context = (error as { context?: Response } | null)?.context;
-  if (context && typeof context.json === "function") {
-    try {
-      const parsed = await context.clone().json();
-      if (typeof parsed?.error === "string" && parsed.error.length > 0) return parsed.error;
-    } catch {
-      // not JSON, or already consumed — fall through to the generic message
-    }
-  }
-  return fallback;
-}
-
 export function useSendAdvisorMessage(storeId: string | undefined) {
   const queryClient = useQueryClient();
   return useMutation({
@@ -65,7 +53,7 @@ export function useSendAdvisorMessage(storeId: string | undefined) {
         body: { storeId, threadId: threadId ?? undefined, message },
       });
       if (error)
-        throw new Error(await extractEdgeFunctionError(error, "Could not reach the advisor"));
+        throw new Error(await getFunctionErrorMessage(error, "Could not reach the advisor"));
       return data as { threadId: string; reply: string };
     },
     onSuccess: (_data, variables) => {

@@ -22,7 +22,7 @@ import { useFeature } from "@/lib/use-feature";
 import { useFeatureLimit } from "@/lib/use-feature-limit";
 import { useMessageTopups } from "@/lib/use-message-topups";
 import { effectiveTier, planCodeToTier } from "@/lib/jaylor";
-import { getErrorMessage } from "@/lib/utils";
+import { getFunctionErrorMessage } from "@/lib/utils";
 import { FEATURE_LABELS } from "@/lib/feature-keys";
 
 export const Route = createFileRoute("/_authenticated/billing")({
@@ -77,7 +77,7 @@ function Billing() {
           toast.error("Payment wasn't confirmed");
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, "Could not confirm this payment"));
+        toast.error(await getFunctionErrorMessage(error, "Could not confirm this payment"));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps

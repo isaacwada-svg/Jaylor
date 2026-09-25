@@ -4,7 +4,7 @@ import { Sparkles, ImagePlus, MessageCircle, Loader2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { normalizePhoneNG } from "@/lib/phone";
 import { resizeImageFile } from "@/lib/image";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
 import { uploadDesignSelfie } from "@/lib/design-photos.functions";
 import {
@@ -98,7 +98,7 @@ export function AiDesignGenerator({
           selfiePath: draft.selfiePath,
         });
       } catch (error) {
-        toast.error(getErrorMessage(error, "Could not confirm your payment"));
+        toast.error(await getFunctionErrorMessage(error, "Could not confirm your payment"));
         setStep("form");
       } finally {
         clearDesignDraft();
@@ -165,7 +165,7 @@ export function AiDesignGenerator({
         setStep("result");
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not generate your design"));
+      toast.error(await getFunctionErrorMessage(error, "Could not generate your design"));
       setStep("form");
     }
   }
@@ -211,7 +211,7 @@ export function AiDesignGenerator({
       saveDesignDraft({ ...draft, paymentReference: reference });
       window.location.href = authorization_url;
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not start payment"));
+      toast.error(await getFunctionErrorMessage(error, "Could not start payment"));
     } finally {
       setBusy(false);
     }
