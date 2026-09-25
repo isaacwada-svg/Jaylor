@@ -1,7 +1,7 @@
-import { useEffect, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Search } from "lucide-react";
+import { ImagePlus, Loader2, Search, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -17,6 +17,7 @@ import { isBridalRemeasureDue, pickDefaultTemplate } from "@/lib/measurements";
 import { MeasurementForm } from "@/components/jaylor/measurements-tab";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
+import { resizeImageFile } from "@/lib/image";
 import { getErrorMessage, cn } from "@/lib/utils";
 import { useFeature } from "@/lib/use-feature";
 import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
@@ -108,6 +109,11 @@ export function OrderForm({
   const [fabricPattern, setFabricPattern] = useState<FabricPattern>("plain");
   const [estimatingFabric, setEstimatingFabric] = useState(false);
   const [fabricNote, setFabricNote] = useState<string | null>(null);
+  const [styleRefPreviews, setStyleRefPreviews] = useState<string[]>([]);
+  const [styleRefPaths, setStyleRefPaths] = useState<string[]>([]);
+  const [uploadingStyleRef, setUploadingStyleRef] = useState(false);
+  const styleRefInputRef = useRef<HTMLInputElement>(null);
+  const MAX_STYLE_REF_PHOTOS = 4;
 
   const [price, setPrice] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
@@ -134,6 +140,8 @@ export function OrderForm({
     setMaterialColour("");
     setMaterialYards("");
     setMaterialCost("");
+    setStyleRefPreviews([]);
+    setStyleRefPaths([]);
     setPrice(prefill?.price != null ? String(prefill.price) : "");
     setDeliveryDate(prefill?.delivery_date ?? "");
     setRush(prefill?.rush ?? false);
@@ -349,6 +357,41 @@ export function OrderForm({
     }
   }
 
+  async function handleStyleRefUpload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const room = MAX_STYLE_REF_PHOTOS - styleRefPaths.length;
+    if (room <= 0) {
+      toast.error(`You can attach up to ${MAX_STYLE_REF_PHOTOS} reference photos`);
+      return;
+    }
+    setUploadingStyleRef(true);
+    try {
+      for (const file of Array.from(files).slice(0, room)) {
+        const resized = await resizeImageFile(file, 1200, 0.8);
+        const path = `${storeId}/${crypto.randomUUID()}.jpg`;
+        const { error } = await supabase.storage
+          .from("order-style-photos")
+          .upload(path, resized, { contentType: "image/jpeg", upsert: false });
+        if (error) throw error;
+        setStyleRefPaths((prev) => [...prev, path]);
+        setStyleRefPreviews((prev) => [...prev, URL.createObjectURL(resized)]);
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not upload that photo"));
+    } finally {
+      setUploadingStyleRef(false);
+    }
+  }
+
+  function removeStyleRef(index: number) {
+    setStyleRefPreviews((prev) => {
+      const url = prev[index];
+      if (url) URL.revokeObjectURL(url);
+      return prev.filter((_, i) => i !== index);
+    });
+    setStyleRefPaths((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
     if (!selectedClient) return;
@@ -372,6 +415,7 @@ export function OrderForm({
         balance_due_date: deliveryDate || null,
         priority: rush ? "rush" : "normal",
         created_by: userData.user?.id ?? null,
+        style_reference_photos: styleRefPaths.length ? styleRefPaths : null,
       };
       const materialYardsNum = materialYards.trim() ? Number(materialYards) : null;
       const materialCostNum = materialSource === "tailor" ? Number(materialCost) || 0 : 0;
@@ -712,6 +756,56 @@ export function OrderForm({
               {fabricNote && <p className="text-xs text-muted-foreground">{fabricNote}</p>}
             </div>
           )}
+
+          <div className="space-y-2 rounded-xl border border-border p-3">
+            <p className="text-sm font-medium">Reference photos (optional)</p>
+            <p className="text-xs text-muted-foreground">
+              A style the client wants, so your tailors can see it too.
+            </p>
+            <div className="flex flex-wrap gap-2">
+              {styleRefPreviews.map((src, i) => (
+                <div key={src} className="relative size-16">
+                  <img src={src} alt="" className="size-16 rounded-lg object-cover" />
+                  <button
+                    type="button"
+                    onClick={() => removeStyleRef(i)}
+                    aria-label="Remove photo"
+                    className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-background shadow-sm"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              ))}
+              {styleRefPreviews.length < MAX_STYLE_REF_PHOTOS && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  disabled={uploadingStyleRef || !online}
+                  onClick={() => styleRefInputRef.current?.click()}
+                >
+                  {uploadingStyleRef ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <ImagePlus className="size-4" />
+                  )}
+                  Add photo
+                </Button>
+              )}
+            </div>
+            <input
+              ref={styleRefInputRef}
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={(e) => {
+                void handleStyleRefUpload(e.target.files);
+                e.target.value = "";
+              }}
+            />
+            {!online && <OfflineNotice label="Reference photos need an internet connection." />}
+          </div>
         </div>
       )}
 

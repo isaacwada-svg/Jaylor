@@ -74,6 +74,42 @@ export const uploadDesignSelfie = createServerFn({ method: "POST" })
     return { path };
   });
 
+/**
+ * A customer's own reference photo of the style they want, shown alongside their
+ * text description on the storefront's AI style preview. Shares the same private
+ * bucket/read policy and rate limit as the selfie upload above.
+ */
+export const uploadDesignStyleRef = createServerFn({ method: "POST" })
+  .inputValidator((data: unknown) => uploadSchema.parse(data))
+  .handler(async ({ data }) => {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+
+    const { data: store, error: storeError } = await supabaseAdmin
+      .from("stores")
+      .select("id")
+      .eq("id", data.storeId)
+      .maybeSingle();
+    if (storeError) throw new Error("Could not check this shop right now");
+    if (!store) throw new Error("This shop does not exist");
+
+    if (!(await withinUploadRateLimit(supabaseAdmin, data.storeId))) {
+      throw new Error("Too many photo uploads for this shop right now — try again in an hour.");
+    }
+
+    const base64 = data.dataUrl.split(",")[1] ?? "";
+    const bytes = Uint8Array.from(atob(base64), (c) => c.charCodeAt(0));
+    if (bytes.byteLength === 0) throw new Error("That photo appears to be empty");
+    if (bytes.byteLength > MAX_BYTES) throw new Error("That photo is too large");
+
+    const path = `${data.storeId}/style-refs/${crypto.randomUUID()}.jpg`;
+    const { error } = await supabaseAdmin.storage
+      .from(BUCKET)
+      .upload(path, bytes, { contentType: "image/jpeg", upsert: false });
+    if (error) throw new Error("Could not upload your photo");
+
+    return { path };
+  });
+
 const fabricUploadSchema = z.object({
   storeId: z.string().uuid(),
   /** JPEG image encoded as a data URL. */

@@ -151,6 +151,7 @@ export type Database = {
           sew_request_id: string | null
           share_token: string
           store_id: string
+          style_reference_urls: string[] | null
           was_paid: boolean
         }
         Insert: {
@@ -167,6 +168,7 @@ export type Database = {
           sew_request_id?: string | null
           share_token?: string
           store_id: string
+          style_reference_urls?: string[] | null
           was_paid?: boolean
         }
         Update: {
@@ -183,6 +185,7 @@ export type Database = {
           sew_request_id?: string | null
           share_token?: string
           store_id?: string
+          style_reference_urls?: string[] | null
           was_paid?: boolean
         }
         Relationships: [
@@ -1940,6 +1943,7 @@ export type Database = {
           status: string
           store_id: string
           style_notes: string | null
+          style_reference_photos: string[] | null
           updated_at: string
         }
         Insert: {
@@ -1962,6 +1966,7 @@ export type Database = {
           status?: string
           store_id: string
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -1984,6 +1989,7 @@ export type Database = {
           status?: string
           store_id?: string
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           updated_at?: string
         }
         Relationships: [

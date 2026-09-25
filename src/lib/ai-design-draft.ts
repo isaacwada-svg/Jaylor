@@ -8,6 +8,8 @@ export type AiDesignDraft = {
   measurements: Record<string, string>;
   /** Object path inside the private ai-design-photos bucket. */
   selfiePath: string | null;
+  /** Object paths of the customer's own style reference photos, same bucket. */
+  styleReferencePaths: string[];
   paymentReference?: string;
 };
 

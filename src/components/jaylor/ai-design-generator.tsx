@@ -6,7 +6,7 @@ import { normalizePhoneNG } from "@/lib/phone";
 import { resizeImageFile } from "@/lib/image";
 import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
-import { uploadDesignSelfie } from "@/lib/design-photos.functions";
+import { uploadDesignSelfie, uploadDesignStyleRef } from "@/lib/design-photos.functions";
 import {
   clearDesignDraft,
   loadDesignDraft,
@@ -51,6 +51,11 @@ export function AiDesignGenerator({
   const [uploadingSelfie, setUploadingSelfie] = useState(false);
   const [selfieConsent, setSelfieConsent] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [styleRefPaths, setStyleRefPaths] = useState<string[]>([]);
+  const [styleRefPreviews, setStyleRefPreviews] = useState<string[]>([]);
+  const [uploadingStyleRef, setUploadingStyleRef] = useState(false);
+  const styleRefInputRef = useRef<HTMLInputElement>(null);
+  const MAX_STYLE_REFS = 3;
 
   const [resultImage, setResultImage] = useState<string | null>(null);
   const [resultToken, setResultToken] = useState<string | null>(null);
@@ -75,6 +80,7 @@ export function AiDesignGenerator({
     setDescription(draft.description);
     setMeasurements(draft.measurements);
     setSelfiePath(draft.selfiePath);
+    setStyleRefPaths(draft.styleReferencePaths ?? []);
     setOpen(true);
     setStep("generating");
 
@@ -96,6 +102,7 @@ export function AiDesignGenerator({
           description: draft.description,
           measurements: draft.measurements,
           selfiePath: draft.selfiePath,
+          styleReferencePaths: draft.styleReferencePaths ?? [],
         });
       } catch (error) {
         toast.error(await getFunctionErrorMessage(error, "Could not confirm your payment"));
@@ -136,6 +143,42 @@ export function AiDesignGenerator({
     }
   }
 
+  async function handleStyleRefUpload(files: FileList | null) {
+    if (!files || files.length === 0) return;
+    const room = MAX_STYLE_REFS - styleRefPaths.length;
+    if (room <= 0) {
+      toast.error(`You can attach up to ${MAX_STYLE_REFS} reference photos`);
+      return;
+    }
+    setUploadingStyleRef(true);
+    try {
+      for (const file of Array.from(files).slice(0, room)) {
+        const resized = await resizeImageFile(file, 1000, 0.8);
+        const dataUrl = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onload = () => resolve(String(reader.result));
+          reader.onerror = () => reject(new Error("Could not read that photo"));
+          reader.readAsDataURL(resized);
+        });
+        if (!dataUrl.startsWith("data:image/jpeg;base64,")) {
+          throw new Error("Please choose a photo in JPG format");
+        }
+        const { path } = await uploadDesignStyleRef({ data: { storeId, dataUrl } });
+        setStyleRefPaths((prev) => [...prev, path]);
+        setStyleRefPreviews((prev) => [...prev, dataUrl]);
+      }
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not upload that photo"));
+    } finally {
+      setUploadingStyleRef(false);
+    }
+  }
+
+  function removeStyleRef(index: number) {
+    setStyleRefPreviews((prev) => prev.filter((_, i) => i !== index));
+    setStyleRefPaths((prev) => prev.filter((_, i) => i !== index));
+  }
+
   async function runGenerate(input: {
     storeId: string;
     clientName: string;
@@ -143,6 +186,7 @@ export function AiDesignGenerator({
     description: string;
     measurements: Record<string, string>;
     selfiePath: string | null;
+    styleReferencePaths: string[];
   }) {
     setStep("generating");
     try {
@@ -172,8 +216,8 @@ export function AiDesignGenerator({
 
   async function handleSubmit() {
     const phone = normalizePhoneNG(phoneRaw);
-    if (!clientName.trim() || !phone || !description.trim()) {
-      toast.error("Fill in your name, phone and describe the style you want");
+    if (!clientName.trim() || !phone || (!description.trim() && styleRefPaths.length === 0)) {
+      toast.error("Fill in your name and phone, then describe the style or attach a photo of it");
       return;
     }
     await runGenerate({
@@ -183,6 +227,7 @@ export function AiDesignGenerator({
       description: description.trim(),
       measurements,
       selfiePath,
+      styleReferencePaths: styleRefPaths,
     });
   }
 
@@ -198,6 +243,7 @@ export function AiDesignGenerator({
         description: description.trim(),
         measurements,
         selfiePath,
+        styleReferencePaths: styleRefPaths,
       };
       const callbackUrl = `${window.location.origin}${window.location.pathname}`;
       const { data, error } = await supabase.functions.invoke("create-design-payment", {
@@ -226,6 +272,8 @@ export function AiDesignGenerator({
     setSelfiePath(null);
     setSelfiePreview(null);
     setSelfieConsent(false);
+    setStyleRefPaths([]);
+    setStyleRefPreviews([]);
     setResultImage(null);
     setResultToken(null);
     setResultDesignId(null);
@@ -298,13 +346,65 @@ export function AiDesignGenerator({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="design-description">Describe the style</Label>
+                  <Label htmlFor="design-description">
+                    Describe the style (or attach a photo below)
+                  </Label>
                   <Textarea
                     id="design-description"
                     rows={3}
                     value={description}
                     onChange={(e) => setDescription(e.target.value)}
                     placeholder="e.g. Ankara gown, off-shoulder, fitted waist, knee-length, gold and navy"
+                  />
+                </div>
+
+                <div className="space-y-2 rounded-xl border border-border p-3">
+                  <p className="text-sm font-medium">Reference photos (optional)</p>
+                  <p className="text-xs text-muted-foreground">
+                    A style you&apos;ve seen and want — attach a photo instead of, or alongside,
+                    describing it in words.
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {styleRefPreviews.map((src, i) => (
+                      <div key={src} className="relative size-16">
+                        <img src={src} alt="" className="size-16 rounded-xl object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => removeStyleRef(i)}
+                          aria-label="Remove photo"
+                          className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-background shadow-sm"
+                        >
+                          <X className="size-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                    {styleRefPreviews.length < MAX_STYLE_REFS && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        disabled={uploadingStyleRef}
+                        onClick={() => styleRefInputRef.current?.click()}
+                      >
+                        {uploadingStyleRef ? (
+                          <Loader2 className="size-4 animate-spin" />
+                        ) : (
+                          <ImagePlus className="size-4" />
+                        )}
+                        Add photo
+                      </Button>
+                    )}
+                  </div>
+                  <input
+                    ref={styleRefInputRef}
+                    type="file"
+                    accept="image/*"
+                    multiple
+                    className="hidden"
+                    onChange={(e) => {
+                      void handleStyleRefUpload(e.target.files);
+                      e.target.value = "";
+                    }}
                   />
                 </div>
 

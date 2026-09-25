@@ -61,7 +61,7 @@ function AiDesigns() {
       const paths = Array.from(
         new Set(
           (designs ?? [])
-            .flatMap((d) => [d.image_url, d.selfie_url])
+            .flatMap((d) => [d.image_url, d.selfie_url, ...(d.style_reference_urls ?? [])])
             .filter((p): p is string => !!p)
             .map(toStoragePath),
         ),
@@ -143,9 +143,14 @@ function AiDesigns() {
             />
           ) : (
             designs.map((design) => {
-              const photos = [photoUrl(design.image_url), photoUrl(design.selfie_url)].filter(
-                (p): p is string => !!p,
-              );
+              const styleRefPhotos = (design.style_reference_urls ?? [])
+                .map(photoUrl)
+                .filter((p): p is string => !!p);
+              const photos = [
+                photoUrl(design.image_url),
+                photoUrl(design.selfie_url),
+                ...styleRefPhotos,
+              ].filter((p): p is string => !!p);
               const measurements = Object.entries(
                 (design.measurements as Record<string, string>) ?? {},
               ).filter(([, v]) => v?.trim());
@@ -177,6 +182,23 @@ function AiDesigns() {
                       {formatPhoneNG(design.phone)}
                     </p>
                     <p className="mt-1 text-sm text-muted-foreground">{design.description}</p>
+                    {styleRefPhotos.length > 0 && (
+                      <div className="mt-2 flex gap-1.5">
+                        {styleRefPhotos.map((url) => (
+                          <button
+                            key={url}
+                            type="button"
+                            onClick={() => setLightbox({ photos, index: photos.indexOf(url) })}
+                          >
+                            <img
+                              src={url}
+                              alt="Customer's reference photo"
+                              className="size-10 rounded-lg object-cover"
+                            />
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     {measurements.length > 0 && (
                       <p className="mt-1 text-xs text-muted-foreground">
                         {measurements.map(([k, v]) => `${k}: ${v}`).join(" · ")}
