@@ -4,7 +4,9 @@ export function downloadCsv(filename: string, rows: (string | number)[][]) {
     .map((row) =>
       row
         .map((cell) => {
-          const s = String(cell);
+          let s = String(cell);
+          // Neutralise spreadsheet formulas (CSV injection) in text cells.
+          if (typeof cell === "string" && /^[=+\-@\t\r]/.test(s)) s = `'${s}`;
           return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
         })
         .join(","),
