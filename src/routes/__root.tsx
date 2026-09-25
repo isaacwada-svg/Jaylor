@@ -152,9 +152,18 @@ function RootComponent() {
 
   useEffect(() => {
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.register("/sw.js").catch(() => {
-        // offline support is best-effort; never block the app on it
-      });
+      if (window.location.hostname === "localhost") {
+        navigator.serviceWorker.getRegistrations().then((registrations) => {
+          registrations.forEach((registration) => void registration.unregister());
+        });
+        caches.keys().then((keys) => {
+          keys.filter((key) => key.startsWith("jaylor-")).forEach((key) => void caches.delete(key));
+        });
+      } else {
+        navigator.serviceWorker.register("/sw.js").catch(() => {
+          // offline support is best-effort; never block the app on it
+        });
+      }
     }
   }, []);
 
