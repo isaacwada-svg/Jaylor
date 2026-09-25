@@ -14,6 +14,8 @@ type RequestBody = {
   measurements?: Record<string, string>;
   /** Object path inside the private ai-design-photos bucket. */
   selfiePath?: string | null;
+  /** Paystack reference of the caller's own verified design payment (paid generations only). */
+  paymentReference?: string | null;
 };
 
 function serviceClient() {
@@ -176,9 +178,16 @@ Deno.serve(async (req) => {
   let wasPaid = false;
 
   if ((freeUsed ?? 0) > 0) {
+    // A paid generation must present the payer's own payment reference: the phone number is
+    // self-reported, so it alone can't be used to spend someone else's payment.
+    const reference = typeof body.paymentReference === "string" ? body.paymentReference : "";
+    if (!reference.startsWith("design_") || reference.length > 100) {
+      return jsonResponse({ payment_required: true, amount: DESIGN_FEE_KOBO });
+    }
     const { data: payment } = await supabase
       .from("ai_design_payments")
       .select("id")
+      .eq("reference", reference)
       .eq("phone", body.phone)
       .eq("status", "success")
       .eq("used", false)
@@ -248,7 +257,11 @@ Deno.serve(async (req) => {
     if (insertError) throw insertError;
 
     if (paymentId) {
-      await supabase.from("ai_design_payments").update({ used: true }).eq("id", paymentId);
+      await supabase
+        .from("ai_design_payments")
+        .update({ used: true })
+        .eq("id", paymentId)
+        .eq("used", false);
     }
 
     const signedImage = await signPath(supabase, imagePath);

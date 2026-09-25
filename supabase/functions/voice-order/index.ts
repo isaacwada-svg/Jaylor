@@ -91,8 +91,16 @@ Deno.serve(async (req) => {
     }
   }
 
-  const garmentTypes = Array.isArray(body.garmentTypes) ? body.garmentTypes : [];
-  const today = body.today || new Date().toISOString().slice(0, 10);
+  // Both values are interpolated into the system prompt, so accept only strict shapes.
+  const garmentTypes = (Array.isArray(body.garmentTypes) ? body.garmentTypes : [])
+    .filter((g): g is string => typeof g === "string" && /^[A-Za-z0-9 '&()\/-]{1,40}$/.test(g))
+    .slice(0, 60);
+  const today =
+    typeof body.today === "string" &&
+    /^\d{4}-\d{2}-\d{2}$/.test(body.today) &&
+    !Number.isNaN(Date.parse(body.today))
+      ? body.today
+      : new Date().toISOString().slice(0, 10);
 
   const system = `You turn a Nigerian tailor's spoken description of a new order into structured JSON fields. Today's date is ${today}.
 Only pick garment_type from this exact list (or null if none match): ${JSON.stringify(garmentTypes)}.
