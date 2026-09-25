@@ -24,7 +24,7 @@ export const Route = createFileRoute("/cookies")({
 
 function Cookies() {
   return (
-    <LegalLayout title="Cookie Notice" lastUpdated="20 September 2026">
+    <LegalLayout title="Cookie Notice" lastUpdated="25 September 2026">
       <section>
         <h2>Essential storage, always on</h2>
         <p>
