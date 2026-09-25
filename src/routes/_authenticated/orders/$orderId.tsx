@@ -12,6 +12,7 @@ import { RemindButton } from "@/components/jaylor/remind-button";
 import { AiReplyDraftButton } from "@/components/jaylor/ai-reply-draft-button";
 import { RequestPaymentButton } from "@/components/jaylor/request-payment-button";
 import { ReceiptDialog } from "@/components/jaylor/receipt-dialog";
+import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -30,7 +31,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
 import { isBridalRemeasureDue } from "@/lib/measurements";
 import { orderReadyMessage, balanceDueMessage } from "@/lib/whatsapp";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   staticData: { sitemap: false },
@@ -48,6 +49,7 @@ function OrderDetail() {
   const [updating, setUpdating] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
+  const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
 
   // If a client (or the owner testing it) returns from a Paystack payment link.
   useEffect(() => {
@@ -72,7 +74,7 @@ function OrderDetail() {
           toast.error("Payment wasn't confirmed");
         }
       } catch (error) {
-        toast.error(getErrorMessage(error, "Could not confirm this payment"));
+        toast.error(await getFunctionErrorMessage(error, "Could not confirm this payment"));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -125,6 +127,44 @@ function OrderDetail() {
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+  });
+
+  // orders_for_tailor (the view non-owner/manager roles read from) now also
+  // carries this column, so both roles can read it -- just from whichever
+  // table/view `order` above itself came from.
+  const { data: styleRefPaths } = useQuery({
+    queryKey: ["order-style-ref-paths", orderId, canSeeMoney],
+    queryFn: async () => {
+      if (canSeeMoney) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("style_reference_photos")
+          .eq("id", orderId)
+          .maybeSingle();
+        if (error) throw error;
+        return data?.style_reference_photos ?? [];
+      }
+      const { data, error } = await supabase
+        .from("orders_for_tailor")
+        .select("style_reference_photos")
+        .eq("id", orderId)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.style_reference_photos ?? [];
+    },
+  });
+
+  // Photos live in a private bucket, so they're viewed through short-lived signed links.
+  const { data: styleRefPhotos } = useQuery({
+    queryKey: ["order-style-ref-urls", orderId, styleRefPaths?.join(",")],
+    enabled: !!styleRefPaths && styleRefPaths.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("order-style-photos")
+        .createSignedUrls(styleRefPaths as string[], 3600);
+      if (error) throw error;
+      return (data ?? []).map((item) => item.signedUrl).filter((url): url is string => !!url);
     },
   });
 
@@ -456,6 +496,26 @@ function OrderDetail() {
               <p className="mt-1 text-sm">{order.style_notes}</p>
             </div>
           )}
+
+          {styleRefPhotos && styleRefPhotos.length > 0 && (
+            <div className="rounded-2xl border border-border p-4 sm:col-span-2">
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                Reference photos
+              </p>
+              <div className="mt-2 flex flex-wrap gap-2">
+                {styleRefPhotos.map((url, i) => (
+                  <button
+                    key={url}
+                    type="button"
+                    onClick={() => setLightboxIndex(i)}
+                    className="cursor-zoom-in"
+                  >
+                    <img src={url} alt="" className="size-16 rounded-lg object-cover" />
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
         {canSeeMoney && payments && payments.length > 0 && (
@@ -531,6 +591,13 @@ function OrderDetail() {
           payments={payments ?? []}
         />
       )}
+
+      <PhotoLightbox
+        photos={styleRefPhotos ?? []}
+        index={lightboxIndex}
+        onIndexChange={setLightboxIndex}
+        onClose={() => setLightboxIndex(null)}
+      />
 
       <Dialog open={!!pendingStatus} onOpenChange={(open) => !open && setPendingStatus(null)}>
         <DialogContent>

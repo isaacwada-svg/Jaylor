@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { MessageCircle, Sparkles } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { whatsappLink } from "@/lib/whatsapp";
-import { getErrorMessage } from "@/lib/utils";
+import { getFunctionErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -53,7 +53,7 @@ export function AiReplyDraftButton({
       if (error) throw error;
       setDraft((data as { result: string }).result);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not draft a reply"));
+      toast.error(await getFunctionErrorMessage(error, "Could not draft a reply"));
     } finally {
       setBusy(false);
     }

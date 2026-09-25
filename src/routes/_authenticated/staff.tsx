@@ -1,8 +1,8 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowRight, Plus } from "lucide-react";
+import { ArrowRight, ChevronLeft, ChevronRight, Plus } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
@@ -64,6 +64,9 @@ function Staff() {
   const [limitSheetOpen, setLimitSheetOpen] = useState(false);
   const [tailorFilter, setTailorFilter] = useState<string>("all");
   const [busyId, setBusyId] = useState<string | null>(null);
+  const boardScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
 
   const { data: members, isLoading: membersLoading } = useQuery({
     queryKey: ["store-members", storeId],
@@ -160,6 +163,34 @@ function Staff() {
 
   const tailors = (members ?? []).filter((m) => m.role === "tailor");
   const { data: usersFeature } = useFeatureLimit(storeId, "users");
+
+  // The job board scrolls horizontally with no native scrollbar affordance on most
+  // browsers/OSes, so a column past the visible edge just looks cut off/broken rather
+  // than "scroll for more" -- track scroll position to show fade + arrow cues instead.
+  useEffect(() => {
+    const el = boardScrollRef.current;
+    if (!el) return;
+    function updateScrollState() {
+      if (!el) return;
+      setCanScrollLeft(el.scrollLeft > 4);
+      setCanScrollRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 4);
+    }
+    updateScrollState();
+    el.addEventListener("scroll", updateScrollState);
+    const observer = new ResizeObserver(updateScrollState);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener("scroll", updateScrollState);
+      observer.disconnect();
+    };
+  }, [ordersLoading]);
+
+  function scrollBoard(direction: "left" | "right") {
+    boardScrollRef.current?.scrollBy({
+      left: direction === "left" ? -288 : 288,
+      behavior: "smooth",
+    });
+  }
 
   function invalidateMembers() {
     queryClient.invalidateQueries({ queryKey: ["store-members", storeId] });
@@ -346,70 +377,99 @@ function Staff() {
                 ))}
               </div>
             ) : (
-              <div className="mt-4 flex gap-3 overflow-x-auto pb-2">
-                {BOARD_STATUSES.map((status) => {
-                  const columnOrders = filteredOrders.filter((o) => o.status === status);
-                  return (
-                    <div key={status} className="w-64 shrink-0">
-                      <div className="flex items-center justify-between px-1">
-                        <p className="text-sm font-medium">{orderStatusLabel(status)}</p>
-                        <Badge variant="outline">{columnOrders.length}</Badge>
-                      </div>
-                      <div className="mt-2 space-y-2">
-                        {columnOrders.map((order) => {
-                          const overdue =
-                            !!order.delivery_date && new Date(order.delivery_date) < today;
-                          return (
-                            <div key={order.id} className="rounded-xl border border-border p-3">
-                              <p className="truncate text-sm font-medium">
-                                {clientFirstName(order.client_id)}
-                              </p>
-                              <p className="truncate text-xs text-muted-foreground">
-                                {order.garment_type}
-                              </p>
-                              <p
-                                className={`mt-1 text-xs ${overdue ? "text-owed" : "text-muted-foreground"}`}
-                              >
-                                {order.delivery_date
-                                  ? new Date(order.delivery_date).toLocaleDateString()
-                                  : "No date"}
-                              </p>
-                              <Select
-                                value={order.assigned_to ?? "none"}
-                                onValueChange={(v) =>
-                                  assignTailor(order.id, v === "none" ? null : v)
-                                }
-                              >
-                                <SelectTrigger className="mt-2 h-8 text-xs">
-                                  <SelectValue placeholder="Assign" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value="none">Unassigned</SelectItem>
-                                  {tailors.map((t) => (
-                                    <SelectItem key={t.user_id} value={t.user_id}>
-                                      {profileById(t.user_id)?.full_name ?? "Tailor"}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
-                              {status !== "ready" && (
-                                <Button
-                                  size="sm"
-                                  variant="ghost"
-                                  className="mt-1 h-7 w-full text-xs"
-                                  onClick={() => advanceStatus(order.id, order.status)}
+              <div className="relative mt-4">
+                {canScrollLeft && (
+                  <>
+                    <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-background to-transparent" />
+                    <button
+                      type="button"
+                      onClick={() => scrollBoard("left")}
+                      aria-label="Scroll board left"
+                      className="absolute left-1 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm"
+                    >
+                      <ChevronLeft className="size-4" />
+                    </button>
+                  </>
+                )}
+                {canScrollRight && (
+                  <>
+                    <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-background to-transparent" />
+                    <button
+                      type="button"
+                      onClick={() => scrollBoard("right")}
+                      aria-label="Scroll board right"
+                      className="absolute right-1 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm"
+                    >
+                      <ChevronRight className="size-4" />
+                    </button>
+                  </>
+                )}
+                <div ref={boardScrollRef} className="flex gap-3 overflow-x-auto pb-2">
+                  {BOARD_STATUSES.map((status) => {
+                    const columnOrders = filteredOrders.filter((o) => o.status === status);
+                    return (
+                      <div key={status} className="w-64 shrink-0">
+                        <div className="flex items-center justify-between px-1">
+                          <p className="text-sm font-medium">{orderStatusLabel(status)}</p>
+                          <Badge variant="outline">{columnOrders.length}</Badge>
+                        </div>
+                        <div className="mt-2 space-y-2">
+                          {columnOrders.map((order) => {
+                            const overdue =
+                              !!order.delivery_date && new Date(order.delivery_date) < today;
+                            return (
+                              <div key={order.id} className="rounded-xl border border-border p-3">
+                                <p className="truncate text-sm font-medium">
+                                  {clientFirstName(order.client_id)}
+                                </p>
+                                <p className="truncate text-xs text-muted-foreground">
+                                  {order.garment_type}
+                                </p>
+                                <p
+                                  className={`mt-1 text-xs ${overdue ? "text-owed" : "text-muted-foreground"}`}
                                 >
-                                  Move on
-                                  <ArrowRight className="size-3" />
-                                </Button>
-                              )}
-                            </div>
-                          );
-                        })}
+                                  {order.delivery_date
+                                    ? new Date(order.delivery_date).toLocaleDateString()
+                                    : "No date"}
+                                </p>
+                                <Select
+                                  value={order.assigned_to ?? "none"}
+                                  onValueChange={(v) =>
+                                    assignTailor(order.id, v === "none" ? null : v)
+                                  }
+                                >
+                                  <SelectTrigger className="mt-2 h-8 text-xs">
+                                    <SelectValue placeholder="Assign" />
+                                  </SelectTrigger>
+                                  <SelectContent>
+                                    <SelectItem value="none">Unassigned</SelectItem>
+                                    {tailors.map((t) => (
+                                      <SelectItem key={t.user_id} value={t.user_id}>
+                                        {profileById(t.user_id)?.full_name ?? "Tailor"}
+                                      </SelectItem>
+                                    ))}
+                                  </SelectContent>
+                                </Select>
+                                {status !== "ready" && (
+                                  <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="mt-1 h-7 w-full text-xs"
+                                    onClick={() => advanceStatus(order.id, order.status)}
+                                  >
+                                    Move on
+                                    <ArrowRight className="size-3" />
+                                  </Button>
+                                )}
+                              </div>
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                  <div className="w-2 shrink-0" aria-hidden />
+                </div>
               </div>
             )}
           </TabsContent>

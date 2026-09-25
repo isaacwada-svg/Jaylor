@@ -34,6 +34,7 @@ import { normalizePhoneNG, formatPhoneNG } from "@/lib/phone";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
 import { jobTemplate } from "@/lib/job-templates";
+import { useJobTemplates } from "@/lib/use-job-templates";
 import { QuoteDocument, type QuoteData } from "@/components/jaylor/quote-document";
 import { MeasuringDayPanel } from "@/components/jaylor/measuring-day-panel";
 import { JobBatchesPanel } from "@/components/jaylor/job-batches-panel";
@@ -63,6 +64,7 @@ function EventDetail() {
   const { eventId } = Route.useParams();
   const navigate = useNavigate();
   const { currentStore, currentRole } = useStore();
+  const { data: storeTemplates } = useJobTemplates(currentStore?.id);
   const canManage = currentRole === "owner" || currentRole === "manager";
   const tier = effectiveTier(currentStore);
   const queryClient = useQueryClient();
@@ -377,7 +379,7 @@ function EventDetail() {
           <div className="min-w-0">
             <h1 className="truncate text-2xl">{event.name}</h1>
             <p className="mt-1 truncate text-sm text-muted-foreground">
-              {jobTemplate(event.job_type).label}
+              {jobTemplate(event.job_type, storeTemplates).label}
               {" · "}
               {event.event_date ? new Date(event.event_date).toLocaleDateString() : "No date set"}
               {event.fabric_description ? ` · ${event.fabric_description}` : ""}
@@ -492,7 +494,7 @@ function EventDetail() {
           )}
         </div>
 
-        {jobTemplate(event.job_type).isContract && currentStore && (
+        {jobTemplate(event.job_type, storeTemplates).isContract && currentStore && (
           <div className="mt-6">
             <p className="text-sm font-medium">
               {event.stage === "quote" ? "Quote" : "Invoice"}

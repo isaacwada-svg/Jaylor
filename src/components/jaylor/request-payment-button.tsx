@@ -3,7 +3,7 @@ import { toast } from "sonner";
 import { CreditCard, MessageCircle } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { getErrorMessage } from "@/lib/utils";
+import { getFunctionErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
 import { approximateUsd } from "@/lib/fx";
 import { Button } from "@/components/ui/button";
@@ -41,15 +41,11 @@ export function RequestPaymentButton({
       const { data, error } = await supabase.functions.invoke("create-order-payment", {
         body: { orderId, amount: amt, callbackUrl },
       });
-      if (error) {
-        const ctx = (error as { context?: Response }).context;
-        const body = ctx && typeof ctx.json === "function" ? await ctx.json().catch(() => null) : null;
-        throw new Error((body as { error?: string } | null)?.error ?? error.message);
-      }
+      if (error) throw error;
       const { authorization_url } = data as { authorization_url: string };
       setLink(authorization_url);
     } catch (error) {
-      const message = getErrorMessage(error, "Could not create a payment link");
+      const message = await getFunctionErrorMessage(error, "Could not create a payment link");
       if (message.toLowerCase().includes("connect a bank account")) {
         setNotConnected(true);
       } else {

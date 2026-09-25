@@ -15,6 +15,7 @@ import {
   Wallet,
   FileText,
   Gift,
+  LifeBuoy,
 } from "lucide-react";
 import type { Tier } from "@/lib/jaylor";
 import type { DiscoveryFeature } from "@/lib/feature-discovery";
@@ -83,6 +84,11 @@ const ITEMS: {
   },
   { label: "Privacy and data", hint: "Consent, exports, support access", icon: ShieldCheck },
   { label: "Settings and billing", hint: "Store, plan, team", icon: Settings },
+  {
+    label: "Contact and support",
+    hint: "Questions, bugs, or help with your store",
+    icon: LifeBuoy,
+  },
 ];
 
 function More() {
@@ -209,6 +215,15 @@ function More() {
             if (label === "Privacy and data") {
               return (
                 <Link key={label} to="/privacy">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Contact and support") {
+              return (
+                <Link key={label} to="/contact">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

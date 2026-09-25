@@ -52,6 +52,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             <Link to="/about" className="hover:text-foreground">
               About
             </Link>
+            <Link to="/contact" className="hover:text-foreground">
+              Contact
+            </Link>
             <Link to="/privacy-policy" className="hover:text-foreground">
               Privacy
             </Link>

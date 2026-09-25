@@ -165,10 +165,29 @@ export const JOB_TEMPLATES: JobTemplate[] = [
 
 const DEFAULT_TEMPLATE = JOB_TEMPLATES[0] as JobTemplate;
 
-export function jobTemplate(jobType: string | null | undefined): JobTemplate {
+/**
+ * Looks up a job type's template. Pass a store's own `job_templates` rows
+ * (from useJobTemplates) when known -- store owners can add custom job
+ * types or hide built-ins, so the static JOB_TEMPLATES list alone isn't
+ * enough once any store has customized its list. Falls back to the static
+ * list (then the default template) when no store-specific list is given,
+ * for call sites without a store context.
+ */
+export function jobTemplate(
+  jobType: string | null | undefined,
+  storeTemplates?: JobTemplate[],
+): JobTemplate {
+  if (storeTemplates) {
+    const found = storeTemplates.find((t) => t.jobType === jobType);
+    if (found) return found;
+  }
   return JOB_TEMPLATES.find((t) => t.jobType === jobType) ?? DEFAULT_TEMPLATE;
 }
 
-export function guestWelcomeLine(jobType: string | null | undefined, firstName: string): string {
-  return jobTemplate(jobType).guestWelcomeLine.replace("{name}", firstName);
+export function guestWelcomeLine(
+  jobType: string | null | undefined,
+  firstName: string,
+  storeTemplates?: JobTemplate[],
+): string {
+  return jobTemplate(jobType, storeTemplates).guestWelcomeLine.replace("{name}", firstName);
 }

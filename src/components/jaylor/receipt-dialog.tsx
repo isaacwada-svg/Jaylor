@@ -30,6 +30,8 @@ export function ReceiptDialog({
     logo_url: string | null;
     city: string | null;
     whatsapp_phone: string | null;
+    address: string | null;
+    contact_email: string | null;
   };
   order: OrderRow;
   client: ClientRow;
@@ -89,31 +91,70 @@ export function ReceiptDialog({
               : "mx-auto w-full space-y-4 bg-white p-6 text-sm text-black"
           }
         >
-          <div className="flex flex-col items-center text-center">
-            <div className="flex size-12 items-center justify-center overflow-hidden rounded-xl border border-black/10 font-heading text-lg">
-              {logo ? (
-                <img src={logo} alt="" className="size-full object-cover" />
-              ) : (
-                store.name.slice(0, 1).toUpperCase()
-              )}
+          {format === "a4" ? (
+            <div className="flex items-start justify-between gap-4 border-b-2 border-[#b8860b] pb-4">
+              <div className="flex items-start gap-3">
+                <div className="flex size-14 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-black/10 font-heading text-xl">
+                  {logo ? (
+                    <img src={logo} alt="" className="size-full object-cover" />
+                  ) : (
+                    store.name.slice(0, 1).toUpperCase()
+                  )}
+                </div>
+                <div>
+                  <p className="font-heading text-xl">{store.name}</p>
+                  {store.address && (
+                    <p className="mt-0.5 max-w-xs text-xs opacity-70">{store.address}</p>
+                  )}
+                  {store.city && <p className="text-xs opacity-70">{store.city}</p>}
+                  <p className="mt-0.5 text-xs opacity-70">
+                    {store.whatsapp_phone && formatPhoneNG(store.whatsapp_phone)}
+                    {store.whatsapp_phone && store.contact_email && " · "}
+                    {store.contact_email}
+                  </p>
+                </div>
+              </div>
+              <div className="shrink-0 text-right">
+                <p className="text-[10px] uppercase tracking-[0.15em] opacity-60">Invoice</p>
+                <p className="font-medium">{order.number}</p>
+                <p className="text-xs opacity-70">
+                  {new Date(order.created_at).toLocaleDateString()}
+                </p>
+              </div>
             </div>
-            <p className="mt-2 font-heading text-base">{store.name}</p>
-            {store.city && <p className="text-xs opacity-70">{store.city}</p>}
-            {store.whatsapp_phone && (
-              <p className="text-xs opacity-70">{formatPhoneNG(store.whatsapp_phone)}</p>
+          ) : (
+            <div className="flex flex-col items-center text-center">
+              <div className="flex size-12 items-center justify-center overflow-hidden rounded-xl border border-black/10 font-heading text-lg">
+                {logo ? (
+                  <img src={logo} alt="" className="size-full object-cover" />
+                ) : (
+                  store.name.slice(0, 1).toUpperCase()
+                )}
+              </div>
+              <p className="mt-2 font-heading text-base">{store.name}</p>
+              {store.address && <p className="text-xs opacity-70">{store.address}</p>}
+              {store.city && <p className="text-xs opacity-70">{store.city}</p>}
+              {store.whatsapp_phone && (
+                <p className="text-xs opacity-70">{formatPhoneNG(store.whatsapp_phone)}</p>
+              )}
+              {store.contact_email && <p className="text-xs opacity-70">{store.contact_email}</p>}
+            </div>
+          )}
+
+          <div className="border-t border-dashed border-black/20 pt-3">
+            {format === "a4" && <p className="text-xs font-medium opacity-70">Bill to</p>}
+            <p className="font-medium">{client.full_name}</p>
+            <p className="text-xs opacity-70">{formatPhoneNG(client.phone)}</p>
+          </div>
+
+          <div className={format === "a4" ? "pt-1" : "border-t border-dashed border-black/20 pt-3"}>
+            {format === "a4" && (
+              <div className="flex justify-between border-b border-black/20 pb-1 text-[10px] font-medium uppercase tracking-wide opacity-60">
+                <span>Description</span>
+                <span>Amount</span>
+              </div>
             )}
-          </div>
-
-          <div className="border-t border-dashed border-black/20 pt-3">
-            <p className="font-medium">Order {order.number}</p>
-            <p className="text-xs opacity-70">{new Date(order.created_at).toLocaleDateString()}</p>
-            <p className="mt-2">
-              {client.full_name} · {formatPhoneNG(client.phone)}
-            </p>
-          </div>
-
-          <div className="border-t border-dashed border-black/20 pt-3">
-            <div className="flex justify-between">
+            <div className={format === "a4" ? "flex justify-between pt-2" : "flex justify-between"}>
               <span>
                 {order.garment_type} × {order.quantity}
               </span>
@@ -135,7 +176,13 @@ export function ReceiptDialog({
             </div>
           )}
 
-          <div className="space-y-1 border-t border-black/20 pt-3">
+          <div
+            className={
+              format === "a4"
+                ? "ml-auto w-56 space-y-1 border-t-2 border-black/80 pt-3"
+                : "space-y-1 border-t border-black/20 pt-3"
+            }
+          >
             <div className="flex justify-between text-xs opacity-70">
               <span>Total</span>
               <span className="figures">{formatMoney(total)}</span>
@@ -150,7 +197,13 @@ export function ReceiptDialog({
             </div>
           </div>
 
-          <p className="border-t border-dashed border-black/20 pt-3 text-center text-[10px] opacity-60">
+          <p
+            className={
+              format === "a4"
+                ? "border-t border-black/10 pt-3 text-center text-[10px] opacity-60"
+                : "border-t border-dashed border-black/20 pt-3 text-center text-[10px] opacity-60"
+            }
+          >
             Thank you for your business. Made with Jaylor.
           </p>
         </div>

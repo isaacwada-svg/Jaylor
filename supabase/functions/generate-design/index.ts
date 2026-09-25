@@ -5,6 +5,7 @@ import { AiGatewayBlockedError, gateAndLogImageCall } from "../_shared/ai-gatewa
 const DESIGN_FEE_KOBO = 30000; // ₦300
 const BUCKET = "ai-design-photos";
 const SIGNED_URL_TTL = 60 * 60; // 1 hour
+const MAX_STYLE_REFS = 3;
 
 type RequestBody = {
   storeId: string;
@@ -14,6 +15,8 @@ type RequestBody = {
   measurements?: Record<string, string>;
   /** Object path inside the private ai-design-photos bucket. */
   selfiePath?: string | null;
+  /** Object paths of the customer's own style reference photos, same bucket. */
+  styleReferencePaths?: string[];
   /** Paystack reference of the caller's own verified design payment (paid generations only). */
   paymentReference?: string | null;
 };
@@ -67,18 +70,21 @@ Deno.serve(async (req) => {
   } catch {
     return errorResponse("Invalid JSON body");
   }
+  const hasStyleRefs = (body.styleReferencePaths ?? []).length > 0;
   if (
     !body.storeId ||
     !body.clientName?.trim() ||
     !body.phone?.trim() ||
-    !body.description?.trim()
+    (!body.description?.trim() && !hasStyleRefs)
   ) {
-    return errorResponse("storeId, clientName, phone and description are required");
+    return errorResponse(
+      "storeId, clientName, phone and a description or reference photo are required",
+    );
   }
 
   if (
     body.clientName.length > 120 ||
-    body.description.length > 2000 ||
+    (body.description?.length ?? 0) > 2000 ||
     !/^\+?[0-9]{8,15}$/.test(body.phone.trim())
   ) {
     return errorResponse("Please check your details and try again");
@@ -114,6 +120,17 @@ Deno.serve(async (req) => {
       return errorResponse("That photo does not belong to this shop", 400);
     }
     selfiePath = candidate;
+  }
+
+  // Same ownership check for each style reference photo, capped so a single
+  // request can't balloon the image-generation call with dozens of images.
+  const styleRefPaths: string[] = [];
+  for (const raw of (body.styleReferencePaths ?? []).slice(0, MAX_STYLE_REFS)) {
+    const candidate = toStoragePath(raw);
+    if (!candidate.startsWith(`${body.storeId}/`)) {
+      return errorResponse("That photo does not belong to this shop", 400);
+    }
+    styleRefPaths.push(candidate);
   }
 
   try {
@@ -209,7 +226,12 @@ Deno.serve(async (req) => {
         .join(", ")
     : "";
 
-  const promptText = `Create a photorealistic fashion photograph of a custom-tailored Nigerian outfit, suitable for a real tailor to sew. Style brief from the customer: "${body.description.trim()}".${
+  const descriptionText = body.description?.trim() || "";
+  const promptText = `Create a photorealistic fashion photograph of a custom-tailored Nigerian outfit, suitable for a real tailor to sew.${
+    descriptionText
+      ? ` Style brief from the customer: "${descriptionText}".`
+      : " The customer has not written a style brief — base the design entirely on the attached reference photo(s) below."
+  }${
     measurementsText
       ? ` Approximate body measurements for proportion reference: ${measurementsText}.`
       : ""
@@ -226,6 +248,16 @@ Deno.serve(async (req) => {
         text: "Use the attached photo as a reference for the person's face and body.",
       });
       parts.push({ type: "image_url", image_url: { url: signedSelfie } });
+    }
+  }
+  if (styleRefPaths.length > 0) {
+    parts.push({
+      type: "text",
+      text: "Use the following attached photo(s) as a style reference for the garment/outfit the customer wants — match the cut, silhouette and details shown, adapted to the fabric and measurements described above.",
+    });
+    for (const path of styleRefPaths) {
+      const signed = await signPath(supabase, path);
+      if (signed) parts.push({ type: "image_url", image_url: { url: signed } });
     }
   }
 
@@ -245,9 +277,10 @@ Deno.serve(async (req) => {
         store_id: body.storeId,
         client_name: body.clientName.trim(),
         phone: body.phone,
-        description: body.description.trim(),
+        description: descriptionText || "Styled from an attached reference photo",
         measurements: body.measurements ?? {},
         selfie_url: selfiePath,
+        style_reference_urls: styleRefPaths.length ? styleRefPaths : null,
         image_url: imagePath,
         was_paid: wasPaid,
         payment_id: paymentId,

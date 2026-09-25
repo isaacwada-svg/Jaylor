@@ -27,7 +27,7 @@ import { Label } from "@/components/ui/label";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
-import { getErrorMessage } from "@/lib/utils";
+import { getFunctionErrorMessage } from "@/lib/utils";
 import { useClientMoments, MOMENT_TYPE_LABELS } from "@/lib/moments";
 
 export const Route = createFileRoute("/_authenticated/clients/$clientId")({
@@ -83,7 +83,7 @@ function ClientProfile() {
       toast.success("Client deleted");
       navigate({ to: "/clients" });
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not delete this client"));
+      toast.error(await getFunctionErrorMessage(error, "Could not delete this client"));
       setDeleting(false);
     }
   }

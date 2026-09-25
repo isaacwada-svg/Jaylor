@@ -151,6 +151,7 @@ export type Database = {
           sew_request_id: string | null
           share_token: string
           store_id: string
+          style_reference_urls: string[] | null
           was_paid: boolean
         }
         Insert: {
@@ -167,6 +168,7 @@ export type Database = {
           sew_request_id?: string | null
           share_token?: string
           store_id: string
+          style_reference_urls?: string[] | null
           was_paid?: boolean
         }
         Update: {
@@ -183,6 +185,7 @@ export type Database = {
           sew_request_id?: string | null
           share_token?: string
           store_id?: string
+          style_reference_urls?: string[] | null
           was_paid?: boolean
         }
         Relationships: [
@@ -1231,6 +1234,81 @@ export type Database = {
         }
         Relationships: []
       }
+      job_templates: {
+        Row: {
+          collection_mode: string
+          created_at: string
+          created_by: string | null
+          description: string
+          guest_welcome_line: string
+          hidden: boolean
+          id: string
+          is_contract: boolean
+          is_default: boolean
+          job_type: string
+          label: string
+          name_placeholder: string
+          payer_mode: string
+          pricing_mode: string
+          sort_order: number
+          store_id: string
+          turnaround_mode: string
+        }
+        Insert: {
+          collection_mode: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          guest_welcome_line?: string
+          hidden?: boolean
+          id?: string
+          is_contract?: boolean
+          is_default?: boolean
+          job_type: string
+          label: string
+          name_placeholder?: string
+          payer_mode: string
+          pricing_mode: string
+          sort_order?: number
+          store_id: string
+          turnaround_mode: string
+        }
+        Update: {
+          collection_mode?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          guest_welcome_line?: string
+          hidden?: boolean
+          id?: string
+          is_contract?: boolean
+          is_default?: boolean
+          job_type?: string
+          label?: string
+          name_placeholder?: string
+          payer_mode?: string
+          pricing_mode?: string
+          sort_order?: number
+          store_id?: string
+          turnaround_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           created_at: string
@@ -1940,6 +2018,7 @@ export type Database = {
           status: string
           store_id: string
           style_notes: string | null
+          style_reference_photos: string[] | null
           updated_at: string
         }
         Insert: {
@@ -1962,6 +2041,7 @@ export type Database = {
           status?: string
           store_id: string
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           updated_at?: string
         }
         Update: {
@@ -1984,6 +2064,7 @@ export type Database = {
           status?: string
           store_id?: string
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           updated_at?: string
         }
         Relationships: [
@@ -2970,11 +3051,13 @@ export type Database = {
       stores: {
         Row: {
           accent_color: string | null
+          address: string | null
           area: string | null
           bio: string | null
           city: string | null
           consent_benchmark_sharing: boolean
           consent_benchmark_sharing_at: string | null
+          contact_email: string | null
           country_code: string
           cover_url: string | null
           created_at: string
@@ -3003,11 +3086,13 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          address?: string | null
           area?: string | null
           bio?: string | null
           city?: string | null
           consent_benchmark_sharing?: boolean
           consent_benchmark_sharing_at?: string | null
+          contact_email?: string | null
           country_code?: string
           cover_url?: string | null
           created_at?: string
@@ -3036,11 +3121,13 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          address?: string | null
           area?: string | null
           bio?: string | null
           city?: string | null
           consent_benchmark_sharing?: boolean
           consent_benchmark_sharing_at?: string | null
+          contact_email?: string | null
           country_code?: string
           cover_url?: string | null
           created_at?: string
@@ -3434,6 +3521,7 @@ export type Database = {
           status: string | null
           store_id: string | null
           style_notes: string | null
+          style_reference_photos: string[] | null
           updated_at: string | null
         }
         Insert: {
@@ -3453,6 +3541,7 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           updated_at?: string | null
         }
         Update: {
@@ -3472,6 +3561,7 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           updated_at?: string | null
         }
         Relationships: [
