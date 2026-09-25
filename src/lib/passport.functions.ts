@@ -1,6 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { templateFields } from "@/lib/measurements";
+import { normalizePhoneNG } from "@/lib/phone";
 import type { Tables } from "@/integrations/supabase/types";
 
 const RATE_LIMIT_MAX = 30;
@@ -50,6 +51,25 @@ export type PassportView = {
 };
 
 const tokenSchema = z.object({ token: z.string().min(20).max(200) });
+
+const phoneField = z.string().min(7).max(20);
+
+/** Holding the link isn't enough for changes: the card owner must confirm their full phone number. */
+async function clientPhoneMatches(clientId: string, rawPhone: string) {
+  const provided = normalizePhoneNG(rawPhone);
+  if (!provided) return false;
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data: client } = await supabaseAdmin
+    .from("clients")
+    .select("phone, whatsapp_phone")
+    .eq("id", clientId)
+    .maybeSingle();
+  return [client?.phone, client?.whatsapp_phone]
+    .filter((p): p is string => !!p)
+    .some((p) => normalizePhoneNG(p) === provided);
+}
+
+const confirmedTokenSchema = tokenSchema.extend({ phone: phoneField });
 
 export const getPassportByToken = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => tokenSchema.parse(data))
@@ -135,7 +155,7 @@ export const getPassportByToken = createServerFn({ method: "GET" })
   });
 
 export const requestPassportUpdate = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => tokenSchema.parse(data))
+  .inputValidator((data: unknown) => confirmedTokenSchema.parse(data))
   .handler(async ({ data }): Promise<{ storeWhatsapp: string | null; storeName: string }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -146,6 +166,9 @@ export const requestPassportUpdate = createServerFn({ method: "POST" })
     const passport = await loadPassport(data.token);
     if (!passport || passport.revoked_at) {
       throw new Error("This measurement card is no longer available");
+    }
+    if (!(await clientPhoneMatches(passport.client_id, data.phone))) {
+      throw new Error("That phone number doesn't match this measurement card");
     }
 
     await supabaseAdmin
@@ -167,13 +190,8 @@ export const requestPassportUpdate = createServerFn({ method: "POST" })
     };
   });
 
-const revokeSchema = z.object({
-  token: z.string().min(20).max(200),
-  phoneLast4: z.string().regex(/^[0-9]{4}$/),
-});
-
 export const revokePassportByClient = createServerFn({ method: "POST" })
-  .inputValidator((data: unknown) => revokeSchema.parse(data))
+  .inputValidator((data: unknown) => confirmedTokenSchema.parse(data))
   .handler(async ({ data }): Promise<{ ok: true }> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
@@ -183,17 +201,7 @@ export const revokePassportByClient = createServerFn({ method: "POST" })
 
     const passport = await loadPassport(data.token);
     if (!passport) throw new Error("This measurement card was not found");
-
-    // Holding the link isn't enough: the card owner must confirm their phone number.
-    const { data: client } = await supabaseAdmin
-      .from("clients")
-      .select("phone, whatsapp_phone")
-      .eq("id", passport.client_id)
-      .maybeSingle();
-    const phones = [client?.phone, client?.whatsapp_phone]
-      .filter((p): p is string => !!p)
-      .map((p) => p.replace(/\D/g, ""));
-    if (!phones.some((p) => p.length >= 4 && p.endsWith(data.phoneLast4))) {
+    if (!(await clientPhoneMatches(passport.client_id, data.phone))) {
       throw new Error("That phone number doesn't match this measurement card");
     }
 
@@ -215,6 +223,7 @@ export const revokePassportByClient = createServerFn({ method: "POST" })
 
 const shareSchema = z.object({
   token: z.string().min(20).max(200),
+  phone: phoneField,
   targetStoreSlug: z
     .string()
     .min(1)
@@ -235,6 +244,9 @@ export const sharePassportWithStore = createServerFn({ method: "POST" })
       const passport = await loadPassport(data.token);
       if (!passport || passport.revoked_at) {
         return { ok: false, reason: "This measurement card is no longer available" };
+      }
+      if (!(await clientPhoneMatches(passport.client_id, data.phone))) {
+        return { ok: false, reason: "That phone number doesn't match this measurement card" };
       }
 
       const { data: targetStore } = await supabaseAdmin
