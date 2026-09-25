@@ -27,6 +27,7 @@ import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 import { JOB_LANDING_CONTENT } from "@/lib/job-landing-content";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
+import dashboardProduct from "@/assets/jaylor-dashboard-product.png";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import garmentEditorial from "@/assets/jaylor-garment-editorial.jpg";
 
@@ -172,7 +173,7 @@ function Home() {
         </div>
       </header>
 
-      <section className="relative min-h-[720px] border-b border-foreground/10 sm:min-h-[780px] lg:min-h-[820px]">
+      <section className="relative min-h-[600px] border-b border-foreground/10 sm:min-h-[640px] lg:min-h-[680px]">
         <img
           src={atelierHero}
           alt="A Nigerian fashion designer draping a burgundy gown in her atelier"
@@ -184,7 +185,7 @@ function Home() {
         <div className="premium-hero-shade-x absolute inset-0" />
         <div className="premium-hero-shade-y absolute inset-0" />
 
-        <div className="relative mx-auto flex min-h-[720px] w-full max-w-[1440px] items-end px-5 pb-16 pt-32 sm:min-h-[780px] sm:px-8 sm:pb-20 lg:min-h-[820px] lg:items-center lg:px-12 lg:pb-0">
+        <div className="relative mx-auto flex min-h-[600px] w-full max-w-[1440px] items-end px-5 pb-10 pt-28 sm:min-h-[640px] sm:px-8 sm:pb-14 lg:min-h-[680px] lg:items-center lg:px-12 lg:pb-0">
           <div className="editorial-rise max-w-3xl">
             <p className="text-[11px] uppercase text-gold">
               For tailors &amp; fashion houses · Nigeria
@@ -223,6 +224,23 @@ function Home() {
           <p className="mt-2 text-xs leading-5 text-foreground/60">
             From first measurement to final collection.
           </p>
+        </div>
+      </section>
+
+      <section aria-label="The Jaylor dashboard" className="border-b border-border bg-secondary/40 py-10 lg:py-14">
+        <div className="mx-auto w-full max-w-5xl px-5 sm:px-8">
+          <p className="text-center text-[11px] uppercase text-gold">This is Jaylor</p>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-6 text-foreground/60">
+            Your orders, balances and fittings — the real workroom, exactly as you will see it.
+          </p>
+          <img
+            src={dashboardProduct}
+            alt="The Jaylor dashboard showing today's orders, money owed, collection score and garments due soon"
+            width={1420}
+            height={1976}
+            loading="eager"
+            className="mt-6 h-auto w-full"
+          />
         </div>
       </section>
 
