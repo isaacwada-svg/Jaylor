@@ -5,9 +5,9 @@ export type ConsentState = "accepted" | "rejected";
 const CONSENT_KEY = "jaylor:cookie-consent";
 export const CONSENT_EVENT = "jaylor:consent-changed";
 
-// Placeholders: set VITE_GA4_ID (e.g. G-XXXXXXX) and VITE_CLARITY_ID to activate.
-const GA4_ID = import.meta.env['VITE_GA4_ID'] as string | undefined;
-const CLARITY_ID = import.meta.env['VITE_CLARITY_ID'] as string | undefined;
+import { getAnalyticsConfig } from "./analytics.functions";
+
+const CLARITY_ID = "ynv1ogpjcm";
 
 export function readConsent(): ConsentState | null {
   try {
@@ -33,7 +33,7 @@ let started = false;
 export function startOptionalTracking() {
   if (started || typeof window === "undefined") return;
   started = true;
-  loadGA4();
+  void loadGA4();
   loadClarity();
   startCrashLogger();
 }
@@ -45,7 +45,13 @@ function injectScript(src: string) {
   document.head.appendChild(s);
 }
 
-function loadGA4() {
+async function loadGA4() {
+  let GA4_ID: string | null = null;
+  try {
+    GA4_ID = (await getAnalyticsConfig()).ga4Id;
+  } catch {
+    return;
+  }
   if (!GA4_ID) return;
   const w = window as unknown as { dataLayer: unknown[]; gtag: (...a: unknown[]) => void };
   w.dataLayer = w.dataLayer || [];
