@@ -32,7 +32,9 @@ Deno.serve(async (req) => {
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
 
-  if (reference.startsWith("orderpay_")) {
+  if (reference.startsWith("plan_")) {
+    await activatePlan(supabase, reference, Number(event.data?.amount ?? 0));
+  } else if (reference.startsWith("orderpay_")) {
     await confirmOrderPayment(supabase, reference);
   } else if (reference.startsWith("topup_")) {
     await supabase
@@ -50,6 +52,39 @@ Deno.serve(async (req) => {
 
   return new Response("ok", { status: 200 });
 });
+
+// Activates a paid plan in the background, even if the owner never returns
+// from checkout. Idempotent with the billing-page confirmation: only the
+// request that flips the row from pending activates the plan.
+async function activatePlan(
+  supabase: SupabaseClient,
+  reference: string,
+  paidKobo: number,
+): Promise<void> {
+  const { data: payment } = await supabase
+    .from("plan_payments")
+    .select("id, store_id, plan_code, amount")
+    .eq("reference", reference)
+    .eq("status", "pending")
+    .maybeSingle();
+  if (!payment) return;
+  if (paidKobo < Math.round(Number(payment.amount) * 100)) return;
+
+  const { data: updated } = await supabase
+    .from("plan_payments")
+    .update({ status: "success", paid_at: new Date().toISOString() })
+    .eq("id", payment.id)
+    .eq("status", "pending")
+    .select("id");
+  if (!updated || updated.length === 0) return;
+
+  const paidUntil = new Date();
+  paidUntil.setMonth(paidUntil.getMonth() + 3);
+  await supabase
+    .from("stores")
+    .update({ plan_code: payment.plan_code, plan_paid_until: paidUntil.toISOString() })
+    .eq("id", payment.store_id);
+}
 
 async function confirmOrderPayment(
   supabase: SupabaseClient,

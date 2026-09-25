@@ -86,6 +86,7 @@ export function DashboardOverview({ storeId }: { storeId: string | undefined }) 
 
   return (
     <section className="mb-6 space-y-3">
+      <div className="sticky top-2 z-30 -mx-1 px-1">
       <div className="relative">
         <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
@@ -116,15 +117,17 @@ export function DashboardOverview({ storeId }: { storeId: string | undefined }) 
           </div>
         )}
       </div>
+      </div>
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
         {tiles.map((t) => (
           <Link
             key={t.label}
             to={t.to}
-            className="rounded-xl border bg-card p-3 transition-colors hover:border-gold/50 sm:p-4"
+            className="group relative min-h-[88px] overflow-hidden rounded-xl border bg-card p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/60 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold sm:p-4"
           >
-            <p className="text-2xl font-semibold tabular-nums sm:text-3xl">{t.value ?? "–"}</p>
-            <p className="mt-1 text-[11px] uppercase tracking-[0.08em] text-muted-foreground sm:text-xs">
+            <span className="absolute inset-x-0 top-0 h-0.5 bg-gold opacity-0 transition-opacity group-hover:opacity-100" />
+            <p className="font-display text-2xl font-semibold tabular-nums sm:text-3xl">{t.value ?? "–"}</p>
+            <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground sm:text-xs">
               {t.label}
             </p>
           </Link>

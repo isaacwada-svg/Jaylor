@@ -37,9 +37,24 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => 
       h.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
       h.set("Referrer-Policy", "strict-origin-when-cross-origin");
       h.set("Permissions-Policy", "camera=(self), microphone=(self), geolocation=()");
+      const dev = import.meta.env.DEV ? " ws: http://localhost:*" : "";
       h.set(
         "Content-Security-Policy",
-        "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev; object-src 'none'; base-uri 'self'",
+        [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' https://js.paystack.co",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "img-src 'self' data: blob: https:",
+          "media-src 'self' blob: https:",
+          `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paystack.co${dev}`,
+          "frame-src 'self' https://*.paystack.co https://checkout.paystack.com",
+          "worker-src 'self' blob:",
+          "form-action 'self' https://*.paystack.co",
+          "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev",
+          "object-src 'none'",
+          "base-uri 'self'",
+        ].join("; "),
       );
     } catch {
       // immutable headers (e.g. proxied responses) — skip
