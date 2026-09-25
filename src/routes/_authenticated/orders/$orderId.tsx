@@ -130,14 +130,23 @@ function OrderDetail() {
     },
   });
 
-  // orders_for_tailor (the view non-owner/manager roles read from) doesn't carry this column,
-  // so read it directly off orders rather than off `order` above.
+  // orders_for_tailor (the view non-owner/manager roles read from) now also
+  // carries this column, so both roles can read it -- just from whichever
+  // table/view `order` above itself came from.
   const { data: styleRefPaths } = useQuery({
-    queryKey: ["order-style-ref-paths", orderId],
-    enabled: canSeeMoney,
+    queryKey: ["order-style-ref-paths", orderId, canSeeMoney],
     queryFn: async () => {
+      if (canSeeMoney) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("style_reference_photos")
+          .eq("id", orderId)
+          .maybeSingle();
+        if (error) throw error;
+        return data?.style_reference_photos ?? [];
+      }
       const { data, error } = await supabase
-        .from("orders")
+        .from("orders_for_tailor")
         .select("style_reference_photos")
         .eq("id", orderId)
         .maybeSingle();
@@ -488,7 +497,7 @@ function OrderDetail() {
             </div>
           )}
 
-          {canSeeMoney && styleRefPhotos && styleRefPhotos.length > 0 && (
+          {styleRefPhotos && styleRefPhotos.length > 0 && (
             <div className="rounded-2xl border border-border p-4 sm:col-span-2">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
                 Reference photos
