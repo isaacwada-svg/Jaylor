@@ -5,7 +5,6 @@ export type ConsentState = "accepted" | "rejected";
 const CONSENT_KEY = "jaylor:cookie-consent";
 export const CONSENT_EVENT = "jaylor:consent-changed";
 
-import { getAnalyticsConfig } from "./analytics.functions";
 
 const CLARITY_ID = "ynv1ogpjcm";
 
@@ -25,6 +24,7 @@ export function saveConsent(state: ConsentState) {
     // storage blocked — honour the choice for this visit only
   }
   window.dispatchEvent(new CustomEvent(CONSENT_EVENT, { detail: state }));
+  setGoogleConsent(state);
   if (state === "accepted") startOptionalTracking();
 }
 
@@ -33,7 +33,6 @@ let started = false;
 export function startOptionalTracking() {
   if (started || typeof window === "undefined") return;
   started = true;
-  void loadGA4();
   loadClarity();
   startCrashLogger();
 }
@@ -45,23 +44,15 @@ function injectScript(src: string) {
   document.head.appendChild(s);
 }
 
-async function loadGA4() {
-  let GA4_ID: string | null = null;
-  try {
-    GA4_ID = (await getAnalyticsConfig()).ga4Id;
-  } catch {
-    return;
-  }
-  if (!GA4_ID) return;
-  const w = window as unknown as { dataLayer: unknown[]; gtag: (...a: unknown[]) => void };
-  w.dataLayer = w.dataLayer || [];
-  w.gtag = function gtag() {
-    // eslint-disable-next-line prefer-rest-params
-    w.dataLayer.push(arguments);
-  };
-  w.gtag("js", new Date());
-  w.gtag("config", GA4_ID, { anonymize_ip: true });
-  injectScript(`https://www.googletagmanager.com/gtag/js?id=${encodeURIComponent(GA4_ID)}`);
+function setGoogleConsent(state: ConsentState) {
+  const w = window as unknown as { gtag?: (...a: unknown[]) => void };
+  const v = state === "accepted" ? "granted" : "denied";
+  w.gtag?.("consent", "update", {
+    ad_storage: v,
+    ad_user_data: v,
+    ad_personalization: v,
+    analytics_storage: v,
+  });
 }
 
 function loadClarity() {

@@ -102,6 +102,15 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
+    // Google tag with Consent Mode: loads on every page so Google can detect it,
+    // but stores no cookies and sends no personal data until "Accept All".
+    scripts: [
+      {
+        children:
+          "window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('consent','default',{ad_storage:'denied',ad_user_data:'denied',ad_personalization:'denied',analytics_storage:'denied'});try{if(localStorage.getItem('jaylor:cookie-consent')==='accepted'){gtag('consent','update',{ad_storage:'granted',ad_user_data:'granted',ad_personalization:'granted',analytics_storage:'granted'});}}catch(e){}gtag('js',new Date());gtag('config','G-7Y9FS9Q4ZY',{anonymize_ip:true});",
+      },
+      { src: "https://www.googletagmanager.com/gtag/js?id=G-7Y9FS9Q4ZY", async: true },
+    ],
     links: [
       {
         rel: "stylesheet",
