@@ -125,7 +125,7 @@ Deno.serve(async (req) => {
 
   try {
     const transaction = await initializeTransaction({
-      email: `${digitsOnly}@guest.jaylor.app`,
+      email: `pay+${digitsOnly}@jaylor.com.ng`,
       amountKobo: Math.round(chargeAmount * 100),
       reference,
       callbackUrl: body.callbackUrl,

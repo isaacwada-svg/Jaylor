@@ -41,7 +41,11 @@ export function RequestPaymentButton({
       const { data, error } = await supabase.functions.invoke("create-order-payment", {
         body: { orderId, amount: amt, callbackUrl },
       });
-      if (error) throw error;
+      if (error) {
+        const ctx = (error as { context?: Response }).context;
+        const body = ctx && typeof ctx.json === "function" ? await ctx.json().catch(() => null) : null;
+        throw new Error((body as { error?: string } | null)?.error ?? error.message);
+      }
       const { authorization_url } = data as { authorization_url: string };
       setLink(authorization_url);
     } catch (error) {
