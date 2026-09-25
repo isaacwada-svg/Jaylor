@@ -14,6 +14,7 @@ import { DailyWorkPlan } from "@/components/jaylor/daily-work-plan";
 import { ComingUpCard } from "@/components/jaylor/coming-up-card";
 import { MomentsSection } from "@/components/jaylor/moments-section";
 import { MilestoneCelebration } from "@/components/jaylor/milestone-celebration";
+import { DashboardOverview } from "@/components/jaylor/dashboard-overview";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -330,6 +331,8 @@ function Home() {
 
         <StitchDivider className="my-6" />
 
+        <DashboardOverview storeId={storeId} />
+
         {canSeeMoney && currentStore && new Date(currentStore.trial_ends_at) > new Date() && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-accent/40 px-4 py-3">
             <p className="text-sm">
@@ -345,12 +348,8 @@ function Home() {
               </span>{" "}
               on your Growth trial.
             </p>
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={() => toast("Plan upgrades aren't available yet")}
-            >
-              Upgrade now
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/billing">Upgrade now</Link>
             </Button>
           </div>
         )}

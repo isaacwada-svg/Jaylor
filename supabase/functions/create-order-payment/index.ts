@@ -90,6 +90,9 @@ Deno.serve(async (req) => {
   if (body.amount > outstanding) {
     return errorResponse("The amount can't be more than the balance owed on this order", 400);
   }
+  // The charged amount is derived server-side: rounded to kobo and clamped to what's owed.
+  const chargeAmount = Math.min(Math.round(body.amount * 100) / 100, outstanding);
+  if (chargeAmount < 100) return errorResponse("The minimum payment request is ₦100", 400);
 
   const { data: account } = await supabase
     .from("payment_accounts")
@@ -109,7 +112,7 @@ Deno.serve(async (req) => {
     .eq("id", order.store_id)
     .single();
   const feePercent = planFeePercent(store?.plan_code ?? null, store?.trial_ends_at ?? null);
-  const platformFee = Math.round(body.amount * (feePercent / 100) * 100) / 100;
+  const platformFee = Math.round(chargeAmount * (feePercent / 100) * 100) / 100;
 
   const { data: client } = await supabase
     .from("clients")
@@ -122,8 +125,8 @@ Deno.serve(async (req) => {
 
   try {
     const transaction = await initializeTransaction({
-      email: `${digitsOnly}@guest.jaylor.app`,
-      amountKobo: Math.round(body.amount * 100),
+      email: `pay+${digitsOnly}@jaylor.com.ng`,
+      amountKobo: Math.round(chargeAmount * 100),
       reference,
       callbackUrl: body.callbackUrl,
       channels: ["card", "bank", "ussd", "bank_transfer"],
@@ -133,7 +136,7 @@ Deno.serve(async (req) => {
     const { error } = await supabase.from("order_payment_links").insert({
       order_id: order.id,
       store_id: order.store_id,
-      amount: body.amount,
+      amount: chargeAmount,
       platform_fee: platformFee,
       reference: transaction.reference,
     });

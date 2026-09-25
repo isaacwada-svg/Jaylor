@@ -1,6 +1,7 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
@@ -22,8 +23,13 @@ import { useFeature } from "@/lib/use-feature";
 import { useFeatureLimit } from "@/lib/use-feature-limit";
 import { useMessageTopups } from "@/lib/use-message-topups";
 import { effectiveTier, planCodeToTier } from "@/lib/jaylor";
-import { getFunctionErrorMessage } from "@/lib/utils";
+import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { FEATURE_LABELS } from "@/lib/feature-keys";
+import {
+  chooseFreePlan,
+  createPlanPayment,
+  verifyPlanPayment,
+} from "@/lib/plan-payments.functions";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   staticData: { sitemap: false },
@@ -36,6 +42,10 @@ function Billing() {
   const tier = effectiveTier(currentStore);
   const inTrial = !!currentStore && new Date(currentStore.trial_ends_at) > new Date();
   const queryClient = useQueryClient();
+  const startPlanPayment = useServerFn(createPlanPayment);
+  const confirmPlanPayment = useServerFn(verifyPlanPayment);
+  const switchToFree = useServerFn(chooseFreePlan);
+  const [planBusy, setPlanBusy] = useState<string | null>(null);
 
   const { data: plans, isLoading: plansLoading } = useQuery({
     queryKey: ["plans"],
@@ -56,7 +66,7 @@ function Billing() {
       ? messagesFeature.limit + (topupCount ?? 0)
       : messagesFeature?.limit;
 
-  // If the owner returns from a Paystack message top-up.
+  // If the owner returns from a Paystack payment (message top-up or plan).
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const reference = params.get("reference") ?? params.get("trxref");
@@ -65,6 +75,16 @@ function Billing() {
 
     (async () => {
       try {
+        if (reference.startsWith("plan_")) {
+          const result = await confirmPlanPayment({ data: { reference } });
+          if (result.status === "success") {
+            toast.success("Your new plan is active. Thank you!");
+            queryClient.invalidateQueries();
+          } else {
+            toast.error("Payment wasn't confirmed");
+          }
+          return;
+        }
         const { data, error } = await supabase.functions.invoke("verify-message-topup", {
           body: { reference },
         });
@@ -82,6 +102,39 @@ function Billing() {
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  async function handleChoosePlan(planCode: string) {
+    if (!currentStore) return;
+    setPlanBusy(planCode);
+    try {
+      if (planCode === "free") {
+        await switchToFree({ data: { storeId: currentStore.id } });
+        toast.success("You're on the Free plan now.");
+        queryClient.invalidateQueries();
+        return;
+      }
+      if (planCode === "custom") {
+        window.open(
+          "https://wa.me/2349028101389?text=" +
+            encodeURIComponent("Hello Jaylor, I'd like to discuss the Custom plan for my shop."),
+          "_blank",
+          "noreferrer",
+        );
+        return;
+      }
+      const result = await startPlanPayment({
+        data: {
+          storeId: currentStore.id,
+          planCode,
+          callbackUrl: `${window.location.origin}/billing`,
+        },
+      });
+      window.location.href = result.authorizationUrl;
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not start this payment"));
+      setPlanBusy(null);
+    }
+  }
 
   return (
     <AppShell>
@@ -101,8 +154,17 @@ function Billing() {
                   {inTrial && <span className="text-xs text-muted-foreground">(free trial)</span>}
                 </div>
               </div>
-              <Button size="sm" onClick={() => toast("Plan upgrades aren't available yet")}>
-                Upgrade
+              <Button
+                size="sm"
+                disabled={planBusy !== null}
+                onClick={() => {
+                  const paidPlan = (plans ?? []).find(
+                    (p) => p.code !== "free" && p.code !== "custom" && p.price_quarterly,
+                  );
+                  if (paidPlan) handleChoosePlan(paidPlan.code);
+                }}
+              >
+                {planBusy ? "Please wait…" : "Upgrade"}
               </Button>
             </div>
 
@@ -208,9 +270,10 @@ function Billing() {
                       <Button
                         size="sm"
                         variant="outline"
-                        onClick={() => toast("Plan upgrades aren't available yet")}
+                        disabled={planBusy !== null}
+                        onClick={() => handleChoosePlan(plan.code)}
                       >
-                        Choose
+                        {planBusy === plan.code ? "Please wait…" : "Choose"}
                       </Button>
                     )}
                   </CardContent>

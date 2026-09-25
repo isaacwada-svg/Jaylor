@@ -25,7 +25,45 @@ const csrfMiddleware = createCsrfMiddleware({
   filter: (ctx) => ctx.handlerType === "serverFn",
 });
 
+// Browser security headers on every server response. Framing is limited to
+// our own site and the Lovable editor preview (DENY would break the preview).
+const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => {
+  const result = await next();
+  const res = (result as { response?: Response }).response;
+  if (res instanceof Response) {
+    try {
+      const h = res.headers;
+      h.set("X-Content-Type-Options", "nosniff");
+      h.set("Strict-Transport-Security", "max-age=31536000; includeSubDomains");
+      h.set("Referrer-Policy", "strict-origin-when-cross-origin");
+      h.set("Permissions-Policy", "camera=(self), microphone=(self), geolocation=()");
+      const dev = import.meta.env.DEV ? " ws: http://localhost:*" : "";
+      h.set(
+        "Content-Security-Policy",
+        [
+          "default-src 'self'",
+          "script-src 'self' 'unsafe-inline' https://js.paystack.co",
+          "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
+          "font-src 'self' data: https://fonts.gstatic.com",
+          "img-src 'self' data: blob: https:",
+          "media-src 'self' blob: https:",
+          `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paystack.co${dev}`,
+          "frame-src 'self' https://*.paystack.co https://checkout.paystack.com",
+          "worker-src 'self' blob:",
+          "form-action 'self' https://*.paystack.co",
+          "frame-ancestors 'self' https://*.lovable.app https://*.lovable.dev https://lovable.dev",
+          "object-src 'none'",
+          "base-uri 'self'",
+        ].join("; "),
+      );
+    } catch {
+      // immutable headers (e.g. proxied responses) — skip
+    }
+  }
+  return result;
+});
+
 export const startInstance = createStart(() => ({
   functionMiddleware: [attachSupabaseAuth],
-  requestMiddleware: [errorMiddleware, csrfMiddleware],
+  requestMiddleware: [securityHeadersMiddleware, errorMiddleware, csrfMiddleware],
 }));
