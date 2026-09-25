@@ -27,6 +27,7 @@ import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 import { JOB_LANDING_CONTENT } from "@/lib/job-landing-content";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
+import dashboardProduct from "@/assets/jaylor-dashboard-product.png";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import garmentEditorial from "@/assets/jaylor-garment-editorial.jpg";
 
@@ -223,6 +224,23 @@ function Home() {
           <p className="mt-2 text-xs leading-5 text-foreground/60">
             From first measurement to final collection.
           </p>
+        </div>
+      </section>
+
+      <section aria-label="The Jaylor dashboard" className="border-b border-border bg-secondary/40 py-14 lg:py-20">
+        <div className="mx-auto w-full max-w-5xl px-5 sm:px-8">
+          <p className="text-center text-[11px] uppercase text-gold">This is Jaylor</p>
+          <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-6 text-foreground/60">
+            Your orders, balances and fittings — the real workroom, exactly as you will see it.
+          </p>
+          <img
+            src={dashboardProduct}
+            alt="The Jaylor dashboard showing today's orders, money owed, collection score and garments due soon"
+            width={1420}
+            height={1976}
+            loading="lazy"
+            className="mt-8 h-auto w-full"
+          />
         </div>
       </section>
 
