@@ -145,13 +145,8 @@ function OrderDetail() {
         if (error) throw error;
         return data?.style_reference_photos ?? [];
       }
-      const { data, error } = await supabase
-        .from("orders_for_tailor")
-        .select("style_reference_photos")
-        .eq("id", orderId)
-        .maybeSingle();
-      if (error) throw error;
-      return data?.style_reference_photos ?? [];
+      // The tailor view doesn't expose style photos yet.
+      return [] as string[];
     },
   });
 
