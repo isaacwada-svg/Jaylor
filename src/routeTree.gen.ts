@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CustomRouteImport } from './routes/custom'
 import { Route as FeaturesRouteImport } from './routes/features'
@@ -84,6 +85,11 @@ const AdminRoute = AdminRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ContactRoute = ContactRouteImport.update({
+  id: '/contact',
+  path: '/contact',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CookiesRoute = CookiesRouteImport.update({
@@ -306,6 +312,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
   '/features': typeof FeaturesRoute
@@ -354,6 +361,7 @@ export interface FileRoutesByTo {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
   '/features': typeof FeaturesRoute
@@ -404,6 +412,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/auth': typeof AuthRoute
+  '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
   '/features': typeof FeaturesRoute
@@ -454,6 +463,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/contact'
     | '/cookies'
     | '/custom'
     | '/features'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/contact'
     | '/cookies'
     | '/custom'
     | '/features'
@@ -551,6 +562,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/auth'
+    | '/contact'
     | '/cookies'
     | '/custom'
     | '/features'
@@ -601,6 +613,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CustomRoute: typeof CustomRoute
   FeaturesRoute: typeof FeaturesRoute
@@ -667,6 +680,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/contact': {
+      id: '/contact'
+      path: '/contact'
+      fullPath: '/contact'
+      preLoaderRoute: typeof ContactRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cookies': {
@@ -1021,6 +1041,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   AuthRoute: AuthRoute,
+  ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CustomRoute: CustomRoute,
   FeaturesRoute: FeaturesRoute,

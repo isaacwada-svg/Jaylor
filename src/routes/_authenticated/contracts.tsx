@@ -1,10 +1,13 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { Plus } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
+import { EventForm } from "@/components/jaylor/event-form";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
@@ -27,8 +30,11 @@ export const Route = createFileRoute("/_authenticated/contracts")({
 });
 
 function Contracts() {
-  const { currentStore } = useStore();
+  const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
+  const canCreate = currentRole === "owner" || currentRole === "manager";
+  const queryClient = useQueryClient();
+  const [formOpen, setFormOpen] = useState(false);
 
   const { data: jobs, isLoading: jobsLoading } = useQuery({
     queryKey: ["contracts", storeId],
@@ -72,10 +78,20 @@ function Contracts() {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
-        <h1 className="text-3xl">Contracts</h1>
-        <p className="mt-1 text-sm text-muted-foreground">
-          School, company and other single-payer jobs — value, deposit status and balance.
-        </p>
+        <div className="flex items-start justify-between gap-3">
+          <div>
+            <h1 className="text-3xl">Contracts</h1>
+            <p className="mt-1 text-sm text-muted-foreground">
+              School, company and other single-payer jobs — value, deposit status and balance.
+            </p>
+          </div>
+          {canCreate && (
+            <Button onClick={() => setFormOpen(true)} className="shrink-0">
+              <Plus className="size-4" />
+              New contract
+            </Button>
+          )}
+        </div>
         <StitchDivider className="my-6" />
 
         {isLoading ? (
@@ -88,6 +104,11 @@ function Contracts() {
           <EmptyState
             title="No contracts yet"
             description="School uniforms, company uniforms and other single-payer jobs will show up here once you create one."
+            action={
+              canCreate ? (
+                <Button onClick={() => setFormOpen(true)}>New contract</Button>
+              ) : undefined
+            }
           />
         ) : (
           <div className="space-y-3">
@@ -164,6 +185,18 @@ function Contracts() {
           </div>
         )}
       </div>
+
+      {storeId && (
+        <EventForm
+          open={formOpen}
+          onOpenChange={setFormOpen}
+          storeId={storeId}
+          templateFilter={(t) => t.isContract}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ["contracts", storeId] });
+          }}
+        />
+      )}
     </AppShell>
   );
 }

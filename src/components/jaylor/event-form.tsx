@@ -44,12 +44,15 @@ export function EventForm({
   storeId,
   event,
   onSaved,
+  templateFilter,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
   event?: EventRow | null;
   onSaved: (event: EventRow) => void;
+  /** Restricts the "what kind of job?" picker, e.g. to contract-only templates from the Contracts page. */
+  templateFilter?: (template: JobTemplate) => boolean;
 }) {
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
@@ -341,7 +344,7 @@ export function EventForm({
 
   const picker = (
     <div className="grid grid-cols-2 gap-2">
-      {JOB_TEMPLATES.map((t) => (
+      {(templateFilter ? JOB_TEMPLATES.filter(templateFilter) : JOB_TEMPLATES).map((t) => (
         <button
           key={t.jobType}
           type="button"

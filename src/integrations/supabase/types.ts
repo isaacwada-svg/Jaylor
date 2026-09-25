@@ -2922,11 +2922,13 @@ export type Database = {
       stores: {
         Row: {
           accent_color: string | null
+          address: string | null
           area: string | null
           bio: string | null
           city: string | null
           consent_benchmark_sharing: boolean
           consent_benchmark_sharing_at: string | null
+          contact_email: string | null
           country_code: string
           cover_url: string | null
           created_at: string
@@ -2954,11 +2956,13 @@ export type Database = {
         }
         Insert: {
           accent_color?: string | null
+          address?: string | null
           area?: string | null
           bio?: string | null
           city?: string | null
           consent_benchmark_sharing?: boolean
           consent_benchmark_sharing_at?: string | null
+          contact_email?: string | null
           country_code?: string
           cover_url?: string | null
           created_at?: string
@@ -2986,11 +2990,13 @@ export type Database = {
         }
         Update: {
           accent_color?: string | null
+          address?: string | null
           area?: string | null
           bio?: string | null
           city?: string | null
           consent_benchmark_sharing?: boolean
           consent_benchmark_sharing_at?: string | null
+          contact_email?: string | null
           country_code?: string
           cover_url?: string | null
           created_at?: string

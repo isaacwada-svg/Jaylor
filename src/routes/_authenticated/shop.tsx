@@ -397,6 +397,8 @@ function Shop() {
                 storeName={currentStore.name}
                 logoUrl={currentStore.logo_url}
                 coverUrl={currentStore.cover_url}
+                address={currentStore.address}
+                contactEmail={currentStore.contact_email}
               />
             )}
             {currentStore && <ShopProfileForm storeId={currentStore.id} onSaved={refetchStore} />}
