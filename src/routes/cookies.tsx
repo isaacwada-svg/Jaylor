@@ -24,15 +24,27 @@ export const Route = createFileRoute("/cookies")({
 
 function Cookies() {
   return (
-    <LegalLayout title="Cookie Notice" lastUpdated="20 September 2026">
+    <LegalLayout title="Cookie Notice" lastUpdated="25 September 2026">
       <section>
-        <h2>Essential cookies only, by default</h2>
+        <h2>Essential storage, always on</h2>
         <p>
-          Jaylor uses only the storage strictly needed to run the app: keeping you signed in,
-          remembering which store you&apos;re working in, and remembering your interface preferences
-          (like light or dark mode). We also store a random first-party visitor identifier to count
-          landing-page visits and completed sign-ups. It does not follow you across other websites.
-          We don&apos;t use advertising or cross-site tracking cookies.
+          Jaylor uses session tokens strictly needed to run the app: keeping you signed in, keeping
+          each shop&apos;s data separate, remembering which store you&apos;re working in, and your
+          interface preferences (like light or dark mode). We also store a random first-party
+          visitor identifier to count landing-page visits and completed sign-ups. It does not follow
+          you across other websites.
+        </p>
+      </section>
+
+      <section>
+        <h2>Optional analytics, only with your permission</h2>
+        <p>
+          When you first visit, we ask for your choice. If you tap <strong>Accept All</strong>, we
+          load Google Analytics (to see which pages are used) and Microsoft Clarity (to find
+          confusing screens and catch errors on phones), and we record app errors to help us fix
+          them. These tools may set their own cookies. If you tap <strong>Reject All</strong>, none
+          of them load and no marketing or tracking cookies are set. We never use advertising
+          cookies.
         </p>
       </section>
 

@@ -26,7 +26,7 @@ export const Route = createFileRoute("/privacy-policy")({
 
 function PrivacyPolicy() {
   return (
-    <LegalLayout title="Privacy Policy" lastUpdated="20 September 2026">
+    <LegalLayout title="Privacy Policy" lastUpdated="25 September 2026">
       <section>
         <h2>Who we are</h2>
         <p>
@@ -144,6 +144,22 @@ function PrivacyPolicy() {
           review. We do not use solely automated decisions that produce legal or similarly
           significant effects. We collect limited first-party usage events to measure visits,
           sign-ups and product activation; we do not use them for cross-site advertising.
+        </p>
+      </section>
+
+      <section>
+        <h2>Essential storage and optional analytics</h2>
+        <p>
+          <strong>Essential:</strong> we use session tokens to keep you signed in and to make sure
+          each shop only ever sees its own data. These are always on because the app cannot work
+          without them.
+        </p>
+        <p>
+          <strong>Optional, only if you tap &quot;Accept All&quot;:</strong> Google Analytics helps
+          us understand which pages are used, and Microsoft Clarity helps us see where screens are
+          confusing and catch errors on phones. These tools are provided by Google and Microsoft and
+          may process data outside Nigeria. If you tap &quot;Reject All&quot;, none of them load.
+          You can change your choice at any time by clearing this site&apos;s data in your browser.
         </p>
       </section>
 
