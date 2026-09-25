@@ -2249,6 +2249,54 @@ export type Database = {
         }
         Relationships: []
       }
+      plan_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          paid_at: string | null
+          plan_code: string
+          reference: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          plan_code: string
+          reference: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          paid_at?: string | null
+          plan_code?: string
+          reference?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "plan_payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "plan_payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       plans: {
         Row: {
           code: string
@@ -2941,6 +2989,7 @@ export type Database = {
           opening_hours: string | null
           owner_id: string
           plan_code: string
+          plan_paid_until: string | null
           referral_code: string | null
           referred_by_store_id: string | null
           sews_for: string | null
@@ -2973,6 +3022,7 @@ export type Database = {
           opening_hours?: string | null
           owner_id: string
           plan_code?: string
+          plan_paid_until?: string | null
           referral_code?: string | null
           referred_by_store_id?: string | null
           sews_for?: string | null
@@ -3005,6 +3055,7 @@ export type Database = {
           opening_hours?: string | null
           owner_id?: string
           plan_code?: string
+          plan_paid_until?: string | null
           referral_code?: string | null
           referred_by_store_id?: string | null
           sews_for?: string | null
