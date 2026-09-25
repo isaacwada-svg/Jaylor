@@ -3,7 +3,7 @@
 // identical requests for 90 days, and logs actual token counts + cost to
 // usage_log. See _shared/ai.ts for the raw model call this wraps.
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
-import { callAI, type ChatMessage } from "./ai.ts";
+import { callAI, callAnthropic, type ChatMessage, type AiUsage } from "./ai.ts";
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
@@ -22,32 +22,55 @@ type TaskConfig = {
   json: boolean;
   /** Whether identical requests for this task are safe to serve from cache. */
   cacheable: boolean;
+  /**
+   * "anthropic" calls Claude directly (billed to this project's own
+   * Anthropic account, not Lovable's AI Gateway credits). Only tasks that
+   * are pure text can use it: Claude's API takes neither audio input
+   * (voice_entry) nor produces image output (style_cards), so those two
+   * stay on "lovable" regardless of cost.
+   */
+  provider: "lovable" | "anthropic";
 };
 
 // Centralised, short config per AI task — never inline a model name or
 // response-shape decision at the call site. Model IDs are the ones already
-// verified working against the Lovable AI Gateway in this project; swapping
-// in a smaller/cheaper model per task is a config-only change here once one
-// is confirmed available on the account's gateway plan.
+// verified working against the Lovable AI Gateway (or Anthropic) in this
+// project; swapping in a smaller/cheaper model per task is a config-only
+// change here.
 const TASK_CONFIG: Record<AiFeatureKey, TaskConfig> = {
-  voice_entry: { model: "google/gemini-2.5-flash", json: true, cacheable: false },
-  ai_replies: { model: "google/gemini-2.5-flash", json: false, cacheable: false },
-  style_cards: { model: "google/gemini-2.5-flash-image-preview", json: false, cacheable: false },
-  advisor_messages: { model: "google/gemini-2.5-flash", json: false, cacheable: false },
+  voice_entry: { model: "google/gemini-2.5-flash", json: true, cacheable: false, provider: "lovable" },
+  ai_replies: {
+    model: "claude-haiku-4-5-20251001",
+    json: false,
+    cacheable: false,
+    provider: "anthropic",
+  },
+  style_cards: {
+    model: "google/gemini-2.5-flash-image-preview",
+    json: false,
+    cacheable: false,
+    provider: "lovable",
+  },
+  advisor_messages: {
+    model: "claude-haiku-4-5-20251001",
+    json: false,
+    cacheable: false,
+    provider: "anthropic",
+  },
 };
 
 /**
  * Per-plan model override for the Business Advisor, so upgrading a tier's
  * model later is a config-only change here rather than touching call sites.
- * Every tier currently points at the one model this project's Lovable AI
- * Gateway plan has confirmed available — raise growth/business to a
- * stronger model ID once one is confirmed on the account's gateway plan.
+ * Every tier currently points at Haiku (the cheapest Claude model) to keep
+ * runtime AI cost as low as possible — raise growth/business to a
+ * stronger Claude model once cost headroom allows it.
  */
 const ADVISOR_MODEL_BY_PLAN: Record<string, string> = {
-  free: "google/gemini-2.5-flash",
-  growth: "google/gemini-2.5-flash",
-  business: "google/gemini-2.5-flash",
-  custom: "google/gemini-2.5-flash",
+  free: "claude-haiku-4-5-20251001",
+  growth: "claude-haiku-4-5-20251001",
+  business: "claude-haiku-4-5-20251001",
+  custom: "claude-haiku-4-5-20251001",
 };
 
 export function advisorModelForPlan(planCode: string | null | undefined): string {
@@ -60,6 +83,7 @@ export function advisorModelForPlan(planCode: string | null | undefined): string
 const MODEL_COST_PER_1M_TOKENS: Record<string, { input: number; output: number }> = {
   "google/gemini-2.5-flash": { input: 0.3, output: 2.5 },
   "google/gemini-2.5-flash-image-preview": { input: 0.3, output: 30 },
+  "claude-haiku-4-5-20251001": { input: 1, output: 5 },
 };
 /** Flat per-call estimate for image generation, which isn't priced by output token. */
 const IMAGE_CALL_COST_USD = 0.02;
@@ -319,14 +343,31 @@ export async function runAiGatewayCall(opts: {
         },
       ]
     : normalizedInput;
-  const messages: ChatMessage[] = [
-    { role: "system", content: opts.systemPrompt },
-    ...(opts.history ?? []).map(
-      (turn) => ({ role: turn.role, content: turn.content }) as ChatMessage,
-    ),
-    { role: "user", content: userContent },
-  ];
-  const { content, usage } = await callAI(messages, { model: config.model, json: config.json });
+  // Audio always forces the Lovable/Gemini path regardless of config --
+  // Claude's API has no audio-input modality, so a misconfigured provider
+  // must never silently send a recording somewhere that can't use it.
+  const useAnthropic = config.provider === "anthropic" && !opts.audio;
+
+  let content: string;
+  let usage: AiUsage;
+  if (useAnthropic) {
+    const anthropicMessages = [
+      ...(opts.history ?? []).map((turn) => ({ role: turn.role, content: turn.content })),
+      { role: "user" as const, content: normalizedInput },
+    ];
+    ({ content, usage } = await callAnthropic(opts.systemPrompt, anthropicMessages, {
+      model: config.model,
+    }));
+  } else {
+    const messages: ChatMessage[] = [
+      { role: "system", content: opts.systemPrompt },
+      ...(opts.history ?? []).map(
+        (turn) => ({ role: turn.role, content: turn.content }) as ChatMessage,
+      ),
+      { role: "user", content: userContent },
+    ];
+    ({ content, usage } = await callAI(messages, { model: config.model, json: config.json }));
+  }
   const costUsd = estimateCostUsd(config.model, usage);
 
   await logUsage(opts.supabase, {

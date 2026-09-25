@@ -106,6 +106,59 @@ export async function generateImage(
   return imageUrl;
 }
 
+// Direct Anthropic Claude calls for the text-only AI tasks (ai_replies,
+// advisor_messages). Requires the ANTHROPIC_API_KEY secret -- billed
+// directly to the project's own Anthropic account, not through Lovable's
+// AI Gateway credits. Voice Order (needs native audio input) and AI
+// Design (image generation) stay on callAI/generateImage above, since
+// Claude's API accepts neither audio input nor image output.
+const ANTHROPIC_URL = "https://api.anthropic.com/v1/messages";
+const ANTHROPIC_VERSION = "2023-06-01";
+const ANTHROPIC_MAX_TOKENS = 1024;
+
+export async function callAnthropic(
+  systemPrompt: string,
+  messages: { role: "user" | "assistant"; content: string }[],
+  opts?: { model?: string },
+): Promise<AiCallResult> {
+  const apiKey = Deno.env.get("ANTHROPIC_API_KEY");
+  if (!apiKey) {
+    throw new Error("AI is not enabled for this project yet.");
+  }
+
+  const res = await fetch(ANTHROPIC_URL, {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": ANTHROPIC_VERSION,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: opts?.model ?? "claude-haiku-4-5-20251001",
+      max_tokens: ANTHROPIC_MAX_TOKENS,
+      system: systemPrompt,
+      messages,
+    }),
+  });
+
+  if (res.status === 429) throw new Error("Too many AI requests right now — try again shortly.");
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`AI request failed (${res.status}): ${text.slice(0, 300)}`);
+  }
+
+  const data = await res.json();
+  const content = data?.content?.[0]?.text;
+  if (typeof content !== "string") throw new Error("AI returned an unexpected response");
+  return {
+    content,
+    usage: {
+      prompt_tokens: data?.usage?.input_tokens,
+      completion_tokens: data?.usage?.output_tokens,
+    },
+  };
+}
+
 export function jsonResponse(body: unknown, status = 200): Response {
   return new Response(JSON.stringify(body), {
     status,
