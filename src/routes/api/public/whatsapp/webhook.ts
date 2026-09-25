@@ -2,13 +2,16 @@ import { createFileRoute } from "@tanstack/react-router";
 import { verifyWebhookRequest } from "@lovable.dev/webhooks-js";
 import { applyMessageStatus, extractStatuses } from "@/lib/whatsapp-send.server";
 import { issueLoginCode, touchContactWindow } from "@/lib/portal-login.server";
+import { tryConsumeAiDesignVerification } from "@/lib/ai-design-verification.server";
 
 type InboundMessage = { id?: string; from?: string; type?: string; text?: { body?: string } };
 
 function extractMessages(payload: unknown): InboundMessage[] {
-  const value = (payload as {
-    entry?: Array<{ changes?: Array<{ value?: { messages?: InboundMessage[] } }> }>;
-  })?.entry?.[0]?.changes?.[0]?.value;
+  const value = (
+    payload as {
+      entry?: Array<{ changes?: Array<{ value?: { messages?: InboundMessage[] } }> }>;
+    }
+  )?.entry?.[0]?.changes?.[0]?.value;
   return value?.messages ?? [];
 }
 
@@ -28,8 +31,9 @@ async function processDelivery(event: string, payload: unknown) {
       if (!from) continue;
       await touchContactWindow(from);
       const body = message.text?.body ?? "";
-      if (message.type === "text" && LOGIN_INTENT.test(body)) {
-        await issueLoginCode(from);
+      if (message.type === "text") {
+        if (LOGIN_INTENT.test(body)) await issueLoginCode(from);
+        await tryConsumeAiDesignVerification(from, body);
       }
     }
   }

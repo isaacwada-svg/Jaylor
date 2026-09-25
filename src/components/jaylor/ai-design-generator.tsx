@@ -8,6 +8,10 @@ import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
 import { uploadDesignSelfie, uploadDesignStyleRef } from "@/lib/design-photos.functions";
 import {
+  startAiDesignVerification,
+  checkAiDesignVerification,
+} from "@/lib/ai-design-verification.functions";
+import {
   clearDesignDraft,
   loadDesignDraft,
   saveDesignDraft,
@@ -21,7 +25,18 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
 
-type Step = "form" | "generating" | "result" | "payment";
+type Step = "form" | "generating" | "result" | "payment" | "verify";
+
+type GenerateInput = {
+  storeId: string;
+  clientName: string;
+  phone: string;
+  description: string;
+  measurements: Record<string, string>;
+  selfiePath: string | null;
+  styleReferencePaths: string[];
+  paymentReference?: string | null;
+};
 
 const MEASUREMENT_FIELDS = [
   { key: "chest", label: "Chest / bust" },
@@ -64,6 +79,9 @@ export function AiDesignGenerator({
   const [busy, setBusy] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [selected, setSelected] = useState(false);
+  const [verifyWhatsappLink, setVerifyWhatsappLink] = useState<string | null>(null);
+  const [pendingGenerateInput, setPendingGenerateInput] = useState<GenerateInput | null>(null);
+  const [checkingVerification, setCheckingVerification] = useState(false);
 
   // Resume after returning from a Paystack redirect.
   useEffect(() => {
@@ -180,25 +198,30 @@ export function AiDesignGenerator({
     setStyleRefPaths((prev) => prev.filter((_, i) => i !== index));
   }
 
-  async function runGenerate(input: {
-    storeId: string;
-    clientName: string;
-    phone: string;
-    description: string;
-    measurements: Record<string, string>;
-    selfiePath: string | null;
-    styleReferencePaths: string[];
-    paymentReference?: string | null;
-  }) {
+  async function runGenerate(input: GenerateInput) {
     setStep("generating");
     try {
       const { data, error } = await supabase.functions.invoke("generate-design", { body: input });
       if (error) throw error;
       const body = data as {
         payment_required?: boolean;
+        verification_required?: boolean;
         amount?: number;
         result?: { id: string; image_url: string; share_token: string };
       };
+      if (body.verification_required) {
+        setPendingGenerateInput(input);
+        try {
+          const { whatsappLink } = await startAiDesignVerification({
+            data: { phone: input.phone },
+          });
+          setVerifyWhatsappLink(whatsappLink);
+        } catch (error) {
+          toast.error(getErrorMessage(error, "Could not start verification"));
+        }
+        setStep("verify");
+        return;
+      }
       if (body.payment_required) {
         setPaymentAmount(body.amount ?? 0);
         setStep("payment");
@@ -213,6 +236,25 @@ export function AiDesignGenerator({
     } catch (error) {
       toast.error(await getFunctionErrorMessage(error, "Could not generate your design"));
       setStep("form");
+    }
+  }
+
+  async function confirmVerification() {
+    if (!pendingGenerateInput) return;
+    setCheckingVerification(true);
+    try {
+      const { verified } = await checkAiDesignVerification({
+        data: { phone: pendingGenerateInput.phone },
+      });
+      if (!verified) {
+        toast.error("Not confirmed yet — send the message on WhatsApp first, then try again.");
+        return;
+      }
+      await runGenerate(pendingGenerateInput);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not check verification"));
+    } finally {
+      setCheckingVerification(false);
     }
   }
 
@@ -281,6 +323,8 @@ export function AiDesignGenerator({
     setResultDesignId(null);
     setPaymentAmount(null);
     setSelected(false);
+    setVerifyWhatsappLink(null);
+    setPendingGenerateInput(null);
   }
 
   async function markSelected() {
@@ -602,6 +646,31 @@ export function AiDesignGenerator({
                     </a>
                   </Button>
                 )}
+              </div>
+            )}
+
+            {step === "verify" && (
+              <div className="space-y-4 text-center">
+                <p className="text-sm text-muted-foreground">
+                  Your free preview needs a quick confirmation that this is really your WhatsApp
+                  number — tap below, then just hit send on the message that opens.
+                </p>
+                {verifyWhatsappLink && (
+                  <Button className="w-full" asChild>
+                    <a href={verifyWhatsappLink} target="_blank" rel="noreferrer">
+                      <MessageCircle className="size-4" />
+                      Open WhatsApp to confirm
+                    </a>
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  className="w-full"
+                  onClick={confirmVerification}
+                  disabled={checkingVerification || !verifyWhatsappLink}
+                >
+                  {checkingVerification ? "Checking..." : "I've sent it — continue"}
+                </Button>
               </div>
             )}
           </div>
