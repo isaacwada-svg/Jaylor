@@ -1,11 +1,7 @@
-const CACHE_NAME = "jaylor-v2";
-const SUPABASE_HOST = "jbquggwecnafpzvtdfbf.supabase.co";
+const CACHE_NAME = "jaylor-static-v3";
 
 self.addEventListener("install", (event) => {
   self.skipWaiting();
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(["/", "/manifest.json"])),
-  );
 });
 
 self.addEventListener("activate", (event) => {
@@ -17,49 +13,17 @@ self.addEventListener("activate", (event) => {
   );
 });
 
-function isCacheableOrigin(url) {
-  return url.origin === self.location.origin || url.hostname === SUPABASE_HOST;
-}
-
 self.addEventListener("fetch", (event) => {
   const { request } = event;
   if (request.method !== "GET") return;
 
   const url = new URL(request.url);
-  if (!isCacheableOrigin(url)) return;
+  if (url.origin !== self.location.origin || request.mode === "navigate") return;
 
-  // Supabase REST/storage reads: keep data fresh when online, fall back to the
-  // last-seen response when offline. Never touch realtime (wss) or auth/token calls.
-  if (url.hostname === SUPABASE_HOST) {
-    if (!url.pathname.startsWith("/rest/v1/") && !url.pathname.startsWith("/storage/v1/object/public/")) {
-      return;
-    }
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          if (response.ok) {
-            const copy = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          }
-          return response;
-        })
-        .catch(() => caches.match(request)),
-    );
-    return;
-  }
-
-  if (request.mode === "navigate") {
-    event.respondWith(
-      fetch(request)
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-          return response;
-        })
-        .catch(() => caches.match(request).then((cached) => cached ?? caches.match("/"))),
-    );
-    return;
-  }
+  // Cache only versioned public assets. App pages and private business data
+  // must always come from the network so a transient 500 or another account's
+  // response can never become a persistent dashboard screen.
+  if (!["image", "font", "style", "script"].includes(request.destination)) return;
 
   event.respondWith(
     caches.match(request).then((cached) => {
