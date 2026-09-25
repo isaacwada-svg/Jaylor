@@ -96,6 +96,7 @@ export function AiDesignGenerator({
           description: draft.description,
           measurements: draft.measurements,
           selfiePath: draft.selfiePath,
+          paymentReference: reference,
         });
       } catch (error) {
         toast.error(getErrorMessage(error, "Could not confirm your payment"));
@@ -143,6 +144,7 @@ export function AiDesignGenerator({
     description: string;
     measurements: Record<string, string>;
     selfiePath: string | null;
+    paymentReference?: string | null;
   }) {
     setStep("generating");
     try {

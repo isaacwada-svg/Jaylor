@@ -245,6 +245,13 @@ export const endPortalSession = createServerFn({ method: "POST" })
   .inputValidator((input: { token: string }) => z.object({ token: z.string().uuid() }).parse(input))
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    await supabaseAdmin.from("portal_sessions").delete().eq("token", data.token);
+    // Only a live session can sign itself out; unknown or expired tokens are a no-op.
+    const { data: session } = await supabaseAdmin
+      .from("portal_sessions")
+      .select("token, expires_at")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (!session || new Date(session.expires_at).getTime() < Date.now()) return { ok: true };
+    await supabaseAdmin.from("portal_sessions").delete().eq("token", session.token);
     return { ok: true };
   });

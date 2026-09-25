@@ -63,9 +63,18 @@ function PassportPage() {
       .catch(() => {});
   }, [passport]);
 
+  function askPhone() {
+    const phone = window
+      .prompt("To confirm it's you, enter the phone number your tailor has for you")
+      ?.trim();
+    return phone || null;
+  }
+
   async function handleRequestUpdate() {
+    const phone = askPhone();
+    if (!phone) return;
     try {
-      const result = await requestPassportUpdate({ data: { token } });
+      const result = await requestPassportUpdate({ data: { token, phone } });
       if (result.storeWhatsapp) {
         window.open(
           whatsappLink(
@@ -90,16 +99,10 @@ function PassportPage() {
     ) {
       return;
     }
-    const phoneLast4 = window
-      .prompt("To confirm it's you, enter the last 4 digits of your phone number")
-      ?.trim();
-    if (!phoneLast4) return;
-    if (!/^[0-9]{4}$/.test(phoneLast4)) {
-      toast.error("Enter exactly 4 digits");
-      return;
-    }
+    const phone = askPhone();
+    if (!phone) return;
     try {
-      await revokePassportByClient({ data: { token, phoneLast4 } });
+      await revokePassportByClient({ data: { token, phone } });
       toast.success("Your measurement card has been turned off");
       window.location.reload();
     } catch (error) {
@@ -211,6 +214,7 @@ function ShareDialog({
   token: string;
 }) {
   const [slug, setSlug] = useState("");
+  const [phone, setPhone] = useState("");
   const [busy, setBusy] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
@@ -222,7 +226,7 @@ function ShareDialog({
         .replace(/^https?:\/\/[^/]+\//, "")
         .replace(/\/+$/, "");
       const result = await sharePassportWithStore({
-        data: { token, targetStoreSlug: cleaned },
+        data: { token, phone: phone.trim(), targetStoreSlug: cleaned },
       });
       if (result.ok) {
         toast.success(`Sent to ${result.storeName}. They'll review it and let you know.`);
@@ -258,8 +262,23 @@ function ShareDialog({
               Ask the new shop for the last part of their Jaylor storefront link.
             </p>
           </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirm-phone">Your phone number</Label>
+            <Input
+              id="confirm-phone"
+              type="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              placeholder="0800 000 0000"
+              autoComplete="tel"
+              required
+            />
+            <p className="text-xs text-muted-foreground">
+              The number your tailor has for you, so we know it&apos;s really you.
+            </p>
+          </div>
           <DialogFooter>
-            <Button type="submit" disabled={busy || !slug.trim()} className="w-full">
+            <Button type="submit" disabled={busy || !slug.trim() || !phone.trim()} className="w-full">
               <Share2 className="size-4" />
               {busy ? "Sending..." : "Send request"}
             </Button>
