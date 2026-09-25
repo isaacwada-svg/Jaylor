@@ -24,7 +24,7 @@ function dayBounds() {
   return { s, e, week };
 }
 
-export function DashboardOverview({ storeId }: { storeId?: string }) {
+export function DashboardOverview({ storeId }: { storeId: string | undefined }) {
   const [q, setQ] = useState("");
   const term = useDebounced(q.trim().replace(/[%,()*\\]/g, "").slice(0, 60));
 
