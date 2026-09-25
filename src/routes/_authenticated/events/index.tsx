@@ -12,6 +12,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { jobTemplate } from "@/lib/job-templates";
+import { useJobTemplates } from "@/lib/use-job-templates";
 import { useFeatureDiscovery } from "@/lib/feature-discovery";
 
 export const Route = createFileRoute("/_authenticated/events/")({
@@ -36,6 +37,7 @@ function Events() {
   const queryClient = useQueryClient();
   const discovery = useFeatureDiscovery();
   const [formOpen, setFormOpen] = useState(false);
+  const { data: storeTemplates } = useJobTemplates(storeId);
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["events", storeId],
@@ -97,7 +99,7 @@ function Events() {
                     <div className="min-w-0">
                       <p className="truncate font-medium">{event.name}</p>
                       <p className="truncate text-sm text-muted-foreground">
-                        {jobTemplate(event.job_type).label}
+                        {jobTemplate(event.job_type, storeTemplates).label}
                         {" · "}
                         {event.event_date
                           ? new Date(event.event_date).toLocaleDateString()

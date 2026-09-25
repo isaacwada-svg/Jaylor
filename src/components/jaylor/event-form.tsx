@@ -6,7 +6,9 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
-import { JOB_TEMPLATES, jobTemplate, type JobTemplate } from "@/lib/job-templates";
+import { jobTemplate, type JobTemplate } from "@/lib/job-templates";
+import { useJobTemplates } from "@/lib/use-job-templates";
+import { JobTemplateManagerButton } from "@/components/jaylor/job-template-manager";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { Button } from "@/components/ui/button";
@@ -57,6 +59,8 @@ export function EventForm({
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
   const isEdit = !!event;
+  const { data: storeTemplates } = useJobTemplates(open ? storeId : undefined);
+  const visibleTemplates = (storeTemplates ?? []).filter((t) => !t.hidden);
 
   const [template, setTemplate] = useState<JobTemplate | null>(null);
   const [name, setName] = useState("");
@@ -87,7 +91,7 @@ export function EventForm({
   useEffect(() => {
     if (!open) return;
     if (event) {
-      setTemplate(jobTemplate(event.job_type));
+      setTemplate(jobTemplate(event.job_type, storeTemplates));
       setName(event.name ?? "");
       setEventDate(event.event_date ?? "");
       setOrganiserName(event.organiser_name ?? "");
@@ -166,7 +170,7 @@ export function EventForm({
     setDeliveryAddress("");
     setShippingFee("");
     setQuoteLink(null);
-  }, [open, event]);
+  }, [open, event, storeTemplates]);
 
   function updateStyle(index: number, patch: Partial<StyleRow>) {
     setStyles((prev) => prev.map((s, i) => (i === index ? { ...s, ...patch } : s)));
@@ -343,18 +347,21 @@ export function EventForm({
   }
 
   const picker = (
-    <div className="grid grid-cols-2 gap-2">
-      {(templateFilter ? JOB_TEMPLATES.filter(templateFilter) : JOB_TEMPLATES).map((t) => (
-        <button
-          key={t.jobType}
-          type="button"
-          onClick={() => setTemplate(t)}
-          className="rounded-xl border border-border p-3 text-left transition-colors hover:border-gold hover:bg-accent/40"
-        >
-          <p className="text-sm font-medium">{t.label}</p>
-          <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
-        </button>
-      ))}
+    <div className="space-y-3">
+      <div className="grid grid-cols-2 gap-2">
+        {(templateFilter ? visibleTemplates.filter(templateFilter) : visibleTemplates).map((t) => (
+          <button
+            key={t.jobType}
+            type="button"
+            onClick={() => setTemplate(t)}
+            className="rounded-xl border border-border p-3 text-left transition-colors hover:border-gold hover:bg-accent/40"
+          >
+            <p className="text-sm font-medium">{t.label}</p>
+            <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
+          </button>
+        ))}
+      </div>
+      {!templateFilter && <JobTemplateManagerButton storeId={storeId} />}
     </div>
   );
 

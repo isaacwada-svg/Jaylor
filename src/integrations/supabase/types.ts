@@ -1234,6 +1234,81 @@ export type Database = {
         }
         Relationships: []
       }
+      job_templates: {
+        Row: {
+          collection_mode: string
+          created_at: string
+          created_by: string | null
+          description: string
+          guest_welcome_line: string
+          hidden: boolean
+          id: string
+          is_contract: boolean
+          is_default: boolean
+          job_type: string
+          label: string
+          name_placeholder: string
+          payer_mode: string
+          pricing_mode: string
+          sort_order: number
+          store_id: string
+          turnaround_mode: string
+        }
+        Insert: {
+          collection_mode: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          guest_welcome_line?: string
+          hidden?: boolean
+          id?: string
+          is_contract?: boolean
+          is_default?: boolean
+          job_type: string
+          label: string
+          name_placeholder?: string
+          payer_mode: string
+          pricing_mode: string
+          sort_order?: number
+          store_id: string
+          turnaround_mode: string
+        }
+        Update: {
+          collection_mode?: string
+          created_at?: string
+          created_by?: string | null
+          description?: string
+          guest_welcome_line?: string
+          hidden?: boolean
+          id?: string
+          is_contract?: boolean
+          is_default?: boolean
+          job_type?: string
+          label?: string
+          name_placeholder?: string
+          payer_mode?: string
+          pricing_mode?: string
+          sort_order?: number
+          store_id?: string
+          turnaround_mode?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_templates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       leads: {
         Row: {
           created_at: string

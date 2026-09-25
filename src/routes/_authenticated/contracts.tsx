@@ -14,6 +14,7 @@ import { useStore } from "@/lib/store-context";
 import { formatMoney } from "@/lib/jaylor";
 import { computeQuoteTotals } from "@/lib/quote";
 import { jobTemplate } from "@/lib/job-templates";
+import { useJobTemplates } from "@/lib/use-job-templates";
 
 export const Route = createFileRoute("/_authenticated/contracts")({
   staticData: { sitemap: false },
@@ -33,6 +34,7 @@ function Contracts() {
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const canCreate = currentRole === "owner" || currentRole === "manager";
+  const { data: storeTemplates } = useJobTemplates(storeId);
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
 
@@ -145,7 +147,7 @@ function Contracts() {
                     <div className="min-w-0">
                       <p className="truncate font-medium">{job.name}</p>
                       <p className="truncate text-sm text-muted-foreground">
-                        {jobTemplate(job.job_type).label}
+                        {jobTemplate(job.job_type, storeTemplates).label}
                         {job.organiser_name ? ` · ${job.organiser_name}` : ""}
                       </p>
                       {job.delivery_date && (
