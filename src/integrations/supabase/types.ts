@@ -2546,6 +2546,88 @@ export type Database = {
         }
         Relationships: []
       }
+      quotes: {
+        Row: {
+          client_id: string
+          converted_order_id: string | null
+          created_at: string
+          created_by: string | null
+          discount_percent: number
+          garment_type: string
+          garment_type_code: string | null
+          id: string
+          notes: string | null
+          quantity: number
+          quote_number: string | null
+          quote_token: string
+          status: string
+          store_id: string
+          unit_price: number
+          updated_at: string
+          valid_until: string
+        }
+        Insert: {
+          client_id: string
+          converted_order_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number
+          garment_type: string
+          garment_type_code?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          quote_number?: string | null
+          quote_token?: string
+          status?: string
+          store_id: string
+          unit_price?: number
+          updated_at?: string
+          valid_until: string
+        }
+        Update: {
+          client_id?: string
+          converted_order_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          discount_percent?: number
+          garment_type?: string
+          garment_type_code?: string | null
+          id?: string
+          notes?: string | null
+          quantity?: number
+          quote_number?: string | null
+          quote_token?: string
+          status?: string
+          store_id?: string
+          unit_price?: number
+          updated_at?: string
+          valid_until?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quotes_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_converted_order_id_fkey"
+            columns: ["converted_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rate_limit_hits: {
         Row: {
           bucket: string
@@ -2870,6 +2952,7 @@ export type Database = {
       }
       store_members: {
         Row: {
+          can_manage_quotations: boolean
           created_at: string
           id: string
           invited_phone: string | null
@@ -2879,6 +2962,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          can_manage_quotations?: boolean
           created_at?: string
           id?: string
           invited_phone?: string | null
@@ -2888,6 +2972,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          can_manage_quotations?: boolean
           created_at?: string
           id?: string
           invited_phone?: string | null

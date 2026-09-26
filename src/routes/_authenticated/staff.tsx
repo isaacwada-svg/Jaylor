@@ -11,6 +11,8 @@ import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import {
   Select,
@@ -217,6 +219,19 @@ function Staff() {
       invalidateMembers();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not update this role"));
+    }
+  }
+
+  async function setCanManageQuotations(memberId: string, value: boolean) {
+    try {
+      const { error } = await supabase
+        .from("store_members")
+        .update({ can_manage_quotations: value })
+        .eq("id", memberId);
+      if (error) throw error;
+      invalidateMembers();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update this permission"));
     }
   }
 
@@ -491,47 +506,61 @@ function Staff() {
             ) : (
               <div className="mt-4 space-y-3">
                 {(members ?? []).map((member) => (
-                  <div
-                    key={member.id}
-                    className="flex items-center justify-between gap-3 rounded-2xl border border-border p-4"
-                  >
-                    <div className="min-w-0">
-                      <p className="truncate font-medium">
-                        {profileById(member.user_id)?.full_name ?? "Team member"}
-                      </p>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {profileById(member.user_id)?.phone ?? ""}
-                      </p>
-                    </div>
-                    {member.role === "owner" ? (
-                      <Badge variant="outline" className="border-gold text-gold">
-                        Owner
-                      </Badge>
-                    ) : isOwner ? (
-                      <div className="flex items-center gap-2">
-                        <Select
-                          value={member.role}
-                          onValueChange={(v) => changeRole(member.id, v as "manager" | "tailor")}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="manager">Manager</SelectItem>
-                            <SelectItem value="tailor">Tailor</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          disabled={busyId === member.id}
-                          onClick={() => removeMember(member.id)}
-                        >
-                          {busyId === member.id ? "Removing..." : "Remove"}
-                        </Button>
+                  <div key={member.id} className="rounded-2xl border border-border p-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <p className="truncate font-medium">
+                          {profileById(member.user_id)?.full_name ?? "Team member"}
+                        </p>
+                        <p className="truncate text-sm text-muted-foreground">
+                          {profileById(member.user_id)?.phone ?? ""}
+                        </p>
                       </div>
-                    ) : (
-                      <Badge variant="outline">{member.role}</Badge>
+                      {member.role === "owner" ? (
+                        <Badge variant="outline" className="border-gold text-gold">
+                          Owner
+                        </Badge>
+                      ) : isOwner ? (
+                        <div className="flex items-center gap-2">
+                          <Select
+                            value={member.role}
+                            onValueChange={(v) => changeRole(member.id, v as "manager" | "tailor")}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="manager">Manager</SelectItem>
+                              <SelectItem value="tailor">Tailor</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={busyId === member.id}
+                            onClick={() => removeMember(member.id)}
+                          >
+                            {busyId === member.id ? "Removing..." : "Remove"}
+                          </Button>
+                        </div>
+                      ) : (
+                        <Badge variant="outline">{member.role}</Badge>
+                      )}
+                    </div>
+                    {isOwner && member.role === "tailor" && (
+                      <div className="mt-3 flex items-center gap-2 border-t border-border pt-3">
+                        <Checkbox
+                          id={`quotations-${member.id}`}
+                          checked={member.can_manage_quotations}
+                          onCheckedChange={(v) => setCanManageQuotations(member.id, v === true)}
+                        />
+                        <Label
+                          htmlFor={`quotations-${member.id}`}
+                          className="text-sm font-normal text-muted-foreground"
+                        >
+                          Can manage quotations
+                        </Label>
+                      </div>
                     )}
                   </div>
                 ))}
