@@ -167,5 +167,28 @@ export function jsonResponse(body: unknown, status = 200): Response {
 }
 
 export function errorResponse(message: string, status = 400): Response {
+  // Only 5xx is a real incident -- 4xx here is almost always expected user-facing
+  // validation, and logging every one of those would drown the signal in noise.
+  if (status >= 500) void logPlatformError(message, status);
   return jsonResponse({ error: message }, status);
+}
+
+async function logPlatformError(message: string, status: number): Promise<void> {
+  try {
+    const url = Deno.env.get("SUPABASE_URL");
+    const key = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+    if (!url || !key) return;
+    await fetch(`${url}/rest/v1/platform_error_logs`, {
+      method: "POST",
+      headers: {
+        apikey: key,
+        Authorization: `Bearer ${key}`,
+        "Content-Type": "application/json",
+        Prefer: "return=minimal",
+      },
+      body: JSON.stringify({ message: message.slice(0, 2000), status }),
+    });
+  } catch {
+    // Best-effort telemetry -- never let logging failures break the real response.
+  }
 }

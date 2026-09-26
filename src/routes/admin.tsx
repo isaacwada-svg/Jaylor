@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -107,6 +107,72 @@ type TeamMember = {
   is_you: boolean;
 };
 
+type SearchResults = {
+  stores: { id: string; name: string; slug: string; city: string | null }[];
+  clients: {
+    id: string;
+    full_name: string;
+    phone: string;
+    store_id: string;
+    store_name: string;
+  }[];
+  orders: {
+    id: string;
+    number: string;
+    garment_type: string;
+    store_id: string;
+    store_name: string;
+    created_at: string;
+  }[];
+  payments: {
+    id: string;
+    amount: number;
+    reference: string | null;
+    store_id: string;
+    store_name: string;
+    paid_at: string;
+  }[];
+};
+
+type PlatformHealth = {
+  errors_last_hour: number;
+  errors_last_24h: number;
+  webhook_total_24h: number;
+  webhook_failed_24h: number;
+  signups_24h: number;
+  orders_24h: number;
+  payments_24h: number;
+  active_stores: number;
+  inactive_stores: number;
+  last_rls_check: { ok: boolean; checked_at: string } | null;
+};
+
+type BillingEvent =
+  | {
+      kind: "payment";
+      store_id: string;
+      store_name: string;
+      plan_code: string;
+      amount: number;
+      status: string;
+      reference: string | null;
+      event_at: string;
+    }
+  | {
+      kind: "plan_change";
+      store_id: string;
+      store_name: string;
+      from_plan: string | null;
+      to_plan: string;
+      event_at: string;
+    };
+
+type RecentErrors = {
+  since: string;
+  function_errors: { id: string; message: string; status: number; created_at: string }[];
+  webhook_errors: { id: string; event: string; processing_error: string; received_at: string }[];
+};
+
 type AnalyticsData = {
   period_start: string;
   visitor_count: number;
@@ -211,12 +277,16 @@ function Admin() {
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="search">Search</TabsTrigger>
+            <TabsTrigger value="health">Health</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="messaging">Messaging</TabsTrigger>
             <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
+            <TabsTrigger value="errors">Errors</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
             {isSuperAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
           </TabsList>
@@ -224,11 +294,20 @@ function Admin() {
           <TabsContent value="overview" className="mt-6">
             <OverviewTab />
           </TabsContent>
+          <TabsContent value="search" className="mt-6">
+            <SearchTab />
+          </TabsContent>
+          <TabsContent value="health" className="mt-6">
+            <HealthTab />
+          </TabsContent>
           <TabsContent value="analytics" className="mt-6">
             <AnalyticsTab />
           </TabsContent>
           <TabsContent value="plans" className="mt-6">
             <PlansTab readOnly={isReadOnly} />
+          </TabsContent>
+          <TabsContent value="billing" className="mt-6">
+            <BillingTab />
           </TabsContent>
           <TabsContent value="messaging" className="mt-6">
             <MessagingTab />
@@ -242,6 +321,9 @@ function Admin() {
           </TabsContent>
           <TabsContent value="audit" className="mt-6">
             <AuditTab />
+          </TabsContent>
+          <TabsContent value="errors" className="mt-6">
+            <ErrorsTab />
           </TabsContent>
           <TabsContent value="security" className="mt-6">
             <SecurityTab />
@@ -1246,6 +1328,364 @@ function SecurityTab() {
             </div>
           )}
         </div>
+      )}
+    </div>
+  );
+}
+
+function SearchSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+        {title}
+      </p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function SearchTab() {
+  const [query, setQuery] = useState("");
+  const [submitted, setSubmitted] = useState("");
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["admin-search", submitted],
+    enabled: submitted.trim().length >= 2,
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_search", { p_query: submitted.trim() });
+      if (error) throw error;
+      return data as unknown as SearchResults;
+    },
+  });
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setSubmitted(query);
+  }
+
+  const hasResults =
+    !!data &&
+    (data.stores.length > 0 ||
+      data.clients.length > 0 ||
+      data.orders.length > 0 ||
+      data.payments.length > 0);
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={submit} className="flex gap-2">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Shop name, client name/phone, order number, or payment reference"
+        />
+        <Button type="submit" disabled={query.trim().length < 2}>
+          Search
+        </Button>
+      </form>
+
+      {isLoading || isFetching ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 rounded-xl" />
+          ))}
+        </div>
+      ) : submitted.trim().length < 2 ? (
+        <p className="text-sm text-muted-foreground">Enter at least 2 characters to search.</p>
+      ) : !hasResults ? (
+        <p className="text-sm text-muted-foreground">
+          No matches across stores, clients, orders or payments.
+        </p>
+      ) : (
+        <div className="space-y-6">
+          {data!.stores.length > 0 && (
+            <SearchSection title="Stores">
+              {data!.stores.map((s) => (
+                <Link
+                  key={s.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: s.id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">{s.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    jaylor.ng/{s.slug} {s.city ? `· ${s.city}` : ""}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+          {data!.clients.length > 0 && (
+            <SearchSection title="Clients">
+              {data!.clients.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: c.store_id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">{c.full_name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {c.phone} · {c.store_name}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+          {data!.orders.length > 0 && (
+            <SearchSection title="Orders">
+              {data!.orders.map((o) => (
+                <Link
+                  key={o.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: o.store_id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">
+                    {o.number} · {o.garment_type}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {o.store_name} · {new Date(o.created_at).toLocaleDateString()}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+          {data!.payments.length > 0 && (
+            <SearchSection title="Payments">
+              {data!.payments.map((p) => (
+                <Link
+                  key={p.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: p.store_id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">{formatMoney(p.amount)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {p.reference ?? "—"} · {p.store_name}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HealthTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-platform-health"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_platform_health", {});
+      if (error) throw error;
+      return data as unknown as PlatformHealth;
+    },
+    refetchInterval: 60_000,
+  });
+
+  if (isLoading || !data) {
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const webhookFailRate =
+    data.webhook_total_24h > 0
+      ? Math.round((data.webhook_failed_24h / data.webhook_total_24h) * 100)
+      : 0;
+  const isHealthy = data.errors_last_hour === 0 && webhookFailRate < 10;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl">System health</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Live signals from edge function errors, WhatsApp webhook delivery, and platform
+            activity. Refreshes every minute.
+          </p>
+        </div>
+        <Badge
+          className={
+            isHealthy
+              ? "border-paid/40 bg-paid/10 text-paid"
+              : "border-owed/40 bg-owed/10 text-owed"
+          }
+        >
+          {isHealthy ? "Healthy" : "Needs attention"}
+        </Badge>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat label="Errors (last hour)" value={String(data.errors_last_hour)} />
+        <Stat label="Errors (24h)" value={String(data.errors_last_24h)} />
+        <Stat
+          label="WhatsApp webhook failures (24h)"
+          value={`${data.webhook_failed_24h} / ${data.webhook_total_24h} (${webhookFailRate}%)`}
+        />
+        <Stat label="Signups (24h)" value={String(data.signups_24h)} />
+        <Stat label="Orders created (24h)" value={String(data.orders_24h)} />
+        <Stat label="Payments collected (24h)" value={String(data.payments_24h)} />
+        <Stat label="Active stores" value={String(data.active_stores)} />
+        <Stat label="Inactive stores" value={String(data.inactive_stores)} />
+        <Stat
+          label="Last security drift check"
+          value={
+            data.last_rls_check ? (data.last_rls_check.ok ? "Clean" : "Drift found") : "Never run"
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function BillingTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-billing-history"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_billing_history", {
+        p_store_id: null,
+        p_limit: 200,
+      });
+      if (error) throw error;
+      return data as unknown as BillingEvent[];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">No subscription payments or plan changes yet.</p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {data.map((event, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
+        >
+          <div>
+            <p className="font-medium">
+              {event.kind === "payment"
+                ? `${event.store_name} paid for ${planCodeToTier(event.plan_code)}`
+                : `${event.store_name} moved ${event.from_plan ? `from ${planCodeToTier(event.from_plan)} ` : ""}to ${planCodeToTier(event.to_plan)}`}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {event.kind === "payment"
+                ? `${formatMoney(event.amount)} · ${event.status}${event.reference ? ` · ${event.reference}` : ""}`
+                : "Plan change"}
+            </p>
+          </div>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {new Date(event.event_at).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ErrorsTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-recent-errors"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_recent_errors", { p_hours: 24 });
+      if (error) throw error;
+      return data as unknown as RecentErrors;
+    },
+    refetchInterval: 60_000,
+  });
+
+  if (isLoading || !data) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const noErrors = data.function_errors.length === 0 && data.webhook_errors.length === 0;
+
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Server-side (5xx) errors from edge functions, and failed WhatsApp webhook deliveries, in the
+        last 24 hours. Edge function errors are only captured going forward from when this shipped —
+        nothing before that is recorded.
+      </p>
+      {noErrors ? (
+        <p className="text-sm text-muted-foreground">No incidents in the last 24 hours.</p>
+      ) : (
+        <>
+          {data.function_errors.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                Edge function errors ({data.function_errors.length})
+              </p>
+              <div className="space-y-2">
+                {data.function_errors.map((e) => (
+                  <div
+                    key={e.id}
+                    className="rounded-xl border border-owed/40 bg-owed/5 p-3 text-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-owed/40 text-owed">
+                        {e.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(e.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-1">{e.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.webhook_errors.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                WhatsApp webhook failures ({data.webhook_errors.length})
+              </p>
+              <div className="space-y-2">
+                {data.webhook_errors.map((w) => (
+                  <div
+                    key={w.id}
+                    className="rounded-xl border border-owed/40 bg-owed/5 p-3 text-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-owed/40 text-owed">
+                        {w.event}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(w.received_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-1">{w.processing_error}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
       )}
     </div>
   );
