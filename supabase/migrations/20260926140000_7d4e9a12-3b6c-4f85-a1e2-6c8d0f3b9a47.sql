@@ -5,8 +5,10 @@
 -- convention), shareable on WhatsApp via a public tokenized link (mirrors
 -- the e.$token contract-acceptance flow), and convertible to a real order
 -- in one tap.
+--
+-- Idempotent throughout: safe to re-run after a partial failure.
 
-CREATE TABLE public.quotes (
+CREATE TABLE IF NOT EXISTS public.quotes (
   id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
   store_id uuid NOT NULL REFERENCES public.stores(id) ON DELETE CASCADE,
   client_id uuid NOT NULL REFERENCES public.clients(id) ON DELETE CASCADE,
@@ -26,9 +28,9 @@ CREATE TABLE public.quotes (
   updated_at timestamptz NOT NULL DEFAULT now()
 );
 
-CREATE UNIQUE INDEX quotes_quote_token_key ON public.quotes (quote_token);
-CREATE INDEX quotes_store_id_idx ON public.quotes (store_id, created_at DESC);
-CREATE INDEX quotes_client_id_idx ON public.quotes (client_id);
+CREATE UNIQUE INDEX IF NOT EXISTS quotes_quote_token_key ON public.quotes (quote_token);
+CREATE INDEX IF NOT EXISTS quotes_store_id_idx ON public.quotes (store_id, created_at DESC);
+CREATE INDEX IF NOT EXISTS quotes_client_id_idx ON public.quotes (client_id);
 
 CREATE OR REPLACE FUNCTION public.set_quote_number()
 RETURNS trigger
@@ -48,6 +50,7 @@ END;
 $$;
 REVOKE EXECUTE ON FUNCTION public.set_quote_number() FROM PUBLIC, anon, authenticated;
 
+DROP TRIGGER IF EXISTS set_quote_number_trigger ON public.quotes;
 CREATE TRIGGER set_quote_number_trigger
 BEFORE INSERT ON public.quotes
 FOR EACH ROW EXECUTE FUNCTION public.set_quote_number();
@@ -64,18 +67,21 @@ END;
 $$;
 REVOKE EXECUTE ON FUNCTION public.set_quote_updated_at() FROM PUBLIC, anon, authenticated;
 
+DROP TRIGGER IF EXISTS set_quote_updated_at_trigger ON public.quotes;
 CREATE TRIGGER set_quote_updated_at_trigger
 BEFORE UPDATE ON public.quotes
 FOR EACH ROW EXECUTE FUNCTION public.set_quote_updated_at();
 
 ALTER TABLE public.quotes ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS quotes_select ON public.quotes;
 CREATE POLICY quotes_select ON public.quotes FOR SELECT TO authenticated
   USING (public.is_store_member(store_id));
 
+DROP POLICY IF EXISTS quotes_insert ON public.quotes;
 CREATE POLICY quotes_insert ON public.quotes FOR INSERT TO authenticated
   WITH CHECK (
-    public.has_store_role(store_id, ARRAY['owner', 'manager'])
+    public.has_store_role(store_id, ARRAY['owner'::store_role, 'manager'::store_role])
     OR EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = quotes.store_id
@@ -86,9 +92,10 @@ CREATE POLICY quotes_insert ON public.quotes FOR INSERT TO authenticated
     )
   );
 
+DROP POLICY IF EXISTS quotes_update ON public.quotes;
 CREATE POLICY quotes_update ON public.quotes FOR UPDATE TO authenticated
   USING (
-    public.has_store_role(store_id, ARRAY['owner', 'manager'])
+    public.has_store_role(store_id, ARRAY['owner'::store_role, 'manager'::store_role])
     OR EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = quotes.store_id
@@ -99,7 +106,7 @@ CREATE POLICY quotes_update ON public.quotes FOR UPDATE TO authenticated
     )
   )
   WITH CHECK (
-    public.has_store_role(store_id, ARRAY['owner', 'manager'])
+    public.has_store_role(store_id, ARRAY['owner'::store_role, 'manager'::store_role])
     OR EXISTS (
       SELECT 1 FROM public.store_members sm
       WHERE sm.store_id = quotes.store_id
@@ -110,8 +117,9 @@ CREATE POLICY quotes_update ON public.quotes FOR UPDATE TO authenticated
     )
   );
 
+DROP POLICY IF EXISTS quotes_delete ON public.quotes;
 CREATE POLICY quotes_delete ON public.quotes FOR DELETE TO authenticated
-  USING (public.has_store_role(store_id, ARRAY['owner', 'manager']));
+  USING (public.has_store_role(store_id, ARRAY['owner'::store_role, 'manager'::store_role]));
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quotes TO authenticated;
 GRANT ALL ON public.quotes TO service_role;
