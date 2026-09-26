@@ -1,10 +1,12 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
+import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { DiscoveryCue } from "@/components/jaylor/discovery-cue";
 import { useFeatureDiscovery } from "@/lib/feature-discovery";
 import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import {
   CalendarClock,
   Users2,
@@ -16,7 +18,10 @@ import {
   FileText,
   Gift,
   LifeBuoy,
+  LogOut,
 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { getErrorMessage } from "@/lib/utils";
 import type { Tier } from "@/lib/jaylor";
 import type { DiscoveryFeature } from "@/lib/feature-discovery";
 
@@ -93,6 +98,17 @@ const ITEMS: {
 
 function More() {
   const discovery = useFeatureDiscovery();
+  const navigate = useNavigate();
+
+  async function handleSignOut() {
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      navigate({ to: "/auth" });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not sign out — try again"));
+    }
+  }
 
   return (
     <AppShell>
@@ -237,6 +253,15 @@ function More() {
             );
           })}
         </div>
+
+        <Button
+          variant="outline"
+          className="mt-6 w-full justify-center gap-2 text-destructive hover:text-destructive"
+          onClick={handleSignOut}
+        >
+          <LogOut className="size-4" />
+          Sign out
+        </Button>
       </div>
     </AppShell>
   );

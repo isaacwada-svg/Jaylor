@@ -14,6 +14,7 @@ import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { normalizePhoneNG } from "@/lib/phone";
 import { signInWithPhone } from "@/lib/auth-lookup.functions";
+import { TermsGateDialog } from "@/components/jaylor/terms-gate-dialog";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
@@ -53,6 +54,7 @@ function AuthPage() {
   const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [sent, setSent] = useState(false);
+  const [termsOpen, setTermsOpen] = useState(false);
 
   useEffect(() => {
     if (!referralCode) return;
@@ -133,6 +135,38 @@ function AuthPage() {
     navigate({ to: "/dashboard" });
   }
 
+  async function performSignup() {
+    const whatsapp = normalizePhoneNG(whatsappRaw);
+    if (!whatsapp) {
+      toast.error("Enter a valid Nigerian WhatsApp number");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          emailRedirectTo: window.location.origin,
+          data: { full_name: name, whatsapp_phone: whatsapp },
+        },
+      });
+      if (error) throw error;
+      setTermsOpen(false);
+      if (!data.session) {
+        if (data.user) void trackEvent("signup_completed", data.user.id);
+        setSent(true);
+        return;
+      }
+      if (data.user) void trackEvent("signup_completed", data.user.id);
+      goToPostAuthDestination();
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Something went wrong"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault();
 
@@ -142,29 +176,7 @@ function AuthPage() {
         toast.error("Enter a valid Nigerian WhatsApp number");
         return;
       }
-      setBusy(true);
-      try {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-          options: {
-            emailRedirectTo: window.location.origin,
-            data: { full_name: name, whatsapp_phone: whatsapp },
-          },
-        });
-        if (error) throw error;
-        if (!data.session) {
-          if (data.user) void trackEvent("signup_completed", data.user.id);
-          setSent(true);
-          return;
-        }
-        if (data.user) void trackEvent("signup_completed", data.user.id);
-        goToPostAuthDestination();
-      } catch (error) {
-        toast.error(getErrorMessage(error, "Something went wrong"));
-      } finally {
-        setBusy(false);
-      }
+      setTermsOpen(true);
       return;
     }
 
@@ -387,7 +399,7 @@ function AuthPage() {
                 </Button>
                 {mode === "signup" && (
                   <p className="text-center text-xs text-muted-foreground">
-                    By creating an account you agree to our{" "}
+                    You&apos;ll be asked to review and agree to our{" "}
                     <Link
                       to="/terms"
                       className="underline underline-offset-4 hover:text-foreground"
@@ -400,8 +412,8 @@ function AuthPage() {
                       className="underline underline-offset-4 hover:text-foreground"
                     >
                       Privacy Policy
-                    </Link>
-                    .
+                    </Link>{" "}
+                    before your account is created.
                   </p>
                 )}
               </form>
@@ -434,6 +446,13 @@ function AuthPage() {
 
         <p className="mt-8 text-center text-xs text-muted-foreground">{COMPANY_LINE}</p>
       </div>
+
+      <TermsGateDialog
+        open={termsOpen}
+        onOpenChange={setTermsOpen}
+        onAccept={performSignup}
+        busy={busy}
+      />
     </main>
   );
 }

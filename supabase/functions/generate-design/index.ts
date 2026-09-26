@@ -238,6 +238,22 @@ Deno.serve(async (req) => {
     }
     paymentId = payment.id;
     wasPaid = true;
+  } else {
+    // Free preview: a real payment isn't in play yet to keep the phone number
+    // honest, so require proof the caller actually holds it before spending
+    // real image-generation cost on it -- otherwise it's trivially reset by
+    // typing a different fake number each time.
+    const phoneDigits = body.phone.replace(/\D/g, "");
+    const { data: verification } = await supabase
+      .from("ai_design_phone_verifications")
+      .select("id")
+      .eq("phone", phoneDigits)
+      .not("verified_at", "is", null)
+      .limit(1)
+      .maybeSingle();
+    if (!verification) {
+      return jsonResponse({ verification_required: true });
+    }
   }
 
   const measurementsText = body.measurements
