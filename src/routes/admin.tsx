@@ -19,6 +19,13 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { formatMoney, planCodeToTier } from "@/lib/jaylor";
 import { TierBadge } from "@/components/jaylor/tier-badge";
@@ -90,6 +97,16 @@ type AuditRow = {
   created_at: string;
 };
 
+type TeamMember = {
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  role: "super_admin" | "admin" | "support";
+  label: string | null;
+  created_at: string;
+  is_you: boolean;
+};
+
 type AnalyticsData = {
   period_start: string;
   visitor_count: number;
@@ -144,6 +161,18 @@ function Admin() {
     },
   });
 
+  const { data: myRole } = useQuery({
+    queryKey: ["admin-my-role"],
+    enabled: signedIn && !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_my_role", {});
+      if (error) throw error;
+      return data as string | null;
+    },
+  });
+  const isSuperAdmin = myRole === "super_admin";
+  const isReadOnly = myRole === "support";
+
   if (!authChecked || adminCheckLoading) {
     return <div className="min-h-screen bg-background" />;
   }
@@ -189,6 +218,7 @@ function Admin() {
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
+            {isSuperAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
@@ -198,14 +228,14 @@ function Admin() {
             <AnalyticsTab />
           </TabsContent>
           <TabsContent value="plans" className="mt-6">
-            <PlansTab />
+            <PlansTab readOnly={isReadOnly} />
           </TabsContent>
           <TabsContent value="messaging" className="mt-6">
             <MessagingTab />
           </TabsContent>
 
           <TabsContent value="ai-usage" className="mt-6">
-            <AiUsageTab />
+            <AiUsageTab readOnly={isReadOnly} />
           </TabsContent>
           <TabsContent value="leads" className="mt-6">
             <LeadsTab />
@@ -216,6 +246,11 @@ function Admin() {
           <TabsContent value="security" className="mt-6">
             <SecurityTab />
           </TabsContent>
+          {isSuperAdmin && (
+            <TabsContent value="team" className="mt-6">
+              <TeamTab />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </main>
@@ -473,7 +508,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PlansTab() {
+function PlansTab({ readOnly }: { readOnly: boolean }) {
   const queryClient = useQueryClient();
   const [editingPlan, setEditingPlan] = useState<PlanRow | null>(null);
   const [priceMonthly, setPriceMonthly] = useState("");
@@ -542,9 +577,11 @@ function PlansTab() {
               {plan.price_quarterly ? ` · ${formatMoney(plan.price_quarterly)}/quarter` : ""}
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
-            Edit
-          </Button>
+          {!readOnly && (
+            <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
+              Edit
+            </Button>
+          )}
         </div>
       ))}
 
@@ -625,7 +662,7 @@ type AiRateLimitedStore = {
   daily_limit: number;
 };
 
-function AiBudgetPanel() {
+function AiBudgetPanel({ readOnly }: { readOnly: boolean }) {
   const queryClient = useQueryClient();
   const [budgetInput, setBudgetInput] = useState("");
   const [savingBudget, setSavingBudget] = useState(false);
@@ -703,21 +740,27 @@ function AiBudgetPanel() {
           </p>
         </div>
       </div>
-      <div className="flex items-end gap-2">
-        <div className="flex-1 space-y-1">
-          <Label htmlFor="ai-budget-input">Set monthly budget (USD)</Label>
-          <Input
-            id="ai-budget-input"
-            inputMode="decimal"
-            placeholder={status.budget_usd.toFixed(0)}
-            value={budgetInput}
-            onChange={(e) => setBudgetInput(e.target.value)}
-          />
+      {readOnly ? (
+        <p className="text-xs text-muted-foreground">
+          Read-only access — ask a super admin to change the budget.
+        </p>
+      ) : (
+        <div className="flex items-end gap-2">
+          <div className="flex-1 space-y-1">
+            <Label htmlFor="ai-budget-input">Set monthly budget (USD)</Label>
+            <Input
+              id="ai-budget-input"
+              inputMode="decimal"
+              placeholder={status.budget_usd.toFixed(0)}
+              value={budgetInput}
+              onChange={(e) => setBudgetInput(e.target.value)}
+            />
+          </div>
+          <Button onClick={saveBudget} disabled={savingBudget || !budgetInput.trim()}>
+            {savingBudget ? "Saving..." : "Save"}
+          </Button>
         </div>
-        <Button onClick={saveBudget} disabled={savingBudget || !budgetInput.trim()}>
-          {savingBudget ? "Saving..." : "Save"}
-        </Button>
-      </div>
+      )}
       {rateLimited && rateLimited.length > 0 && (
         <div className="space-y-2 border-t border-border pt-4">
           <p className="text-xs text-muted-foreground">Currently rate-limited shops</p>
@@ -738,7 +781,7 @@ function AiBudgetPanel() {
   );
 }
 
-function AiUsageTab() {
+function AiUsageTab({ readOnly }: { readOnly: boolean }) {
   const { data: rows, isLoading } = useQuery({
     queryKey: ["admin-ai-usage"],
     queryFn: async () => {
@@ -750,7 +793,7 @@ function AiUsageTab() {
 
   return (
     <div className="space-y-4">
-      <AiBudgetPanel />
+      <AiBudgetPanel readOnly={readOnly} />
       <AiUsageRows rows={rows} isLoading={isLoading} />
     </div>
   );
@@ -1204,6 +1247,167 @@ function SecurityTab() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function TeamTab() {
+  const queryClient = useQueryClient();
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"admin" | "support">("admin");
+  const [busy, setBusy] = useState(false);
+
+  const { data: members, isLoading } = useQuery({
+    queryKey: ["admin-team"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_list_team", {});
+      if (error) throw error;
+      return data as unknown as TeamMember[];
+    },
+  });
+
+  async function addMember() {
+    if (!email.trim()) {
+      toast.error("Enter an email address");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await rpcAdmin("admin_add_team_member", {
+        p_email: email.trim(),
+        p_role: role,
+      });
+      if (error) throw error;
+      toast.success("Added to the team");
+      setEmail("");
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not add this person"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function changeRole(member: TeamMember, nextRole: "admin" | "support") {
+    try {
+      const { error } = await rpcAdmin("admin_update_team_role", {
+        p_user_id: member.user_id,
+        p_role: nextRole,
+      });
+      if (error) throw error;
+      toast.success("Role updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update this role"));
+    }
+  }
+
+  async function removeMember(member: TeamMember) {
+    if (!window.confirm(`Remove ${member.email ?? "this person"} from the platform team?`)) return;
+    try {
+      const { error } = await rpcAdmin("admin_remove_team_member", { p_user_id: member.user_id });
+      if (error) throw error;
+      toast.success("Removed from the team");
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not remove this person"));
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl">Platform team</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Who can access this dashboard, and what they can do. A super admin&apos;s own access can
+          only be changed by that person — nobody else, including another super admin, can demote or
+          remove them.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {(members ?? []).map((member) => (
+          <div
+            key={member.user_id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"
+          >
+            <div className="min-w-0">
+              <p className="truncate font-medium">
+                {member.full_name || member.email || member.user_id}
+                {member.is_you && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {member.role === "super_admin" ? (
+                <Badge>Super admin</Badge>
+              ) : (
+                <Select
+                  value={member.role}
+                  onValueChange={(value) => changeRole(member, value as "admin" | "support")}
+                >
+                  <SelectTrigger className="h-8 w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="support">Support (read-only)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              {(member.role !== "super_admin" || member.is_you) && (
+                <Button size="sm" variant="outline" onClick={() => removeMember(member)}>
+                  Remove
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-border p-4">
+        <p className="font-medium">Add someone</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          They need a Jaylor account already, under the email they signed up with.
+        </p>
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <div className="min-w-[200px] flex-1 space-y-1">
+            <Label htmlFor="team-email">Email</Label>
+            <Input
+              id="team-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="colleague@example.com"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Role</Label>
+            <Select value={role} onValueChange={(value) => setRole(value as "admin" | "support")}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="support">Support (read-only)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={addMember} disabled={busy}>
+            {busy ? "Adding..." : "Add"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
