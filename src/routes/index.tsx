@@ -208,9 +208,7 @@ function Home() {
                 </Link>
               </Button>
             </div>
-            <p className="mt-5 text-xs text-foreground/50">
-              Free for small shops. No card required.
-            </p>
+            <p className="mt-5 text-xs text-foreground/50">Free to start. No card required.</p>
             <a
               href="#workroom"
               className="mt-3 inline-block text-[11px] uppercase text-foreground/50 transition-colors hover:text-gold"
