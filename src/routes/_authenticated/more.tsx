@@ -19,6 +19,7 @@ import {
   Gift,
   LifeBuoy,
   LogOut,
+  Calculator,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
@@ -64,6 +65,12 @@ const ITEMS: {
     icon: Users2,
     tier: "Growth",
     feature: "group_orders",
+  },
+  {
+    label: "Quotations",
+    hint: "Quote a customer, then convert to a sale",
+    icon: Calculator,
+    tier: "Growth",
   },
   {
     label: "Contracts",
@@ -164,6 +171,15 @@ function More() {
             if (label === "Group events") {
               return (
                 <Link key={label} to="/events">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Quotations") {
+              return (
+                <Link key={label} to="/quotations">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

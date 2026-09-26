@@ -38,6 +38,7 @@ import { Route as AuthenticatedMomentsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedMoreRouteImport } from './routes/_authenticated/more'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
+import { Route as AuthenticatedQuotationsRouteImport } from './routes/_authenticated/quotations'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
@@ -47,6 +48,7 @@ import { Route as ETokenRouteImport } from './routes/e.$token'
 import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as PassportTokenRouteImport } from './routes/passport.$token'
+import { Route as QTokenRouteImport } from './routes/q.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
@@ -54,6 +56,7 @@ import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events/$eventId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
+import { Route as AuthenticatedQuotationsQuoteIdRouteImport } from './routes/_authenticated/quotations.$quoteId'
 import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
@@ -203,6 +206,11 @@ const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedQuotationsRoute = AuthenticatedQuotationsRouteImport.update({
+  id: '/quotations',
+  path: '/quotations',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
   id: '/reports',
   path: '/reports',
@@ -248,6 +256,11 @@ const PassportTokenRoute = PassportTokenRouteImport.update({
   path: '/passport/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const QTokenRoute = QTokenRouteImport.update({
+  id: '/q/$token',
+  path: '/q/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StyleTokenRoute = StyleTokenRouteImport.update({
   id: '/style/$token',
   path: '/style/$token',
@@ -288,6 +301,12 @@ const AuthenticatedOrdersOrderIdRoute =
     id: '/orders/$orderId',
     path: '/orders/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedQuotationsQuoteIdRoute =
+  AuthenticatedQuotationsQuoteIdRouteImport.update({
+    id: '/$quoteId',
+    path: '/$quoteId',
+    getParentRoute: () => AuthenticatedQuotationsRoute,
   } as any)
 const AdminStoresStoreIdRoute = AdminStoresStoreIdRouteImport.update({
   id: '/stores/$storeId',
@@ -335,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/more': typeof AuthenticatedMoreRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
@@ -344,10 +364,12 @@ export interface FileRoutesByFullPath {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
@@ -384,6 +406,7 @@ export interface FileRoutesByTo {
   '/more': typeof AuthenticatedMoreRoute
   '/payments': typeof AuthenticatedPaymentsRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
+  '/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
@@ -393,10 +416,12 @@ export interface FileRoutesByTo {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
@@ -435,6 +460,7 @@ export interface FileRoutesById {
   '/_authenticated/more': typeof AuthenticatedMoreRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
+  '/_authenticated/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
@@ -444,10 +470,12 @@ export interface FileRoutesById {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
+  '/_authenticated/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
@@ -486,6 +514,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/payments'
     | '/privacy'
+    | '/quotations'
     | '/reports'
     | '/shop'
     | '/staff'
@@ -495,10 +524,12 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/q/$token'
     | '/style/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
+    | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
     | '/fitcheck/$orderId/$clientId'
     | '/clients/'
@@ -535,6 +566,7 @@ export interface FileRouteTypes {
     | '/more'
     | '/payments'
     | '/privacy'
+    | '/quotations'
     | '/reports'
     | '/shop'
     | '/staff'
@@ -544,10 +576,12 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/q/$token'
     | '/style/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
+    | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
     | '/fitcheck/$orderId/$clientId'
     | '/clients'
@@ -585,6 +619,7 @@ export interface FileRouteTypes {
     | '/_authenticated/more'
     | '/_authenticated/payments'
     | '/_authenticated/privacy'
+    | '/_authenticated/quotations'
     | '/_authenticated/reports'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
@@ -594,10 +629,12 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/q/$token'
     | '/style/$token'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
+    | '/_authenticated/quotations/$quoteId'
     | '/admin/stores/$storeId'
     | '/fitcheck/$orderId/$clientId'
     | '/_authenticated/clients/'
@@ -633,6 +670,7 @@ export interface RootRouteChildren {
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   PassportTokenRoute: typeof PassportTokenRoute
+  QTokenRoute: typeof QTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
@@ -843,6 +881,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPrivacyRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quotations': {
+      id: '/_authenticated/quotations'
+      path: '/quotations'
+      fullPath: '/quotations'
+      preLoaderRoute: typeof AuthenticatedQuotationsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/reports': {
       id: '/_authenticated/reports'
       path: '/reports'
@@ -906,6 +951,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PassportTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/q/$token': {
+      id: '/q/$token'
+      path: '/q/$token'
+      fullPath: '/q/$token'
+      preLoaderRoute: typeof QTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/style/$token': {
       id: '/style/$token'
       path: '/style/$token'
@@ -955,6 +1007,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quotations/$quoteId': {
+      id: '/_authenticated/quotations/$quoteId'
+      path: '/$quoteId'
+      fullPath: '/quotations/$quoteId'
+      preLoaderRoute: typeof AuthenticatedQuotationsQuoteIdRouteImport
+      parentRoute: typeof AuthenticatedQuotationsRoute
+    }
     '/admin/stores/$storeId': {
       id: '/admin/stores/$storeId'
       path: '/stores/$storeId'
@@ -979,6 +1038,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedQuotationsRouteChildren {
+  AuthenticatedQuotationsQuoteIdRoute: typeof AuthenticatedQuotationsQuoteIdRoute
+}
+
+const AuthenticatedQuotationsRouteChildren: AuthenticatedQuotationsRouteChildren =
+  {
+    AuthenticatedQuotationsQuoteIdRoute: AuthenticatedQuotationsQuoteIdRoute,
+  }
+
+const AuthenticatedQuotationsRouteWithChildren =
+  AuthenticatedQuotationsRoute._addFileChildren(
+    AuthenticatedQuotationsRouteChildren,
+  )
+
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiDesignsRoute: typeof AuthenticatedAiDesignsRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
@@ -989,6 +1062,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedMoreRoute: typeof AuthenticatedMoreRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
   AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
+  AuthenticatedQuotationsRoute: typeof AuthenticatedQuotationsRouteWithChildren
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
@@ -1010,6 +1084,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedMoreRoute: AuthenticatedMoreRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
   AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
+  AuthenticatedQuotationsRoute: AuthenticatedQuotationsRouteWithChildren,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
@@ -1061,6 +1136,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   PassportTokenRoute: PassportTokenRoute,
+  QTokenRoute: QTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
