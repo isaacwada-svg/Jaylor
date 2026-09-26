@@ -61,6 +61,18 @@
   --color-chart-3: var(--chart-3);
   --color-chart-4: var(--chart-4);
   --color-chart-5: var(--chart-5);
+
+  /* Categorical data-viz palette (fixed order): gold, blue, green, orange, plum.
+     Distinct from --chart-1..5 above (which are UI/brand tokens reused for
+     2-series comparisons like revenue-vs-expenses) -- these five are tuned and
+     validated as chart marks for 3+ category series (lightness band, chroma
+     floor, CVD separation, contrast vs surface; see dataviz skill). Always
+     pair with direct labels/legend, never color alone. */
+  --color-viz-1: var(--viz-1);
+  --color-viz-2: var(--viz-2);
+  --color-viz-3: var(--viz-3);
+  --color-viz-4: var(--viz-4);
+  --color-viz-5: var(--viz-5);
   --color-sidebar: var(--sidebar);
   --color-sidebar-foreground: var(--sidebar-foreground);
   --color-sidebar-primary: var(--sidebar-primary);
@@ -111,6 +123,13 @@
   --chart-3: var(--owed);
   --chart-4: var(--ink);
   --chart-5: oklch(0.72 0.05 290);
+
+  /* Validated categorical mark colors (light) -- fixed order, see dataviz skill. */
+  --viz-1: oklch(0.64 0.15 91.06); /* gold */
+  --viz-2: oklch(0.52 0.13 261.8); /* blue */
+  --viz-3: oklch(0.58 0.145 162); /* green */
+  --viz-4: oklch(0.53 0.138 42); /* orange */
+  --viz-5: oklch(0.6 0.15 328); /* plum */
 
   --sidebar: var(--surface);
   --sidebar-foreground: var(--ink);
@@ -239,6 +258,14 @@
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: oklch(0.3 0.04 287);
   --sidebar-ring: var(--gold);
+
+  /* Validated categorical mark colors (dark) -- own step per color, not an
+     automatic flip of the light set; validated against this mode's card surface. */
+  --viz-1: oklch(0.66 0.15 91.06);
+  --viz-2: oklch(0.62 0.12 261.8);
+  --viz-3: oklch(0.62 0.14 162);
+  --viz-4: oklch(0.63 0.14 42);
+  --viz-5: oklch(0.66 0.14 328);
 }
 
 @layer base {

@@ -29,7 +29,7 @@ import { Label } from "@/components/ui/label";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { formatMoney, orderStatusLabel, planCodeToTier } from "@/lib/jaylor";
-import { getErrorMessage } from "@/lib/utils";
+import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/admin/stores/$storeId")({
   staticData: { sitemap: false },
@@ -39,10 +39,19 @@ export const Route = createFileRoute("/admin/stores/$storeId")({
 });
 
 // Admin RPCs aren't in the generated Database types yet, same as admin.tsx.
-const rpcAdmin = supabase.rpc as unknown as (
+// Must stay a call on `supabase` itself, not a bare extracted reference --
+// supabase.rpc() is a normal method that reads `this.rest` internally, so
+// aliasing it directly (`const x = supabase.rpc`) and calling `x(...)` loses
+// that binding and throws "Cannot read properties of undefined (reading 'rest')".
+function rpcAdmin(
   fn: string,
   args: Record<string, unknown>,
-) => Promise<{ data: unknown; error: { message: string } | null }>;
+): Promise<{ data: unknown; error: { message: string } | null }> {
+  return supabase.rpc(fn as never, args as never) as unknown as Promise<{
+    data: unknown;
+    error: { message: string } | null;
+  }>;
+}
 // clients/orders/payments/store_members are typed tables, but the new
 // platform_admin_select_* RLS policies aren't reflected until types.ts is
 // regenerated -- narrow cast at the query boundary, same pattern used for
@@ -100,6 +109,14 @@ type PaymentRow = {
   voided: boolean;
 };
 
+type StoreHealth = {
+  last_order_at: string | null;
+  last_payment_at: string | null;
+  orders_7d: number;
+  messages_sent_7d: number;
+  messages_failed_7d: number;
+};
+
 function useAdminGate() {
   const navigate = useNavigate();
   const [authChecked, setAuthChecked] = useState(false);
@@ -126,12 +143,26 @@ function useAdminGate() {
     },
   });
 
-  return { ready: authChecked && !adminCheckLoading, isAdmin: !!isAdmin };
+  const { data: role } = useQuery({
+    queryKey: ["admin-my-role"],
+    enabled: signedIn && !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_my_role", {});
+      if (error) throw error;
+      return data as string | null;
+    },
+  });
+
+  return {
+    ready: authChecked && !adminCheckLoading,
+    isAdmin: !!isAdmin,
+    isSuperAdmin: role === "super_admin",
+  };
 }
 
 function StoreDetail() {
   const { storeId } = Route.useParams();
-  const { ready, isAdmin } = useAdminGate();
+  const { ready, isAdmin, isSuperAdmin } = useAdminGate();
 
   if (!ready) return <div className="min-h-screen bg-background" />;
 
@@ -146,13 +177,16 @@ function StoreDetail() {
     );
   }
 
-  return <StoreDetailContent storeId={storeId} />;
+  return <StoreDetailContent storeId={storeId} isSuperAdmin={isSuperAdmin} />;
 }
 
-function StoreDetailContent({ storeId }: { storeId: string }) {
+function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSuperAdmin: boolean }) {
   const queryClient = useQueryClient();
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [trialDialogOpen, setTrialDialogOpen] = useState(false);
+  const [supportDialogOpen, setSupportDialogOpen] = useState(false);
+  const [supportReason, setSupportReason] = useState("");
+  const [startingSupport, setStartingSupport] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState("");
   const [trialDays, setTrialDays] = useState("30");
   const [busy, setBusy] = useState(false);
@@ -203,9 +237,41 @@ function StoreDetailContent({ storeId }: { storeId: string }) {
     },
   });
 
+  const { data: health } = useQuery({
+    queryKey: ["admin-store-health", storeId],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_store_health", { p_store_id: storeId });
+      if (error) throw error;
+      return data as unknown as StoreHealth;
+    },
+  });
+
   function refresh() {
     queryClient.invalidateQueries({ queryKey: ["admin-store-detail", storeId] });
     queryClient.invalidateQueries({ queryKey: ["admin-stores"] });
+  }
+
+  async function startSupportSession() {
+    if (!supportReason.trim()) {
+      toast.error("Enter a reason for this support session");
+      return;
+    }
+    setStartingSupport(true);
+    try {
+      const { data, error } = await supabase.functions.invoke("admin-impersonate-store", {
+        body: { storeId, reason: supportReason.trim() },
+      });
+      if (error) throw error;
+      const result = (data as { result: { action_link: string } }).result;
+      window.open(result.action_link, "_blank", "noopener,noreferrer");
+      toast.success("Support session opened in a new tab — it expires in 15 minutes");
+      setSupportDialogOpen(false);
+      setSupportReason("");
+    } catch (err) {
+      toast.error(await getFunctionErrorMessage(err, "Could not start a support session"));
+    } finally {
+      setStartingSupport(false);
+    }
   }
 
   async function savePlan() {
@@ -342,6 +408,11 @@ function StoreDetailContent({ storeId }: { storeId: string }) {
               <Button size="sm" variant="outline" onClick={toggleActive} disabled={busy}>
                 {data.store.is_active ? "Deactivate store" : "Reactivate store"}
               </Button>
+              {isSuperAdmin && (
+                <Button size="sm" variant="outline" onClick={() => setSupportDialogOpen(true)}>
+                  Support login
+                </Button>
+              )}
             </div>
 
             <StitchDivider className="my-6" />
@@ -355,6 +426,32 @@ function StoreDetailContent({ storeId }: { storeId: string }) {
               <Stat label="Collected" value={formatMoney(data.totals.collected_total)} />
               <Stat label="Outstanding" value={formatMoney(data.totals.outstanding_total)} />
             </div>
+
+            {health && (
+              <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                <Stat
+                  label="Last order"
+                  value={
+                    health.last_order_at
+                      ? new Date(health.last_order_at).toLocaleDateString()
+                      : "Never"
+                  }
+                />
+                <Stat
+                  label="Last payment"
+                  value={
+                    health.last_payment_at
+                      ? new Date(health.last_payment_at).toLocaleDateString()
+                      : "Never"
+                  }
+                />
+                <Stat label="Orders (7d)" value={String(health.orders_7d)} />
+                <Stat
+                  label="Messages (7d)"
+                  value={`${health.messages_sent_7d} sent${health.messages_failed_7d > 0 ? ` · ${health.messages_failed_7d} failed` : ""}`}
+                />
+              </div>
+            )}
 
             <h2 className="mt-8 text-xl">Owner</h2>
             <Card className="mt-3 rounded-2xl">
@@ -499,6 +596,38 @@ function StoreDetailContent({ storeId }: { storeId: string }) {
           <DialogFooter>
             <Button onClick={extendTrial} disabled={busy} className="w-full">
               {busy ? "Saving..." : "Extend"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={supportDialogOpen} onOpenChange={setSupportDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Start a support session</DialogTitle>
+            <DialogDescription>
+              Opens this store&apos;s real app in a new tab, signed in as its owner, for 15 minutes.
+              This is logged in the store&apos;s audit trail, visible to the owner under Privacy and
+              data.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Label htmlFor="support-reason">Reason</Label>
+            <Input
+              id="support-reason"
+              value={supportReason}
+              onChange={(e) => setSupportReason(e.target.value)}
+              placeholder="e.g. Debugging a payment link issue reported by the owner"
+              autoFocus
+            />
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={startSupportSession}
+              disabled={startingSupport || !supportReason.trim()}
+              className="w-full"
+            >
+              {startingSupport ? "Starting..." : "Start support session"}
             </Button>
           </DialogFooter>
         </DialogContent>

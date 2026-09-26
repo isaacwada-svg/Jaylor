@@ -41,6 +41,54 @@ import { useStore } from "@/lib/store-context";
 import { useFeatureDiscovery, type DiscoveryFeature } from "@/lib/feature-discovery";
 import { cn } from "@/lib/utils";
 import { initOutboxSync } from "@/lib/offline/outbox";
+import { supabase } from "@/integrations/supabase/client";
+
+const IMPERSONATION_KEY = "jaylor_support_session";
+
+/** Picks up the ?impersonating=1 flag a support-login link lands on, and remembers it
+ *  for the rest of this tab's session so the warning banner survives navigation. */
+function useImpersonationSession() {
+  const [session, setSession] = useState<{ store: string } | null>(() => {
+    try {
+      const raw = sessionStorage.getItem(IMPERSONATION_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("impersonating") !== "1") return;
+    const next = { store: params.get("store") ?? "this store" };
+    try {
+      sessionStorage.setItem(IMPERSONATION_KEY, JSON.stringify(next));
+    } catch {
+      // ignore storage failures
+    }
+    setSession(next);
+    params.delete("impersonating");
+    params.delete("support_admin");
+    params.delete("store");
+    const cleanSearch = params.toString();
+    window.history.replaceState(
+      null,
+      "",
+      window.location.pathname + (cleanSearch ? `?${cleanSearch}` : ""),
+    );
+  }, []);
+
+  function end() {
+    try {
+      sessionStorage.removeItem(IMPERSONATION_KEY);
+    } catch {
+      // ignore storage failures
+    }
+    setSession(null);
+  }
+
+  return { session, end };
+}
 
 const NAV = [
   { to: "/", label: "Home", icon: Home },
@@ -64,8 +112,15 @@ export function AppShell({ children }: { children: ReactNode }) {
   const tier = effectiveTier(currentStore);
   const canManageOrders = currentRole === "owner" || currentRole === "manager";
   const discovery = useFeatureDiscovery();
+  const { session: supportSession, end: endSupportSession } = useImpersonationSession();
 
   useEffect(() => initOutboxSync(), []);
+
+  async function exitSupportSession() {
+    endSupportSession();
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  }
 
   const newActions: {
     label: string;
@@ -94,6 +149,21 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="linen min-h-screen bg-background">
+      {supportSession && (
+        <div className="sticky top-0 z-50 flex flex-wrap items-center justify-between gap-2 bg-owed px-4 py-2 text-xs font-medium text-white">
+          <span>
+            Support view — signed in as the owner of {supportSession.store}. This session expires
+            automatically and is logged in that store&apos;s audit trail.
+          </span>
+          <button
+            type="button"
+            className="shrink-0 underline underline-offset-2"
+            onClick={exitSupportSession}
+          >
+            Exit support view
+          </button>
+        </div>
+      )}
       <OfflineBanner storeId={currentStore?.id} />
       <div className="flex">
         {/* Desktop sidebar */}

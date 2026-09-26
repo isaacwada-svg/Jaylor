@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -19,10 +19,35 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { formatMoney, planCodeToTier } from "@/lib/jaylor";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { getErrorMessage } from "@/lib/utils";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
+
+function compactMoney(n: number) {
+  return new Intl.NumberFormat("en-NG", { notation: "compact", maximumFractionDigits: 1 }).format(
+    n,
+  );
+}
+
+// Fixed-order categorical marks, validated for lightness/chroma/CVD-separation/
+// contrast against both chart surfaces -- see src/styles.css.
+const VIZ_COLORS = [
+  "var(--color-viz-1)",
+  "var(--color-viz-2)",
+  "var(--color-viz-3)",
+  "var(--color-viz-4)",
+  "var(--color-viz-5)",
+];
 
 export const Route = createFileRoute("/admin")({
   staticData: { sitemap: false },
@@ -61,10 +86,19 @@ type PlatformTotals = {
 };
 
 // Admin RPCs that exist in the database but aren't in the generated Database types yet.
-const rpcAdmin = supabase.rpc as unknown as (
+// Must stay a call on `supabase` itself, not a bare extracted reference --
+// supabase.rpc() is a normal method that reads `this.rest` internally, so
+// aliasing it directly (`const x = supabase.rpc`) and calling `x(...)` loses
+// that binding and throws "Cannot read properties of undefined (reading 'rest')".
+function rpcAdmin(
   fn: string,
   args: Record<string, unknown>,
-) => Promise<{ data: unknown; error: { message: string } | null }>;
+): Promise<{ data: unknown; error: { message: string } | null }> {
+  return supabase.rpc(fn as never, args as never) as unknown as Promise<{
+    data: unknown;
+    error: { message: string } | null;
+  }>;
+}
 
 type PlanRow = {
   code: string;
@@ -88,6 +122,96 @@ type AuditRow = {
   entity_id: string | null;
   metadata: Record<string, unknown>;
   created_at: string;
+};
+
+type TeamMember = {
+  user_id: string;
+  email: string | null;
+  full_name: string | null;
+  role: "super_admin" | "admin" | "support";
+  label: string | null;
+  created_at: string;
+  is_you: boolean;
+};
+
+type LiveBoardStats = {
+  active_stores: number;
+  sales_30d: number;
+  sales_today: number;
+  avg_order_value_30d: number;
+  new_stores_30d: number;
+  stores_on_trial: number;
+  stores_converted: number;
+  stores_inactive: number;
+};
+
+type RevenuePoint = { day: string; amount: number };
+type TopStore = { store_id: string; store_name: string; amount: number };
+
+type SearchResults = {
+  stores: { id: string; name: string; slug: string; city: string | null }[];
+  clients: {
+    id: string;
+    full_name: string;
+    phone: string;
+    store_id: string;
+    store_name: string;
+  }[];
+  orders: {
+    id: string;
+    number: string;
+    garment_type: string;
+    store_id: string;
+    store_name: string;
+    created_at: string;
+  }[];
+  payments: {
+    id: string;
+    amount: number;
+    reference: string | null;
+    store_id: string;
+    store_name: string;
+    paid_at: string;
+  }[];
+};
+
+type PlatformHealth = {
+  errors_last_hour: number;
+  errors_last_24h: number;
+  webhook_total_24h: number;
+  webhook_failed_24h: number;
+  signups_24h: number;
+  orders_24h: number;
+  payments_24h: number;
+  active_stores: number;
+  inactive_stores: number;
+  last_rls_check: { ok: boolean; checked_at: string } | null;
+};
+
+type BillingEvent =
+  | {
+      kind: "payment";
+      store_id: string;
+      store_name: string;
+      plan_code: string;
+      amount: number;
+      status: string;
+      reference: string | null;
+      event_at: string;
+    }
+  | {
+      kind: "plan_change";
+      store_id: string;
+      store_name: string;
+      from_plan: string | null;
+      to_plan: string;
+      event_at: string;
+    };
+
+type RecentErrors = {
+  since: string;
+  function_errors: { id: string; message: string; status: number; created_at: string }[];
+  webhook_errors: { id: string; event: string; processing_error: string; received_at: string }[];
 };
 
 type AnalyticsData = {
@@ -144,6 +268,18 @@ function Admin() {
     },
   });
 
+  const { data: myRole } = useQuery({
+    queryKey: ["admin-my-role"],
+    enabled: signedIn && !!isAdmin,
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_my_role", {});
+      if (error) throw error;
+      return data as string | null;
+    },
+  });
+  const isSuperAdmin = myRole === "super_admin";
+  const isReadOnly = myRole === "support";
+
   if (!authChecked || adminCheckLoading) {
     return <div className="min-h-screen bg-background" />;
   }
@@ -182,30 +318,44 @@ function Admin() {
         <Tabs defaultValue="overview">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="search">Search</TabsTrigger>
+            <TabsTrigger value="health">Health</TabsTrigger>
             <TabsTrigger value="analytics">Analytics</TabsTrigger>
             <TabsTrigger value="plans">Plans</TabsTrigger>
+            <TabsTrigger value="billing">Billing</TabsTrigger>
             <TabsTrigger value="messaging">Messaging</TabsTrigger>
             <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
+            <TabsTrigger value="errors">Errors</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
+            {isSuperAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
             <OverviewTab />
           </TabsContent>
+          <TabsContent value="search" className="mt-6">
+            <SearchTab />
+          </TabsContent>
+          <TabsContent value="health" className="mt-6">
+            <HealthTab />
+          </TabsContent>
           <TabsContent value="analytics" className="mt-6">
             <AnalyticsTab />
           </TabsContent>
           <TabsContent value="plans" className="mt-6">
-            <PlansTab />
+            <PlansTab readOnly={isReadOnly} />
+          </TabsContent>
+          <TabsContent value="billing" className="mt-6">
+            <BillingTab />
           </TabsContent>
           <TabsContent value="messaging" className="mt-6">
             <MessagingTab />
           </TabsContent>
 
           <TabsContent value="ai-usage" className="mt-6">
-            <AiUsageTab />
+            <AiUsageTab readOnly={isReadOnly} />
           </TabsContent>
           <TabsContent value="leads" className="mt-6">
             <LeadsTab />
@@ -213,9 +363,17 @@ function Admin() {
           <TabsContent value="audit" className="mt-6">
             <AuditTab />
           </TabsContent>
+          <TabsContent value="errors" className="mt-6">
+            <ErrorsTab />
+          </TabsContent>
           <TabsContent value="security" className="mt-6">
             <SecurityTab />
           </TabsContent>
+          {isSuperAdmin && (
+            <TabsContent value="team" className="mt-6">
+              <TeamTab />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </main>
@@ -363,6 +521,259 @@ function AnalyticsTab() {
   );
 }
 
+function LiveBoard({
+  stats,
+  stores,
+}: {
+  stats: Stats | undefined;
+  stores: StoreRow[] | undefined;
+}) {
+  const { data: board, isLoading: boardLoading } = useQuery({
+    queryKey: ["admin-live-board-stats"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_live_board_stats", {});
+      if (error) throw error;
+      return data as unknown as LiveBoardStats;
+    },
+    refetchInterval: 60_000,
+  });
+
+  const { data: revenueSeries, isLoading: revenueLoading } = useQuery({
+    queryKey: ["admin-revenue-series"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_revenue_series", { p_days: 30 });
+      if (error) throw error;
+      return data as unknown as RevenuePoint[];
+    },
+  });
+
+  const { data: topStores, isLoading: topStoresLoading } = useQuery({
+    queryKey: ["admin-top-stores"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_top_stores_by_revenue", {
+        p_days: 30,
+        p_limit: 5,
+      });
+      if (error) throw error;
+      return data as unknown as TopStore[];
+    },
+  });
+
+  const recentSignups = [...(stores ?? [])]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
+  const planEntries = Object.entries(stats?.stores_by_plan ?? {});
+  const revenueChartData = (revenueSeries ?? []).map((p) => ({
+    day: new Date(p.day).toLocaleDateString(undefined, { day: "numeric", month: "short" }),
+    amount: p.amount,
+  }));
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-xl">Live board</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Last 30 days, refreshes every minute.
+          </p>
+        </div>
+        <Badge className="border-paid/40 bg-paid/10 text-paid">Live</Badge>
+      </div>
+
+      {boardLoading || !board ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-2xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <Stat label="Active stores" value={String(board.active_stores)} />
+          <Stat label="Sales, last 30 days" value={formatMoney(board.sales_30d)} />
+          <Stat label="Avg order value" value={formatMoney(board.avg_order_value_30d)} />
+          <Stat label="Sales today" value={formatMoney(board.sales_today)} />
+          <Stat label="New stores, 30 days" value={String(board.new_stores_30d)} />
+        </div>
+      )}
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Top stores, last 30 days</p>
+            {topStoresLoading ? (
+              <div className="mt-3 space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 rounded-lg" />
+                ))}
+              </div>
+            ) : !topStores || topStores.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No sales yet.</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {topStores.map((s, i) => (
+                  <Link
+                    key={s.store_id}
+                    to="/admin/stores/$storeId"
+                    params={{ storeId: s.store_id }}
+                    className="flex items-center justify-between gap-3 rounded-lg px-1 py-1 text-sm hover:bg-accent/40"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-xs text-muted-foreground">
+                        {i + 1}
+                      </span>
+                      <span className="truncate">{s.store_name}</span>
+                    </span>
+                    <span className="figures shrink-0 text-paid">{formatMoney(s.amount)}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl lg:col-span-2">
+          <CardContent className="p-5">
+            <p className="font-medium">Revenue, last 30 days</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Confirmed payments per day</p>
+            {revenueLoading ? (
+              <Skeleton className="mt-3 h-48 rounded-xl" />
+            ) : (
+              <ChartContainer
+                config={{ amount: { label: "Revenue", color: "var(--color-viz-1)" } }}
+                className="mt-3 h-48 w-full"
+              >
+                <AreaChart data={revenueChartData}>
+                  <defs>
+                    <linearGradient id="admin-revenue-fill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-amount)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--color-amount)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="day"
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={48}
+                    tickFormatter={(v: number) => compactMoney(v)}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="var(--color-amount)"
+                    strokeWidth={2}
+                    fill="url(#admin-revenue-fill)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Recent signups</p>
+            {!stores ? (
+              <div className="mt-3 space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 rounded-lg" />
+                ))}
+              </div>
+            ) : recentSignups.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No signups yet.</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {recentSignups.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate">{s.name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(s.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Store lifecycle</p>
+            {!board ? (
+              <Skeleton className="mt-3 h-24 rounded-xl" />
+            ) : (
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">On trial</span>
+                  <span className="figures">{board.stores_on_trial}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Converted to paid</span>
+                  <span className="figures">{board.stores_converted}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Inactive</span>
+                  <span className="figures">{board.stores_inactive}</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Stores by plan</p>
+            {!stats || planEntries.length === 0 ? (
+              <Skeleton className="mt-3 h-24 rounded-xl" />
+            ) : (
+              <div className="mt-2 flex items-center gap-4">
+                <ChartContainer config={{}} className="aspect-square h-28 w-28 shrink-0">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <Pie
+                      data={planEntries.map(([plan, count]) => ({ name: plan, value: count }))}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius="60%"
+                      outerRadius="100%"
+                      strokeWidth={2}
+                    >
+                      {planEntries.map(([plan], i) => (
+                        <Cell key={plan} fill={VIZ_COLORS[i % VIZ_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+                <div className="space-y-1.5 text-sm">
+                  {planEntries.map(([plan, count], i) => (
+                    <div key={plan} className="flex items-center gap-2">
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: VIZ_COLORS[i % VIZ_COLORS.length] }}
+                      />
+                      <span className="text-muted-foreground">{planCodeToTier(plan)}</span>
+                      <span className="figures ml-auto font-medium">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 function OverviewTab() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-stats"],
@@ -393,6 +804,9 @@ function OverviewTab() {
 
   return (
     <div>
+      <LiveBoard stats={stats} stores={stores} />
+
+      <h2 className="mt-10 text-xl">Growth details</h2>
       {statsLoading || totalsLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -425,7 +839,7 @@ function OverviewTab() {
         </div>
       )}
 
-      <h2 className="mt-8 text-xl">Stores</h2>
+      <h2 className="mt-8 text-xl">All stores</h2>
       {storesLoading ? (
         <div className="mt-3 space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -473,7 +887,7 @@ function Stat({ label, value }: { label: string; value: string }) {
   );
 }
 
-function PlansTab() {
+function PlansTab({ readOnly }: { readOnly: boolean }) {
   const queryClient = useQueryClient();
   const [editingPlan, setEditingPlan] = useState<PlanRow | null>(null);
   const [priceMonthly, setPriceMonthly] = useState("");
@@ -542,9 +956,11 @@ function PlansTab() {
               {plan.price_quarterly ? ` · ${formatMoney(plan.price_quarterly)}/quarter` : ""}
             </p>
           </div>
-          <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
-            Edit
-          </Button>
+          {!readOnly && (
+            <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
+              Edit
+            </Button>
+          )}
         </div>
       ))}
 
@@ -625,7 +1041,7 @@ type AiRateLimitedStore = {
   daily_limit: number;
 };
 
-function AiBudgetPanel() {
+function AiBudgetPanel({ readOnly }: { readOnly: boolean }) {
   const queryClient = useQueryClient();
   const [budgetInput, setBudgetInput] = useState("");
   const [savingBudget, setSavingBudget] = useState(false);
@@ -703,21 +1119,27 @@ function AiBudgetPanel() {
           </p>
         </div>
       </div>
-      <div className="flex items-end gap-2">
-        <div className="flex-1 space-y-1">
-          <Label htmlFor="ai-budget-input">Set monthly budget (USD)</Label>
-          <Input
-            id="ai-budget-input"
-            inputMode="decimal"
-            placeholder={status.budget_usd.toFixed(0)}
-            value={budgetInput}
-            onChange={(e) => setBudgetInput(e.target.value)}
-          />
+      {readOnly ? (
+        <p className="text-xs text-muted-foreground">
+          Read-only access — ask a super admin to change the budget.
+        </p>
+      ) : (
+        <div className="flex items-end gap-2">
+          <div className="flex-1 space-y-1">
+            <Label htmlFor="ai-budget-input">Set monthly budget (USD)</Label>
+            <Input
+              id="ai-budget-input"
+              inputMode="decimal"
+              placeholder={status.budget_usd.toFixed(0)}
+              value={budgetInput}
+              onChange={(e) => setBudgetInput(e.target.value)}
+            />
+          </div>
+          <Button onClick={saveBudget} disabled={savingBudget || !budgetInput.trim()}>
+            {savingBudget ? "Saving..." : "Save"}
+          </Button>
         </div>
-        <Button onClick={saveBudget} disabled={savingBudget || !budgetInput.trim()}>
-          {savingBudget ? "Saving..." : "Save"}
-        </Button>
-      </div>
+      )}
       {rateLimited && rateLimited.length > 0 && (
         <div className="space-y-2 border-t border-border pt-4">
           <p className="text-xs text-muted-foreground">Currently rate-limited shops</p>
@@ -738,7 +1160,7 @@ function AiBudgetPanel() {
   );
 }
 
-function AiUsageTab() {
+function AiUsageTab({ readOnly }: { readOnly: boolean }) {
   const { data: rows, isLoading } = useQuery({
     queryKey: ["admin-ai-usage"],
     queryFn: async () => {
@@ -750,7 +1172,7 @@ function AiUsageTab() {
 
   return (
     <div className="space-y-4">
-      <AiBudgetPanel />
+      <AiBudgetPanel readOnly={readOnly} />
       <AiUsageRows rows={rows} isLoading={isLoading} />
     </div>
   );
@@ -1204,6 +1626,525 @@ function SecurityTab() {
           )}
         </div>
       )}
+    </div>
+  );
+}
+
+function SearchSection({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <div>
+      <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+        {title}
+      </p>
+      <div className="space-y-2">{children}</div>
+    </div>
+  );
+}
+
+function SearchTab() {
+  const [query, setQuery] = useState("");
+  const [submitted, setSubmitted] = useState("");
+
+  const { data, isLoading, isFetching } = useQuery({
+    queryKey: ["admin-search", submitted],
+    enabled: submitted.trim().length >= 2,
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_search", { p_query: submitted.trim() });
+      if (error) throw error;
+      return data as unknown as SearchResults;
+    },
+  });
+
+  function submit(event: React.FormEvent) {
+    event.preventDefault();
+    setSubmitted(query);
+  }
+
+  const hasResults =
+    !!data &&
+    (data.stores.length > 0 ||
+      data.clients.length > 0 ||
+      data.orders.length > 0 ||
+      data.payments.length > 0);
+
+  return (
+    <div className="space-y-6">
+      <form onSubmit={submit} className="flex gap-2">
+        <Input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Shop name, client name/phone, order number, or payment reference"
+        />
+        <Button type="submit" disabled={query.trim().length < 2}>
+          Search
+        </Button>
+      </form>
+
+      {isLoading || isFetching ? (
+        <div className="space-y-2">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 rounded-xl" />
+          ))}
+        </div>
+      ) : submitted.trim().length < 2 ? (
+        <p className="text-sm text-muted-foreground">Enter at least 2 characters to search.</p>
+      ) : !hasResults ? (
+        <p className="text-sm text-muted-foreground">
+          No matches across stores, clients, orders or payments.
+        </p>
+      ) : (
+        <div className="space-y-6">
+          {data!.stores.length > 0 && (
+            <SearchSection title="Stores">
+              {data!.stores.map((s) => (
+                <Link
+                  key={s.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: s.id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">{s.name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    jaylor.ng/{s.slug} {s.city ? `· ${s.city}` : ""}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+          {data!.clients.length > 0 && (
+            <SearchSection title="Clients">
+              {data!.clients.map((c) => (
+                <Link
+                  key={c.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: c.store_id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">{c.full_name}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {c.phone} · {c.store_name}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+          {data!.orders.length > 0 && (
+            <SearchSection title="Orders">
+              {data!.orders.map((o) => (
+                <Link
+                  key={o.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: o.store_id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">
+                    {o.number} · {o.garment_type}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {o.store_name} · {new Date(o.created_at).toLocaleDateString()}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+          {data!.payments.length > 0 && (
+            <SearchSection title="Payments">
+              {data!.payments.map((p) => (
+                <Link
+                  key={p.id}
+                  to="/admin/stores/$storeId"
+                  params={{ storeId: p.store_id }}
+                  className="flex items-center justify-between rounded-xl border border-border p-3 hover:bg-accent/40"
+                >
+                  <span className="font-medium">{formatMoney(p.amount)}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {p.reference ?? "—"} · {p.store_name}
+                  </span>
+                </Link>
+              ))}
+            </SearchSection>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function HealthTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-platform-health"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_platform_health", {});
+      if (error) throw error;
+      return data as unknown as PlatformHealth;
+    },
+    refetchInterval: 60_000,
+  });
+
+  if (isLoading || !data) {
+    return (
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <Skeleton key={i} className="h-24 rounded-2xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const webhookFailRate =
+    data.webhook_total_24h > 0
+      ? Math.round((data.webhook_failed_24h / data.webhook_total_24h) * 100)
+      : 0;
+  const isHealthy = data.errors_last_hour === 0 && webhookFailRate < 10;
+
+  return (
+    <div className="space-y-6">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h2 className="text-xl">System health</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Live signals from edge function errors, WhatsApp webhook delivery, and platform
+            activity. Refreshes every minute.
+          </p>
+        </div>
+        <Badge
+          className={
+            isHealthy
+              ? "border-paid/40 bg-paid/10 text-paid"
+              : "border-owed/40 bg-owed/10 text-owed"
+          }
+        >
+          {isHealthy ? "Healthy" : "Needs attention"}
+        </Badge>
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        <Stat label="Errors (last hour)" value={String(data.errors_last_hour)} />
+        <Stat label="Errors (24h)" value={String(data.errors_last_24h)} />
+        <Stat
+          label="WhatsApp webhook failures (24h)"
+          value={`${data.webhook_failed_24h} / ${data.webhook_total_24h} (${webhookFailRate}%)`}
+        />
+        <Stat label="Signups (24h)" value={String(data.signups_24h)} />
+        <Stat label="Orders created (24h)" value={String(data.orders_24h)} />
+        <Stat label="Payments collected (24h)" value={String(data.payments_24h)} />
+        <Stat label="Active stores" value={String(data.active_stores)} />
+        <Stat label="Inactive stores" value={String(data.inactive_stores)} />
+        <Stat
+          label="Last security drift check"
+          value={
+            data.last_rls_check ? (data.last_rls_check.ok ? "Clean" : "Drift found") : "Never run"
+          }
+        />
+      </div>
+    </div>
+  );
+}
+
+function BillingTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-billing-history"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_billing_history", {
+        p_store_id: null,
+        p_limit: 200,
+      });
+      if (error) throw error;
+      return data as unknown as BillingEvent[];
+    },
+  });
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 5 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!data || data.length === 0) {
+    return (
+      <p className="text-sm text-muted-foreground">No subscription payments or plan changes yet.</p>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {data.map((event, i) => (
+        <div
+          key={i}
+          className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
+        >
+          <div>
+            <p className="font-medium">
+              {event.kind === "payment"
+                ? `${event.store_name} paid for ${planCodeToTier(event.plan_code)}`
+                : `${event.store_name} moved ${event.from_plan ? `from ${planCodeToTier(event.from_plan)} ` : ""}to ${planCodeToTier(event.to_plan)}`}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {event.kind === "payment"
+                ? `${formatMoney(event.amount)} · ${event.status}${event.reference ? ` · ${event.reference}` : ""}`
+                : "Plan change"}
+            </p>
+          </div>
+          <span className="shrink-0 text-xs text-muted-foreground">
+            {new Date(event.event_at).toLocaleString()}
+          </span>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function ErrorsTab() {
+  const { data, isLoading } = useQuery({
+    queryKey: ["admin-recent-errors"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_recent_errors", { p_hours: 24 });
+      if (error) throw error;
+      return data as unknown as RecentErrors;
+    },
+    refetchInterval: 60_000,
+  });
+
+  if (isLoading || !data) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 4 }).map((_, i) => (
+          <Skeleton key={i} className="h-14 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  const noErrors = data.function_errors.length === 0 && data.webhook_errors.length === 0;
+
+  return (
+    <div className="space-y-6">
+      <p className="text-sm text-muted-foreground">
+        Server-side (5xx) errors from edge functions, and failed WhatsApp webhook deliveries, in the
+        last 24 hours. Edge function errors are only captured going forward from when this shipped —
+        nothing before that is recorded.
+      </p>
+      {noErrors ? (
+        <p className="text-sm text-muted-foreground">No incidents in the last 24 hours.</p>
+      ) : (
+        <>
+          {data.function_errors.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                Edge function errors ({data.function_errors.length})
+              </p>
+              <div className="space-y-2">
+                {data.function_errors.map((e) => (
+                  <div
+                    key={e.id}
+                    className="rounded-xl border border-owed/40 bg-owed/5 p-3 text-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-owed/40 text-owed">
+                        {e.status}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(e.created_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-1">{e.message}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          {data.webhook_errors.length > 0 && (
+            <div>
+              <p className="mb-2 text-xs font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                WhatsApp webhook failures ({data.webhook_errors.length})
+              </p>
+              <div className="space-y-2">
+                {data.webhook_errors.map((w) => (
+                  <div
+                    key={w.id}
+                    className="rounded-xl border border-owed/40 bg-owed/5 p-3 text-sm"
+                  >
+                    <div className="flex items-center justify-between">
+                      <Badge variant="outline" className="border-owed/40 text-owed">
+                        {w.event}
+                      </Badge>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(w.received_at).toLocaleString()}
+                      </span>
+                    </div>
+                    <p className="mt-1">{w.processing_error}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
+function TeamTab() {
+  const queryClient = useQueryClient();
+  const [email, setEmail] = useState("");
+  const [role, setRole] = useState<"admin" | "support">("admin");
+  const [busy, setBusy] = useState(false);
+
+  const { data: members, isLoading } = useQuery({
+    queryKey: ["admin-team"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_list_team", {});
+      if (error) throw error;
+      return data as unknown as TeamMember[];
+    },
+  });
+
+  async function addMember() {
+    if (!email.trim()) {
+      toast.error("Enter an email address");
+      return;
+    }
+    setBusy(true);
+    try {
+      const { error } = await rpcAdmin("admin_add_team_member", {
+        p_email: email.trim(),
+        p_role: role,
+      });
+      if (error) throw error;
+      toast.success("Added to the team");
+      setEmail("");
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not add this person"));
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function changeRole(member: TeamMember, nextRole: "admin" | "support") {
+    try {
+      const { error } = await rpcAdmin("admin_update_team_role", {
+        p_user_id: member.user_id,
+        p_role: nextRole,
+      });
+      if (error) throw error;
+      toast.success("Role updated");
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update this role"));
+    }
+  }
+
+  async function removeMember(member: TeamMember) {
+    if (!window.confirm(`Remove ${member.email ?? "this person"} from the platform team?`)) return;
+    try {
+      const { error } = await rpcAdmin("admin_remove_team_member", { p_user_id: member.user_id });
+      if (error) throw error;
+      toast.success("Removed from the team");
+      queryClient.invalidateQueries({ queryKey: ["admin-team"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not remove this person"));
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-16 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-xl">Platform team</h2>
+        <p className="mt-1 text-sm text-muted-foreground">
+          Who can access this dashboard, and what they can do. A super admin&apos;s own access can
+          only be changed by that person — nobody else, including another super admin, can demote or
+          remove them.
+        </p>
+      </div>
+
+      <div className="space-y-2">
+        {(members ?? []).map((member) => (
+          <div
+            key={member.user_id}
+            className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border p-4"
+          >
+            <div className="min-w-0">
+              <p className="truncate font-medium">
+                {member.full_name || member.email || member.user_id}
+                {member.is_you && <span className="ml-2 text-xs text-muted-foreground">(you)</span>}
+              </p>
+              <p className="truncate text-xs text-muted-foreground">{member.email}</p>
+            </div>
+            <div className="flex shrink-0 items-center gap-2">
+              {member.role === "super_admin" ? (
+                <Badge>Super admin</Badge>
+              ) : (
+                <Select
+                  value={member.role}
+                  onValueChange={(value) => changeRole(member, value as "admin" | "support")}
+                >
+                  <SelectTrigger className="h-8 w-36">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="admin">Admin</SelectItem>
+                    <SelectItem value="support">Support (read-only)</SelectItem>
+                  </SelectContent>
+                </Select>
+              )}
+              {(member.role !== "super_admin" || member.is_you) && (
+                <Button size="sm" variant="outline" onClick={() => removeMember(member)}>
+                  Remove
+                </Button>
+              )}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="rounded-2xl border border-border p-4">
+        <p className="font-medium">Add someone</p>
+        <p className="mt-1 text-xs text-muted-foreground">
+          They need a Jaylor account already, under the email they signed up with.
+        </p>
+        <div className="mt-3 flex flex-wrap items-end gap-2">
+          <div className="min-w-[200px] flex-1 space-y-1">
+            <Label htmlFor="team-email">Email</Label>
+            <Input
+              id="team-email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="colleague@example.com"
+            />
+          </div>
+          <div className="space-y-1">
+            <Label>Role</Label>
+            <Select value={role} onValueChange={(value) => setRole(value as "admin" | "support")}>
+              <SelectTrigger className="w-40">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="admin">Admin</SelectItem>
+                <SelectItem value="support">Support (read-only)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <Button onClick={addMember} disabled={busy}>
+            {busy ? "Adding..." : "Add"}
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }
