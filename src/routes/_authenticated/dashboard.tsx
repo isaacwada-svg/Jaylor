@@ -25,6 +25,14 @@ import { ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
 import { orderReadyMessage } from "@/lib/whatsapp";
 import { useFeature } from "@/lib/use-feature";
 import { useMessageTopups } from "@/lib/use-message-topups";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+
+function compactMoney(n: number) {
+  return new Intl.NumberFormat("en-NG", { notation: "compact", maximumFractionDigits: 1 }).format(
+    n,
+  );
+}
 
 function useFirstName() {
   const [firstName, setFirstName] = useState<string | null>(null);
@@ -143,8 +151,13 @@ function Home() {
       );
       const overdue = active.filter((o) => o.delivery_date && new Date(o.delivery_date) < today);
       const balanceByOrder = new Map((balancesRes.data ?? []).map((b) => [b.order_id, b.balance]));
+      const statusCounts = new Map<string, number>();
+      for (const o of active) {
+        statusCounts.set(o.status, (statusCounts.get(o.status) ?? 0) + 1);
+      }
 
       return {
+        statusCounts,
         moneyOwed: (balancesRes.data ?? []).reduce((sum, b) => sum + (b.balance ?? 0), 0),
         owedOrdersCount: balancesRes.data?.length ?? 0,
         collectedThisMonth: (paymentsRes.data ?? []).reduce((sum, p) => sum + p.amount, 0),
@@ -168,6 +181,38 @@ function Home() {
               new Date(a.ready_at as string).getTime() - new Date(b.ready_at as string).getTime(),
           ),
       };
+    },
+  });
+
+  const trendDays = 14;
+  const { data: revenueTrend } = useQuery({
+    queryKey: ["dashboard-revenue-trend", storeId],
+    enabled: !!storeId && canSeeMoney,
+    queryFn: async () => {
+      const trendStart = new Date(today);
+      trendStart.setDate(trendStart.getDate() - (trendDays - 1));
+      const { data, error } = await supabase
+        .from("payments")
+        .select("amount, paid_at")
+        .eq("store_id", storeId as string)
+        .eq("voided", false)
+        .gte("paid_at", trendStart.toISOString());
+      if (error) throw error;
+
+      const byDay = new Map<string, number>();
+      for (let i = 0; i < trendDays; i++) {
+        const d = new Date(trendStart);
+        d.setDate(d.getDate() + i);
+        byDay.set(d.toISOString().slice(0, 10), 0);
+      }
+      for (const p of data ?? []) {
+        const key = p.paid_at.slice(0, 10);
+        byDay.set(key, (byDay.get(key) ?? 0) + p.amount);
+      }
+      return Array.from(byDay.entries()).map(([day, amount]) => ({
+        day: new Date(day).toLocaleDateString(undefined, { day: "numeric", month: "short" }),
+        amount,
+      }));
     },
   });
 
@@ -299,6 +344,13 @@ function Home() {
   });
   const clientById = (id: string) => relatedClients?.find((c) => c.id === id);
   const clientName = (id: string) => clientById(id)?.full_name ?? "—";
+
+  const statusChartData = ORDER_STATUSES_DB.filter((status) => status !== "collected")
+    .map((status) => ({
+      status: orderStatusLabel(status),
+      count: stats?.statusCounts.get(status) ?? 0,
+    }))
+    .filter((row) => row.count > 0);
 
   const { data: myJobs, isLoading: myJobsLoading } = useQuery({
     queryKey: ["dashboard-my-jobs", storeId],
@@ -448,6 +500,87 @@ function Home() {
                 />
               </div>
             )}
+
+            <div className="mt-4 grid gap-3 lg:grid-cols-2">
+              <Card className="rounded-2xl">
+                <CardContent className="p-5">
+                  <p className="font-medium">Revenue, last {trendDays} days</p>
+                  {!revenueTrend ? (
+                    <Skeleton className="mt-3 h-40 rounded-xl" />
+                  ) : (
+                    <ChartContainer
+                      config={{ amount: { label: "Revenue", color: "var(--color-viz-1)" } }}
+                      className="mt-3 h-40 w-full"
+                    >
+                      <AreaChart data={revenueTrend}>
+                        <defs>
+                          <linearGradient id="dashboard-revenue-fill" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stopColor="var(--color-amount)" stopOpacity={0.25} />
+                            <stop offset="100%" stopColor="var(--color-amount)" stopOpacity={0} />
+                          </linearGradient>
+                        </defs>
+                        <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                        <XAxis
+                          dataKey="day"
+                          tickLine={false}
+                          axisLine={false}
+                          interval="preserveStartEnd"
+                        />
+                        <YAxis
+                          tickLine={false}
+                          axisLine={false}
+                          width={44}
+                          tickFormatter={(v: number) => compactMoney(v)}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Area
+                          type="monotone"
+                          dataKey="amount"
+                          stroke="var(--color-amount)"
+                          strokeWidth={2}
+                          fill="url(#dashboard-revenue-fill)"
+                        />
+                      </AreaChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+
+              <Card className="rounded-2xl">
+                <CardContent className="p-5">
+                  <p className="font-medium">Orders in the workroom</p>
+                  {statusChartData.length === 0 ? (
+                    <p className="mt-3 text-sm text-muted-foreground">
+                      Nothing in progress right now.
+                    </p>
+                  ) : (
+                    <ChartContainer
+                      config={{ count: { label: "Orders", color: "var(--color-viz-2)" } }}
+                      className="mt-3 h-40 w-full"
+                    >
+                      <BarChart data={statusChartData} layout="vertical">
+                        <CartesianGrid horizontal={false} strokeDasharray="3 3" />
+                        <XAxis
+                          type="number"
+                          tickLine={false}
+                          axisLine={false}
+                          allowDecimals={false}
+                        />
+                        <YAxis
+                          type="category"
+                          dataKey="status"
+                          tickLine={false}
+                          axisLine={false}
+                          width={80}
+                        />
+                        <ChartTooltip content={<ChartTooltipContent />} />
+                        <Bar dataKey="count" fill="var(--color-count)" radius={4} />
+                      </BarChart>
+                    </ChartContainer>
+                  )}
+                </CardContent>
+              </Card>
+            </div>
 
             <section className="mt-8">
               <div className="flex items-end justify-between">

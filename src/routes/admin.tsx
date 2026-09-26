@@ -30,6 +30,24 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { formatMoney, planCodeToTier } from "@/lib/jaylor";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { getErrorMessage } from "@/lib/utils";
+import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
+
+function compactMoney(n: number) {
+  return new Intl.NumberFormat("en-NG", { notation: "compact", maximumFractionDigits: 1 }).format(
+    n,
+  );
+}
+
+// Fixed-order categorical marks, validated for lightness/chroma/CVD-separation/
+// contrast against both chart surfaces -- see src/styles.css.
+const VIZ_COLORS = [
+  "var(--color-viz-1)",
+  "var(--color-viz-2)",
+  "var(--color-viz-3)",
+  "var(--color-viz-4)",
+  "var(--color-viz-5)",
+];
 
 export const Route = createFileRoute("/admin")({
   staticData: { sitemap: false },
@@ -115,6 +133,20 @@ type TeamMember = {
   created_at: string;
   is_you: boolean;
 };
+
+type LiveBoardStats = {
+  active_stores: number;
+  sales_30d: number;
+  sales_today: number;
+  avg_order_value_30d: number;
+  new_stores_30d: number;
+  stores_on_trial: number;
+  stores_converted: number;
+  stores_inactive: number;
+};
+
+type RevenuePoint = { day: string; amount: number };
+type TopStore = { store_id: string; store_name: string; amount: number };
 
 type SearchResults = {
   stores: { id: string; name: string; slug: string; city: string | null }[];
@@ -489,6 +521,259 @@ function AnalyticsTab() {
   );
 }
 
+function LiveBoard({
+  stats,
+  stores,
+}: {
+  stats: Stats | undefined;
+  stores: StoreRow[] | undefined;
+}) {
+  const { data: board, isLoading: boardLoading } = useQuery({
+    queryKey: ["admin-live-board-stats"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_live_board_stats", {});
+      if (error) throw error;
+      return data as unknown as LiveBoardStats;
+    },
+    refetchInterval: 60_000,
+  });
+
+  const { data: revenueSeries, isLoading: revenueLoading } = useQuery({
+    queryKey: ["admin-revenue-series"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_revenue_series", { p_days: 30 });
+      if (error) throw error;
+      return data as unknown as RevenuePoint[];
+    },
+  });
+
+  const { data: topStores, isLoading: topStoresLoading } = useQuery({
+    queryKey: ["admin-top-stores"],
+    queryFn: async () => {
+      const { data, error } = await rpcAdmin("admin_top_stores_by_revenue", {
+        p_days: 30,
+        p_limit: 5,
+      });
+      if (error) throw error;
+      return data as unknown as TopStore[];
+    },
+  });
+
+  const recentSignups = [...(stores ?? [])]
+    .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
+    .slice(0, 5);
+
+  const planEntries = Object.entries(stats?.stores_by_plan ?? {});
+  const revenueChartData = (revenueSeries ?? []).map((p) => ({
+    day: new Date(p.day).toLocaleDateString(undefined, { day: "numeric", month: "short" }),
+    amount: p.amount,
+  }));
+
+  return (
+    <div>
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div>
+          <h2 className="text-xl">Live board</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Last 30 days, refreshes every minute.
+          </p>
+        </div>
+        <Badge className="border-paid/40 bg-paid/10 text-paid">Live</Badge>
+      </div>
+
+      {boardLoading || !board ? (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-24 rounded-2xl" />
+          ))}
+        </div>
+      ) : (
+        <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <Stat label="Active stores" value={String(board.active_stores)} />
+          <Stat label="Sales, last 30 days" value={formatMoney(board.sales_30d)} />
+          <Stat label="Avg order value" value={formatMoney(board.avg_order_value_30d)} />
+          <Stat label="Sales today" value={formatMoney(board.sales_today)} />
+          <Stat label="New stores, 30 days" value={String(board.new_stores_30d)} />
+        </div>
+      )}
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Top stores, last 30 days</p>
+            {topStoresLoading ? (
+              <div className="mt-3 space-y-2">
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 rounded-lg" />
+                ))}
+              </div>
+            ) : !topStores || topStores.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No sales yet.</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {topStores.map((s, i) => (
+                  <Link
+                    key={s.store_id}
+                    to="/admin/stores/$storeId"
+                    params={{ storeId: s.store_id }}
+                    className="flex items-center justify-between gap-3 rounded-lg px-1 py-1 text-sm hover:bg-accent/40"
+                  >
+                    <span className="flex min-w-0 items-center gap-2">
+                      <span className="flex size-5 shrink-0 items-center justify-center rounded-full bg-accent text-xs text-muted-foreground">
+                        {i + 1}
+                      </span>
+                      <span className="truncate">{s.store_name}</span>
+                    </span>
+                    <span className="figures shrink-0 text-paid">{formatMoney(s.amount)}</span>
+                  </Link>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl lg:col-span-2">
+          <CardContent className="p-5">
+            <p className="font-medium">Revenue, last 30 days</p>
+            <p className="mt-0.5 text-xs text-muted-foreground">Confirmed payments per day</p>
+            {revenueLoading ? (
+              <Skeleton className="mt-3 h-48 rounded-xl" />
+            ) : (
+              <ChartContainer
+                config={{ amount: { label: "Revenue", color: "var(--color-viz-1)" } }}
+                className="mt-3 h-48 w-full"
+              >
+                <AreaChart data={revenueChartData}>
+                  <defs>
+                    <linearGradient id="admin-revenue-fill" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" stopColor="var(--color-amount)" stopOpacity={0.25} />
+                      <stop offset="100%" stopColor="var(--color-amount)" stopOpacity={0} />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="day"
+                    tickLine={false}
+                    axisLine={false}
+                    interval="preserveStartEnd"
+                  />
+                  <YAxis
+                    tickLine={false}
+                    axisLine={false}
+                    width={48}
+                    tickFormatter={(v: number) => compactMoney(v)}
+                  />
+                  <ChartTooltip content={<ChartTooltipContent />} />
+                  <Area
+                    type="monotone"
+                    dataKey="amount"
+                    stroke="var(--color-amount)"
+                    strokeWidth={2}
+                    fill="url(#admin-revenue-fill)"
+                  />
+                </AreaChart>
+              </ChartContainer>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+
+      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Recent signups</p>
+            {!stores ? (
+              <div className="mt-3 space-y-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-8 rounded-lg" />
+                ))}
+              </div>
+            ) : recentSignups.length === 0 ? (
+              <p className="mt-3 text-sm text-muted-foreground">No signups yet.</p>
+            ) : (
+              <div className="mt-3 space-y-2">
+                {recentSignups.map((s) => (
+                  <div key={s.id} className="flex items-center justify-between gap-3 text-sm">
+                    <span className="truncate">{s.name}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(s.created_at).toLocaleDateString()}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Store lifecycle</p>
+            {!board ? (
+              <Skeleton className="mt-3 h-24 rounded-xl" />
+            ) : (
+              <div className="mt-3 space-y-2 text-sm">
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">On trial</span>
+                  <span className="figures">{board.stores_on_trial}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Converted to paid</span>
+                  <span className="figures">{board.stores_converted}</span>
+                </div>
+                <div className="flex items-center justify-between">
+                  <span className="text-muted-foreground">Inactive</span>
+                  <span className="figures">{board.stores_inactive}</span>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="rounded-2xl">
+          <CardContent className="p-5">
+            <p className="font-medium">Stores by plan</p>
+            {!stats || planEntries.length === 0 ? (
+              <Skeleton className="mt-3 h-24 rounded-xl" />
+            ) : (
+              <div className="mt-2 flex items-center gap-4">
+                <ChartContainer config={{}} className="aspect-square h-28 w-28 shrink-0">
+                  <PieChart>
+                    <ChartTooltip content={<ChartTooltipContent hideLabel />} />
+                    <Pie
+                      data={planEntries.map(([plan, count]) => ({ name: plan, value: count }))}
+                      dataKey="value"
+                      nameKey="name"
+                      innerRadius="60%"
+                      outerRadius="100%"
+                      strokeWidth={2}
+                    >
+                      {planEntries.map(([plan], i) => (
+                        <Cell key={plan} fill={VIZ_COLORS[i % VIZ_COLORS.length]} />
+                      ))}
+                    </Pie>
+                  </PieChart>
+                </ChartContainer>
+                <div className="space-y-1.5 text-sm">
+                  {planEntries.map(([plan, count], i) => (
+                    <div key={plan} className="flex items-center gap-2">
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ backgroundColor: VIZ_COLORS[i % VIZ_COLORS.length] }}
+                      />
+                      <span className="text-muted-foreground">{planCodeToTier(plan)}</span>
+                      <span className="figures ml-auto font-medium">{count}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}
+
 function OverviewTab() {
   const { data: stats, isLoading: statsLoading } = useQuery({
     queryKey: ["admin-stats"],
@@ -519,6 +804,9 @@ function OverviewTab() {
 
   return (
     <div>
+      <LiveBoard stats={stats} stores={stores} />
+
+      <h2 className="mt-10 text-xl">Growth details</h2>
       {statsLoading || totalsLoading ? (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           {Array.from({ length: 4 }).map((_, i) => (
@@ -551,7 +839,7 @@ function OverviewTab() {
         </div>
       )}
 
-      <h2 className="mt-8 text-xl">Stores</h2>
+      <h2 className="mt-8 text-xl">All stores</h2>
       {storesLoading ? (
         <div className="mt-3 space-y-2">
           {Array.from({ length: 4 }).map((_, i) => (
