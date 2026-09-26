@@ -39,10 +39,19 @@ export const Route = createFileRoute("/admin/stores/$storeId")({
 });
 
 // Admin RPCs aren't in the generated Database types yet, same as admin.tsx.
-const rpcAdmin = supabase.rpc as unknown as (
+// Must stay a call on `supabase` itself, not a bare extracted reference --
+// supabase.rpc() is a normal method that reads `this.rest` internally, so
+// aliasing it directly (`const x = supabase.rpc`) and calling `x(...)` loses
+// that binding and throws "Cannot read properties of undefined (reading 'rest')".
+function rpcAdmin(
   fn: string,
   args: Record<string, unknown>,
-) => Promise<{ data: unknown; error: { message: string } | null }>;
+): Promise<{ data: unknown; error: { message: string } | null }> {
+  return supabase.rpc(fn as never, args as never) as unknown as Promise<{
+    data: unknown;
+    error: { message: string } | null;
+  }>;
+}
 // clients/orders/payments/store_members are typed tables, but the new
 // platform_admin_select_* RLS policies aren't reflected until types.ts is
 // regenerated -- narrow cast at the query boundary, same pattern used for
