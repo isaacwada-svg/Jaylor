@@ -72,6 +72,10 @@ CREATE TRIGGER set_quote_updated_at_trigger
 BEFORE UPDATE ON public.quotes
 FOR EACH ROW EXECUTE FUNCTION public.set_quote_updated_at();
 
+-- Must exist before the policies below can reference it.
+ALTER TABLE public.store_members
+  ADD COLUMN IF NOT EXISTS can_manage_quotations boolean NOT NULL DEFAULT false;
+
 ALTER TABLE public.quotes ENABLE ROW LEVEL SECURITY;
 
 DROP POLICY IF EXISTS quotes_select ON public.quotes;
@@ -123,9 +127,3 @@ CREATE POLICY quotes_delete ON public.quotes FOR DELETE TO authenticated
 
 GRANT SELECT, INSERT, UPDATE, DELETE ON public.quotes TO authenticated;
 GRANT ALL ON public.quotes TO service_role;
-
--- A new grantable ability: by default a tailor can't create/send quotes,
--- but an owner/manager can switch this on for them from Staff, without
--- handing over full order-management rights.
-ALTER TABLE public.store_members
-  ADD COLUMN IF NOT EXISTS can_manage_quotations boolean NOT NULL DEFAULT false;
