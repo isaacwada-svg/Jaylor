@@ -11,11 +11,13 @@ import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { formatMoney } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
+import { notifyTransferAssigned } from "@/lib/digest.functions";
 
 export const Route = createFileRoute("/_authenticated/unmatched-payments")({
   staticData: { sitemap: false },
@@ -165,6 +167,7 @@ function AssignDialog({
     { orderId: "", amount: String(transfer.amount) },
   ]);
   const [busy, setBusy] = useState(false);
+  const runNotifyTransferAssigned = useServerFn(notifyTransferAssigned);
 
   const { data: openOrders, isLoading } = useQuery({
     queryKey: ["open-orders-for-match", storeId],
@@ -231,6 +234,12 @@ function AssignDialog({
       });
       if (error) throw error;
       toast.success("Transfer assigned");
+      if (allocations.length === 1) {
+        // Best-effort owner alert -- the transfer is already recorded either way.
+        runNotifyTransferAssigned({
+          data: { storeId, orderId: allocations[0]!.order_id, transferId: transfer.id },
+        }).catch(() => {});
+      }
       onAssigned();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not assign this transfer"));

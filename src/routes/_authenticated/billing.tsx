@@ -8,6 +8,7 @@ import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { PaymentAccountSettings } from "@/components/jaylor/payment-account-settings";
 import { DedicatedAccountSettings } from "@/components/jaylor/dedicated-account-settings";
+import { DigestSettings } from "@/components/jaylor/digest-settings";
 import { ReferralCard } from "@/components/jaylor/referral-card";
 import { MessageTopupButton } from "@/components/jaylor/message-topup-button";
 import { StoreLocationSettings } from "@/components/jaylor/store-location-settings";
@@ -39,7 +40,8 @@ export const Route = createFileRoute("/_authenticated/billing")({
 });
 
 function Billing() {
-  const { currentStore } = useStore();
+  const { currentStore, currentRole } = useStore();
+  const isOwnerOrManager = currentRole === "owner" || currentRole === "manager";
   const tier = effectiveTier(currentStore);
   const inTrial = !!currentStore && new Date(currentStore.trial_ends_at) > new Date();
   const queryClient = useQueryClient();
@@ -231,6 +233,7 @@ function Billing() {
             <LatePayerDepositSetting storeId={currentStore.id} />
             <PaymentAccountSettings storeId={currentStore.id} tier={tier} />
             <DedicatedAccountSettings storeId={currentStore.id} tier={tier} />
+            <DigestSettings storeId={currentStore.id} isAdmin={isOwnerOrManager} />
             <ReferralCard storeId={currentStore.id} referralCode={currentStore.referral_code} />
           </div>
         )}

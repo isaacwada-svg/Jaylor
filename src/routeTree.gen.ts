@@ -59,6 +59,8 @@ import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
 import { Route as AuthenticatedQuotationsQuoteIdRouteImport } from './routes/_authenticated/quotations.$quoteId'
 import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
+import { Route as ApiCronDigestRouteImport } from './routes/api/cron/digest'
+import { Route as ApiInternalTransferAlertRouteImport } from './routes/api/internal/transfer-alert'
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
@@ -320,6 +322,17 @@ const AdminStoresStoreIdRoute = AdminStoresStoreIdRouteImport.update({
   path: '/stores/$storeId',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiCronDigestRoute = ApiCronDigestRouteImport.update({
+  id: '/api/cron/digest',
+  path: '/api/cron/digest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiInternalTransferAlertRoute =
+  ApiInternalTransferAlertRouteImport.update({
+    id: '/api/internal/transfer-alert',
+    path: '/api/internal/transfer-alert',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const FitcheckOrderIdClientIdRoute = FitcheckOrderIdClientIdRouteImport.update({
   id: '/fitcheck/$orderId/$clientId',
   path: '/fitcheck/$orderId/$clientId',
@@ -379,6 +392,8 @@ export interface FileRoutesByFullPath {
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/digest': typeof ApiCronDigestRoute
+  '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
@@ -432,6 +447,8 @@ export interface FileRoutesByTo {
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/digest': typeof ApiCronDigestRoute
+  '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/events': typeof AuthenticatedEventsIndexRoute
@@ -487,6 +504,8 @@ export interface FileRoutesById {
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/digest': typeof ApiCronDigestRoute
+  '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
@@ -542,6 +561,8 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/digest'
+    | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
     | '/clients/'
     | '/events/'
@@ -595,6 +616,8 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/digest'
+    | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
     | '/clients'
     | '/events'
@@ -649,6 +672,8 @@ export interface FileRouteTypes {
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/digest'
+    | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
     | '/_authenticated/clients/'
     | '/_authenticated/events/'
@@ -685,6 +710,8 @@ export interface RootRouteChildren {
   PassportTokenRoute: typeof PassportTokenRoute
   QTokenRoute: typeof QTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
+  ApiCronDigestRoute: typeof ApiCronDigestRoute
+  ApiInternalTransferAlertRoute: typeof ApiInternalTransferAlertRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
 }
@@ -1041,6 +1068,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStoresStoreIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/cron/digest': {
+      id: '/api/cron/digest'
+      path: '/api/cron/digest'
+      fullPath: '/api/cron/digest'
+      preLoaderRoute: typeof ApiCronDigestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/internal/transfer-alert': {
+      id: '/api/internal/transfer-alert'
+      path: '/api/internal/transfer-alert'
+      fullPath: '/api/internal/transfer-alert'
+      preLoaderRoute: typeof ApiInternalTransferAlertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/fitcheck/$orderId/$clientId': {
       id: '/fitcheck/$orderId/$clientId'
       path: '/fitcheck/$orderId/$clientId'
@@ -1160,6 +1201,8 @@ const rootRouteChildren: RootRouteChildren = {
   PassportTokenRoute: PassportTokenRoute,
   QTokenRoute: QTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
+  ApiCronDigestRoute: ApiCronDigestRoute,
+  ApiInternalTransferAlertRoute: ApiInternalTransferAlertRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
 }

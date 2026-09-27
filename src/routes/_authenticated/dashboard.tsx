@@ -15,6 +15,7 @@ import { ComingUpCard } from "@/components/jaylor/coming-up-card";
 import { MomentsSection } from "@/components/jaylor/moments-section";
 import { MilestoneCelebration } from "@/components/jaylor/milestone-celebration";
 import { DashboardOverview } from "@/components/jaylor/dashboard-overview";
+import { TodayCard } from "@/components/jaylor/today-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -384,6 +385,12 @@ function Home() {
         <StitchDivider className="my-6" />
 
         <DashboardOverview storeId={storeId} />
+
+        {canSeeMoney && (
+          <div className="mb-6">
+            <TodayCard storeId={storeId} />
+          </div>
+        )}
 
         {canSeeMoney && currentStore && new Date(currentStore.trial_ends_at) > new Date() && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-accent/40 px-4 py-3">
