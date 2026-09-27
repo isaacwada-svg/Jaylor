@@ -3172,6 +3172,9 @@ export type Database = {
       }
       store_settings: {
         Row: {
+          alert_transfer_received: boolean
+          digest_daily: boolean
+          digest_weekly: boolean
           email: string | null
           late_payer_deposit_percent: number
           phone: string | null
@@ -3185,6 +3188,9 @@ export type Database = {
           whatsapp_number: string | null
         }
         Insert: {
+          alert_transfer_received?: boolean
+          digest_daily?: boolean
+          digest_weekly?: boolean
           email?: string | null
           late_payer_deposit_percent?: number
           phone?: string | null
@@ -3198,6 +3204,9 @@ export type Database = {
           whatsapp_number?: string | null
         }
         Update: {
+          alert_transfer_received?: boolean
+          digest_daily?: boolean
+          digest_weekly?: boolean
           email?: string | null
           late_payer_deposit_percent?: number
           phone?: string | null
@@ -3952,11 +3961,19 @@ export type Database = {
       }
       match_incoming_transfer: {
         Args: { p_transfer_id: string }
-        Returns: undefined
+        Returns: string
       }
       name_similarity: {
         Args: { a: string; b: string }
         Returns: number
+      }
+      get_daily_digest_data: {
+        Args: { p_store_id: string }
+        Returns: Json
+      }
+      get_weekly_digest_data: {
+        Args: { p_store_id: string }
+        Returns: Json
       }
       check_rate_limit: {
         Args: {

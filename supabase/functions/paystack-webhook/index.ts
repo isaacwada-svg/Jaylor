@@ -103,10 +103,7 @@ async function activatePlan(
     .eq("id", payment.store_id);
 }
 
-async function confirmOrderPayment(
-  supabase: SupabaseClient,
-  reference: string,
-): Promise<void> {
+async function confirmOrderPayment(supabase: SupabaseClient, reference: string): Promise<void> {
   const { data: link } = await supabase
     .from("order_payment_links")
     .select("id, order_id, store_id, amount, status")
@@ -227,5 +224,35 @@ async function handleIncomingTransfer(
     .maybeSingle();
   if (error || !inserted) return; // already processed (unique_violation on replay)
 
-  await supabase.rpc("match_incoming_transfer", { p_transfer_id: inserted.id });
+  const { data: matchedOrderId } = await supabase.rpc("match_incoming_transfer", {
+    p_transfer_id: inserted.id,
+  });
+  if (matchedOrderId) {
+    await notifyTransferMatched(dedicated.store_id, matchedOrderId as string, inserted.id);
+  }
+}
+
+// Hands off to the Node app for the owner alert (WhatsApp send + in-app
+// notification) since that's where the confirmed-working WhatsApp gateway
+// secrets live (src/lib/whatsapp-send.server.ts) -- Deno edge function
+// secrets are a separate store, so this is not assumed to be duplicated
+// here. Same INTERNAL_API_SECRET as the pg_cron digest job; failure here
+// only skips the alert, never the payment that was already recorded.
+async function notifyTransferMatched(
+  storeId: string,
+  orderId: string,
+  transferId: string,
+): Promise<void> {
+  const secret = Deno.env.get("INTERNAL_API_SECRET");
+  const baseUrl = Deno.env.get("APP_BASE_URL") ?? "https://jaylor.com.ng";
+  if (!secret) return;
+  try {
+    await fetch(`${baseUrl}/api/internal/transfer-alert`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Internal-Secret": secret },
+      body: JSON.stringify({ storeId, orderId, transferId }),
+    });
+  } catch (error) {
+    console.error("[paystack-webhook] transfer-alert relay failed", error);
+  }
 }
