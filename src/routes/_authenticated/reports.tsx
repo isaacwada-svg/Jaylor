@@ -61,6 +61,7 @@ function Reports() {
   const monthStart = useMemo(() => parse(monthValue, "yyyy-MM", new Date()), [monthValue]);
   const monthEndExclusive = useMemo(() => addMonths(monthStart, 1), [monthStart]);
   const trendStart = useMemo(() => subMonths(monthStart, 11), [monthStart]);
+  const sixMonthStart = useMemo(() => subMonths(monthStart, 5), [monthStart]);
 
   const { data: paymentsInMonth, isLoading: loadingPayments } = useQuery({
     queryKey: ["reports-payments", storeId, monthValue],
@@ -100,10 +101,27 @@ function Reports() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("orders")
-        .select("id, client_id, garment_type, price, status, created_at, ready_at, collected_at")
+        .select(
+          "id, client_id, garment_type, price, labour_cost, other_cost, status, created_at, ready_at, collected_at",
+        )
         .eq("store_id", storeId as string)
         .gte("created_at", monthStart.toISOString())
         .lt("created_at", monthEndExclusive.toISOString());
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const orderIdsThisMonth = useMemo(() => (ordersCreated ?? []).map((o) => o.id), [ordersCreated]);
+  const { data: orderMaterialsThisMonth } = useQuery({
+    queryKey: ["reports-order-materials", orderIdsThisMonth],
+    enabled: orderIdsThisMonth.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_materials")
+        .select("order_id, cost, source")
+        .in("order_id", orderIdsThisMonth)
+        .eq("source", "tailor");
       if (error) throw error;
       return data;
     },
@@ -164,6 +182,23 @@ function Reports() {
         .eq("store_id", storeId as string)
         .gte("spent_at", format(trendStart, "yyyy-MM-dd"))
         .lt("spent_at", format(monthEndExclusive, "yyyy-MM-dd"));
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  // Billed (order price at creation) vs collected (actual payments) -- distinct from the
+  // revenue-vs-expenses trend above, which is about profitability rather than cash timing.
+  const { data: sixMonthOrders } = useQuery({
+    queryKey: ["reports-six-month-orders", storeId, monthValue],
+    enabled: !!storeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("orders")
+        .select("price, created_at")
+        .eq("store_id", storeId as string)
+        .gte("created_at", sixMonthStart.toISOString())
+        .lt("created_at", monthEndExclusive.toISOString());
       if (error) throw error;
       return data;
     },
@@ -244,6 +279,21 @@ function Reports() {
   const netProfit = collectedRevenue - expensesTotal;
   const outstandingBalance = (outstandingRows ?? []).reduce((sum, r) => sum + (r.balance ?? 0), 0);
 
+  // Order-level profit: price minus (tailor-purchased material cost + labour + other), for
+  // orders created this period -- distinct from netProfit above, which is store-wide
+  // collected revenue minus expenses for the same period.
+  const materialCostByOrder = useMemo(() => {
+    const map = new Map<string, number>();
+    for (const m of orderMaterialsThisMonth ?? []) {
+      map.set(m.order_id, (map.get(m.order_id) ?? 0) + (m.cost ?? 0));
+    }
+    return map;
+  }, [orderMaterialsThisMonth]);
+  const orderProfitTotal = (ordersCreated ?? []).reduce((sum, o) => {
+    const cost = (materialCostByOrder.get(o.id) ?? 0) + (o.labour_cost ?? 0) + (o.other_cost ?? 0);
+    return sum + (o.price - cost);
+  }, 0);
+
   // Monthly review, rule-based (no AI): a text template filled with this month's own figures.
   const ordersCompletedCount = ordersCollected?.length ?? 0;
   const onTimeCount = (ordersCollected ?? []).filter(
@@ -279,6 +329,22 @@ function Reports() {
     trendData.length > 1 ? (trendData[trendData.length - 2]?.revenue ?? 0) : 0;
   const revenueChange =
     prevMonthRevenue > 0 ? ((collectedRevenue - prevMonthRevenue) / prevMonthRevenue) * 100 : null;
+
+  const sixMonths = useMemo(() => {
+    const months: Date[] = [];
+    for (let i = 0; i < 6; i++) months.push(subMonths(monthStart, 5 - i));
+    return months;
+  }, [monthStart]);
+  const sixMonthData = sixMonths.map((m) => {
+    const key = format(m, "yyyy-MM");
+    const billed = (sixMonthOrders ?? [])
+      .filter((o) => format(new Date(o.created_at), "yyyy-MM") === key)
+      .reduce((sum, o) => sum + o.price, 0);
+    const collected = (trendPayments ?? [])
+      .filter((p) => format(new Date(p.paid_at), "yyyy-MM") === key)
+      .reduce((sum, p) => sum + p.amount, 0);
+    return { month: format(m, "MMM"), billed, collected };
+  });
 
   const expensesByCategory = EXPENSE_CATEGORIES.map((c) => ({
     category: c.label,
@@ -447,6 +513,12 @@ function Reports() {
               value={formatMoney(netProfit)}
               valueClassName={netProfit >= 0 ? "text-paid" : "text-owed"}
             />
+            <Kpi
+              label="Order profit"
+              value={formatMoney(orderProfitTotal)}
+              hint="Orders created this period, price minus cost"
+              valueClassName={orderProfitTotal >= 0 ? "text-paid" : "text-owed"}
+            />
           </div>
         )}
 
@@ -491,6 +563,33 @@ function Reports() {
                   dot={false}
                 />
               </LineChart>
+            </ChartContainer>
+          </CardContent>
+        </Card>
+
+        <h2 className="mt-8 text-xl">Revenue vs collected (6 months)</h2>
+        <Card className="mt-3 rounded-2xl">
+          <CardContent className="p-4">
+            <ChartContainer
+              config={{
+                billed: { label: "Billed", color: "var(--color-gold)" },
+                collected: { label: "Collected", color: "var(--color-paid)" },
+              }}
+              className="h-64 w-full"
+            >
+              <BarChart data={sixMonthData}>
+                <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                <XAxis dataKey="month" tickLine={false} axisLine={false} />
+                <YAxis
+                  tickLine={false}
+                  axisLine={false}
+                  width={48}
+                  tickFormatter={(v: number) => compactMoney(v)}
+                />
+                <ChartTooltip content={<ChartTooltipContent />} />
+                <Bar dataKey="billed" fill="var(--color-billed)" radius={4} />
+                <Bar dataKey="collected" fill="var(--color-collected)" radius={4} />
+              </BarChart>
             </ChartContainer>
           </CardContent>
         </Card>

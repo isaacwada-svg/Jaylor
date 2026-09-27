@@ -2154,8 +2154,10 @@ export type Database = {
           garment_type: string
           garment_type_code: string | null
           id: string
+          labour_cost: number | null
           measurement_set_id: string | null
           number: string
+          other_cost: number | null
           price: number
           priority: string
           quantity: number
@@ -2177,8 +2179,10 @@ export type Database = {
           garment_type: string
           garment_type_code?: string | null
           id?: string
+          labour_cost?: number | null
           measurement_set_id?: string | null
           number: string
+          other_cost?: number | null
           price?: number
           priority?: string
           quantity?: number
@@ -2200,8 +2204,10 @@ export type Database = {
           garment_type?: string
           garment_type_code?: string | null
           id?: string
+          labour_cost?: number | null
           measurement_set_id?: string | null
           number?: string
+          other_cost?: number | null
           price?: number
           priority?: string
           quantity?: number
