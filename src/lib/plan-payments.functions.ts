@@ -8,7 +8,8 @@ const ALLOWED_CALLBACK_HOSTS = [
   "jaylor.com.ng",
   "www.jaylor.com.ng",
   "jaylor.lovable.app",
-  "localhost",
+  "id-preview--05f85e9b-2961-4b8c-a64d-f5000e332728.lovable.app",
+  "project--05f85e9b-2961-4b8c-a64d-f5000e332728-dev.lovable.app",
 ];
 
 function paystackKey(): string {
@@ -101,7 +102,7 @@ export const createPlanPayment = createServerFn({ method: "POST" })
   )
   .handler(async ({ data, context }) => {
     const host = new URL(data.callbackUrl).hostname;
-    if (!ALLOWED_CALLBACK_HOSTS.includes(host) && !host.endsWith(".lovable.app")) {
+    if (!ALLOWED_CALLBACK_HOSTS.includes(host)) {
       throw new Error("Invalid callback URL");
     }
 

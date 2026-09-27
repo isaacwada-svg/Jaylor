@@ -112,6 +112,8 @@ export const uploadDesignStyleRef = createServerFn({ method: "POST" })
 
 const fabricUploadSchema = z.object({
   storeId: z.string().uuid(),
+  /** Guest measure-link token; proves the caller belongs to this store's event. */
+  token: z.string().min(10).max(200),
   /** JPEG image encoded as a data URL. */
   dataUrl: z.string().regex(/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/),
 });
@@ -126,13 +128,19 @@ export const uploadFabricPhoto = createServerFn({ method: "POST" })
   .handler(async ({ data }) => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 
-    const { data: store, error: storeError } = await supabaseAdmin
-      .from("stores")
-      .select("id")
-      .eq("id", data.storeId)
+    const { data: participant } = await supabaseAdmin
+      .from("event_participants")
+      .select("event_id")
+      .eq("token", data.token)
       .maybeSingle();
-    if (storeError) throw new Error("Could not check this shop right now");
-    if (!store) throw new Error("This shop does not exist");
+    if (!participant) throw new Error("This link was not found");
+    const { data: event, error: eventError } = await supabaseAdmin
+      .from("events")
+      .select("store_id")
+      .eq("id", participant.event_id)
+      .maybeSingle();
+    if (eventError) throw new Error("Could not check this shop right now");
+    if (!event || event.store_id !== data.storeId) throw new Error("This link was not found");
 
     if (!(await withinUploadRateLimit(supabaseAdmin, data.storeId))) {
       throw new Error("Too many photo uploads for this shop right now — try again in an hour.");
