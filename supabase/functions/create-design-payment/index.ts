@@ -15,7 +15,6 @@ function isAllowedCallbackUrl(value: unknown): value is string {
   if (typeof value !== "string" || value.length > 500) return false;
   try {
     const url = new URL(value);
-    if (url.hostname === "localhost") return true;
     if (url.protocol !== "https:") return false;
     return ALLOWED_ORIGINS.includes(url.origin) || url.hostname.endsWith(".lovable.app");
   } catch {

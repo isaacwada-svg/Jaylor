@@ -2589,6 +2589,27 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_error_logs: {
+        Row: {
+          created_at: string
+          id: string
+          message: string
+          status: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          message: string
+          status: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          message?: string
+          status?: number
+        }
+        Relationships: []
+      }
       portal_login_codes: {
         Row: {
           attempts: number
@@ -2740,7 +2761,21 @@ export type Database = {
             foreignKeyName: "quotes_converted_order_id_fkey"
             columns: ["converted_order_id"]
             isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "quotes_converted_order_id_fkey"
+            columns: ["converted_order_id"]
+            isOneToOne: false
             referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_converted_order_id_fkey"
+            columns: ["converted_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
             referencedColumns: ["id"]
           },
           {
@@ -2748,6 +2783,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quotes_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -3775,7 +3817,6 @@ export type Database = {
           status: string | null
           store_id: string | null
           style_notes: string | null
-          style_reference_photos: string[] | null
           updated_at: string | null
         }
         Insert: {
@@ -3795,7 +3836,6 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
-          style_reference_photos?: string[] | null
           updated_at?: string | null
         }
         Update: {
@@ -3815,7 +3855,6 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
-          style_reference_photos?: string[] | null
           updated_at?: string | null
         }
         Relationships: [
@@ -3892,6 +3931,10 @@ export type Database = {
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string }
       accept_passport_share: { Args: { p_share_id: string }; Returns: string }
+      admin_add_team_member: {
+        Args: { p_email: string; p_label?: string; p_role: string }
+        Returns: Json
+      }
       admin_ai_budget_status: { Args: never; Returns: Json }
       admin_ai_rate_limited_stores: {
         Args: never
@@ -3905,10 +3948,25 @@ export type Database = {
           store_name: string
         }[]
       }
+      admin_billing_history: {
+        Args: { p_limit?: number; p_store_id?: string }
+        Returns: Json
+      }
       admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_stores: { Args: never; Returns: Json }
+      admin_list_team: { Args: never; Returns: Json }
+      admin_live_board_stats: { Args: never; Returns: Json }
+      admin_my_role: { Args: never; Returns: string }
+      admin_platform_health: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
+      admin_recent_errors: { Args: { p_hours?: number }; Returns: Json }
+      admin_remove_team_member: {
+        Args: { p_user_id: string }
+        Returns: undefined
+      }
+      admin_revenue_series: { Args: { p_days?: number }; Returns: Json }
+      admin_search: { Args: { p_query: string }; Returns: Json }
       admin_set_ai_budget: {
         Args: { p_budget_usd: number }
         Returns: undefined
@@ -3923,7 +3981,12 @@ export type Database = {
         Returns: undefined
       }
       admin_store_ai_usage: { Args: { p_since?: string }; Returns: Json }
+      admin_store_health: { Args: { p_store_id: string }; Returns: Json }
       admin_store_message_usage: { Args: never; Returns: Json }
+      admin_top_stores_by_revenue: {
+        Args: { p_days?: number; p_limit?: number }
+        Returns: Json
+      }
       admin_update_plan: {
         Args: {
           p_code: string
@@ -3933,6 +3996,10 @@ export type Database = {
           p_price_monthly: number
           p_price_quarterly: number
         }
+        Returns: undefined
+      }
+      admin_update_team_role: {
+        Args: { p_role: string; p_user_id: string }
         Returns: undefined
       }
       can_use_feature: {

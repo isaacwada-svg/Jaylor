@@ -6,6 +6,25 @@ import { initializeTransaction } from "../_shared/paystack.ts";
 const TOPUP_QUANTITY = 100;
 const TOPUP_AMOUNT_NGN = 2000;
 
+const ALLOWED_ORIGINS = [
+  "https://jaylor.com.ng",
+  "https://www.jaylor.com.ng",
+  "https://jaylor.lovable.app",
+];
+
+/** Payment redirects may only return to Jaylor's own sites (and Lovable previews). */
+function isAllowedCallbackUrl(value: unknown): value is string {
+  if (typeof value !== "string" || value.length > 500) return false;
+  try {
+    const url = new URL(value);
+    if (url.hostname === "localhost") return true;
+    if (url.protocol !== "https:") return false;
+    return ALLOWED_ORIGINS.includes(url.origin) || url.hostname.endsWith(".lovable.app");
+  } catch {
+    return false;
+  }
+}
+
 type RequestBody = {
   storeId: string;
   callbackUrl: string;
@@ -27,6 +46,7 @@ Deno.serve(async (req) => {
   if (!body.storeId || !body.callbackUrl) {
     return errorResponse("storeId and callbackUrl are required");
   }
+  if (!isAllowedCallbackUrl(body.callbackUrl)) return errorResponse("Invalid callbackUrl");
 
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,

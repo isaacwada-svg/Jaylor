@@ -230,7 +230,7 @@ function GuestEventPage() {
       if (!dataUrl.startsWith("data:image/jpeg;base64,")) {
         throw new Error("Please choose a photo in JPG format");
       }
-      const { path } = await uploadFabricPhoto({ data: { storeId: extras.storeId, dataUrl } });
+      const { path } = await uploadFabricPhoto({ data: { storeId: extras.storeId, token, dataUrl } });
       const { error } = await supabase.rpc("set_participant_fabric_photo", {
         p_token: token,
         p_path: path,

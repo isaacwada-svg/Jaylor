@@ -112,26 +112,47 @@ Deno.serve(async (req) => {
     return errorResponse("This shop doesn't offer AI design previews", 403);
   }
 
-  // The selfie must belong to this store's folder in the private bucket.
+  // Photos must be fresh uploads from this request's own upload step: exactly
+  // the path shape the upload functions create, never a path already attached
+  // to an earlier design (which would let someone reuse another customer's photo).
+  const UUID = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+  const escStore = body.storeId.replace(/[^0-9a-f-]/gi, "");
+  const selfieRe = new RegExp(`^${escStore}/selfies/${UUID}\\.jpg$`, "i");
+  const styleRe = new RegExp(`^${escStore}/style-refs/${UUID}\\.jpg$`, "i");
+
   let selfiePath: string | null = null;
   if (body.selfiePath) {
-    const candidate = toStoragePath(body.selfiePath);
-    if (!candidate.startsWith(`${body.storeId}/`)) {
+    const candidate = typeof body.selfiePath === "string" ? toStoragePath(body.selfiePath) : "";
+    if (!selfieRe.test(candidate)) {
       return errorResponse("That photo does not belong to this shop", 400);
     }
     selfiePath = candidate;
   }
 
-  // Same ownership check for each style reference photo, capped so a single
-  // request can't balloon the image-generation call with dozens of images.
   const styleRefPaths: string[] = [];
-  for (const raw of (body.styleReferencePaths ?? []).slice(0, MAX_STYLE_REFS)) {
-    const candidate = toStoragePath(raw);
-    if (!candidate.startsWith(`${body.storeId}/`)) {
+  for (const raw of (Array.isArray(body.styleReferencePaths) ? body.styleReferencePaths : []).slice(0, MAX_STYLE_REFS)) {
+    const candidate = typeof raw === "string" ? toStoragePath(raw) : "";
+    if (!styleRe.test(candidate)) {
       return errorResponse("That photo does not belong to this shop", 400);
     }
     styleRefPaths.push(candidate);
   }
+
+  if (selfiePath) {
+    const { count } = await supabase
+      .from("ai_designs")
+      .select("id", { count: "exact", head: true })
+      .eq("selfie_url", selfiePath);
+    if ((count ?? 0) > 0) return errorResponse("Please upload your photo again", 400);
+  }
+  for (const p of styleRefPaths) {
+    const { count } = await supabase
+      .from("ai_designs")
+      .select("id", { count: "exact", head: true })
+      .contains("style_reference_urls", [p]);
+    if ((count ?? 0) > 0) return errorResponse("Please upload your photo again", 400);
+  }
+
 
   try {
     const { data: withinLimit } = await supabase.rpc("check_rate_limit", {

@@ -8,16 +8,17 @@ const ALLOWED_ORIGINS = [
   "https://jaylor.com.ng",
   "https://www.jaylor.com.ng",
   "https://jaylor.lovable.app",
+  "https://id-preview--05f85e9b-2961-4b8c-a64d-f5000e332728.lovable.app",
+  "https://project--05f85e9b-2961-4b8c-a64d-f5000e332728-dev.lovable.app",
 ];
 
-/** Payment redirects may only return to Jaylor's own sites (and Lovable previews). */
+/** Payment redirects may only return to Jaylor's own sites (exact allowlist). */
 function isAllowedCallbackUrl(value: unknown): value is string {
   if (typeof value !== "string" || value.length > 500) return false;
   try {
     const url = new URL(value);
-    if (url.hostname === "localhost") return true;
     if (url.protocol !== "https:") return false;
-    return ALLOWED_ORIGINS.includes(url.origin) || url.hostname.endsWith(".lovable.app");
+    return ALLOWED_ORIGINS.includes(url.origin);
   } catch {
     return false;
   }

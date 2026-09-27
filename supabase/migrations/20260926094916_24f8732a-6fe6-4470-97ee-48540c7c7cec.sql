@@ -1,0 +1,2 @@
+REVOKE ALL ON public.ai_design_phone_verifications, public.plan_payments, public.portal_login_codes, public.portal_sessions, public.rls_drift_checks, public.store_feature_discovery, public.whatsapp_contact_windows, public.whatsapp_outbound_messages, public.whatsapp_webhook_events FROM anon;
+REVOKE SELECT ON public.garment_type_aliases FROM authenticated;
