@@ -32,6 +32,7 @@ export type QuotePreview = {
   storeName: string;
   storeAddress: string | null;
   storeLogoUrl: string | null;
+  payoutAccount: { accountNumber: string; accountName: string; bankName: string } | null;
 };
 
 /** Public quote preview for the client-facing /q/$token page -- service-role, since a
@@ -49,12 +50,17 @@ export const getQuotePreview = createServerFn({ method: "GET" })
       .maybeSingle();
     if (!quote) return null;
 
-    const [{ data: client }, { data: store }] = await Promise.all([
+    const [{ data: client }, { data: store }, { data: dedicatedAccount }] = await Promise.all([
       supabaseAdmin.from("clients").select("full_name").eq("id", quote.client_id).maybeSingle(),
       supabaseAdmin
         .from("stores")
         .select("name, address, logo_url")
         .eq("id", quote.store_id)
+        .maybeSingle(),
+      supabaseAdmin
+        .from("dedicated_accounts")
+        .select("account_number, account_name, bank_name, status")
+        .eq("store_id", quote.store_id)
         .maybeSingle(),
     ]);
 
@@ -72,6 +78,14 @@ export const getQuotePreview = createServerFn({ method: "GET" })
       storeName: store?.name ?? "Jaylor",
       storeAddress: store?.address ?? null,
       storeLogoUrl: store?.logo_url ?? null,
+      payoutAccount:
+        dedicatedAccount?.status === "active" && dedicatedAccount.account_number
+          ? {
+              accountNumber: dedicatedAccount.account_number,
+              accountName: dedicatedAccount.account_name ?? "",
+              bankName: dedicatedAccount.bank_name ?? "",
+            }
+          : null,
     };
   });
 

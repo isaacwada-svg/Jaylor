@@ -2,7 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Printer } from "lucide-react";
+import { Copy, Printer } from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
@@ -70,6 +70,14 @@ function PublicQuote() {
   const isAccepted = accepted || quote.status === "accepted" || quote.status === "converted";
   const canAccept = !quote.expired && (quote.status === "draft" || quote.status === "sent");
 
+  function copyAccountNumber() {
+    if (!quote?.payoutAccount) return;
+    navigator.clipboard
+      .writeText(quote.payoutAccount.accountNumber)
+      .then(() => toast.success("Account number copied"))
+      .catch(() => toast.error("Could not copy"));
+  }
+
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-md">
@@ -126,6 +134,16 @@ function PublicQuote() {
             </div>
           </div>
 
+          {quote.payoutAccount && (
+            <div className="border-t border-dashed border-border pt-3 text-center">
+              <p className="text-xs text-muted-foreground">Pay by transfer to</p>
+              <p className="figures font-medium">{quote.payoutAccount.accountNumber}</p>
+              <p className="text-xs text-muted-foreground">
+                {quote.payoutAccount.accountName} · {quote.payoutAccount.bankName}
+              </p>
+            </div>
+          )}
+
           <p className="border-t border-border pt-3 text-center text-[10px] text-muted-foreground">
             {quote.expired
               ? "This quote has expired."
@@ -134,6 +152,12 @@ function PublicQuote() {
         </div>
 
         <div className="mt-4 flex flex-col gap-2 print:hidden">
+          {quote.payoutAccount && (
+            <Button variant="outline" onClick={copyAccountNumber}>
+              <Copy className="size-4" />
+              Copy account number
+            </Button>
+          )}
           {isAccepted ? (
             <p className="rounded-xl border border-paid/40 bg-paid/10 p-3 text-center text-sm text-paid">
               You've accepted this quote.

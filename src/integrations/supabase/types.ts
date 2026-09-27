@@ -707,6 +707,56 @@ export type Database = {
         }
         Relationships: []
       }
+      dedicated_accounts: {
+        Row: {
+          account_name: string | null
+          account_number: string | null
+          bank_name: string | null
+          created_at: string
+          failure_reason: string | null
+          id: string
+          paystack_customer_code: string | null
+          paystack_dedicated_account_id: string | null
+          status: string
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          paystack_customer_code?: string | null
+          paystack_dedicated_account_id?: string | null
+          status?: string
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          account_name?: string | null
+          account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
+          failure_reason?: string | null
+          id?: string
+          paystack_customer_code?: string | null
+          paystack_dedicated_account_id?: string | null
+          status?: string
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dedicated_accounts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_batches: {
         Row: {
           created_at: string
@@ -1260,6 +1310,74 @@ export type Database = {
           sort_order?: number
         }
         Relationships: []
+      }
+      incoming_transfers: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          matched_order_id: string | null
+          paystack_ref: string
+          received_at: string
+          sender_bank: string | null
+          sender_name: string | null
+          status: string
+          store_id: string
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          matched_order_id?: string | null
+          paystack_ref: string
+          received_at?: string
+          sender_bank?: string | null
+          sender_name?: string | null
+          status?: string
+          store_id: string
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          matched_order_id?: string | null
+          paystack_ref?: string
+          received_at?: string
+          sender_bank?: string | null
+          sender_name?: string | null
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "incoming_transfers_matched_order_id_fkey"
+            columns: ["matched_order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "incoming_transfers_matched_order_id_fkey"
+            columns: ["matched_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_transfers_matched_order_id_fkey"
+            columns: ["matched_order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_transfers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       job_templates: {
         Row: {
@@ -3876,6 +3994,30 @@ export type Database = {
       check_feature_limit: {
         Args: { p_feature: string; p_quantity?: number; p_store_id: string }
         Returns: Json
+      }
+      assign_incoming_transfer: {
+        Args: { p_allocations: Json; p_transfer_id: string }
+        Returns: undefined
+      }
+      get_storefront_payout_account: {
+        Args: { p_store_id: string }
+        Returns: {
+          account_name: string | null
+          account_number: string | null
+          bank_name: string | null
+        }[]
+      }
+      ignore_incoming_transfer: {
+        Args: { p_transfer_id: string }
+        Returns: undefined
+      }
+      match_incoming_transfer: {
+        Args: { p_transfer_id: string }
+        Returns: undefined
+      }
+      name_similarity: {
+        Args: { a: string; b: string }
+        Returns: number
       }
       check_rate_limit: {
         Args: {

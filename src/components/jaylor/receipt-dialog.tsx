@@ -1,6 +1,8 @@
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Printer, Share2 } from "lucide-react";
+import { Copy, Printer, Share2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
 import { formatMoney } from "@/lib/jaylor";
@@ -45,6 +47,32 @@ export function ReceiptDialog({
   const total = balance?.total ?? order.price;
   const paid = balance?.paid ?? 0;
   const owed = balance?.balance ?? total - paid;
+
+  const { data: dedicatedAccount } = useQuery({
+    queryKey: ["dedicated-account", store.id],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("dedicated_accounts")
+        .select("account_number, account_name, bank_name, status")
+        .eq("store_id", store.id)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const payoutAccount =
+    dedicatedAccount?.status === "active" && dedicatedAccount.account_number
+      ? dedicatedAccount
+      : null;
+
+  function copyAccountNumber() {
+    if (!payoutAccount) return;
+    navigator.clipboard
+      .writeText(payoutAccount.account_number!)
+      .then(() => toast.success("Account number copied"))
+      .catch(() => toast.error("Could not copy"));
+  }
 
   function shareSummary() {
     const text = `Receipt from ${store.name}\nOrder ${order.number} · ${order.garment_type}\nTotal: ${formatMoney(total)}\nPaid: ${formatMoney(paid)}\nBalance: ${formatMoney(owed)}`;
@@ -197,6 +225,16 @@ export function ReceiptDialog({
             </div>
           </div>
 
+          {payoutAccount && owed > 0 && (
+            <div className="border-t border-dashed border-black/20 pt-3 text-center">
+              <p className="text-xs opacity-70">Pay by transfer to</p>
+              <p className="figures font-medium">{payoutAccount.account_number}</p>
+              <p className="text-xs opacity-70">
+                {payoutAccount.account_name} · {payoutAccount.bank_name}
+              </p>
+            </div>
+          )}
+
           <p
             className={
               format === "a4"
@@ -207,6 +245,13 @@ export function ReceiptDialog({
             Thank you for your business. Made with Jaylor.
           </p>
         </div>
+
+        {payoutAccount && owed > 0 && (
+          <Button variant="outline" className="print:hidden" onClick={copyAccountNumber}>
+            <Copy className="size-4" />
+            Copy account number
+          </Button>
+        )}
 
         <div className="flex gap-2 print:hidden">
           <Button variant="outline" className="flex-1" onClick={shareSummary}>
