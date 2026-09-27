@@ -4,6 +4,9 @@ import { isValidWebhookSignature } from "../_shared/paystack.ts";
 // Configure this URL as the webhook endpoint in your Paystack dashboard.
 // Belt-and-suspenders alongside verify-design-payment: covers the case where
 // the customer closes the tab before returning from Paystack's checkout.
+// Also handles Dedicated Virtual Account events (dedicatedaccount.assign.*
+// and charge.success with channel "dedicated_nuban") for shops that have set
+// up a business account number -- see create-dedicated-account.
 
 Deno.serve(async (req) => {
   if (req.method !== "POST") return new Response("Method not allowed", { status: 405 });
@@ -20,17 +23,31 @@ Deno.serve(async (req) => {
   if (!valid) return new Response("Invalid signature", { status: 401 });
 
   const event = JSON.parse(rawBody);
-  if (event.event !== "charge.success") {
-    return new Response("ignored", { status: 200 });
-  }
-
-  const reference = event.data?.reference;
-  if (!reference) return new Response("ok", { status: 200 });
-
   const supabase = createClient(
     Deno.env.get("SUPABASE_URL")!,
     Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
   );
+
+  if (event.event === "dedicatedaccount.assign.success") {
+    await handleDedicatedAccountAssigned(supabase, event.data ?? {});
+    return new Response("ok", { status: 200 });
+  }
+  if (event.event === "dedicatedaccount.assign.failed") {
+    await handleDedicatedAccountFailed(supabase, event.data ?? {});
+    return new Response("ok", { status: 200 });
+  }
+
+  if (event.event !== "charge.success") {
+    return new Response("ignored", { status: 200 });
+  }
+
+  if (event.data?.channel === "dedicated_nuban") {
+    await handleIncomingTransfer(supabase, event.data);
+    return new Response("ok", { status: 200 });
+  }
+
+  const reference = event.data?.reference;
+  if (!reference) return new Response("ok", { status: 200 });
 
   if (reference.startsWith("plan_")) {
     await activatePlan(supabase, reference, Number(event.data?.amount ?? 0));
@@ -114,4 +131,101 @@ async function confirmOrderPayment(
     reference,
     paid_at: paidAt,
   });
+}
+
+type PaystackWebhookData = Record<string, unknown>;
+
+function asRecord(value: unknown): Record<string, unknown> {
+  return value && typeof value === "object" ? (value as Record<string, unknown>) : {};
+}
+
+async function handleDedicatedAccountAssigned(
+  supabase: SupabaseClient,
+  data: PaystackWebhookData,
+): Promise<void> {
+  const customer = asRecord(data.customer);
+  const bank = asRecord(data.bank);
+  const customerCode = customer.customer_code as string | undefined;
+  if (!customerCode) return;
+
+  await supabase
+    .from("dedicated_accounts")
+    .update({
+      paystack_dedicated_account_id: data.id != null ? String(data.id) : null,
+      account_number: (data.account_number as string | undefined) ?? null,
+      account_name: (data.account_name as string | undefined) ?? null,
+      bank_name: (bank.name as string | undefined) ?? null,
+      status: "active",
+      failure_reason: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("paystack_customer_code", customerCode);
+}
+
+async function handleDedicatedAccountFailed(
+  supabase: SupabaseClient,
+  data: PaystackWebhookData,
+): Promise<void> {
+  const customer = asRecord(data.customer);
+  const customerCode = customer.customer_code as string | undefined;
+  if (!customerCode) return;
+
+  await supabase
+    .from("dedicated_accounts")
+    .update({
+      status: "failed",
+      failure_reason:
+        (data.reason as string | undefined) ??
+        (data.message as string | undefined) ??
+        "Paystack could not assign an account number",
+      updated_at: new Date().toISOString(),
+    })
+    .eq("paystack_customer_code", customerCode);
+}
+
+// A client paid the shop's dedicated account number by plain bank transfer.
+// Idempotent on paystack_ref (unique index): a replayed webhook hits the
+// unique-violation branch below and returns without matching again.
+async function handleIncomingTransfer(
+  supabase: SupabaseClient,
+  data: PaystackWebhookData,
+): Promise<void> {
+  const reference = data.reference as string | undefined;
+  if (!reference) return;
+
+  const customer = asRecord(data.customer);
+  const customerCode = customer.customer_code as string | undefined;
+  if (!customerCode) return;
+
+  const { data: dedicated } = await supabase
+    .from("dedicated_accounts")
+    .select("store_id")
+    .eq("paystack_customer_code", customerCode)
+    .maybeSingle();
+  if (!dedicated) return;
+
+  const authorization = asRecord(data.authorization);
+  const senderName =
+    (authorization.sender_name as string | undefined) ??
+    (authorization.narration as string | undefined) ??
+    null;
+  const senderBank = (authorization.sender_bank as string | undefined) ?? null;
+  const amountKobo = Number(data.amount ?? 0);
+  const paidAt = (data.paid_at as string | undefined) ?? new Date().toISOString();
+
+  const { data: inserted, error } = await supabase
+    .from("incoming_transfers")
+    .insert({
+      store_id: dedicated.store_id,
+      amount: amountKobo / 100,
+      sender_name: senderName,
+      sender_bank: senderBank,
+      paystack_ref: reference,
+      received_at: paidAt,
+    })
+    .select("id")
+    .maybeSingle();
+  if (error || !inserted) return; // already processed (unique_violation on replay)
+
+  await supabase.rpc("match_incoming_transfer", { p_transfer_id: inserted.id });
 }

@@ -110,10 +110,20 @@ function PaymentsScreen() {
         </Link>
         <div className="mt-3 flex items-center justify-between gap-3">
           <h1 className="text-3xl">Payments</h1>
-          <Button size="sm" variant="outline" onClick={exportCsv} disabled={filtered.length === 0}>
-            <Download className="size-4" />
-            Export CSV
-          </Button>
+          <div className="flex gap-2">
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/unmatched-payments">Unmatched transfers</Link>
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={exportCsv}
+              disabled={filtered.length === 0}
+            >
+              <Download className="size-4" />
+              Export CSV
+            </Button>
+          </div>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">

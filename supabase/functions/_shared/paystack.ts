@@ -95,6 +95,61 @@ export async function createSubaccount(opts: {
   return data.data;
 }
 
+export async function createDedicatedAccountCustomer(opts: {
+  email: string;
+  firstName: string;
+  lastName: string;
+  phone?: string;
+}): Promise<{ customer_code: string }> {
+  const res = await fetch(`${PAYSTACK_BASE}/customer`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      email: opts.email,
+      first_name: opts.firstName,
+      last_name: opts.lastName,
+      ...(opts.phone ? { phone: opts.phone } : {}),
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data?.status) {
+    throw new Error(data?.message ?? `Could not create a Paystack customer (${res.status})`);
+  }
+  return data.data;
+}
+
+export async function createDedicatedAccount(opts: {
+  customerCode: string;
+  subaccount: string;
+}): Promise<{
+  id: number;
+  account_number: string;
+  account_name: string;
+  bank: { name: string };
+  customer: { customer_code: string };
+}> {
+  const res = await fetch(`${PAYSTACK_BASE}/dedicated_account`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secretKey()}`,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      customer: opts.customerCode,
+      preferred_bank: "wema-bank",
+      subaccount: opts.subaccount,
+    }),
+  });
+  const data = await res.json();
+  if (!res.ok || !data?.status) {
+    throw new Error(data?.message ?? `Could not request a dedicated account (${res.status})`);
+  }
+  return data.data;
+}
+
 export async function verifyTransaction(
   reference: string,
 ): Promise<{ status: string; amount: number; reference: string }> {

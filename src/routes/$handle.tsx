@@ -1,7 +1,8 @@
 import { useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { MessageCircle } from "lucide-react";
+import { toast } from "sonner";
+import { Copy, MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { SewRequestForm } from "@/components/jaylor/sew-request-form";
@@ -71,6 +72,18 @@ function PublicStorefront() {
         .maybeSingle();
       if (error) throw error;
       return data;
+    },
+  });
+
+  const { data: payoutAccount } = useQuery({
+    queryKey: ["storefront-payout-account", store?.id],
+    enabled: !!store,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_storefront_payout_account", {
+        p_store_id: store?.id as string,
+      });
+      if (error) throw error;
+      return data?.[0] ?? null;
     },
   });
 
@@ -179,6 +192,30 @@ function PublicStorefront() {
             whatsappNumber={whatsappNumber}
           />
         </div>
+
+        {payoutAccount && (
+          <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 sm:max-w-sm">
+            <div className="min-w-0">
+              <p className="text-xs text-muted-foreground">Pay by transfer to</p>
+              <p className="figures font-medium">{payoutAccount.account_number}</p>
+              <p className="truncate text-xs text-muted-foreground">
+                {payoutAccount.account_name} · {payoutAccount.bank_name}
+              </p>
+            </div>
+            <button
+              type="button"
+              className="shrink-0 rounded-lg border border-border p-2 text-muted-foreground hover:bg-accent"
+              onClick={() => {
+                navigator.clipboard
+                  .writeText(payoutAccount.account_number ?? "")
+                  .then(() => toast.success("Account number copied"))
+                  .catch(() => toast.error("Could not copy"));
+              }}
+            >
+              <Copy className="size-4" />
+            </button>
+          </div>
+        )}
 
         <StitchDivider className="my-8" />
 

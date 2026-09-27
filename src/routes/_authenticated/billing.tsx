@@ -7,6 +7,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { PaymentAccountSettings } from "@/components/jaylor/payment-account-settings";
+import { DedicatedAccountSettings } from "@/components/jaylor/dedicated-account-settings";
 import { ReferralCard } from "@/components/jaylor/referral-card";
 import { MessageTopupButton } from "@/components/jaylor/message-topup-button";
 import { StoreLocationSettings } from "@/components/jaylor/store-location-settings";
@@ -229,6 +230,7 @@ function Billing() {
             <CalendarEventPrefsCard storeId={currentStore.id} />
             <LatePayerDepositSetting storeId={currentStore.id} />
             <PaymentAccountSettings storeId={currentStore.id} tier={tier} />
+            <DedicatedAccountSettings storeId={currentStore.id} tier={tier} />
             <ReferralCard storeId={currentStore.id} referralCode={currentStore.referral_code} />
           </div>
         )}
