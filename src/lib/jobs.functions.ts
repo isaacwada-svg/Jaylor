@@ -220,17 +220,23 @@ export const acceptJobQuote = createServerFn({ method: "POST" })
 
     const { data: participant } = await supabaseAdmin
       .from("event_participants")
-      .select("event_id")
+      .select("event_id, phone")
       .eq("token", data.token)
       .maybeSingle();
     if (!participant) throw new Error("This quote was not found");
 
     const { data: event } = await supabaseAdmin
       .from("events")
-      .select("id, stage")
+      .select("id, stage, organiser_phone")
       .eq("id", participant.event_id)
       .maybeSingle();
     if (!event) throw new Error("This quote was not found");
+    // Only the organiser's own participant link may commit the group.
+    const last10 = (v: string | null | undefined) => (v ?? "").replace(/\D/g, "").slice(-10);
+    const organiser = last10(event.organiser_phone);
+    if (!organiser || organiser.length < 10 || last10(participant.phone) !== organiser) {
+      throw new Error("Only the group organiser can accept this quote");
+    }
     if (event.stage !== "quote") return { ok: true };
 
     const invoiceNumber = nextInvoiceNumber(event.id);
@@ -315,10 +321,25 @@ export const setMeasuringSession = createServerFn({ method: "POST" })
       throw new Error("Too many requests. Please try again later.");
     }
 
+    const { data: participant } = await supabaseAdmin
+      .from("event_participants")
+      .select("id, event_id")
+      .eq("token", data.token)
+      .maybeSingle();
+    if (!participant) throw new Error("This link was not found");
+
+    const { data: session } = await supabaseAdmin
+      .from("event_measuring_sessions")
+      .select("id")
+      .eq("id", data.sessionId)
+      .eq("event_id", participant.event_id)
+      .maybeSingle();
+    if (!session) throw new Error("That measuring slot is not available");
+
     const { error } = await supabaseAdmin
       .from("event_participants")
-      .update({ measuring_session_id: data.sessionId })
-      .eq("token", data.token);
+      .update({ measuring_session_id: session.id })
+      .eq("id", participant.id);
     if (error) throw new Error("Could not save your slot");
 
     return { ok: true };
