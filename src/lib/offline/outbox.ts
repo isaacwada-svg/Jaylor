@@ -54,6 +54,18 @@ export function isNetworkFailure(error: unknown): boolean {
   return error instanceof TypeError;
 }
 
+/** Custom SQLSTATE the enforce_order_limit() trigger raises -- see its migration. */
+const ORDER_LIMIT_ERROR_CODE = "P0100";
+
+/** True when a queued order was rejected by the plan's monthly order limit, not a real error. */
+function isOrderLimitRejection(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { code?: unknown }).code === ORDER_LIMIT_ERROR_CODE
+  );
+}
+
 async function runEntry(entry: OutboxEntry): Promise<void> {
   switch (entry.kind) {
     case "client.create": {
@@ -108,8 +120,13 @@ export async function flushOutbox(): Promise<void> {
         window.dispatchEvent(new CustomEvent("jaylor:offline-synced", { detail: entry }));
       } catch (error) {
         if (isNetworkFailure(error)) break;
-        await dbDelete(entry.id);
-        await refresh();
+        // A plan-limit rejection isn't a real error to discard -- keep the order
+        // queued so it syncs automatically once the shop upgrades or the month
+        // rolls over, instead of losing the client's order permanently.
+        if (!isOrderLimitRejection(error)) {
+          await dbDelete(entry.id);
+          await refresh();
+        }
         window.dispatchEvent(
           new CustomEvent("jaylor:offline-sync-failed", { detail: { entry, error } }),
         );
