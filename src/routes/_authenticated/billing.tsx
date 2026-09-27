@@ -83,6 +83,7 @@ function Billing() {
           if (result.status === "success") {
             toast.success("Your new plan is active. Thank you!");
             queryClient.invalidateQueries();
+            window.dispatchEvent(new Event("jaylor:plan-changed"));
           } else {
             toast.error("Payment wasn't confirmed");
           }
@@ -114,6 +115,7 @@ function Billing() {
         await switchToFree({ data: { storeId: currentStore.id } });
         toast.success("You're on the Free plan now.");
         queryClient.invalidateQueries();
+        window.dispatchEvent(new Event("jaylor:plan-changed"));
         return;
       }
       if (planCode === "custom") {

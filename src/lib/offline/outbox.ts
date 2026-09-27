@@ -11,6 +11,13 @@ export type OutboxEntry = {
   label: string;
   payload: unknown;
   createdAt: string;
+  /** Set when a plan-limit rejection (see isOrderLimitRejection) parked this entry
+   *  instead of discarding it. Blocked entries are skipped by flushOutbox() until
+   *  unblocked -- see unblockEntry(). */
+  blockedByLimit?: boolean;
+  /** Africa/Lagos 'YYYY-MM' at the moment this entry was blocked -- a later month
+   *  means the plan's monthly allowance has reset, so it's worth retrying. */
+  blockedMonth?: string;
 };
 
 type Listener = (entries: OutboxEntry[]) => void;
@@ -66,6 +73,27 @@ function isOrderLimitRejection(error: unknown): boolean {
   );
 }
 
+/** Africa/Lagos 'YYYY-MM', matching enforce_order_limit()'s `to_char(now() AT TIME ZONE
+ *  'Africa/Lagos', 'YYYY-MM')` -- so a locally-computed month rollover agrees with the
+ *  server's. */
+function currentLagosMonth(): string {
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Lagos",
+    year: "numeric",
+    month: "2-digit",
+  }).formatToParts(new Date());
+  const year = parts.find((p) => p.type === "year")?.value ?? "";
+  const month = parts.find((p) => p.type === "month")?.value ?? "";
+  return `${year}-${month}`;
+}
+
+/** Clears the blocked flags so the next flush attempts this entry again. */
+async function unblockEntry(entry: OutboxEntry): Promise<void> {
+  const { blockedByLimit: _blockedByLimit, blockedMonth: _blockedMonth, ...rest } = entry;
+  await dbPut(rest);
+  await refresh();
+}
+
 async function runEntry(entry: OutboxEntry): Promise<void> {
   switch (entry.kind) {
     case "client.create": {
@@ -109,10 +137,24 @@ export async function flushOutbox(): Promise<void> {
   if (flushing || (typeof navigator !== "undefined" && !navigator.onLine)) return;
   flushing = true;
   try {
+    // A new Africa/Lagos month means the plan's monthly order allowance has
+    // reset -- give any limit-blocked entries another try instead of
+    // leaving them parked forever.
+    const nowMonth = currentLagosMonth();
+    for (const entry of await dbGetAll<OutboxEntry>()) {
+      if (entry.blockedByLimit && entry.blockedMonth !== nowMonth) {
+        await unblockEntry(entry);
+      }
+    }
+
     const entries = (await dbGetAll<OutboxEntry>()).sort((a, b) =>
       a.createdAt.localeCompare(b.createdAt),
     );
     for (const entry of entries) {
+      // Skip without attempting -- retrying a plan-limit rejection every 30s
+      // would just fail again and again until the plan changes or the month
+      // rolls over (both handled above / via jaylor:plan-changed).
+      if (entry.blockedByLimit) continue;
       try {
         await runEntry(entry);
         await dbDelete(entry.id);
@@ -120,21 +162,37 @@ export async function flushOutbox(): Promise<void> {
         window.dispatchEvent(new CustomEvent("jaylor:offline-synced", { detail: entry }));
       } catch (error) {
         if (isNetworkFailure(error)) break;
-        // A plan-limit rejection isn't a real error to discard -- keep the order
-        // queued so it syncs automatically once the shop upgrades or the month
-        // rolls over, instead of losing the client's order permanently.
-        if (!isOrderLimitRejection(error)) {
+        if (isOrderLimitRejection(error)) {
+          // Not a real error to discard -- park it instead of losing the
+          // client's order, but stop hammering the server with it.
+          await dbPut({ ...entry, blockedByLimit: true, blockedMonth: nowMonth });
+          await refresh();
+          window.dispatchEvent(
+            new CustomEvent("jaylor:offline-blocked-by-limit", { detail: entry }),
+          );
+        } else {
           await dbDelete(entry.id);
           await refresh();
+          window.dispatchEvent(
+            new CustomEvent("jaylor:offline-sync-failed", { detail: { entry, error } }),
+          );
         }
-        window.dispatchEvent(
-          new CustomEvent("jaylor:offline-sync-failed", { detail: { entry, error } }),
-        );
       }
     }
   } finally {
     flushing = false;
   }
+}
+
+/** After a plan change (upgrade, downgrade, or switching to Free), retry anything the old
+ *  plan's limit had blocked -- see billing.tsx, where this event is dispatched. */
+function onPlanChanged() {
+  void (async () => {
+    for (const entry of await dbGetAll<OutboxEntry>()) {
+      if (entry.blockedByLimit) await unblockEntry(entry);
+    }
+    void flushOutbox();
+  })();
 }
 
 /** Call once from the app shell. Returns a cleanup function. */
@@ -143,10 +201,12 @@ export function initOutboxSync(): () => void {
     void flushOutbox();
   }
   window.addEventListener("online", onOnline);
+  window.addEventListener("jaylor:plan-changed", onPlanChanged);
   void flushOutbox();
   const interval = setInterval(() => void flushOutbox(), 30_000);
   return () => {
     window.removeEventListener("online", onOnline);
+    window.removeEventListener("jaylor:plan-changed", onPlanChanged);
     clearInterval(interval);
   };
 }
