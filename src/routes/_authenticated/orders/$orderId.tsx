@@ -16,6 +16,7 @@ import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { MoneyInput } from "@/components/ui/money-input";
 import {
   Dialog,
   DialogContent,
@@ -50,6 +51,10 @@ function OrderDetail() {
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
+  const [editingCosts, setEditingCosts] = useState(false);
+  const [labourCostInput, setLabourCostInput] = useState("");
+  const [otherCostInput, setOtherCostInput] = useState("");
+  const [savingCosts, setSavingCosts] = useState(false);
 
   // If a client (or the owner testing it) returns from a Paystack payment link.
   useEffect(() => {
@@ -223,6 +228,27 @@ function OrderDetail() {
     },
   });
 
+  async function saveCosts() {
+    setSavingCosts(true);
+    try {
+      const { error } = await supabase
+        .from("orders")
+        .update({
+          labour_cost: labourCostInput ? Number(labourCostInput) : null,
+          other_cost: otherCostInput ? Number(otherCostInput) : null,
+        })
+        .eq("id", orderId);
+      if (error) throw error;
+      toast.success("Costs saved");
+      queryClient.invalidateQueries({ queryKey: ["order", orderId] });
+      setEditingCosts(false);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not save these costs"));
+    } finally {
+      setSavingCosts(false);
+    }
+  }
+
   async function confirmStatusChange() {
     if (!pendingStatus) return;
     setUpdating(true);
@@ -276,6 +302,20 @@ function OrderDetail() {
   const price = canSeeMoney ? (order as Tables<"orders">).price : null;
   const statusIndex = ORDER_STATUSES_DB.indexOf(order.status as (typeof ORDER_STATUSES_DB)[number]);
   const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
+
+  const fullOrder = canSeeMoney ? (order as Tables<"orders">) : null;
+  const materialCost = material?.source === "tailor" ? (material.cost ?? 0) : 0;
+  const labourCost = fullOrder?.labour_cost ?? 0;
+  const otherCost = fullOrder?.other_cost ?? 0;
+  const totalCost = materialCost + labourCost + otherCost;
+  const profit = (price ?? 0) - totalCost;
+  const margin = price && price > 0 ? (profit / price) * 100 : null;
+
+  function startEditingCosts() {
+    setLabourCostInput(fullOrder?.labour_cost != null ? String(fullOrder.labour_cost) : "");
+    setOtherCostInput(fullOrder?.other_cost != null ? String(fullOrder.other_cost) : "");
+    setEditingCosts(true);
+  }
 
   return (
     <AppShell>
@@ -461,6 +501,78 @@ function OrderDetail() {
                 <p className="mt-1 text-sm">
                   Cost: <MoneyText amount={material.cost} />
                 </p>
+              )}
+            </div>
+          )}
+
+          {canSeeMoney && (
+            <div className="rounded-2xl border border-border p-4">
+              <div className="flex items-start justify-between gap-3">
+                <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                  Cost &amp; profit
+                </p>
+                {!editingCosts && (
+                  <Button size="sm" variant="ghost" onClick={startEditingCosts}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+
+              {editingCosts ? (
+                <div className="mt-2 space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Labour cost</p>
+                    <MoneyInput value={labourCostInput} onChange={setLabourCostInput} />
+                  </div>
+                  <div className="space-y-1">
+                    <p className="text-xs text-muted-foreground">Other cost</p>
+                    <MoneyInput value={otherCostInput} onChange={setOtherCostInput} />
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => setEditingCosts(false)}
+                    >
+                      Cancel
+                    </Button>
+                    <Button size="sm" className="flex-1" onClick={saveCosts} disabled={savingCosts}>
+                      {savingCosts ? "Saving..." : "Save"}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                <div className="mt-2 space-y-1 text-sm">
+                  {materialCost > 0 && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Material</span>
+                      <MoneyText amount={materialCost} variant="muted" />
+                    </div>
+                  )}
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Labour</span>
+                    <MoneyText amount={labourCost} variant="muted" />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Other</span>
+                    <MoneyText amount={otherCost} variant="muted" />
+                  </div>
+                  <div className="flex items-center justify-between border-t border-border pt-1">
+                    <span className="text-muted-foreground">Total cost</span>
+                    <MoneyText amount={totalCost} />
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-muted-foreground">Profit</span>
+                    <MoneyText amount={profit} variant={profit >= 0 ? "paid" : "owed"} />
+                  </div>
+                  {margin != null && (
+                    <div className="flex items-center justify-between">
+                      <span className="text-muted-foreground">Margin</span>
+                      <span className="figures">{margin.toFixed(0)}%</span>
+                    </div>
+                  )}
+                </div>
               )}
             </div>
           )}
