@@ -196,7 +196,9 @@ export async function sendWeeklyDigest(
   return { skipped: false, email: emailSent, whatsapp: whatsappSent, notification: true };
 }
 
-/** Owner alert for one incoming transfer that was matched to an order (auto or manual). */
+/** Owner alert for one incoming transfer that was matched to an order (auto or manual).
+ *  In-app notification + email only for now -- no WhatsApp here while STEP 1.2's dedicated
+ *  accounts are still being verified in Paystack test mode. */
 export async function sendTransferAlert(
   storeId: string,
   orderId: string,
@@ -231,15 +233,9 @@ export async function sendTransferAlert(
     p_link: `/orders/${orderId}`,
   });
 
-  let whatsappSent = false;
-  if (recipients.whatsappPhone && (await hasOpenWindow(recipients.whatsappPhone))) {
-    const result = await sendWhatsAppText(
-      recipients.whatsappPhone.replace(/\D/g, ""),
-      text,
-      "transfer_received",
-    );
-    whatsappSent = result.ok;
-  }
+  const emailSent = recipients.email
+    ? await sendEmail(recipients.email, "Jaylor: transfer received", text)
+    : false;
 
-  return { skipped: false, email: false, whatsapp: whatsappSent, notification: true };
+  return { skipped: false, email: emailSent, whatsapp: false, notification: true };
 }
