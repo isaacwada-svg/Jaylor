@@ -751,8 +751,15 @@ export type Database = {
           {
             foreignKeyName: "dedicated_accounts_store_id_fkey"
             columns: ["store_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dedicated_accounts_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -1375,6 +1382,13 @@ export type Database = {
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "incoming_transfers_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
         ]
@@ -4002,44 +4016,16 @@ export type Database = {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined
       }
+      assign_incoming_transfer: {
+        Args: { p_allocations: Json; p_transfer_id: string }
+        Returns: undefined
+      }
       can_use_feature: {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
       }
       check_feature_limit: {
         Args: { p_feature: string; p_quantity?: number; p_store_id: string }
-        Returns: Json
-      }
-      assign_incoming_transfer: {
-        Args: { p_allocations: Json; p_transfer_id: string }
-        Returns: undefined
-      }
-      get_storefront_payout_account: {
-        Args: { p_store_id: string }
-        Returns: {
-          account_name: string | null
-          account_number: string | null
-          bank_name: string | null
-        }[]
-      }
-      ignore_incoming_transfer: {
-        Args: { p_transfer_id: string }
-        Returns: undefined
-      }
-      match_incoming_transfer: {
-        Args: { p_transfer_id: string }
-        Returns: string
-      }
-      name_similarity: {
-        Args: { a: string; b: string }
-        Returns: number
-      }
-      get_daily_digest_data: {
-        Args: { p_store_id: string }
-        Returns: Json
-      }
-      get_weekly_digest_data: {
-        Args: { p_store_id: string }
         Returns: Json
       }
       check_rate_limit: {
@@ -4089,6 +4075,7 @@ export type Database = {
         Returns: undefined
       }
       generate_plan_limit_notifications: { Args: never; Returns: undefined }
+      get_daily_digest_data: { Args: { p_store_id: string }; Returns: Json }
       get_design_by_token: {
         Args: { p_token: string }
         Returns: {
@@ -4109,6 +4096,15 @@ export type Database = {
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
+      get_storefront_payout_account: {
+        Args: { p_store_id: string }
+        Returns: {
+          account_name: string
+          account_number: string
+          bank_name: string
+        }[]
+      }
+      get_weekly_digest_data: { Args: { p_store_id: string }; Returns: Json }
       has_active_support_grant: {
         Args: { p_store_id: string }
         Returns: boolean
@@ -4119,6 +4115,10 @@ export type Database = {
           _store_id: string
         }
         Returns: boolean
+      }
+      ignore_incoming_transfer: {
+        Args: { p_transfer_id: string }
+        Returns: undefined
       }
       increment_advisor_usage: {
         Args: { p_store_id: string }
@@ -4169,6 +4169,11 @@ export type Database = {
         }
         Returns: undefined
       }
+      match_incoming_transfer: {
+        Args: { p_transfer_id: string }
+        Returns: string
+      }
+      name_similarity: { Args: { a: string; b: string }; Returns: number }
       next_calendar_occurrence: {
         Args: { p_from_date?: string; p_key: string; p_store_id?: string }
         Returns: {
