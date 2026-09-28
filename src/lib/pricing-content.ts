@@ -53,7 +53,7 @@ export const PRICE_TIERS: PriceTier[] = [
     features: [
       "3 users",
       "Unlimited orders",
-      "100 automatic WhatsApp / month",
+      "Automatic WhatsApp reminders (coming soon)",
       "Own logo on receipts",
       "Unlimited storefront items",
       "Public booking page",
@@ -73,8 +73,7 @@ export const PRICE_TIERS: PriceTier[] = [
     },
     features: [
       "10 users with roles",
-      "Up to 3 branches",
-      "200 automatic WhatsApp / month",
+      "Automatic WhatsApp reminders (coming soon)",
       "Staff job board",
       "Expenses and net profit reports",
       "Unlimited group events",
