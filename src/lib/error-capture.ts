@@ -52,8 +52,29 @@ function isErrorLike(value: unknown): value is Error {
 // Wrap console.error so errors logged by any layer — including h3's internal
 // unhandled-error logging, which this file cannot hook directly — are both
 // recorded for consumeLastCapturedError and expanded before serialization.
+// A visitor closing the tab, reloading, or navigating away mid-request makes
+// Node reject the pending request with "Error: aborted" (ECONNRESET). That is
+// normal client behaviour, not an app failure — never record or report it.
+export function isClientAbortError(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < CAUSE_DEPTH_LIMIT && current instanceof Error; depth++) {
+    const code = (current as { code?: unknown }).code;
+    if (
+      current.name === "AbortError" ||
+      code === "ECONNRESET" ||
+      code === "ERR_STREAM_PREMATURE_CLOSE" ||
+      (current.message === "aborted" && (current.stack ?? "").includes("abortIncoming"))
+    ) {
+      return true;
+    }
+    current = current.cause;
+  }
+  return false;
+}
+
 const originalConsoleError = console.error.bind(console);
 console.error = (...args: unknown[]) => {
+  if (args.some((arg) => isClientAbortError(arg))) return;
   const expanded = args.map((arg) => {
     if (!isErrorLike(arg)) return arg;
     record(arg);
@@ -63,10 +84,14 @@ console.error = (...args: unknown[]) => {
 };
 
 if (typeof globalThis.addEventListener === "function") {
-  globalThis.addEventListener("error", (event) => record((event as ErrorEvent).error ?? event));
-  globalThis.addEventListener("unhandledrejection", (event) =>
-    record((event as PromiseRejectionEvent).reason),
-  );
+  globalThis.addEventListener("error", (event) => {
+    const err = (event as ErrorEvent).error ?? event;
+    if (!isClientAbortError(err)) record(err);
+  });
+  globalThis.addEventListener("unhandledrejection", (event) => {
+    const reason = (event as PromiseRejectionEvent).reason;
+    if (!isClientAbortError(reason)) record(reason);
+  });
 }
 
 export function consumeLastCapturedError(): unknown {
