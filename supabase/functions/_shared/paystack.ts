@@ -139,7 +139,11 @@ export async function createDedicatedAccount(opts: {
     },
     body: JSON.stringify({
       customer: opts.customerCode,
-      preferred_bank: "wema-bank",
+      // Paystack's test mode only ever assigns dedicated accounts under
+      // "test-bank" -- wema-bank (or another live-mode bank) is a live-key-only
+      // value. Switch this back once the integration is verified end-to-end on
+      // a live secret key.
+      preferred_bank: "test-bank",
       subaccount: opts.subaccount,
     }),
   });
