@@ -125,7 +125,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   },
   {
     label: "Automatic WhatsApp / month",
-    values: { Free: "—", Growth: "100", Business: "200", Custom: "Agreed volume" },
+    values: { Free: "—", Growth: "Coming soon", Business: "Coming soon", Custom: "Agreed volume" },
   },
   {
     label: "Storefront items",
@@ -140,7 +140,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       Custom: "Own branding",
     },
   },
-  { label: "Branches", values: { Free: "1", Growth: "1", Business: "3", Custom: "Unlimited" } },
+  { label: "Branches", values: { Free: "1", Growth: "1", Business: "1", Custom: "Unlimited" } },
   {
     label: "Group and aso-ebi events",
     values: { Free: "—", Growth: "1 active", Business: "Unlimited", Custom: "Unlimited" },
