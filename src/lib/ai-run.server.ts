@@ -17,20 +17,20 @@ type GeminiResult = {
   outputTokens: number;
 };
 
+export type Json = string | number | boolean | null | Json[] | { [k: string]: Json };
 export type AiRunResponse =
-  | { ok: true; result: Record<string, unknown>; credits: number; wallet: unknown }
+  | { ok: true; result: Record<string, Json>; credits: number }
   | {
       ok: false;
       code: string;
       error: string;
       needed?: number;
-      wallet?: unknown;
       min_plan?: string;
       refunded?: boolean;
     };
 
 class FriendlyError extends Error {
-  usage?: GeminiResult;
+  usage?: GeminiResult | undefined;
   constructor(
     message: string,
     public code: string,
@@ -41,7 +41,7 @@ class FriendlyError extends Error {
   }
 }
 
-const fail = (code: string, error: string, extra: Record<string, unknown> = {}): AiRunResponse => ({
+const fail = (code: string, error: string, extra: { needed?: number; min_plan?: string; refunded?: boolean } = {}): AiRunResponse => ({
   ok: false,
   code,
   error,
@@ -95,7 +95,8 @@ async function callGemini(
     }
     const data = await res.json();
     const cand = data?.candidates?.[0];
-    const outParts: Array<Record<string, unknown>> = cand?.content?.parts ?? [];
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const outParts: any[] = cand?.content?.parts ?? [];
     const text =
       outParts
         .filter((p) => !p.thought)
@@ -141,7 +142,9 @@ export async function runAiFeature(opts: {
   feature: string;
   input: Record<string, unknown>;
 }): Promise<AiRunResponse> {
-  const { userId, storeId, feature, input } = opts;
+  const { userId, storeId, feature } = opts;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const input: any = opts.input;
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const db = supabaseAdmin as unknown as SupabaseClient;
 
@@ -164,7 +167,8 @@ export async function runAiFeature(opts: {
 
   // 2. Feature + plan
   const { data: cfgRows } = await db.from("ai_config").select("key, value");
-  const config: Record<string, unknown> = {};
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const config: any = {};
   for (const row of cfgRows ?? []) config[row.key as string] = row.value;
   const { data: cost } = await db.from("ai_feature_costs").select("*").eq("feature_key", feature).maybeSingle();
   if (!cost) return fail("UNKNOWN_FEATURE", "This AI tool isn't available.");
@@ -235,7 +239,7 @@ export async function runAiFeature(opts: {
   }
   const r = reserve as { ok: boolean; ledger_id?: string; needed?: number; wallet?: unknown };
   if (!r.ok) {
-    return fail("INSUFFICIENT_CREDITS", "You don't have enough AI credits.", { needed: r.needed, wallet: r.wallet });
+    return fail("INSUFFICIENT_CREDITS", "You don't have enough AI credits.", { needed: r.needed ?? 0 });
   }
   const ledgerId = r.ledger_id!;
   const isImage = cost.model_key === "model_image";
@@ -247,7 +251,7 @@ export async function runAiFeature(opts: {
       : (g.outputTokens / 1e6) * Number(config.price_text_output_per_m_usd ?? 0));
 
   try {
-    let result: Record<string, unknown>;
+    let result: Record<string, Json>;
     let g: GeminiResult;
     const garment = str(input.garmentType, 60) || "outfit";
     const occasion = str(input.occasion, 80);
@@ -307,7 +311,7 @@ export async function runAiFeature(opts: {
         ],
         { responseMimeType: "application/json" },
       );
-      const parsed = parseJson(g.text) as { ideas?: Array<Record<string, unknown>> } | null;
+      const parsed = parseJson(g.text) as { ideas?: any[] } | null;
       const ideas = (parsed?.ideas ?? [])
         .slice(0, 5)
         .map((i) => ({ name: str(i.name, 80), description: str(i.description, 300), why: str(i.why, 300) }))
@@ -338,7 +342,7 @@ export async function runAiFeature(opts: {
       p_ledger_id: ledgerId,
       p_usage: { model, input_tokens: g.inputTokens, output_tokens: g.outputTokens, cost_usd: costOf(g) },
     });
-    return { ok: true, result, credits: Number(cost.credits), wallet: null };
+    return { ok: true, result, credits: Number(cost.credits) };
   } catch (err) {
     const friendly = err instanceof FriendlyError ? err : null;
     if (!friendly) console.error("ai-run failure", err);

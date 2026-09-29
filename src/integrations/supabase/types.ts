@@ -2375,6 +2375,103 @@ export type Database = {
           },
         ]
       }
+      order_attachments: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          created_by: string | null
+          duration_seconds: number | null
+          file_name: string
+          id: string
+          kind: string
+          language: string | null
+          mime_type: string | null
+          order_id: string | null
+          path: string
+          size_bytes: number
+          store_id: string
+          transcript: string | null
+          transcript_english: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          file_name: string
+          id?: string
+          kind?: string
+          language?: string | null
+          mime_type?: string | null
+          order_id?: string | null
+          path: string
+          size_bytes?: number
+          store_id: string
+          transcript?: string | null
+          transcript_english?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          duration_seconds?: number | null
+          file_name?: string
+          id?: string
+          kind?: string
+          language?: string | null
+          mime_type?: string | null
+          order_id?: string | null
+          path?: string
+          size_bytes?: number
+          store_id?: string
+          transcript?: string | null
+          transcript_english?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_attachments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_attachments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_attachments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_attachments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_attachments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_attachments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_materials: {
         Row: {
           colour: string | null
@@ -4153,6 +4250,54 @@ export type Database = {
           },
           {
             foreignKeyName: "usage_log_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      voice_transcription_log: {
+        Row: {
+          created_at: string
+          est_cost_usd: number
+          id: string
+          input_tokens: number | null
+          output_tokens: number | null
+          seconds: number
+          store_id: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          est_cost_usd?: number
+          id?: string
+          input_tokens?: number | null
+          output_tokens?: number | null
+          seconds?: number
+          store_id: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          est_cost_usd?: number
+          id?: string
+          input_tokens?: number | null
+          output_tokens?: number | null
+          seconds?: number
+          store_id?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "voice_transcription_log_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "voice_transcription_log_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"

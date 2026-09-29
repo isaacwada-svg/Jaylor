@@ -76,7 +76,7 @@ export function useAiPacks() {
   });
 }
 
-type SheetState = { open: boolean; feature?: string; needed?: number; upgradeOnly?: boolean };
+type SheetState = { open: boolean; feature?: string | undefined; needed?: number | undefined; upgradeOnly?: boolean | undefined };
 type Ctx = {
   openTopUp: (s?: Omit<SheetState, "open">) => void;
   run: (
@@ -151,7 +151,7 @@ export function AiCreditsProvider({ children }: { children: ReactNode }) {
     async (feature, input) => {
       if (!storeId) return { ok: false };
       setLastAction({ feature, input });
-      let res;
+      let res: Awaited<ReturnType<typeof runFn>>;
       try {
         res = await runFn({ data: { storeId, feature, input } });
       } catch {
@@ -161,7 +161,7 @@ export function AiCreditsProvider({ children }: { children: ReactNode }) {
       refreshWallet();
       if (res.ok) return { ok: true, result: res.result };
       if (res.code === "INSUFFICIENT_CREDITS") {
-        setSheet({ open: true, feature, needed: res.needed });
+        setSheet({ open: true, feature, needed: res.needed ?? 0 });
       } else if (res.code === "PLAN") {
         setSheet({ open: true, feature, upgradeOnly: true });
       } else {
@@ -207,7 +207,7 @@ function TopUpSheet({
   const [busy, setBusy] = useState<string | null>(null);
   const cost = state.feature ? costs?.[state.feature] : undefined;
   const plan = wallet?.plan_code ?? "free";
-  const previewCost = costs?.style_preview?.credits ?? 10;
+  const previewCost = costs?.["style_preview"]?.credits ?? 10;
 
   async function buy(packId: string) {
     if (!currentStore) return;

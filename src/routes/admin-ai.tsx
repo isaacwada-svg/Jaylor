@@ -11,6 +11,7 @@ import { Switch } from "@/components/ui/switch";
 const db = supabase as any;
 
 export const Route = createFileRoute("/admin-ai")({
+  staticData: { sitemap: false },
   head: () => ({
     meta: [
       { title: "AI costs · Jaylor admin" },

@@ -18,6 +18,7 @@ import { AiActionButton, naira, shortDate, useAiCredits, AiCreditsProvider } fro
 const db = supabase as any;
 
 export const Route = createFileRoute("/_authenticated/festive")({
+  staticData: { sitemap: false },
   validateSearch: z.object({ occasion: z.string().optional() }),
   head: () => ({
     meta: [
@@ -91,9 +92,9 @@ function FestiveInner() {
   const [newLabel, setNewLabel] = useState("");
   const [newDate, setNewDate] = useState("");
   async function addOccasion() {
-    if (!newLabel.trim() || !newDate) return toast.error("Add a name and a date.");
+    if (!newLabel.trim() || !newDate) return void toast.error("Add a name and a date.");
     const { error } = await db.from("store_occasions").insert({ store_id: storeId, label: newLabel.trim(), event_date: newDate });
-    if (error) return toast.error("Couldn't add this occasion.");
+    if (error) return void toast.error("Couldn't add this occasion.");
     setNewLabel("");
     setNewDate("");
     void qc.invalidateQueries({ queryKey: ["festive-upcoming"] });
@@ -230,13 +231,13 @@ function Campaign({
       })
       .select("id")
       .single();
-    if (error) return toast.error("Couldn't start the campaign.");
+    if (error) return void toast.error("Couldn't start the campaign.");
     setCampaignId(data.id);
   }
 
   async function sendTo(c: { id: string; full_name: string; phone: string | null; whatsapp_phone: string | null }) {
     const phone = c.whatsapp_phone || c.phone;
-    if (!phone) return toast.error("This client has no phone number.");
+    if (!phone) return void toast.error("This client has no phone number.");
     const first = c.full_name.split(" ")[0] ?? c.full_name;
     window.open(whatsappLink(phone, message.replaceAll("{first_name}", first)), "_blank");
     const next = new Set(sent).add(c.id);
