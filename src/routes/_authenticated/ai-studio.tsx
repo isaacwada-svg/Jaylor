@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
-import { shortDate, takePendingAiAction, useAiCosts, useAiCredits, useAiWallet } from "@/lib/ai-credits";
+import { shortDate, takePendingAiAction, useAiCosts, useAiCredits, useAiWallet, AiCreditsProvider } from "@/lib/ai-credits";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -34,6 +34,10 @@ const STATUS_WORDS: Record<string, string> = { charged: "Used", refunded: "Refun
 const COMING_SOON = ["pricing_advisor", "debt_reminder_ai", "insights_summary", "portfolio_caption"];
 
 function AiStudioPage() {
+  return <AiCreditsProvider><AiStudioInner /></AiCreditsProvider>;
+}
+
+function AiStudioInner() {
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const { data: wallet } = useAiWallet(storeId);
