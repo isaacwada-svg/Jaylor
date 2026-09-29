@@ -12,7 +12,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { whatsappLink } from "@/lib/whatsapp";
-import { AiActionButton, naira, shortDate, useAiCredits } from "@/lib/ai-credits";
+import { AiActionButton, naira, shortDate, useAiCredits, AiCreditsProvider } from "@/lib/ai-credits";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const db = supabase as any;
@@ -46,6 +46,10 @@ function lagosHour(): number {
 }
 
 function FestivePage() {
+  return <AiCreditsProvider><FestiveInner /></AiCreditsProvider>;
+}
+
+function FestiveInner() {
   const { currentStore } = useStore();
   const storeId = currentStore?.id;
   const qc = useQueryClient();
