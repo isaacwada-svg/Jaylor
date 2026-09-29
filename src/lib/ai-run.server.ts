@@ -338,11 +338,7 @@ export async function runAiFeature(opts: {
       p_ledger_id: ledgerId,
       p_usage: { model, input_tokens: g.inputTokens, output_tokens: g.outputTokens, cost_usd: costOf(g) },
     });
-    const { data: wallet } = await db.rpc("reserve_ai_credits_wallet_noop" as never).then(
-      () => ({ data: null }),
-      () => ({ data: null }),
-    );
-    return { ok: true, result, credits: Number(cost.credits), wallet };
+    return { ok: true, result, credits: Number(cost.credits), wallet: null };
   } catch (err) {
     const friendly = err instanceof FriendlyError ? err : null;
     if (!friendly) console.error("ai-run failure", err);
