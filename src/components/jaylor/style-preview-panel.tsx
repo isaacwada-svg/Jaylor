@@ -171,14 +171,24 @@ export function StylePreviewPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoRunPreview, fabric]);
 
+  const recRef = useRef<{ stop: () => void } | null>(null);
   function speak() {
+    if (listening) {
+      recRef.current?.stop();
+      return;
+    }
     if (!isSpeechRecognitionSupported()) return toast("Voice typing isn't supported on this phone. Please type instead.");
+    const base = description;
     setListening(true);
-    startSpeechRecognition({
-      onResult: (text: string) => setDescription((d) => (d ? `${d} ${text}` : text)),
+    recRef.current = startSpeechRecognition({
+      onInterim: (t) => setDescription(base ? `${base} ${t}` : t),
+      onFinal: (t) => setDescription(base ? `${base} ${t}` : t),
       onEnd: () => setListening(false),
-      onError: () => setListening(false),
-    } as never);
+      onError: () => {
+        setListening(false);
+        toast.error("Voice typing stopped. Please allow the microphone or type instead.");
+      },
+    });
   }
 
   async function saveToOrder() {
@@ -260,8 +270,8 @@ export function StylePreviewPanel({
       <div>
         <div className="flex items-center justify-between">
           <Label htmlFor="sp-desc">Style description</Label>
-          <Button type="button" size="sm" variant="ghost" onClick={speak} disabled={listening}>
-            <Mic className="size-4" /> {listening ? "Listening…" : "Speak"}
+          <Button type="button" size="sm" variant="ghost" onClick={speak}>
+            <Mic className="size-4" /> {listening ? "Stop" : "Speak"}
           </Button>
         </div>
         <Textarea id="sp-desc" className="mt-1" rows={3} placeholder="e.g. mermaid gown with off-shoulder neckline and puff sleeves" value={description} onChange={(e) => setDescription(e.target.value)} />
