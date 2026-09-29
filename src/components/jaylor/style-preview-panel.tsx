@@ -144,7 +144,7 @@ export function StylePreviewPanel({
   });
 
   async function doPreview(extra: Record<string, unknown> = {}) {
-    if (!fabric) return toast.error("Please add a fabric photo first.");
+    if (!fabric) return void toast.error("Please add a fabric photo first.");
     setBusy("preview");
     const res = await run("style_preview", inputs(extra));
     setBusy(null);
@@ -156,7 +156,7 @@ export function StylePreviewPanel({
   }
 
   async function doIdeas() {
-    if (!fabric) return toast.error("Please add a fabric photo first.");
+    if (!fabric) return void toast.error("Please add a fabric photo first.");
     setBusy("ideas");
     const res = await run("style_suggestions", inputs());
     setBusy(null);
@@ -177,7 +177,7 @@ export function StylePreviewPanel({
       recRef.current?.stop();
       return;
     }
-    if (!isSpeechRecognitionSupported()) return toast("Voice typing isn't supported on this phone. Please type instead.");
+    if (!isSpeechRecognitionSupported()) return void toast("Voice typing isn't supported on this phone. Please type instead.");
     const base = description;
     setListening(true);
     recRef.current = startSpeechRecognition({
@@ -192,9 +192,9 @@ export function StylePreviewPanel({
   }
 
   async function saveToOrder() {
-    if (!preview || !saveOrderId) return toast.error("Pick an order first.");
+    if (!preview || !saveOrderId) return void toast.error("Pick an order first.");
     const { error } = await db.from("ai_style_previews").update({ order_id: saveOrderId }).eq("id", preview.previewId);
-    if (error) return toast.error("Couldn't save. Please try again.");
+    if (error) return void toast.error("Couldn't save. Please try again.");
     setPreview({ ...preview, orderId: saveOrderId });
     void qc.invalidateQueries({ queryKey: ["style-previews"] });
     toast.success("Saved to order");

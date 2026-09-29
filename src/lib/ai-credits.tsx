@@ -151,7 +151,7 @@ export function AiCreditsProvider({ children }: { children: ReactNode }) {
     async (feature, input) => {
       if (!storeId) return { ok: false };
       setLastAction({ feature, input });
-      let res;
+      let res: Awaited<ReturnType<typeof runFn>>;
       try {
         res = await runFn({ data: { storeId, feature, input } });
       } catch {
@@ -207,7 +207,7 @@ function TopUpSheet({
   const [busy, setBusy] = useState<string | null>(null);
   const cost = state.feature ? costs?.[state.feature] : undefined;
   const plan = wallet?.plan_code ?? "free";
-  const previewCost = costs?.style_preview?.credits ?? 10;
+  const previewCost = costs?.["style_preview"]?.credits ?? 10;
 
   async function buy(packId: string) {
     if (!currentStore) return;

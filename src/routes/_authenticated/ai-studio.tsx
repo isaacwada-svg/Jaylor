@@ -16,6 +16,7 @@ import { shortDate, takePendingAiAction, useAiCosts, useAiCredits, useAiWallet, 
 const db = supabase as any;
 
 export const Route = createFileRoute("/_authenticated/ai-studio")({
+  staticData: { sitemap: false },
   validateSearch: z.object({ resume: z.number().optional() }),
   head: () => ({
     meta: [
@@ -95,7 +96,7 @@ function AiStudioInner() {
 
   async function toggleStaff(v: boolean) {
     const { error } = await db.rpc("set_store_ai_staff_allowed", { p_store_id: storeId, p_allowed: v });
-    if (error) return toast.error("Couldn't change this. Please try again.");
+    if (error) return void toast.error("Couldn't change this. Please try again.");
     void qc.invalidateQueries({ queryKey: ["ai-wallet"] });
   }
 
@@ -144,14 +145,14 @@ function AiStudioInner() {
         <section className="space-y-4">
           <h2 className="flex items-center gap-2 text-2xl"><Sparkles className="size-5 text-gold" /> Style preview</h2>
           <p className="text-sm text-muted-foreground">Snap the client's fabric and see the outfit before you cut.</p>
-          <StylePreviewPanel key={resumeInputs ? "resume" : "new"} initial={resumeInputs ?? undefined} autoRunPreview={!!resumeInputs} />
+          <StylePreviewPanel key={resumeInputs ? "resume" : "new"} {...(resumeInputs ? { initial: resumeInputs } : {})} autoRunPreview={!!resumeInputs} />
           <StylePreviewGallery />
         </section>
 
         <section className="border border-border p-5">
           <h2 className="flex items-center gap-2 text-2xl"><CalendarHeart className="size-5 text-gold" /> Festive season messages</h2>
           <p className="mt-1 text-sm text-muted-foreground">
-            See which clients sewed with you last Christmas, Sallah or Easter, and send them a message. Finding clients is free. Writing with AI costs {costs?.festive_message_ai?.credits ?? 1} credit per campaign.
+            See which clients sewed with you last Christmas, Sallah or Easter, and send them a message. Finding clients is free. Writing with AI costs {costs?.["festive_message_ai"]?.credits ?? 1} credit per campaign.
           </p>
           <Button asChild variant="outline" className="mt-3 h-12"><Link to="/festive">Open festive messages</Link></Button>
         </section>
