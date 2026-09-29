@@ -51,6 +51,12 @@ Deno.serve(async (req) => {
 
   if (reference.startsWith("plan_")) {
     await activatePlan(supabase, reference, Number(event.data?.amount ?? 0));
+  } else if (reference.startsWith("aicredit_")) {
+    // AI credit top-up: idempotent by reference, amount-checked in the database.
+    await supabase.rpc("apply_ai_topup", {
+      p_reference: reference,
+      p_paid_kobo: Number(event.data?.amount ?? 0),
+    });
   } else if (reference.startsWith("orderpay_")) {
     await confirmOrderPayment(supabase, reference);
   } else if (reference.startsWith("topup_")) {

@@ -14,6 +14,7 @@ import { Route as HandleRouteImport } from './routes/$handle'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
+import { Route as AdminAiRouteImport } from './routes/admin-ai'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiesRouteImport } from './routes/cookies'
@@ -30,10 +31,12 @@ import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
+import { Route as AuthenticatedAiStudioRouteImport } from './routes/_authenticated/ai-studio'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
 import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authenticated/consultations'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedFestiveRouteImport } from './routes/_authenticated/festive'
 import { Route as AuthenticatedMomentsRouteImport } from './routes/_authenticated/moments'
 import { Route as AuthenticatedMoreRouteImport } from './routes/_authenticated/more'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
@@ -86,6 +89,11 @@ const AboutRoute = AboutRouteImport.update({
 const AdminRoute = AdminRouteImport.update({
   id: '/admin',
   path: '/admin',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AdminAiRoute = AdminAiRouteImport.update({
+  id: '/admin-ai',
+  path: '/admin-ai',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -168,6 +176,11 @@ const AuthenticatedAiDesignsRoute = AuthenticatedAiDesignsRouteImport.update({
   path: '/ai-designs',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedAiStudioRoute = AuthenticatedAiStudioRouteImport.update({
+  id: '/ai-studio',
+  path: '/ai-studio',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   id: '/billing',
   path: '/billing',
@@ -187,6 +200,11 @@ const AuthenticatedContractsRoute = AuthenticatedContractsRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedFestiveRoute = AuthenticatedFestiveRouteImport.update({
+  id: '/festive',
+  path: '/festive',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMomentsRoute = AuthenticatedMomentsRouteImport.update({
@@ -350,6 +368,7 @@ export interface FileRoutesByFullPath {
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin-ai': typeof AdminAiRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -366,10 +385,12 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
+  '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/festive': typeof AuthenticatedFestiveRoute
   '/moments': typeof AuthenticatedMomentsRoute
   '/more': typeof AuthenticatedMoreRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -405,6 +426,7 @@ export interface FileRoutesByTo {
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin-ai': typeof AdminAiRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -421,10 +443,12 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
+  '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/festive': typeof AuthenticatedFestiveRoute
   '/moments': typeof AuthenticatedMomentsRoute
   '/more': typeof AuthenticatedMoreRoute
   '/payments': typeof AuthenticatedPaymentsRoute
@@ -462,6 +486,7 @@ export interface FileRoutesById {
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
+  '/admin-ai': typeof AdminAiRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -478,10 +503,12 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/terms': typeof TermsRoute
   '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
+  '/_authenticated/ai-studio': typeof AuthenticatedAiStudioRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
   '/_authenticated/consultations': typeof AuthenticatedConsultationsRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/festive': typeof AuthenticatedFestiveRoute
   '/_authenticated/moments': typeof AuthenticatedMomentsRoute
   '/_authenticated/more': typeof AuthenticatedMoreRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
@@ -519,6 +546,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/about'
     | '/admin'
+    | '/admin-ai'
     | '/auth'
     | '/contact'
     | '/cookies'
@@ -535,10 +563,12 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/ai-designs'
+    | '/ai-studio'
     | '/billing'
     | '/consultations'
     | '/contracts'
     | '/dashboard'
+    | '/festive'
     | '/moments'
     | '/more'
     | '/payments'
@@ -574,6 +604,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/about'
     | '/admin'
+    | '/admin-ai'
     | '/auth'
     | '/contact'
     | '/cookies'
@@ -590,10 +621,12 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/ai-designs'
+    | '/ai-studio'
     | '/billing'
     | '/consultations'
     | '/contracts'
     | '/dashboard'
+    | '/festive'
     | '/moments'
     | '/more'
     | '/payments'
@@ -630,6 +663,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/about'
     | '/admin'
+    | '/admin-ai'
     | '/auth'
     | '/contact'
     | '/cookies'
@@ -646,10 +680,12 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/terms'
     | '/_authenticated/ai-designs'
+    | '/_authenticated/ai-studio'
     | '/_authenticated/billing'
     | '/_authenticated/consultations'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
+    | '/_authenticated/festive'
     | '/_authenticated/moments'
     | '/_authenticated/more'
     | '/_authenticated/payments'
@@ -687,6 +723,7 @@ export interface RootRouteChildren {
   HandleRoute: typeof HandleRoute
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
+  AdminAiRoute: typeof AdminAiRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
@@ -751,6 +788,13 @@ declare module '@tanstack/react-router' {
       path: '/admin'
       fullPath: '/admin'
       preLoaderRoute: typeof AdminRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/admin-ai': {
+      id: '/admin-ai'
+      path: '/admin-ai'
+      fullPath: '/admin-ai'
+      preLoaderRoute: typeof AdminAiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -865,6 +909,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedAiDesignsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/ai-studio': {
+      id: '/_authenticated/ai-studio'
+      path: '/ai-studio'
+      fullPath: '/ai-studio'
+      preLoaderRoute: typeof AuthenticatedAiStudioRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/billing': {
       id: '/_authenticated/billing'
       path: '/billing'
@@ -891,6 +942,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/festive': {
+      id: '/_authenticated/festive'
+      path: '/festive'
+      fullPath: '/festive'
+      preLoaderRoute: typeof AuthenticatedFestiveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/moments': {
@@ -1115,10 +1173,12 @@ const AuthenticatedQuotationsRouteWithChildren =
 
 interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiDesignsRoute: typeof AuthenticatedAiDesignsRoute
+  AuthenticatedAiStudioRoute: typeof AuthenticatedAiStudioRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
   AuthenticatedConsultationsRoute: typeof AuthenticatedConsultationsRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedFestiveRoute: typeof AuthenticatedFestiveRoute
   AuthenticatedMomentsRoute: typeof AuthenticatedMomentsRoute
   AuthenticatedMoreRoute: typeof AuthenticatedMoreRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
@@ -1138,10 +1198,12 @@ interface AuthenticatedRouteRouteChildren {
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiDesignsRoute: AuthenticatedAiDesignsRoute,
+  AuthenticatedAiStudioRoute: AuthenticatedAiStudioRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
   AuthenticatedConsultationsRoute: AuthenticatedConsultationsRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedFestiveRoute: AuthenticatedFestiveRoute,
   AuthenticatedMomentsRoute: AuthenticatedMomentsRoute,
   AuthenticatedMoreRoute: AuthenticatedMoreRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
@@ -1178,6 +1240,7 @@ const rootRouteChildren: RootRouteChildren = {
   HandleRoute: HandleRoute,
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
+  AdminAiRoute: AdminAiRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
