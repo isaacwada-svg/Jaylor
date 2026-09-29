@@ -76,7 +76,7 @@ export function useAiPacks() {
   });
 }
 
-type SheetState = { open: boolean; feature?: string; needed?: number; upgradeOnly?: boolean };
+type SheetState = { open: boolean; feature?: string | undefined; needed?: number | undefined; upgradeOnly?: boolean | undefined };
 type Ctx = {
   openTopUp: (s?: Omit<SheetState, "open">) => void;
   run: (
@@ -161,7 +161,7 @@ export function AiCreditsProvider({ children }: { children: ReactNode }) {
       refreshWallet();
       if (res.ok) return { ok: true, result: res.result };
       if (res.code === "INSUFFICIENT_CREDITS") {
-        setSheet({ open: true, feature, needed: res.needed });
+        setSheet({ open: true, feature, needed: res.needed ?? 0 });
       } else if (res.code === "PLAN") {
         setSheet({ open: true, feature, upgradeOnly: true });
       } else {
