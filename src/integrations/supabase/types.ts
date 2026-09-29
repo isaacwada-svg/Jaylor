@@ -85,6 +85,51 @@ export type Database = {
           },
         ]
       }
+      ai_config: {
+        Row: {
+          key: string
+          updated_at: string
+          value: Json
+        }
+        Insert: {
+          key: string
+          updated_at?: string
+          value: Json
+        }
+        Update: {
+          key?: string
+          updated_at?: string
+          value?: Json
+        }
+        Relationships: []
+      }
+      ai_credit_packs: {
+        Row: {
+          active: boolean
+          credits: number
+          id: string
+          name: string
+          price_ngn: number
+          sort_order: number
+        }
+        Insert: {
+          active?: boolean
+          credits: number
+          id: string
+          name: string
+          price_ngn: number
+          sort_order?: number
+        }
+        Update: {
+          active?: boolean
+          credits?: number
+          id?: string
+          name?: string
+          price_ngn?: number
+          sort_order?: number
+        }
+        Relationships: []
+      }
       ai_design_payments: {
         Row: {
           amount: number
@@ -239,6 +284,129 @@ export type Database = {
           },
         ]
       }
+      ai_feature_costs: {
+        Row: {
+          credits: number
+          enabled: boolean
+          feature_key: string
+          label: string
+          min_plan: string
+          model_key: string
+          updated_at: string
+        }
+        Insert: {
+          credits: number
+          enabled?: boolean
+          feature_key: string
+          label: string
+          min_plan?: string
+          model_key?: string
+          updated_at?: string
+        }
+        Update: {
+          credits?: number
+          enabled?: boolean
+          feature_key?: string
+          label?: string
+          min_plan?: string
+          model_key?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      ai_ledger: {
+        Row: {
+          created_at: string
+          credits: number
+          error_code: string | null
+          est_cost_ngn: number | null
+          est_cost_usd: number | null
+          feature_key: string
+          id: string
+          input_tokens: number | null
+          model: string | null
+          output_tokens: number | null
+          parts: Json
+          source: string
+          status: string
+          store_id: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          credits: number
+          error_code?: string | null
+          est_cost_ngn?: number | null
+          est_cost_usd?: number | null
+          feature_key: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
+          parts?: Json
+          source: string
+          status?: string
+          store_id: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          credits?: number
+          error_code?: string | null
+          est_cost_ngn?: number | null
+          est_cost_usd?: number | null
+          feature_key?: string
+          id?: string
+          input_tokens?: number | null
+          model?: string | null
+          output_tokens?: number | null
+          parts?: Json
+          source?: string
+          status?: string
+          store_id?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_ledger_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_ledger_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_plan_allowances: {
+        Row: {
+          lifetime_trial_credits: number
+          monthly_credits: number
+          plan_code: string
+          trial_period_credits: number
+        }
+        Insert: {
+          lifetime_trial_credits?: number
+          monthly_credits?: number
+          plan_code: string
+          trial_period_credits?: number
+        }
+        Update: {
+          lifetime_trial_credits?: number
+          monthly_credits?: number
+          plan_code?: string
+          trial_period_credits?: number
+        }
+        Relationships: []
+      }
       ai_response_cache: {
         Row: {
           created_at: string
@@ -259,6 +427,199 @@ export type Database = {
           output?: Json
         }
         Relationships: []
+      }
+      ai_style_previews: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          fabric_path: string | null
+          garment_type: string | null
+          gender: string | null
+          id: string
+          image_path: string
+          occasion: string | null
+          order_id: string | null
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fabric_path?: string | null
+          garment_type?: string | null
+          gender?: string | null
+          id?: string
+          image_path: string
+          occasion?: string | null
+          order_id?: string | null
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          fabric_path?: string | null
+          garment_type?: string | null
+          gender?: string | null
+          id?: string
+          image_path?: string
+          occasion?: string | null
+          order_id?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_style_previews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "ai_style_previews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_style_previews_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_style_previews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_style_previews_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_topup_purchases: {
+        Row: {
+          amount_ngn: number
+          created_at: string
+          created_by: string | null
+          credits: number
+          id: string
+          pack_id: string
+          paid_at: string | null
+          payment_reference: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          amount_ngn: number
+          created_at?: string
+          created_by?: string | null
+          credits: number
+          id?: string
+          pack_id: string
+          paid_at?: string | null
+          payment_reference: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          amount_ngn?: number
+          created_at?: string
+          created_by?: string | null
+          credits?: number
+          id?: string
+          pack_id?: string
+          paid_at?: string | null
+          payment_reference?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_topup_purchases_pack_id_fkey"
+            columns: ["pack_id"]
+            isOneToOne: false
+            referencedRelation: "ai_credit_packs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_topup_purchases_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_topup_purchases_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_wallets: {
+        Row: {
+          allowance_used: number
+          period_end: string
+          period_start: string
+          plan_allowance: number
+          store_id: string
+          topup_balance: number
+          topup_expires_at: string | null
+          trial_credits_remaining: number
+          trial_period_granted: boolean
+          updated_at: string
+        }
+        Insert: {
+          allowance_used?: number
+          period_end?: string
+          period_start?: string
+          plan_allowance?: number
+          store_id: string
+          topup_balance?: number
+          topup_expires_at?: string | null
+          trial_credits_remaining?: number
+          trial_period_granted?: boolean
+          updated_at?: string
+        }
+        Update: {
+          allowance_used?: number
+          period_end?: string
+          period_start?: string
+          plan_allowance?: number
+          store_id?: string
+          topup_balance?: number
+          topup_expires_at?: string | null
+          trial_credits_remaining?: number
+          trial_period_granted?: boolean
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_wallets_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_wallets_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       analytics_events: {
         Row: {
@@ -463,6 +824,7 @@ export type Database = {
           consent_whatsapp_at: string | null
           created_at: string
           created_by: string | null
+          festive_opt_out: boolean
           full_name: string
           gender: string | null
           guardian_name: string | null
@@ -486,6 +848,7 @@ export type Database = {
           consent_whatsapp_at?: string | null
           created_at?: string
           created_by?: string | null
+          festive_opt_out?: boolean
           full_name: string
           gender?: string | null
           guardian_name?: string | null
@@ -509,6 +872,7 @@ export type Database = {
           consent_whatsapp_at?: string | null
           created_at?: string
           created_by?: string | null
+          festive_opt_out?: boolean
           full_name?: string
           gender?: string | null
           guardian_name?: string | null
@@ -1241,6 +1605,63 @@ export type Database = {
           },
           {
             foreignKeyName: "feature_usage_counters_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      festive_campaigns: {
+        Row: {
+          client_ids: string[]
+          created_at: string
+          created_by: string | null
+          id: string
+          language: string
+          message: string
+          occasion_date: string
+          occasion_key: string
+          occasion_label: string
+          sent_client_ids: string[]
+          store_id: string
+        }
+        Insert: {
+          client_ids?: string[]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          message: string
+          occasion_date: string
+          occasion_key: string
+          occasion_label: string
+          sent_client_ids?: string[]
+          store_id: string
+        }
+        Update: {
+          client_ids?: string[]
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          language?: string
+          message?: string
+          occasion_date?: string
+          occasion_key?: string
+          occasion_label?: string
+          sent_client_ids?: string[]
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "festive_campaigns_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "festive_campaigns_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -3226,6 +3647,45 @@ export type Database = {
           },
         ]
       }
+      store_occasions: {
+        Row: {
+          created_at: string
+          event_date: string
+          id: string
+          label: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          event_date: string
+          id?: string
+          label: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          event_date?: string
+          id?: string
+          label?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_occasions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_occasions_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_settings: {
         Row: {
           alert_transfer_received: boolean
@@ -3362,6 +3822,8 @@ export type Database = {
         Row: {
           accent_color: string | null
           address: string | null
+          ai_custom_allowance: number | null
+          ai_staff_allowed: boolean
           area: string | null
           bio: string | null
           city: string | null
@@ -3397,6 +3859,8 @@ export type Database = {
         Insert: {
           accent_color?: string | null
           address?: string | null
+          ai_custom_allowance?: number | null
+          ai_staff_allowed?: boolean
           area?: string | null
           bio?: string | null
           city?: string | null
@@ -3432,6 +3896,8 @@ export type Database = {
         Update: {
           accent_color?: string | null
           address?: string | null
+          ai_custom_allowance?: number | null
+          ai_staff_allowed?: boolean
           area?: string | null
           bio?: string | null
           city?: string | null
@@ -3950,6 +4416,7 @@ export type Database = {
         Returns: Json
       }
       admin_ai_budget_status: { Args: never; Returns: Json }
+      admin_ai_cost_overview: { Args: never; Returns: Json }
       admin_ai_rate_limited_stores: {
         Args: never
         Returns: {
@@ -3994,6 +4461,10 @@ export type Database = {
         }
         Returns: undefined
       }
+      admin_set_store_ai_allowance: {
+        Args: { p_credits: number; p_store_id: string }
+        Returns: undefined
+      }
       admin_store_ai_usage: { Args: { p_since?: string }; Returns: Json }
       admin_store_health: { Args: { p_store_id: string }; Returns: Json }
       admin_store_message_usage: { Args: never; Returns: Json }
@@ -4016,6 +4487,35 @@ export type Database = {
         Args: { p_role: string; p_user_id: string }
         Returns: undefined
       }
+      ai_ensure_wallet: {
+        Args: { p_store_id: string }
+        Returns: {
+          allowance_used: number
+          period_end: string
+          period_start: string
+          plan_allowance: number
+          store_id: string
+          topup_balance: number
+          topup_expires_at: string | null
+          trial_credits_remaining: number
+          trial_period_granted: boolean
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "ai_wallets"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      ai_wallet_json: {
+        Args: { w: Database["public"]["Tables"]["ai_wallets"]["Row"] }
+        Returns: Json
+      }
+      apply_ai_topup: {
+        Args: { p_paid_kobo: number; p_reference: string }
+        Returns: Json
+      }
       assign_incoming_transfer: {
         Args: { p_allocations: Json; p_transfer_id: string }
         Returns: undefined
@@ -4023,6 +4523,10 @@ export type Database = {
       can_use_feature: {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
+      }
+      charge_ai_credits: {
+        Args: { p_ledger_id: string; p_usage: Json }
+        Returns: undefined
       }
       check_feature_limit: {
         Args: { p_feature: string; p_quantity?: number; p_store_id: string }
@@ -4066,6 +4570,14 @@ export type Database = {
         Args: { p_feature: string; p_store_id: string }
         Returns: Json
       }
+      festive_campaign_results: {
+        Args: { p_campaign_id: string }
+        Returns: Json
+      }
+      festive_upcoming: {
+        Args: { p_days?: number; p_store_id: string }
+        Returns: Json
+      }
       generate_delivery_reminder_notifications: {
         Args: never
         Returns: undefined
@@ -4075,6 +4587,7 @@ export type Database = {
         Returns: undefined
       }
       generate_plan_limit_notifications: { Args: never; Returns: undefined }
+      get_ai_wallet: { Args: { p_store_id: string }; Returns: Json }
       get_daily_digest_data: { Args: { p_store_id: string }; Returns: Json }
       get_design_by_token: {
         Args: { p_token: string }
@@ -4193,6 +4706,14 @@ export type Database = {
         Args: { p_dow: number; p_month: number; p_n: number; p_year: number }
         Returns: string
       }
+      refund_ai_credits: {
+        Args: { p_ledger_id: string; p_reason: string; p_usage?: Json }
+        Returns: undefined
+      }
+      reserve_ai_credits: {
+        Args: { p_feature_key: string; p_store_id: string; p_user_id?: string }
+        Returns: Json
+      }
       resolve_garment_type_mapping: {
         Args: {
           p_alias_text: string
@@ -4221,6 +4742,10 @@ export type Database = {
       }
       set_participant_style: {
         Args: { p_style_key: string; p_token: string }
+        Returns: undefined
+      }
+      set_store_ai_staff_allowed: {
+        Args: { p_allowed: boolean; p_store_id: string }
         Returns: undefined
       }
       set_store_calendar_event_enabled: {
