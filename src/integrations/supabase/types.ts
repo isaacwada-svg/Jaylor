@@ -4527,6 +4527,7 @@ export type Database = {
           status: string | null
           store_id: string | null
           style_notes: string | null
+          style_reference_photos: string[] | null
           tracking_token: string | null
           updated_at: string | null
         }
@@ -4548,6 +4549,7 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           tracking_token?: string | null
           updated_at?: string | null
         }
@@ -4569,6 +4571,7 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          style_reference_photos?: string[] | null
           tracking_token?: string | null
           updated_at?: string | null
         }
@@ -4808,6 +4811,12 @@ export type Database = {
           store_id: string
           token: string
         }
+        SetofOptions: {
+          from: "*"
+          to: "order_approvals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       decline_passport_share: {
         Args: { p_share_id: string }
@@ -4976,7 +4985,7 @@ export type Database = {
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
       respond_to_order_approval: {
-        Args: { p_comment?: string | null; p_status: string; p_token: string }
+        Args: { p_comment?: string; p_status: string; p_token: string }
         Returns: undefined
       }
       revoke_measurement_passport_by_store: {
@@ -4985,9 +4994,9 @@ export type Database = {
       }
       set_order_status_note: {
         Args: {
-          p_note?: string | null
+          p_note?: string
           p_order_id: string
-          p_photo_path?: string | null
+          p_photo_path?: string
           p_to_status: string
         }
         Returns: undefined
