@@ -21,6 +21,7 @@ import {
   LogOut,
   Calculator,
   Coins,
+  Boxes,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
@@ -99,6 +100,12 @@ const ITEMS: {
     hint: "What you've earned per garment and stage",
     icon: Coins,
     roles: ["tailor"],
+  },
+  {
+    label: "Inventory",
+    hint: "Stock of linings, zips, thread and other materials",
+    icon: Boxes,
+    tier: "Business",
   },
   { label: "Expenses and reports", hint: "Costs and net profit", icon: Receipt, tier: "Business" },
   { label: "Payments and receipts", hint: "Balances and receipts", icon: Wallet },
@@ -237,6 +244,15 @@ function More() {
             if (label === "My earnings") {
               return (
                 <Link key={label} to="/my-earnings">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Inventory") {
+              return (
+                <Link key={label} to="/inventory">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

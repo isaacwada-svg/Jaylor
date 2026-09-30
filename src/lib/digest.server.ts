@@ -62,12 +62,14 @@ async function sendEmail(to: string, subject: string, text: string): Promise<boo
 }
 
 type OrderRef = { order_id: string; number: string; garment_type: string; client_name: string };
+type LowStockItem = { id: string; name: string; quantity: number; unit: string };
 type DailyDigestData = {
   due_today: OrderRef[];
   due_next_3_days: (OrderRef & { delivery_date: string })[];
   overdue: (OrderRef & { delivery_date: string })[];
   outstanding_total: number;
   top_balances: { client_name: string; balance: number; number: string }[];
+  low_stock_items: LowStockItem[];
 };
 type WeeklyDigestData = {
   new_orders: number;
@@ -100,6 +102,11 @@ function buildDailyText(storeName: string, d: DailyDigestData): string {
   if (d.top_balances.length > 0) {
     lines.push(
       `Top balances to chase: ${d.top_balances.map((b) => `${b.client_name} ${formatMoney(b.balance)}`).join(", ")}`,
+    );
+  }
+  if (d.low_stock_items?.length > 0) {
+    lines.push(
+      `Running low: ${d.low_stock_items.map((i) => `${i.name} (${i.quantity} ${i.unit})`).join(", ")}`,
     );
   }
   return lines.join("\n");

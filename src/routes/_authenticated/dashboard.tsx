@@ -25,6 +25,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { ORDER_STATUSES_DB, orderStatusLabel, effectiveTier } from "@/lib/jaylor";
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
 import { CapacityLoadChart } from "@/components/jaylor/capacity-load-chart";
+import { LowStockCard } from "@/components/jaylor/low-stock-card";
 import { orderReadyMessage } from "@/lib/whatsapp";
 import { useFeature } from "@/lib/use-feature";
 import { useMessageTopups } from "@/lib/use-message-topups";
@@ -485,6 +486,8 @@ function Home() {
                 <CapacityLoadChart storeId={storeId} />
               </div>
             )}
+
+            {storeId && <LowStockCard storeId={storeId} />}
 
             {statsLoading ? (
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">

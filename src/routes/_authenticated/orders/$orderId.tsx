@@ -18,6 +18,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { CapacityWarning } from "@/components/jaylor/capacity-warning";
 import {
@@ -46,6 +47,15 @@ import { resizeImageFile } from "@/lib/image";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { MaterialPhotoManager } from "@/components/jaylor/material-photo-manager";
 import { materialPhotoPathPrefix } from "@/lib/material-photos";
+import { useFeature } from "@/lib/use-feature";
+import { formatQuantity } from "@/lib/inventory";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   staticData: { sitemap: false },
@@ -210,6 +220,38 @@ function OrderDetail() {
     if (error) throw error;
     await queryClient.invalidateQueries({ queryKey: ["order-material", orderId, canSeeMoney] });
   }
+
+  const { data: inventoryFeature } = useFeature(currentStore?.id, "inventory");
+
+  // Materials used from stock are additional order_materials rows (there
+  // can be several), separate from the single manually-entered fabric-
+  // intake row above. Same tailor-safe column split as `material`.
+  const { data: stockMaterials } = useQuery({
+    queryKey: ["order-stock-materials", orderId, canSeeMoney],
+    enabled: !!order && !!inventoryFeature?.allowed,
+    queryFn: async () => {
+      if (canSeeMoney) {
+        const { data, error } = await supabase
+          .from("order_materials")
+          .select("*")
+          .eq("order_id", orderId)
+          .not("inventory_item_id", "is", null)
+          .order("created_at", { ascending: false });
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await supabase
+        .from("order_materials_for_tailor")
+        .select("*")
+        .eq("order_id", orderId)
+        .not("inventory_item_id", "is", null)
+        .order("created_at", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const [useStockOpen, setUseStockOpen] = useState(false);
 
   // orders_for_tailor (the view non-owner/manager roles read from) now also
   // carries this column, so both roles can read it -- just from whichever
@@ -852,6 +894,43 @@ function OrderDetail() {
             </div>
           )}
 
+          {inventoryFeature?.allowed && (
+            <div className="rounded-2xl border border-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                  Materials from stock
+                </p>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  disabled={!online}
+                  onClick={() => setUseStockOpen(true)}
+                >
+                  Use from stock
+                </Button>
+              </div>
+              {!stockMaterials || stockMaterials.length === 0 ? (
+                <p className="mt-2 text-sm text-muted-foreground">Nothing used from stock yet.</p>
+              ) : (
+                <div className="mt-2 space-y-2">
+                  {stockMaterials.map((m) => {
+                    const fullM = canSeeMoney ? (m as Tables<"order_materials">) : null;
+                    return (
+                      <div key={m.id} className="flex items-center justify-between text-sm">
+                        <p>{m.description}</p>
+                        {fullM && fullM.cost > 0 && (
+                          <p className="figures">
+                            <MoneyText amount={fullM.cost} />
+                          </p>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {canSeeMoney && (
             <div className="rounded-2xl border border-border p-4">
               <div className="flex items-start justify-between gap-3">
@@ -1162,6 +1241,127 @@ function OrderDetail() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {currentStore && (
+        <UseStockDialog
+          open={useStockOpen}
+          onOpenChange={setUseStockOpen}
+          storeId={currentStore.id}
+          orderId={orderId}
+          onSaved={() => {
+            queryClient.invalidateQueries({ queryKey: ["order-stock-materials", orderId] });
+          }}
+        />
+      )}
     </AppShell>
+  );
+}
+
+function UseStockDialog({
+  open,
+  onOpenChange,
+  storeId,
+  orderId,
+  onSaved,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  storeId: string;
+  orderId: string;
+  onSaved: () => void;
+}) {
+  const [itemId, setItemId] = useState("");
+  const [quantity, setQuantity] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const { data: items } = useQuery({
+    queryKey: ["order-use-stock-items", storeId],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("inventory_items_for_tailor")
+        .select("*")
+        .eq("store_id", storeId)
+        .eq("is_active", true)
+        .order("name");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const selected = items?.find((i) => i.id === itemId);
+  const remaining =
+    selected && Number(quantity) ? (selected.quantity ?? 0) - Number(quantity) : null;
+
+  async function save() {
+    if (!itemId || !Number(quantity)) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.rpc("use_stock_on_order", {
+        p_item_id: itemId,
+        p_order_id: orderId,
+        p_quantity: Number(quantity),
+      });
+      if (error) throw error;
+      toast.success("Stock used on this order");
+      onSaved();
+      setItemId("");
+      setQuantity("");
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not use stock on this order"));
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Use from stock</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label>Item</Label>
+            <Select value={itemId} onValueChange={setItemId}>
+              <SelectTrigger>
+                <SelectValue placeholder="Choose an item" />
+              </SelectTrigger>
+              <SelectContent>
+                {(items ?? []).map((i) => (
+                  <SelectItem key={i.id as string} value={i.id as string}>
+                    {i.name} ({formatQuantity(i.quantity ?? 0, i.unit ?? "")} left)
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label>Quantity</Label>
+            <Input
+              inputMode="decimal"
+              value={quantity}
+              onChange={(e) => setQuantity(e.target.value)}
+            />
+            {remaining !== null && (
+              <p className="text-xs text-muted-foreground">
+                {remaining >= 0
+                  ? `${formatQuantity(remaining, selected?.unit ?? "")} will remain`
+                  : "Not enough in stock"}
+              </p>
+            )}
+          </div>
+        </div>
+        <DialogFooter>
+          <Button
+            disabled={!itemId || !Number(quantity) || (remaining ?? 0) < 0 || saving}
+            onClick={() => void save()}
+          >
+            {saving ? "Using..." : "Use stock"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
