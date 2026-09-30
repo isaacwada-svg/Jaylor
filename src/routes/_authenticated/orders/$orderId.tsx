@@ -318,8 +318,8 @@ function OrderDetail() {
         const { error: noteError } = await supabase.rpc("set_order_status_note", {
           p_order_id: orderId,
           p_to_status: pendingStatus,
-          p_note: statusNote.trim() || null,
-          p_photo_path: statusPhotoPath,
+          ...(statusNote.trim() ? { p_note: statusNote.trim() } : {}),
+          ...(statusPhotoPath ? { p_photo_path: statusPhotoPath } : {}),
         });
         if (noteError) {
           toast.error(getErrorMessage(noteError, "Status updated, but the note/photo didn't save"));
