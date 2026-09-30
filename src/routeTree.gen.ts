@@ -54,6 +54,7 @@ import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as PassportTokenRouteImport } from './routes/passport.$token'
 import { Route as QTokenRouteImport } from './routes/q.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
+import { Route as TTokenRouteImport } from './routes/t.$token'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events/index'
@@ -293,6 +294,11 @@ const StyleTokenRoute = StyleTokenRouteImport.update({
   path: '/style/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TTokenRoute = TTokenRouteImport.update({
+  id: '/t/$token',
+  path: '/t/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -408,6 +414,7 @@ export interface FileRoutesByFullPath {
   '/passport/$token': typeof PassportTokenRoute
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
+  '/t/$token': typeof TTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -466,6 +473,7 @@ export interface FileRoutesByTo {
   '/passport/$token': typeof PassportTokenRoute
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
+  '/t/$token': typeof TTokenRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -526,6 +534,7 @@ export interface FileRoutesById {
   '/passport/$token': typeof PassportTokenRoute
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
+  '/t/$token': typeof TTokenRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -586,6 +595,7 @@ export interface FileRouteTypes {
     | '/passport/$token'
     | '/q/$token'
     | '/style/$token'
+    | '/t/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -644,6 +654,7 @@ export interface FileRouteTypes {
     | '/passport/$token'
     | '/q/$token'
     | '/style/$token'
+    | '/t/$token'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -703,6 +714,7 @@ export interface FileRouteTypes {
     | '/passport/$token'
     | '/q/$token'
     | '/style/$token'
+    | '/t/$token'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
@@ -747,6 +759,7 @@ export interface RootRouteChildren {
   PassportTokenRoute: typeof PassportTokenRoute
   QTokenRoute: typeof QTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
+  TTokenRoute: typeof TTokenRoute
   ApiCronDigestRoute: typeof ApiCronDigestRoute
   ApiInternalTransferAlertRoute: typeof ApiInternalTransferAlertRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
@@ -1070,6 +1083,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof StyleTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/t/$token': {
+      id: '/t/$token'
+      path: '/t/$token'
+      fullPath: '/t/$token'
+      preLoaderRoute: typeof TTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -1264,6 +1284,7 @@ const rootRouteChildren: RootRouteChildren = {
   PassportTokenRoute: PassportTokenRoute,
   QTokenRoute: QTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
+  TTokenRoute: TTokenRoute,
   ApiCronDigestRoute: ApiCronDigestRoute,
   ApiInternalTransferAlertRoute: ApiInternalTransferAlertRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
