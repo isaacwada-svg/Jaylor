@@ -24,6 +24,7 @@ import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ORDER_STATUSES_DB, orderStatusLabel, effectiveTier } from "@/lib/jaylor";
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
+import { CapacityLoadChart } from "@/components/jaylor/capacity-load-chart";
 import { orderReadyMessage } from "@/lib/whatsapp";
 import { useFeature } from "@/lib/use-feature";
 import { useMessageTopups } from "@/lib/use-message-topups";
@@ -479,8 +480,9 @@ function Home() {
             )}
 
             {storeId && effectiveTier(currentStore) !== "Free" && (
-              <div className="mb-6">
+              <div className="mb-6 grid gap-3 lg:grid-cols-2">
                 <OnTimeScoreCard storeId={storeId} />
+                <CapacityLoadChart storeId={storeId} />
               </div>
             )}
 
