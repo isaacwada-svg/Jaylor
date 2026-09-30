@@ -976,6 +976,8 @@ export type Database = {
           id: string
           meeting_link: string | null
           notes: string | null
+          order_id: string | null
+          purpose: string
           source: string
           staff_id: string | null
           starts_at: string
@@ -990,6 +992,8 @@ export type Database = {
           id?: string
           meeting_link?: string | null
           notes?: string | null
+          order_id?: string | null
+          purpose?: string
           source?: string
           staff_id?: string | null
           starts_at: string
@@ -1004,6 +1008,8 @@ export type Database = {
           id?: string
           meeting_link?: string | null
           notes?: string | null
+          order_id?: string | null
+          purpose?: string
           source?: string
           staff_id?: string | null
           starts_at?: string
@@ -1017,6 +1023,27 @@ export type Database = {
             columns: ["client_id"]
             isOneToOne: false
             referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consultations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "consultations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "consultations_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
             referencedColumns: ["id"]
           },
           {
@@ -1662,6 +1689,91 @@ export type Database = {
           },
           {
             foreignKeyName: "festive_campaigns_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fitting_links: {
+        Row: {
+          consultation_id: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          order_id: string
+          purpose: string
+          reschedule_count: number
+          store_id: string
+          token: string
+          used_at: string | null
+        }
+        Insert: {
+          consultation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          order_id: string
+          purpose?: string
+          reschedule_count?: number
+          store_id: string
+          token?: string
+          used_at?: string | null
+        }
+        Update: {
+          consultation_id?: string | null
+          created_at?: string
+          created_by?: string | null
+          expires_at?: string
+          id?: string
+          order_id?: string
+          purpose?: string
+          reschedule_count?: number
+          store_id?: string
+          token?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fitting_links_consultation_id_fkey"
+            columns: ["consultation_id"]
+            isOneToOne: false
+            referencedRelation: "consultations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fitting_links_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "fitting_links_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fitting_links_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fitting_links_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fitting_links_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -4141,6 +4253,45 @@ export type Database = {
           },
         ]
       }
+      store_closed_dates: {
+        Row: {
+          closed_date: string
+          created_at: string
+          id: string
+          note: string | null
+          store_id: string
+        }
+        Insert: {
+          closed_date: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          store_id: string
+        }
+        Update: {
+          closed_date?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_closed_dates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_closed_dates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_feature_discovery: {
         Row: {
           created_at: string
@@ -4381,6 +4532,10 @@ export type Database = {
           digest_daily: boolean
           digest_weekly: boolean
           email: string | null
+          fitting_closed_weekdays: number[]
+          fitting_hours_end: string
+          fitting_hours_start: string
+          fitting_slot_minutes: number
           late_payer_deposit_percent: number
           on_time_badge_enabled: boolean
           phone: string | null
@@ -4399,6 +4554,10 @@ export type Database = {
           digest_daily?: boolean
           digest_weekly?: boolean
           email?: string | null
+          fitting_closed_weekdays?: number[]
+          fitting_hours_end?: string
+          fitting_hours_start?: string
+          fitting_slot_minutes?: number
           late_payer_deposit_percent?: number
           on_time_badge_enabled?: boolean
           phone?: string | null
@@ -4417,6 +4576,10 @@ export type Database = {
           digest_daily?: boolean
           digest_weekly?: boolean
           email?: string | null
+          fitting_closed_weekdays?: number[]
+          fitting_hours_end?: string
+          fitting_hours_start?: string
+          fitting_slot_minutes?: number
           late_payer_deposit_percent?: number
           on_time_badge_enabled?: boolean
           phone?: string | null
@@ -5439,9 +5602,68 @@ export type Database = {
         Args: { p_allocations: Json; p_transfer_id: string }
         Returns: undefined
       }
+      book_fitting: {
+        Args: {
+          p_notes?: string
+          p_order_id: string
+          p_purpose?: string
+          p_starts_at: string
+        }
+        Returns: {
+          client_id: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          meeting_link: string | null
+          notes: string | null
+          order_id: string | null
+          purpose: string
+          source: string
+          staff_id: string | null
+          starts_at: string
+          status: string
+          store_id: string
+          type: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "consultations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      book_fitting_via_link: {
+        Args: { p_starts_at: string; p_token: string }
+        Returns: Json
+      }
       can_use_feature: {
         Args: { _feature: string; _store_id: string }
         Returns: boolean
+      }
+      cancel_fitting: {
+        Args: { p_consultation_id: string }
+        Returns: {
+          client_id: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          meeting_link: string | null
+          notes: string | null
+          order_id: string | null
+          purpose: string
+          source: string
+          staff_id: string | null
+          starts_at: string
+          status: string
+          store_id: string
+          type: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "consultations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       charge_ai_credits: {
         Args: { p_ledger_id: string; p_usage: Json }
@@ -5469,6 +5691,28 @@ export type Database = {
       client_payment_reliability: {
         Args: { p_client_id: string }
         Returns: Json
+      }
+      create_fitting_link: {
+        Args: { p_order_id: string; p_purpose?: string }
+        Returns: {
+          consultation_id: string | null
+          created_at: string
+          created_by: string | null
+          expires_at: string
+          id: string
+          order_id: string
+          purpose: string
+          reschedule_count: number
+          store_id: string
+          token: string
+          used_at: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "fitting_links"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_inventory_item: {
         Args: {
@@ -5621,6 +5865,7 @@ export type Database = {
         Args: { p_client_id: string; p_order_id: string }
         Returns: Json
       }
+      get_fitting_link_details: { Args: { p_token: string }; Returns: Json }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_order_approval: { Args: { p_token: string }; Returns: Json }
       get_order_capacity_check: { Args: { p_date: string; p_store_id: string }; Returns: Json }
@@ -5633,6 +5878,10 @@ export type Database = {
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
       get_store_capacity_forecast: {
         Args: { p_store_id: string; p_weeks?: number }
+        Returns: Json
+      }
+      get_store_fitting_availability: {
+        Args: { p_days?: number; p_store_id: string }
         Returns: Json
       }
       get_store_on_time_score: { Args: { p_store_id: string }; Returns: Json }
@@ -5813,6 +6062,35 @@ export type Database = {
       remove_material_photo: {
         Args: { p_material_id: string; p_path: string }
         Returns: undefined
+      }
+      reschedule_fitting: {
+        Args: { p_consultation_id: string; p_new_starts_at: string }
+        Returns: {
+          client_id: string | null
+          created_at: string
+          ends_at: string
+          id: string
+          meeting_link: string | null
+          notes: string | null
+          order_id: string | null
+          purpose: string
+          source: string
+          staff_id: string | null
+          starts_at: string
+          status: string
+          store_id: string
+          type: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "consultations"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      reschedule_fitting_via_link: {
+        Args: { p_new_starts_at: string; p_token: string }
+        Returns: Json
       }
       reserve_ai_credits: {
         Args: { p_feature_key: string; p_store_id: string; p_user_id?: string }

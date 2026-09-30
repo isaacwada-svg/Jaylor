@@ -40,6 +40,7 @@ export type OrderTrackingView = {
   timeline: OrderTrackingTimelineEntry[];
   dedicatedAccount: { accountNumber: string; accountName: string; bankName: string } | null;
   jaylorPayAvailable: boolean;
+  nextFitting: { startsAt: string; purpose: string } | null;
 };
 
 /** Public order-tracking view for /t/$token -- reads only through the
@@ -74,6 +75,7 @@ export const getOrderTracking = createServerFn({ method: "GET" })
       timeline: OrderTrackingTimelineEntry[];
       dedicated_account: { account_number: string; account_name: string; bank_name: string } | null;
       jaylor_pay_available: boolean;
+      next_fitting: { starts_at: string; purpose: string } | null;
     };
 
     const photoPaths = raw.timeline.map((t) => t.photo_url).filter((p): p is string => !!p);
@@ -112,5 +114,8 @@ export const getOrderTracking = createServerFn({ method: "GET" })
           }
         : null,
       jaylorPayAvailable: raw.jaylor_pay_available,
+      nextFitting: raw.next_fitting
+        ? { startsAt: raw.next_fitting.starts_at, purpose: raw.next_fitting.purpose }
+        : null,
     };
   });

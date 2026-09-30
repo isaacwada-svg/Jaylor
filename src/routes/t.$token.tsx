@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { CreditCard, ImageIcon } from "lucide-react";
+import { CreditCard, ImageIcon, CalendarClock } from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
@@ -198,6 +198,28 @@ function OrderTrackingPage() {
               </p>
             )}
           </div>
+
+          {order.nextFitting && (
+            <>
+              <StitchDivider className="my-5" />
+              <div className="flex items-center gap-2 rounded-xl border border-gold/40 bg-accent/30 p-3 text-sm">
+                <CalendarClock className="size-4 shrink-0 text-gold" />
+                <span>
+                  Next fitting:{" "}
+                  {new Date(order.nextFitting.startsAt).toLocaleDateString(undefined, {
+                    weekday: "long",
+                    month: "long",
+                    day: "numeric",
+                  })}{" "}
+                  at{" "}
+                  {new Date(order.nextFitting.startsAt).toLocaleTimeString([], {
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </span>
+              </div>
+            </>
+          )}
 
           <StitchDivider className="my-5" />
 
