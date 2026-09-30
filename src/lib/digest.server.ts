@@ -76,6 +76,7 @@ type WeeklyDigestData = {
   outstanding_total: number;
   overdue_count: number;
   garments_due_this_week: number;
+  overloaded_weeks: string[];
 };
 
 function buildDailyText(storeName: string, d: DailyDigestData): string {
@@ -105,12 +106,19 @@ function buildDailyText(storeName: string, d: DailyDigestData): string {
 }
 
 function buildWeeklyText(storeName: string, d: WeeklyDigestData): string {
-  return [
+  const lines = [
     `${storeName}'s weekly digest.`,
     `New orders: ${d.new_orders} · Billed: ${formatMoney(d.billed)} · Collected: ${formatMoney(d.collected)}`,
     `Outstanding: ${formatMoney(d.outstanding_total)} · Overdue orders: ${d.overdue_count}`,
     `Garments due this week: ${d.garments_due_this_week}`,
-  ].join("\n");
+  ];
+  const firstOverloadedWeek = d.overloaded_weeks?.[0];
+  if (firstOverloadedWeek) {
+    lines.push(
+      `Heads up: ${d.overloaded_weeks.length} of the next 6 weeks are over your usual capacity (starting ${new Date(firstOverloadedWeek).toLocaleDateString()}).`,
+    );
+  }
+  return lines.join("\n");
 }
 
 export type DigestResult = {

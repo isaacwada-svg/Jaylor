@@ -3883,6 +3883,7 @@ export type Database = {
           updated_at: string
           vat_enabled: boolean
           vat_percent: number
+          weekly_capacity_estimate: number | null
           whatsapp_number: string | null
         }
         Insert: {
@@ -3900,6 +3901,7 @@ export type Database = {
           updated_at?: string
           vat_enabled?: boolean
           vat_percent?: number
+          weekly_capacity_estimate?: number | null
           whatsapp_number?: string | null
         }
         Update: {
@@ -3917,6 +3919,7 @@ export type Database = {
           updated_at?: string
           vat_enabled?: boolean
           vat_percent?: number
+          weekly_capacity_estimate?: number | null
           whatsapp_number?: string | null
         }
         Relationships: [
@@ -4869,9 +4872,14 @@ export type Database = {
       }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_order_approval: { Args: { p_token: string }; Returns: Json }
+      get_order_capacity_check: { Args: { p_date: string; p_store_id: string }; Returns: Json }
       get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
+      get_store_capacity_forecast: {
+        Args: { p_store_id: string; p_weeks?: number }
+        Returns: Json
+      }
       get_store_on_time_score: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_on_time_badge: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_payout_account: {
@@ -4990,7 +4998,7 @@ export type Database = {
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
       respond_to_order_approval: {
-        Args: { p_comment?: string; p_status: string; p_token: string }
+        Args: { p_comment?: string | null; p_status: string; p_token: string }
         Returns: undefined
       }
       revoke_measurement_passport_by_store: {

@@ -52,6 +52,7 @@ import {
 } from "@/components/ui/select";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { CapacityWarning } from "@/components/jaylor/capacity-warning";
 
 type ClientRow = Tables<"clients">;
 type OrderRow = Tables<"orders">;
@@ -824,6 +825,7 @@ export function OrderForm({
                 value={deliveryDate}
                 onChange={(e) => setDeliveryDate(e.target.value)}
               />
+              <CapacityWarning storeId={storeId} date={deliveryDate || null} />
             </div>
           </div>
 
