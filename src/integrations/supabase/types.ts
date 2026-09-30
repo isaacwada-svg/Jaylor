@@ -2375,6 +2375,78 @@ export type Database = {
           },
         ]
       }
+      order_approvals: {
+        Row: {
+          client_comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          responded_at: string | null
+          snapshot: Json
+          status: string
+          store_id: string
+          token: string
+        }
+        Insert: {
+          client_comment?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          responded_at?: string | null
+          snapshot: Json
+          status?: string
+          store_id: string
+          token?: string
+        }
+        Update: {
+          client_comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          responded_at?: string | null
+          snapshot?: Json
+          status?: string
+          store_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_attachments: {
         Row: {
           client_id: string | null
@@ -2631,7 +2703,9 @@ export type Database = {
           changed_by: string | null
           from_status: string | null
           id: string
+          note: string | null
           order_id: string
+          photo_url: string | null
           to_status: string
         }
         Insert: {
@@ -2639,7 +2713,9 @@ export type Database = {
           changed_by?: string | null
           from_status?: string | null
           id?: string
+          note?: string | null
           order_id: string
+          photo_url?: string | null
           to_status: string
         }
         Update: {
@@ -2647,7 +2723,9 @@ export type Database = {
           changed_by?: string | null
           from_status?: string | null
           id?: string
+          note?: string | null
           order_id?: string
+          photo_url?: string | null
           to_status?: string
         }
         Relationships: [
@@ -2692,12 +2770,14 @@ export type Database = {
           other_cost: number | null
           price: number
           priority: string
+          promised_date: string | null
           quantity: number
           ready_at: string | null
           status: string
           store_id: string
           style_notes: string | null
           style_reference_photos: string[] | null
+          tracking_token: string
           updated_at: string
         }
         Insert: {
@@ -2717,12 +2797,14 @@ export type Database = {
           other_cost?: number | null
           price?: number
           priority?: string
+          promised_date?: string | null
           quantity?: number
           ready_at?: string | null
           status?: string
           store_id: string
           style_notes?: string | null
           style_reference_photos?: string[] | null
+          tracking_token?: string
           updated_at?: string
         }
         Update: {
@@ -2742,12 +2824,14 @@ export type Database = {
           other_cost?: number | null
           price?: number
           priority?: string
+          promised_date?: string | null
           quantity?: number
           ready_at?: string | null
           status?: string
           store_id?: string
           style_notes?: string | null
           style_reference_photos?: string[] | null
+          tracking_token?: string
           updated_at?: string
         }
         Relationships: [
@@ -4437,11 +4521,14 @@ export type Database = {
           measurement_set_id: string | null
           number: string | null
           priority: string | null
+          promised_date: string | null
           quantity: number | null
           ready_at: string | null
           status: string | null
           store_id: string | null
           style_notes: string | null
+          style_reference_photos: string[] | null
+          tracking_token: string | null
           updated_at: string | null
         }
         Insert: {
@@ -4456,11 +4543,14 @@ export type Database = {
           measurement_set_id?: string | null
           number?: string | null
           priority?: string | null
+          promised_date?: string | null
           quantity?: number | null
           ready_at?: string | null
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          style_reference_photos?: string[] | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -4475,11 +4565,14 @@ export type Database = {
           measurement_set_id?: string | null
           number?: string | null
           priority?: string | null
+          promised_date?: string | null
           quantity?: number | null
           ready_at?: string | null
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          style_reference_photos?: string[] | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -4705,6 +4798,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_order_approval_request: {
+        Args: { p_order_id: string }
+        Returns: {
+          client_comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          responded_at: string | null
+          snapshot: Json
+          status: string
+          store_id: string
+          token: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "order_approvals"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decline_passport_share: {
         Args: { p_share_id: string }
         Returns: undefined
@@ -4752,6 +4865,8 @@ export type Database = {
         Returns: Json
       }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
+      get_order_approval: { Args: { p_token: string }; Returns: Json }
+      get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_payout_account: {
@@ -4869,8 +4984,21 @@ export type Database = {
       }
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
+      respond_to_order_approval: {
+        Args: { p_comment?: string; p_status: string; p_token: string }
+        Returns: undefined
+      }
       revoke_measurement_passport_by_store: {
         Args: { p_client_id: string }
+        Returns: undefined
+      }
+      set_order_status_note: {
+        Args: {
+          p_note?: string
+          p_order_id: string
+          p_photo_path?: string
+          p_to_status: string
+        }
         Returns: undefined
       }
       set_participant_fabric_photo: {
