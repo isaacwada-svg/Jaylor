@@ -9,7 +9,12 @@ import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { cn, getErrorMessage } from "@/lib/utils";
-import { COMPANY_LINE, GARMENT_TYPES, PENDING_REFERRAL_KEY } from "@/lib/jaylor";
+import {
+  COMPANY_LINE,
+  GARMENT_TYPES,
+  PENDING_PASSPORT_SHARE_KEY,
+  PENDING_REFERRAL_KEY,
+} from "@/lib/jaylor";
 
 export const Route = createFileRoute("/onboarding")({
   staticData: { sitemap: false },
@@ -158,6 +163,19 @@ function Onboarding() {
 
       if (phone.trim()) {
         await supabase.from("store_settings").upsert({ store_id: store.id, phone: phone.trim() });
+      }
+
+      try {
+        const pendingPassportShare = sessionStorage.getItem(PENDING_PASSPORT_SHARE_KEY);
+        if (pendingPassportShare) {
+          await supabase.rpc("record_passport_referral", {
+            p_store_id: store.id,
+            p_share_token: pendingPassportShare,
+          });
+          sessionStorage.removeItem(PENDING_PASSPORT_SHARE_KEY);
+        }
+      } catch {
+        // Referral attribution is a bonus, never block store creation over it.
       }
 
       setStoreId(store.id);

@@ -9,7 +9,12 @@ import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
-import { COMPANY_LINE, PENDING_INVITE_KEY, PENDING_REFERRAL_KEY } from "@/lib/jaylor";
+import {
+  COMPANY_LINE,
+  PENDING_INVITE_KEY,
+  PENDING_PASSPORT_SHARE_KEY,
+  PENDING_REFERRAL_KEY,
+} from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 import { trackEvent } from "@/lib/analytics";
 import { normalizePhoneNG } from "@/lib/phone";
@@ -18,9 +23,14 @@ import { TermsGateDialog } from "@/components/jaylor/terms-gate-dialog";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
-  validateSearch: (search: Record<string, unknown>): { mode?: "signup"; ref?: string } => ({
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { mode?: "signup"; ref?: string; passport_share?: string } => ({
     ...(search["mode"] === "signup" ? { mode: "signup" as const } : {}),
     ...(typeof search["ref"] === "string" && search["ref"] ? { ref: search["ref"] } : {}),
+    ...(typeof search["passport_share"] === "string" && search["passport_share"]
+      ? { passport_share: search["passport_share"] }
+      : {}),
   }),
   head: () => ({
     meta: [
@@ -44,7 +54,11 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const { mode: initialMode, ref: referralCode } = Route.useSearch();
+  const {
+    mode: initialMode,
+    ref: referralCode,
+    passport_share: passportShareToken,
+  } = Route.useSearch();
   const [mode, setMode] = useState<"signin" | "signup" | "reset">(initialMode ?? "signin");
   const [recovery, setRecovery] = useState(false);
   const [name, setName] = useState("");
@@ -64,6 +78,15 @@ function AuthPage() {
       // ignore storage failures
     }
   }, [referralCode]);
+
+  useEffect(() => {
+    if (!passportShareToken) return;
+    try {
+      sessionStorage.setItem(PENDING_PASSPORT_SHARE_KEY, passportShareToken);
+    } catch {
+      // ignore storage failures
+    }
+  }, [passportShareToken]);
 
   useEffect(() => {
     document.title =
