@@ -301,6 +301,24 @@ function OrderDetail() {
     },
   });
 
+  // Just the newest version's id/date -- enough to tell whether this order
+  // is using a stale measurement set, without loading full history here.
+  const { data: latestMeasurementSet } = useQuery({
+    queryKey: ["order-client-latest-measurement-set", order?.client_id],
+    enabled: !!order?.client_id,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("measurement_sets")
+        .select("id, taken_at")
+        .eq("client_id", order?.client_id as string)
+        .order("version", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
   const { data: balance } = useQuery({
     queryKey: ["order-balance", orderId],
     enabled: canSeeMoney,
@@ -1009,17 +1027,25 @@ function OrderDetail() {
               Measurements used
             </p>
             {measurementSet ? (
-              <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
-                {Object.entries(measurementValues).map(([key, value]) => (
-                  <div key={key} className="flex justify-between gap-2">
-                    <span className="text-muted-foreground">{key.replace(/_/g, " ")}</span>
-                    <span className="figures">
-                      {value}
-                      {measurementSet.unit}
-                    </span>
-                  </div>
-                ))}
-              </div>
+              <>
+                {latestMeasurementSet && latestMeasurementSet.id !== measurementSet.id && (
+                  <p className="mt-1 text-sm text-owed">
+                    Newer measurements from{" "}
+                    {new Date(latestMeasurementSet.taken_at).toLocaleDateString()} exist.
+                  </p>
+                )}
+                <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
+                  {Object.entries(measurementValues).map(([key, value]) => (
+                    <div key={key} className="flex justify-between gap-2">
+                      <span className="text-muted-foreground">{key.replace(/_/g, " ")}</span>
+                      <span className="figures">
+                        {value}
+                        {measurementSet.unit}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </>
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">
                 No measurement set attached. Add one from the client&apos;s profile.

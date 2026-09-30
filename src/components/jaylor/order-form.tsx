@@ -654,6 +654,26 @@ export function OrderForm({
                     ))}
                   </SelectContent>
                 </Select>
+                {(() => {
+                  const latestSet = measurementSets[0];
+                  if (!latestSet || measurementSetId === latestSet.id) return null;
+                  return (
+                    <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gold/40 bg-accent/30 p-3 text-sm">
+                      <span>
+                        Newer measurements from {new Date(latestSet.taken_at).toLocaleDateString()}{" "}
+                        exist
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setMeasurementSetId(latestSet.id)}
+                      >
+                        Switch to latest
+                      </Button>
+                    </div>
+                  );
+                })()}
                 <button
                   type="button"
                   onClick={takeNewMeasurements}
