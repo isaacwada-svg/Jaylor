@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Camera } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MoneyInput } from "@/components/ui/money-input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
   DialogContent,
@@ -31,14 +32,24 @@ import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
 import { isBridalRemeasureDue } from "@/lib/measurements";
-import { orderReadyMessage, balanceDueMessage } from "@/lib/whatsapp";
+import { orderReadyMessage, balanceDueMessage, orderConfirmationMessage } from "@/lib/whatsapp";
 import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
+import { resizeImageFile } from "@/lib/image";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   staticData: { sitemap: false },
   head: () => ({ meta: [{ title: "Order — Jaylor" }] }),
   component: OrderDetail,
 });
+
+// Local extensions for columns this PR adds (order_status_history.note/
+// photo_url, orders.tracking_token) that predate the generated Supabase
+// types -- Lovable applies the SQL and regenerates types.ts separately.
+type OrderStatusHistoryRow = Tables<"order_status_history"> & {
+  note?: string | null;
+  photo_url?: string | null;
+};
+type TrackedOrder = { tracking_token?: string | null };
 
 function OrderDetail() {
   const { orderId } = Route.useParams();
@@ -48,6 +59,10 @@ function OrderDetail() {
 
   const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
   const [updating, setUpdating] = useState(false);
+  const [statusNote, setStatusNote] = useState("");
+  const [statusPhotoPath, setStatusPhotoPath] = useState<string | null>(null);
+  const [statusPhotoPreview, setStatusPhotoPreview] = useState<string | null>(null);
+  const [uploadingStatusPhoto, setUploadingStatusPhoto] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -223,6 +238,51 @@ function OrderDetail() {
     },
   });
 
+  const historyRows = (history ?? []) as OrderStatusHistoryRow[];
+  const historyPhotoPaths = historyRows.map((h) => h.photo_url).filter((p): p is string => !!p);
+
+  // Progress photos live in a private bucket, viewed through short-lived signed links.
+  const { data: historyPhotoUrls } = useQuery({
+    queryKey: ["order-history-photo-urls", orderId, historyPhotoPaths.join(",")],
+    enabled: historyPhotoPaths.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("order-progress-photos")
+        .createSignedUrls(historyPhotoPaths, 3600);
+      if (error) throw error;
+      const map = new Map<string, string>();
+      (data ?? []).forEach((item) => {
+        if (item.path && item.signedUrl) map.set(item.path, item.signedUrl);
+      });
+      return map;
+    },
+  });
+
+  async function handleStatusPhotoUpload(file: File | null) {
+    if (!file || !currentStore) return;
+    setUploadingStatusPhoto(true);
+    try {
+      const resized = await resizeImageFile(file, 1200, 0.8);
+      const path = `${currentStore.id}/${crypto.randomUUID()}.jpg`;
+      const { error } = await supabase.storage
+        .from("order-progress-photos")
+        .upload(path, resized, { contentType: "image/jpeg", upsert: false });
+      if (error) throw error;
+      setStatusPhotoPath(path);
+      setStatusPhotoPreview(URL.createObjectURL(resized));
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not upload that photo"));
+    } finally {
+      setUploadingStatusPhoto(false);
+    }
+  }
+
+  function resetStatusChangeExtras() {
+    setStatusNote("");
+    setStatusPhotoPath(null);
+    setStatusPhotoPreview(null);
+  }
+
   async function saveCosts() {
     setSavingCosts(true);
     try {
@@ -253,11 +313,25 @@ function OrderDetail() {
         .update({ status: pendingStatus })
         .eq("id", orderId);
       if (error) throw error;
+
+      if (statusNote.trim() || statusPhotoPath) {
+        const { error: noteError } = await supabase.rpc("set_order_status_note", {
+          p_order_id: orderId,
+          p_to_status: pendingStatus,
+          p_note: statusNote.trim() || null,
+          p_photo_path: statusPhotoPath,
+        });
+        if (noteError) {
+          toast.error(getErrorMessage(noteError, "Status updated, but the note/photo didn't save"));
+        }
+      }
+
       toast.success(`Marked ${orderStatusLabel(pendingStatus)}`);
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["order-history", orderId] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setPendingStatus(null);
+      resetStatusChangeExtras();
     } catch (error) {
       toast.error(getErrorMessage(error, "Could not update the status"));
     } finally {
@@ -296,6 +370,8 @@ function OrderDetail() {
 
   const price = canSeeMoney ? (order as Tables<"orders">).price : null;
   const statusIndex = ORDER_STATUSES_DB.indexOf(order.status as (typeof ORDER_STATUSES_DB)[number]);
+  const trackingToken = (order as TrackedOrder).tracking_token;
+  const trackingUrl = trackingToken ? `${window.location.origin}/t/${trackingToken}` : null;
   const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
 
   const fullOrder = canSeeMoney ? (order as Tables<"orders">) : null;
@@ -434,10 +510,9 @@ function OrderDetail() {
                   />
                 </div>
               )}
-              {client &&
-                currentStore &&
-                (order.status === "ready" || (balance?.balance ?? 0) > 0) && (
-                  <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+              {client && currentStore && (
+                <div className="mt-3 flex flex-wrap gap-2 border-t border-border pt-3">
+                  {(order.status === "ready" || (balance?.balance ?? 0) > 0) && (
                     <RemindButton
                       storeId={currentStore.id}
                       clientId={client.id}
@@ -452,12 +527,14 @@ function OrderDetail() {
                               order.garment_type ?? "",
                               currentStore.name ?? "",
                               balance?.balance ?? 0,
+                              trackingUrl,
                             )
                           : balanceDueMessage(
                               client.full_name ?? "",
                               order.garment_type ?? "",
                               currentStore.name ?? "",
                               balance?.balance ?? 0,
+                              trackingUrl,
                             )
                       }
                       label={
@@ -466,18 +543,36 @@ function OrderDetail() {
                           : "Remind: balance due"
                       }
                     />
-                    <AiReplyDraftButton
+                  )}
+                  {trackingUrl && (
+                    <RemindButton
                       storeId={currentStore.id}
-                      phone={client.whatsapp_phone ?? client.phone}
+                      clientId={client.id}
+                      orderId={order.id ?? ""}
+                      phone={client.whatsapp_phone ?? client.phone ?? ""}
                       consentWhatsapp={client.consent_whatsapp}
-                      clientName={client.full_name ?? ""}
-                      garmentType={order.garment_type ?? ""}
-                      orderStatus={orderStatusLabel(order.status ?? "")}
-                      balance={balance?.balance ?? 0}
-                      deliveryDate={order.delivery_date}
+                      template="order_confirmation"
+                      message={orderConfirmationMessage(
+                        client.full_name ?? "",
+                        order.garment_type ?? "",
+                        currentStore.name ?? "",
+                        trackingUrl,
+                      )}
+                      label="Send tracking link"
                     />
-                  </div>
-                )}
+                  )}
+                  <AiReplyDraftButton
+                    storeId={currentStore.id}
+                    phone={client.whatsapp_phone ?? client.phone}
+                    consentWhatsapp={client.consent_whatsapp}
+                    clientName={client.full_name ?? ""}
+                    garmentType={order.garment_type ?? ""}
+                    orderStatus={orderStatusLabel(order.status ?? "")}
+                    balance={balance?.balance ?? 0}
+                    deliveryDate={order.delivery_date}
+                  />
+                </div>
+              )}
             </div>
           )}
 
@@ -650,22 +745,34 @@ function OrderDetail() {
           </div>
         )}
 
-        {history && history.length > 0 && (
+        {historyRows.length > 0 && (
           <div className="mt-8">
             <p className="mb-2 text-sm font-medium text-muted-foreground">History</p>
             <div className="space-y-2">
-              {history.map((h) => (
+              {historyRows.map((h) => (
                 <div
                   key={h.id}
-                  className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
+                  className="flex items-start justify-between gap-3 rounded-xl border border-border p-3 text-sm"
                 >
-                  <span>
-                    {h.from_status ? `${orderStatusLabel(h.from_status)} → ` : "Created as "}
-                    {orderStatusLabel(h.to_status)}
-                  </span>
-                  <span className="text-muted-foreground">
-                    {new Date(h.changed_at).toLocaleString()}
-                  </span>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span>
+                        {h.from_status ? `${orderStatusLabel(h.from_status)} → ` : "Created as "}
+                        {orderStatusLabel(h.to_status)}
+                      </span>
+                      <span className="text-muted-foreground">
+                        {new Date(h.changed_at).toLocaleString()}
+                      </span>
+                    </div>
+                    {h.note && <p className="mt-1 text-xs text-muted-foreground">{h.note}</p>}
+                  </div>
+                  {h.photo_url && historyPhotoUrls?.get(h.photo_url) && (
+                    <img
+                      src={historyPhotoUrls.get(h.photo_url)}
+                      alt=""
+                      className="size-12 shrink-0 rounded-lg object-cover"
+                    />
+                  )}
                 </div>
               ))}
             </div>
@@ -706,7 +813,15 @@ function OrderDetail() {
         onClose={() => setLightboxIndex(null)}
       />
 
-      <Dialog open={!!pendingStatus} onOpenChange={(open) => !open && setPendingStatus(null)}>
+      <Dialog
+        open={!!pendingStatus}
+        onOpenChange={(open) => {
+          if (!open) {
+            setPendingStatus(null);
+            resetStatusChangeExtras();
+          }
+        }}
+      >
         <DialogContent>
           <DialogHeader>
             <DialogTitle>
@@ -726,8 +841,50 @@ function OrderDetail() {
               )}
             </DialogDescription>
           </DialogHeader>
+
+          <div className="space-y-3">
+            <Textarea
+              placeholder="Add a note for this update (optional)"
+              value={statusNote}
+              onChange={(e) => setStatusNote(e.target.value)}
+              rows={2}
+            />
+            <div className="flex items-center gap-3">
+              {statusPhotoPreview ? (
+                <img src={statusPhotoPreview} alt="" className="size-14 rounded-lg object-cover" />
+              ) : (
+                <label className="flex size-14 cursor-pointer items-center justify-center rounded-lg border border-dashed border-border text-muted-foreground">
+                  {uploadingStatusPhoto ? (
+                    <span className="text-xs">...</span>
+                  ) : (
+                    <Camera className="size-5" />
+                  )}
+                  <input
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    disabled={uploadingStatusPhoto}
+                    onChange={(e) => {
+                      void handleStatusPhotoUpload(e.target.files?.[0] ?? null);
+                      e.target.value = "";
+                    }}
+                  />
+                </label>
+              )}
+              <p className="text-xs text-muted-foreground">
+                Attach a progress photo (optional, needs to be online)
+              </p>
+            </div>
+          </div>
+
           <DialogFooter>
-            <Button variant="outline" onClick={() => setPendingStatus(null)}>
+            <Button
+              variant="outline"
+              onClick={() => {
+                setPendingStatus(null);
+                resetStatusChangeExtras();
+              }}
+            >
               Cancel
             </Button>
             <Button onClick={confirmStatusChange} disabled={updating}>

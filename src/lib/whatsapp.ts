@@ -14,9 +14,11 @@ export function orderReadyMessage(
   garment: string,
   storeName: string,
   balance: number,
+  trackingUrl?: string | null,
 ): string {
   const balanceLine = balance > 0 ? ` Balance: ${formatMoney(balance)}.` : "";
-  return `Hello ${firstNameOf(clientName)}, your ${garment} is ready at ${storeName}.${balanceLine} Reply STOP to opt out.`;
+  const trackingLine = trackingUrl ? ` Track your order: ${trackingUrl}` : "";
+  return `Hello ${firstNameOf(clientName)}, your ${garment} is ready at ${storeName}.${balanceLine} Reply STOP to opt out.${trackingLine}`;
 }
 
 export function balanceDueMessage(
@@ -24,8 +26,20 @@ export function balanceDueMessage(
   garment: string,
   storeName: string,
   balance: number,
+  trackingUrl?: string | null,
 ): string {
-  return `Hello ${firstNameOf(clientName)}, your balance for ${garment} at ${storeName} is ${formatMoney(balance)}. Reply STOP to opt out.`;
+  const trackingLine = trackingUrl ? ` Track your order: ${trackingUrl}` : "";
+  return `Hello ${firstNameOf(clientName)}, your balance for ${garment} at ${storeName} is ${formatMoney(balance)}. Reply STOP to opt out.${trackingLine}`;
+}
+
+/** Sent once, right after an order is created. */
+export function orderConfirmationMessage(
+  clientName: string,
+  garment: string,
+  storeName: string,
+  trackingUrl: string,
+): string {
+  return `Hello ${firstNameOf(clientName)}, thank you for your order (${garment}) with ${storeName}. Track its progress here: ${trackingUrl}`;
 }
 
 /** A self-reminder message, tap-to-send to the shop's own WhatsApp number. */

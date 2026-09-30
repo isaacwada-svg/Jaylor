@@ -135,7 +135,7 @@ function Home() {
           .gte("paid_at", startOfMonth),
         supabase
           .from("orders_for_tailor")
-          .select("id, client_id, garment_type, delivery_date, status, ready_at")
+          .select("id, client_id, garment_type, delivery_date, status, ready_at, tracking_token")
           .eq("store_id", storeId as string)
           .not("status", "in", "(collected,cancelled)"),
       ]);
@@ -648,6 +648,10 @@ function Home() {
                   {stats.uncollected.map((o) => {
                     const client = clientById(o.client_id);
                     const balance = stats.balanceByOrder.get(o.id) ?? 0;
+                    const trackingToken = (o as { tracking_token?: string | null }).tracking_token;
+                    const trackingUrl = trackingToken
+                      ? `${window.location.origin}/t/${trackingToken}`
+                      : null;
                     return (
                       <Card key={o.id} className="rounded-2xl">
                         <CardContent className="flex items-center justify-between gap-3 p-4">
@@ -675,6 +679,7 @@ function Home() {
                                 o.garment_type,
                                 currentStore.name,
                                 balance,
+                                trackingUrl,
                               )}
                               label="Remind"
                             />
