@@ -50,6 +50,17 @@ function PassportLanding() {
           <StitchDivider className="my-6" />
 
           <p className="text-sm text-muted-foreground">
+            <Link
+              to="/tailors"
+              className="font-medium text-gold underline-offset-4 hover:underline"
+            >
+              Find a Jaylor tailor
+            </Link>
+          </p>
+
+          <StitchDivider className="my-6" />
+
+          <p className="text-sm text-muted-foreground">
             For tailors:{" "}
             <Link
               to="/auth"

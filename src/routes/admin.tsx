@@ -326,6 +326,7 @@ function Admin() {
             <TabsTrigger value="messaging">Messaging</TabsTrigger>
             <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
             <TabsTrigger value="leads">Leads</TabsTrigger>
+            <TabsTrigger value="directory">Directory</TabsTrigger>
             <TabsTrigger value="audit">Audit log</TabsTrigger>
             <TabsTrigger value="errors">Errors</TabsTrigger>
             <TabsTrigger value="security">Security</TabsTrigger>
@@ -359,6 +360,9 @@ function Admin() {
           </TabsContent>
           <TabsContent value="leads" className="mt-6">
             <LeadsTab />
+          </TabsContent>
+          <TabsContent value="directory" className="mt-6">
+            <DirectoryTab readOnly={isReadOnly} />
           </TabsContent>
           <TabsContent value="audit" className="mt-6">
             <AuditTab />
@@ -1328,6 +1332,113 @@ function LeadsTab() {
             {[lead.phone, lead.email].filter(Boolean).join(" · ") || "No contact given"}
           </p>
           {lead.message && <p className="mt-2 text-sm">{lead.message}</p>}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+type DirectoryReportRow = {
+  id: string;
+  store_id: string;
+  store_name: string;
+  store_slug: string;
+  reason: string;
+  details: string | null;
+  reporter_contact: string | null;
+  status: "open" | "reviewed";
+  created_at: string;
+  directory_hidden_by_admin: boolean;
+};
+
+function DirectoryTab({ readOnly }: { readOnly: boolean }) {
+  const queryClient = useQueryClient();
+
+  const { data: reports, isLoading } = useQuery({
+    queryKey: ["admin-directory-reports"],
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("admin_list_directory_reports");
+      if (error) throw error;
+      return data as unknown as DirectoryReportRow[];
+    },
+  });
+
+  async function markReviewed(reportId: string) {
+    try {
+      const { error } = await supabase.rpc("admin_set_directory_report_status", {
+        p_report_id: reportId,
+        p_status: "reviewed",
+      });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["admin-directory-reports"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update this report"));
+    }
+  }
+
+  async function toggleHidden(storeId: string, hidden: boolean) {
+    try {
+      const { error } = await supabase.rpc("admin_set_directory_hidden", {
+        p_store_id: storeId,
+        p_hidden: hidden,
+      });
+      if (error) throw error;
+      queryClient.invalidateQueries({ queryKey: ["admin-directory-reports"] });
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not update this listing"));
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-2">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <Skeleton key={i} className="h-20 rounded-xl" />
+        ))}
+      </div>
+    );
+  }
+
+  if (!reports || reports.length === 0) {
+    return <p className="text-sm text-muted-foreground">No directory reports.</p>;
+  }
+
+  return (
+    <div className="space-y-2">
+      {reports.map((r) => (
+        <div key={r.id} className="rounded-xl border border-border p-4">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <p className="font-medium">
+                {r.store_name} · <span className="text-muted-foreground">{r.reason}</span>
+              </p>
+              <p className="mt-0.5 text-xs text-muted-foreground">
+                {new Date(r.created_at).toLocaleString()} ·{" "}
+                <span className={r.status === "open" ? "text-owed" : "text-paid"}>{r.status}</span>
+                {r.directory_hidden_by_admin && " · hidden"}
+              </p>
+            </div>
+            {!readOnly && (
+              <div className="flex gap-2">
+                {r.status === "open" && (
+                  <Button size="sm" variant="outline" onClick={() => markReviewed(r.id)}>
+                    Mark reviewed
+                  </Button>
+                )}
+                <Button
+                  size="sm"
+                  variant={r.directory_hidden_by_admin ? "outline" : "destructive"}
+                  onClick={() => toggleHidden(r.store_id, !r.directory_hidden_by_admin)}
+                >
+                  {r.directory_hidden_by_admin ? "Unhide listing" : "Hide listing"}
+                </Button>
+              </div>
+            )}
+          </div>
+          {r.details && <p className="mt-2 text-sm">{r.details}</p>}
+          {r.reporter_contact && (
+            <p className="mt-1 text-xs text-muted-foreground">Contact: {r.reporter_contact}</p>
+          )}
         </div>
       ))}
     </div>

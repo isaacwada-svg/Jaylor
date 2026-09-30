@@ -1155,6 +1155,51 @@ export type Database = {
           },
         ]
       }
+      directory_reports: {
+        Row: {
+          created_at: string
+          details: string | null
+          id: string
+          reason: string
+          reporter_contact: string | null
+          status: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason: string
+          reporter_contact?: string | null
+          status?: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          details?: string | null
+          id?: string
+          reason?: string
+          reporter_contact?: string | null
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "directory_reports_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "directory_reports_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       event_batches: {
         Row: {
           created_at: string
@@ -4682,6 +4727,11 @@ export type Database = {
           alert_transfer_received: boolean
           digest_daily: boolean
           digest_weekly: boolean
+          directory_bio: string | null
+          directory_listed: boolean
+          directory_remote_orders: boolean
+          directory_show_area: boolean
+          directory_specialties: string[]
           email: string | null
           fitting_closed_weekdays: number[]
           fitting_hours_end: string
@@ -4704,6 +4754,11 @@ export type Database = {
           alert_transfer_received?: boolean
           digest_daily?: boolean
           digest_weekly?: boolean
+          directory_bio?: string | null
+          directory_listed?: boolean
+          directory_remote_orders?: boolean
+          directory_show_area?: boolean
+          directory_specialties?: string[]
           email?: string | null
           fitting_closed_weekdays?: number[]
           fitting_hours_end?: string
@@ -4726,6 +4781,11 @@ export type Database = {
           alert_transfer_received?: boolean
           digest_daily?: boolean
           digest_weekly?: boolean
+          directory_bio?: string | null
+          directory_listed?: boolean
+          directory_remote_orders?: boolean
+          directory_show_area?: boolean
+          directory_specialties?: string[]
           email?: string | null
           fitting_closed_weekdays?: number[]
           fitting_hours_end?: string
@@ -4843,6 +4903,7 @@ export type Database = {
           cover_url: string | null
           created_at: string
           currency: string
+          directory_hidden_by_admin: boolean
           garment_types: string[] | null
           id: string
           is_active: boolean
@@ -4881,6 +4942,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           currency?: string
+          directory_hidden_by_admin?: boolean
           garment_types?: string[] | null
           id?: string
           is_active?: boolean
@@ -4919,6 +4981,7 @@ export type Database = {
           cover_url?: string | null
           created_at?: string
           currency?: string
+          directory_hidden_by_admin?: boolean
           garment_types?: string[] | null
           id?: string
           is_active?: boolean
@@ -5678,6 +5741,7 @@ export type Database = {
       }
       admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
+      admin_list_directory_reports: { Args: never; Returns: Json }
       admin_list_stores: { Args: never; Returns: Json }
       admin_list_team: { Args: never; Returns: Json }
       admin_live_board_stats: { Args: never; Returns: Json }
@@ -5702,6 +5766,14 @@ export type Database = {
           p_key: string
           p_year: number
         }
+        Returns: undefined
+      }
+      admin_set_directory_hidden: {
+        Args: { p_hidden: boolean; p_store_id: string }
+        Returns: undefined
+      }
+      admin_set_directory_report_status: {
+        Args: { p_report_id: string; p_status: string }
         Returns: undefined
       }
       admin_set_store_ai_allowance: {
@@ -5852,6 +5924,15 @@ export type Database = {
       client_payment_reliability: {
         Args: { p_client_id: string }
         Returns: Json
+      }
+      create_directory_report: {
+        Args: {
+          p_details?: string
+          p_reason: string
+          p_reporter_contact?: string
+          p_store_id: string
+        }
+        Returns: undefined
       }
       create_fitting_link: {
         Args: { p_order_id: string; p_purpose?: string }
@@ -6040,6 +6121,19 @@ export type Database = {
           store_name: string
         }[]
       }
+      get_directory_eligibility: { Args: { p_store_id: string }; Returns: Json }
+      get_directory_listings: {
+        Args: {
+          p_city?: string
+          p_page?: number
+          p_search?: string
+          p_specialty?: string
+          p_state?: string
+        }
+        Returns: Json
+      }
+      get_directory_locations: { Args: never; Returns: Json }
+      get_directory_specialties: { Args: never; Returns: Json }
       get_fitcheck_context: {
         Args: { p_client_id: string; p_order_id: string }
         Returns: Json
