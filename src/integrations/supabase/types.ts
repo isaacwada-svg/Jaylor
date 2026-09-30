@@ -2631,9 +2631,7 @@ export type Database = {
           changed_by: string | null
           from_status: string | null
           id: string
-          note: string | null
           order_id: string
-          photo_url: string | null
           to_status: string
         }
         Insert: {
@@ -2641,9 +2639,7 @@ export type Database = {
           changed_by?: string | null
           from_status?: string | null
           id?: string
-          note?: string | null
           order_id: string
-          photo_url?: string | null
           to_status: string
         }
         Update: {
@@ -2651,9 +2647,7 @@ export type Database = {
           changed_by?: string | null
           from_status?: string | null
           id?: string
-          note?: string | null
           order_id?: string
-          photo_url?: string | null
           to_status?: string
         }
         Relationships: [
@@ -2704,7 +2698,6 @@ export type Database = {
           store_id: string
           style_notes: string | null
           style_reference_photos: string[] | null
-          tracking_token: string
           updated_at: string
         }
         Insert: {
@@ -2730,7 +2723,6 @@ export type Database = {
           store_id: string
           style_notes?: string | null
           style_reference_photos?: string[] | null
-          tracking_token?: string
           updated_at?: string
         }
         Update: {
@@ -2756,7 +2748,6 @@ export type Database = {
           store_id?: string
           style_notes?: string | null
           style_reference_photos?: string[] | null
-          tracking_token?: string
           updated_at?: string
         }
         Relationships: [
@@ -4451,7 +4442,6 @@ export type Database = {
           status: string | null
           store_id: string | null
           style_notes: string | null
-          tracking_token: string | null
           updated_at: string | null
         }
         Insert: {
@@ -4471,7 +4461,6 @@ export type Database = {
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
-          tracking_token?: string | null
           updated_at?: string | null
         }
         Update: {
@@ -4763,7 +4752,6 @@ export type Database = {
         Returns: Json
       }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
-      get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_payout_account: {
@@ -4883,15 +4871,6 @@ export type Database = {
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
       revoke_measurement_passport_by_store: {
         Args: { p_client_id: string }
-        Returns: undefined
-      }
-      set_order_status_note: {
-        Args: {
-          p_note?: string | null
-          p_order_id: string
-          p_photo_path?: string | null
-          p_to_status: string
-        }
         Returns: undefined
       }
       set_participant_fabric_photo: {
