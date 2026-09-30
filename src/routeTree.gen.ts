@@ -37,6 +37,7 @@ import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedFestiveRouteImport } from './routes/_authenticated/festive'
+import { Route as AuthenticatedInventoryRouteImport } from './routes/_authenticated/inventory'
 import { Route as AuthenticatedMomentsRouteImport } from './routes/_authenticated/moments'
 import { Route as AuthenticatedMoreRouteImport } from './routes/_authenticated/more'
 import { Route as AuthenticatedMyEarningsRouteImport } from './routes/_authenticated/my-earnings'
@@ -209,6 +210,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedFestiveRoute = AuthenticatedFestiveRouteImport.update({
   id: '/festive',
   path: '/festive',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedInventoryRoute = AuthenticatedInventoryRouteImport.update({
+  id: '/inventory',
+  path: '/inventory',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedMomentsRoute = AuthenticatedMomentsRouteImport.update({
@@ -415,6 +421,7 @@ export interface FileRoutesByFullPath {
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/festive': typeof AuthenticatedFestiveRoute
+  '/inventory': typeof AuthenticatedInventoryRoute
   '/moments': typeof AuthenticatedMomentsRoute
   '/more': typeof AuthenticatedMoreRoute
   '/my-earnings': typeof AuthenticatedMyEarningsRoute
@@ -477,6 +484,7 @@ export interface FileRoutesByTo {
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/festive': typeof AuthenticatedFestiveRoute
+  '/inventory': typeof AuthenticatedInventoryRoute
   '/moments': typeof AuthenticatedMomentsRoute
   '/more': typeof AuthenticatedMoreRoute
   '/my-earnings': typeof AuthenticatedMyEarningsRoute
@@ -541,6 +549,7 @@ export interface FileRoutesById {
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/festive': typeof AuthenticatedFestiveRoute
+  '/_authenticated/inventory': typeof AuthenticatedInventoryRoute
   '/_authenticated/moments': typeof AuthenticatedMomentsRoute
   '/_authenticated/more': typeof AuthenticatedMoreRoute
   '/_authenticated/my-earnings': typeof AuthenticatedMyEarningsRoute
@@ -605,6 +614,7 @@ export interface FileRouteTypes {
     | '/contracts'
     | '/dashboard'
     | '/festive'
+    | '/inventory'
     | '/moments'
     | '/more'
     | '/my-earnings'
@@ -667,6 +677,7 @@ export interface FileRouteTypes {
     | '/contracts'
     | '/dashboard'
     | '/festive'
+    | '/inventory'
     | '/moments'
     | '/more'
     | '/my-earnings'
@@ -730,6 +741,7 @@ export interface FileRouteTypes {
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
     | '/_authenticated/festive'
+    | '/_authenticated/inventory'
     | '/_authenticated/moments'
     | '/_authenticated/more'
     | '/_authenticated/my-earnings'
@@ -1001,6 +1013,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFestiveRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/inventory': {
+      id: '/_authenticated/inventory'
+      path: '/inventory'
+      fullPath: '/inventory'
+      preLoaderRoute: typeof AuthenticatedInventoryRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/moments': {
       id: '/_authenticated/moments'
       path: '/moments'
@@ -1257,6 +1276,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedFestiveRoute: typeof AuthenticatedFestiveRoute
+  AuthenticatedInventoryRoute: typeof AuthenticatedInventoryRoute
   AuthenticatedMomentsRoute: typeof AuthenticatedMomentsRoute
   AuthenticatedMoreRoute: typeof AuthenticatedMoreRoute
   AuthenticatedMyEarningsRoute: typeof AuthenticatedMyEarningsRoute
@@ -1284,6 +1304,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedFestiveRoute: AuthenticatedFestiveRoute,
+  AuthenticatedInventoryRoute: AuthenticatedInventoryRoute,
   AuthenticatedMomentsRoute: AuthenticatedMomentsRoute,
   AuthenticatedMoreRoute: AuthenticatedMoreRoute,
   AuthenticatedMyEarningsRoute: AuthenticatedMyEarningsRoute,

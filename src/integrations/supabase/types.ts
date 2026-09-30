@@ -1814,6 +1814,172 @@ export type Database = {
           },
         ]
       }
+      inventory_items: {
+        Row: {
+          category: string
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          quantity: number
+          reorder_level: number
+          store_id: string
+          unit: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          cost_per_unit?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          quantity?: number
+          reorder_level?: number
+          store_id: string
+          unit: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          cost_per_unit?: number | null
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          quantity?: number
+          reorder_level?: number
+          store_id?: string
+          unit?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      inventory_movements: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          item_id: string
+          note: string | null
+          order_id: string | null
+          order_material_id: string | null
+          quantity: number
+          store_id: string
+          type: string
+          unit_cost: number | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id: string
+          note?: string | null
+          order_id?: string | null
+          order_material_id?: string | null
+          quantity: number
+          store_id: string
+          type: string
+          unit_cost?: number | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          item_id?: string
+          note?: string | null
+          order_id?: string | null
+          order_material_id?: string | null
+          quantity?: number
+          store_id?: string
+          type?: string
+          unit_cost?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_item_id_fkey"
+            columns: ["item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_order_material_id_fkey"
+            columns: ["order_material_id"]
+            isOneToOne: false
+            referencedRelation: "order_materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_order_material_id_fkey"
+            columns: ["order_material_id"]
+            isOneToOne: false
+            referencedRelation: "order_materials_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_movements_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       job_templates: {
         Row: {
           collection_mode: string
@@ -2553,6 +2719,7 @@ export type Database = {
           description: string | null
           extras_received: string | null
           id: string
+          inventory_item_id: string | null
           order_id: string
           photo_url: string | null
           photo_urls: string[]
@@ -2571,6 +2738,7 @@ export type Database = {
           description?: string | null
           extras_received?: string | null
           id?: string
+          inventory_item_id?: string | null
           order_id: string
           photo_url?: string | null
           photo_urls?: string[]
@@ -2589,6 +2757,7 @@ export type Database = {
           description?: string | null
           extras_received?: string | null
           id?: string
+          inventory_item_id?: string | null
           order_id?: string
           photo_url?: string | null
           photo_urls?: string[]
@@ -2600,6 +2769,20 @@ export type Database = {
           yards?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "order_materials_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_materials_inventory_item_id_fkey"
+            columns: ["inventory_item_id"]
+            isOneToOne: false
+            referencedRelation: "inventory_items_for_tailor"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "order_materials_order_id_fkey"
             columns: ["order_id"]
@@ -4800,6 +4983,63 @@ export type Database = {
       }
     }
     Views: {
+      inventory_items_for_tailor: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          id: string | null
+          is_active: boolean | null
+          name: string | null
+          quantity: number | null
+          reorder_level: number | null
+          store_id: string | null
+          unit: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          quantity?: number | null
+          reorder_level?: number | null
+          store_id?: string | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          id?: string | null
+          is_active?: boolean | null
+          name?: string | null
+          quantity?: number | null
+          reorder_level?: number | null
+          store_id?: string | null
+          unit?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventory_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventory_items_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_balances: {
         Row: {
           balance: number | null
@@ -5067,6 +5307,29 @@ export type Database = {
     Functions: {
       accept_invite: { Args: { p_token: string }; Returns: string }
       accept_passport_share: { Args: { p_share_id: string }; Returns: string }
+      adjust_stock: {
+        Args: { p_item_id: string; p_new_quantity: number; p_reason: string }
+        Returns: {
+          category: string
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          quantity: number
+          reorder_level: number
+          store_id: string
+          unit: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       admin_add_team_member: {
         Args: { p_email: string; p_label?: string; p_role: string }
         Returns: Json
@@ -5206,6 +5469,37 @@ export type Database = {
       client_payment_reliability: {
         Args: { p_client_id: string }
         Returns: Json
+      }
+      create_inventory_item: {
+        Args: {
+          p_category: string
+          p_cost_per_unit?: number | undefined
+          p_initial_quantity?: number
+          p_name: string
+          p_reorder_level?: number
+          p_store_id: string
+          p_unit: string
+        }
+        Returns: {
+          category: string
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          quantity: number
+          reorder_level: number
+          store_id: string
+          unit: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       create_notification: {
         Args: {
@@ -5484,6 +5778,34 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      record_stock_in: {
+        Args: {
+          p_item_id: string
+          p_note?: string | undefined
+          p_quantity: number
+          p_unit_cost?: number | undefined
+        }
+        Returns: {
+          category: string
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          quantity: number
+          reorder_level: number
+          store_id: string
+          unit: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       refund_ai_credits: {
         Args: { p_ledger_id: string; p_reason: string; p_usage?: Json }
         Returns: undefined
@@ -5564,6 +5886,36 @@ export type Database = {
           order_count: number
         }[]
       }
+      update_inventory_item: {
+        Args: {
+          p_category?: string
+          p_is_active?: boolean
+          p_item_id: string
+          p_name?: string
+          p_reorder_level?: number
+          p_unit?: string
+        }
+        Returns: {
+          category: string
+          cost_per_unit: number | null
+          created_at: string
+          created_by: string | null
+          id: string
+          is_active: boolean
+          name: string
+          quantity: number
+          reorder_level: number
+          store_id: string
+          unit: string
+          updated_at: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "inventory_items"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       upcoming_calendar_events: {
         Args: { p_store_id: string; p_weeks_ahead?: number }
         Returns: {
@@ -5591,6 +5943,39 @@ export type Database = {
         SetofOptions: {
           from: "*"
           to: "pay_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      use_stock_on_order: {
+        Args: {
+          p_item_id: string
+          p_note?: string
+          p_order_id: string
+          p_quantity: number
+        }
+        Returns: {
+          colour: string | null
+          cost: number
+          cost_per_yard: number | null
+          created_at: string
+          description: string | null
+          extras_received: string | null
+          id: string
+          inventory_item_id: string | null
+          order_id: string
+          photo_url: string | null
+          photo_urls: string[]
+          purchased_at: string
+          received_at: string | null
+          received_by: string | null
+          source: string
+          store_id: string
+          yards: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "order_materials"
           isOneToOne: true
           isSetofReturn: false
         }
