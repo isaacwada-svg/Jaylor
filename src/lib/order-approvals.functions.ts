@@ -4,7 +4,8 @@ import { z } from "zod";
 const RATE_LIMIT_MAX = 30;
 const RATE_LIMIT_WINDOW_MINUTES = 60;
 const SIGNED_URL_TTL = 60 * 60; // 1 hour
-const BUCKET = "order-style-photos";
+const STYLE_PHOTOS_BUCKET = "order-style-photos";
+const MATERIAL_PHOTOS_BUCKET = "order-materials";
 
 async function withinRateLimit(bucket: string, token: string) {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
@@ -27,6 +28,8 @@ export type OrderApprovalMaterial = {
   cost_per_yard: number | null;
   source: string;
   photo_url: string | null;
+  photo_urls: string[];
+  extras_received: string | null;
 };
 
 export type OrderApprovalSnapshot = {
@@ -85,17 +88,31 @@ export const getOrderApproval = createServerFn({ method: "GET" })
       created_at: string;
     };
 
-    const photoPaths = [
-      ...raw.snapshot.style_reference_photos,
-      ...raw.snapshot.materials.map((m) => m.photo_url).filter((p): p is string => !!p),
-    ];
+    // Older snapshots (before PR E) only carry a single photo_url per
+    // material -- fall back to that so old approvals still render.
+    const materialPhotoPaths = (m: OrderApprovalMaterial): string[] =>
+      m.photo_urls && m.photo_urls.length > 0 ? m.photo_urls : m.photo_url ? [m.photo_url] : [];
 
-    let signedByPath = new Map<string, string>();
-    if (photoPaths.length > 0) {
+    const stylePaths = raw.snapshot.style_reference_photos;
+    const materialPaths = raw.snapshot.materials.flatMap(materialPhotoPaths);
+
+    let signedStyleByPath = new Map<string, string>();
+    let signedMaterialByPath = new Map<string, string>();
+    if (stylePaths.length > 0) {
       const { data: signed } = await supabaseAdmin.storage
-        .from(BUCKET)
-        .createSignedUrls(photoPaths, SIGNED_URL_TTL);
-      signedByPath = new Map(
+        .from(STYLE_PHOTOS_BUCKET)
+        .createSignedUrls(stylePaths, SIGNED_URL_TTL);
+      signedStyleByPath = new Map(
+        (signed ?? [])
+          .filter((s) => !!s.signedUrl && !!s.path)
+          .map((s) => [s.path as string, s.signedUrl as string]),
+      );
+    }
+    if (materialPaths.length > 0) {
+      const { data: signed } = await supabaseAdmin.storage
+        .from(MATERIAL_PHOTOS_BUCKET)
+        .createSignedUrls(materialPaths, SIGNED_URL_TTL);
+      signedMaterialByPath = new Map(
         (signed ?? [])
           .filter((s) => !!s.signedUrl && !!s.path)
           .map((s) => [s.path as string, s.signedUrl as string]),
@@ -108,13 +125,16 @@ export const getOrderApproval = createServerFn({ method: "GET" })
       status: raw.status,
       snapshot: {
         ...raw.snapshot,
-        style_reference_photos: raw.snapshot.style_reference_photos.map(
-          (p) => signedByPath.get(p) ?? p,
-        ),
-        materials: raw.snapshot.materials.map((m) => ({
-          ...m,
-          photo_url: m.photo_url ? (signedByPath.get(m.photo_url) ?? m.photo_url) : null,
-        })),
+        style_reference_photos: stylePaths.map((p) => signedStyleByPath.get(p) ?? p),
+        materials: raw.snapshot.materials.map((m) => {
+          const paths = materialPhotoPaths(m);
+          const signedUrls = paths.map((p) => signedMaterialByPath.get(p) ?? p);
+          return {
+            ...m,
+            photo_url: signedUrls[0] ?? null,
+            photo_urls: signedUrls,
+          };
+        }),
       },
       clientComment: raw.client_comment,
       respondedAt: raw.responded_at,

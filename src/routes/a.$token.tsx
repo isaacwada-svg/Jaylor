@@ -146,23 +146,34 @@ function OrderApprovalPage() {
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Fabric</p>
               <div className="mt-2 space-y-2">
                 {snapshot.materials.map((m, i) => (
-                  <div
-                    key={i}
-                    className="flex items-center gap-3 rounded-xl border border-border p-3 text-sm"
-                  >
-                    {m.photo_url && (
-                      <img
-                        src={m.photo_url}
-                        alt=""
-                        className="size-12 shrink-0 rounded-lg object-cover"
-                      />
-                    )}
-                    <div>
-                      <p>{m.description}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {[m.colour, m.yards ? `${m.yards} yds` : null].filter(Boolean).join(" · ")}
-                      </p>
+                  <div key={i} className="rounded-xl border border-border p-3 text-sm">
+                    <div className="flex items-center gap-3">
+                      {m.photo_urls.length > 0 && (
+                        <div className="flex shrink-0 flex-wrap gap-1">
+                          {m.photo_urls.map((url, j) => (
+                            <img
+                              key={j}
+                              src={url}
+                              alt=""
+                              className="size-12 rounded-lg object-cover"
+                            />
+                          ))}
+                        </div>
+                      )}
+                      <div>
+                        <p>{m.description}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {[m.colour, m.yards ? `${m.yards} yds` : null]
+                            .filter(Boolean)
+                            .join(" · ")}
+                        </p>
+                      </div>
                     </div>
+                    {m.extras_received && (
+                      <p className="mt-2 text-xs text-muted-foreground">
+                        Also received: {m.extras_received}
+                      </p>
+                    )}
                   </div>
                 ))}
               </div>

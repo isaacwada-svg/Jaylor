@@ -27,6 +27,8 @@ import { PaymentReliabilityBadge } from "@/components/jaylor/payment-reliability
 import { PriceGuidancePanel } from "@/components/jaylor/price-guidance-panel";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { HelpTooltip } from "@/components/jaylor/help-tooltip";
+import { MaterialPhotoManager } from "@/components/jaylor/material-photo-manager";
+import { materialPhotoPathPrefix } from "@/lib/material-photos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -116,6 +118,15 @@ export function OrderForm({
   const styleRefInputRef = useRef<HTMLInputElement>(null);
   const MAX_STYLE_REF_PHOTOS = 4;
 
+  // Generated up front so fabric photos can be uploaded to their final
+  // storage path before the order/material rows exist -- the insert later
+  // reuses these as the rows' own ids.
+  const [pendingOrderId, setPendingOrderId] = useState(() => crypto.randomUUID());
+  const [pendingMaterialId, setPendingMaterialId] = useState(() => crypto.randomUUID());
+  const [materialPhotoPaths, setMaterialPhotoPaths] = useState<string[]>([]);
+  const [materialExtras, setMaterialExtras] = useState("");
+  const [receivedAtInput, setReceivedAtInput] = useState("");
+
   const [price, setPrice] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
   const [rush, setRush] = useState(false);
@@ -143,6 +154,11 @@ export function OrderForm({
     setMaterialCost("");
     setStyleRefPreviews([]);
     setStyleRefPaths([]);
+    setPendingOrderId(crypto.randomUUID());
+    setPendingMaterialId(crypto.randomUUID());
+    setMaterialPhotoPaths([]);
+    setMaterialExtras("");
+    setReceivedAtInput(new Date().toISOString().slice(0, 10));
     setPrice(prefill?.price != null ? String(prefill.price) : "");
     setDeliveryDate(prefill?.delivery_date ?? "");
     setRush(prefill?.rush ?? false);
@@ -400,6 +416,7 @@ export function OrderForm({
     try {
       const { data: userData } = await supabase.auth.getUser();
       const orderPayload = {
+        id: pendingOrderId,
         store_id: storeId,
         // Placeholder only — the orders_set_number trigger assigns the real number on insert.
         number: "",
@@ -421,6 +438,7 @@ export function OrderForm({
       const materialYardsNum = materialYards.trim() ? Number(materialYards) : null;
       const materialCostNum = materialSource === "tailor" ? Number(materialCost) || 0 : 0;
       const materialPayload = {
+        id: pendingMaterialId,
         store_id: storeId,
         source: materialSource,
         description: materialDescription.trim(),
@@ -431,6 +449,9 @@ export function OrderForm({
           materialSource === "tailor" && materialYardsNum && materialYardsNum > 0
             ? materialCostNum / materialYardsNum
             : null,
+        photo_urls: materialPhotoPaths,
+        extras_received: materialExtras.trim() || null,
+        received_at: materialSource === "customer" && receivedAtInput ? receivedAtInput : null,
       };
 
       if (!online) {
@@ -711,6 +732,43 @@ export function OrderForm({
                 <MoneyInput id="material-cost" value={materialCost} onChange={setMaterialCost} />
               </div>
             )}
+          </div>
+
+          <div className="space-y-3 rounded-xl border border-border p-3">
+            <p className="text-sm font-medium">Fabric photos</p>
+            <p className="text-xs text-muted-foreground">
+              A dated record of what was received, in case of a dispute later.
+            </p>
+            <MaterialPhotoManager
+              pathPrefix={materialPhotoPathPrefix(storeId, pendingOrderId, pendingMaterialId)}
+              photoPaths={materialPhotoPaths}
+              onAdd={(path) => setMaterialPhotoPaths((prev) => [...prev, path])}
+              onRemove={(path) => setMaterialPhotoPaths((prev) => prev.filter((p) => p !== path))}
+              canRemove
+              disabledReason={
+                !online ? "Photos need a connection. You can add them later from the order." : null
+              }
+            />
+            {materialSource === "customer" && (
+              <div className="space-y-2">
+                <Label htmlFor="material-received-at">Received on</Label>
+                <Input
+                  id="material-received-at"
+                  type="date"
+                  value={receivedAtInput}
+                  onChange={(e) => setReceivedAtInput(e.target.value)}
+                />
+              </div>
+            )}
+            <div className="space-y-2">
+              <Label htmlFor="material-extras">Other items received (optional)</Label>
+              <Input
+                id="material-extras"
+                value={materialExtras}
+                onChange={(e) => setMaterialExtras(e.target.value)}
+                placeholder="Buttons, lining, zips..."
+              />
+            </div>
           </div>
 
           {garmentType && (

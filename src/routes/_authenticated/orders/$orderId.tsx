@@ -43,6 +43,9 @@ import {
 } from "@/lib/whatsapp";
 import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { resizeImageFile } from "@/lib/image";
+import { useOnlineStatus } from "@/lib/use-online-status";
+import { MaterialPhotoManager } from "@/components/jaylor/material-photo-manager";
+import { materialPhotoPathPrefix } from "@/lib/material-photos";
 
 export const Route = createFileRoute("/_authenticated/orders/$orderId")({
   staticData: { sitemap: false },
@@ -64,6 +67,7 @@ function OrderDetail() {
   const queryClient = useQueryClient();
   const { currentStore, currentRole } = useStore();
   const canSeeMoney = currentRole === "owner" || currentRole === "manager";
+  const online = useOnlineStatus();
 
   const [pendingStatus, setPendingStatus] = useState<OrderStatusDb | null>(null);
   const [updating, setUpdating] = useState(false);
@@ -149,11 +153,22 @@ function OrderDetail() {
   });
 
   const { data: material } = useQuery({
-    queryKey: ["order-material", orderId],
-    enabled: canSeeMoney,
+    queryKey: ["order-material", orderId, canSeeMoney],
+    enabled: !!order,
     queryFn: async () => {
+      if (canSeeMoney) {
+        const { data, error } = await supabase
+          .from("order_materials")
+          .select("*")
+          .eq("order_id", orderId)
+          .maybeSingle();
+        if (error) throw error;
+        return data;
+      }
+      // Tailors see the fabric-intake record but not its cost, through the
+      // same column-allowlist view pattern as orders_for_tailor.
       const { data, error } = await supabase
-        .from("order_materials")
+        .from("order_materials_for_tailor")
         .select("*")
         .eq("order_id", orderId)
         .maybeSingle();
@@ -161,6 +176,40 @@ function OrderDetail() {
       return data;
     },
   });
+
+  const { data: materialReceivedByName } = useQuery({
+    queryKey: ["order-material-received-by", material?.received_by],
+    enabled: !!material?.received_by,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("profiles")
+        .select("full_name")
+        .eq("id", material?.received_by as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.full_name ?? null;
+    },
+  });
+
+  async function addMaterialPhoto(path: string) {
+    if (!material?.id) return;
+    const { error } = await supabase
+      .from("order_materials")
+      .update({ photo_urls: [...(material.photo_urls ?? []), path] })
+      .eq("id", material.id);
+    if (error) throw error;
+    await queryClient.invalidateQueries({ queryKey: ["order-material", orderId, canSeeMoney] });
+  }
+
+  async function removeMaterialPhoto(path: string) {
+    if (!material?.id) return;
+    const { error } = await supabase.rpc("remove_material_photo", {
+      p_material_id: material.id,
+      p_path: path,
+    });
+    if (error) throw error;
+    await queryClient.invalidateQueries({ queryKey: ["order-material", orderId, canSeeMoney] });
+  }
 
   // orders_for_tailor (the view non-owner/manager roles read from) now also
   // carries this column, so both roles can read it -- just from whichever
@@ -461,7 +510,8 @@ function OrderDetail() {
   const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
 
   const fullOrder = canSeeMoney ? (order as Tables<"orders">) : null;
-  const materialCost = material?.source === "tailor" ? (material.cost ?? 0) : 0;
+  const fullMaterial = canSeeMoney ? (material as Tables<"order_materials"> | null) : null;
+  const materialCost = fullMaterial?.source === "tailor" ? (fullMaterial.cost ?? 0) : 0;
   const labourCost = fullOrder?.labour_cost ?? 0;
   const otherCost = fullOrder?.other_cost ?? 0;
   const totalCost = materialCost + labourCost + otherCost;
@@ -745,9 +795,11 @@ function OrderDetail() {
             </div>
           )}
 
-          {canSeeMoney && material && (
+          {material && (
             <div className="rounded-2xl border border-border p-4">
-              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Material</p>
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                Fabric received
+              </p>
               <p className="mt-1 text-sm">
                 {material.source === "customer" ? "Customer's fabric" : "Store-bought fabric"}
               </p>
@@ -756,11 +808,47 @@ function OrderDetail() {
                 {material.colour ? ` · ${material.colour}` : ""}
                 {material.yards ? ` · ${material.yards} yds` : ""}
               </p>
-              {material.source === "tailor" && material.cost > 0 && (
+              {fullMaterial && fullMaterial.source === "tailor" && fullMaterial.cost > 0 && (
                 <p className="mt-1 text-sm">
-                  Cost: <MoneyText amount={material.cost} />
+                  Cost: <MoneyText amount={fullMaterial.cost} />
                 </p>
               )}
+              {material.extras_received && (
+                <p className="mt-1 text-sm text-muted-foreground">
+                  Also received: {material.extras_received}
+                </p>
+              )}
+              {(material.received_at || materialReceivedByName) && (
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Received
+                  {material.received_at
+                    ? ` ${new Date(material.received_at).toLocaleDateString()}`
+                    : ""}
+                  {materialReceivedByName ? ` by ${materialReceivedByName}` : ""}
+                </p>
+              )}
+              <div className="mt-3">
+                {(material.photo_urls?.length ?? 0) === 0 && (
+                  <p className="mb-2 text-xs text-muted-foreground">
+                    No fabric photos yet. Add a photo so you and your client have a record of what
+                    was received.
+                  </p>
+                )}
+                {currentStore && material.id && (
+                  <MaterialPhotoManager
+                    pathPrefix={materialPhotoPathPrefix(currentStore.id, orderId, material.id)}
+                    photoPaths={material.photo_urls ?? []}
+                    onAdd={addMaterialPhoto}
+                    onRemove={canSeeMoney ? removeMaterialPhoto : undefined}
+                    canRemove={canSeeMoney}
+                    disabledReason={
+                      !online
+                        ? "Photos need a connection. You can add them later from the order."
+                        : null
+                    }
+                  />
+                )}
+              </div>
             </div>
           )}
 

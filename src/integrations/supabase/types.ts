@@ -2551,10 +2551,14 @@ export type Database = {
           cost_per_yard: number | null
           created_at: string
           description: string | null
+          extras_received: string | null
           id: string
           order_id: string
           photo_url: string | null
+          photo_urls: string[]
           purchased_at: string
+          received_at: string | null
+          received_by: string | null
           source: string
           store_id: string
           yards: number | null
@@ -2565,10 +2569,14 @@ export type Database = {
           cost_per_yard?: number | null
           created_at?: string
           description?: string | null
+          extras_received?: string | null
           id?: string
           order_id: string
           photo_url?: string | null
+          photo_urls?: string[]
           purchased_at?: string
+          received_at?: string | null
+          received_by?: string | null
           source: string
           store_id: string
           yards?: number | null
@@ -2579,10 +2587,14 @@ export type Database = {
           cost_per_yard?: number | null
           created_at?: string
           description?: string | null
+          extras_received?: string | null
           id?: string
           order_id?: string
           photo_url?: string | null
+          photo_urls?: string[]
           purchased_at?: string
+          received_at?: string | null
+          received_by?: string | null
           source?: string
           store_id?: string
           yards?: number | null
@@ -4514,6 +4526,93 @@ export type Database = {
           },
         ]
       }
+      order_materials_for_tailor: {
+        Row: {
+          colour: string | null
+          created_at: string | null
+          description: string | null
+          extras_received: string | null
+          id: string | null
+          order_id: string | null
+          photo_url: string | null
+          photo_urls: string[] | null
+          purchased_at: string | null
+          received_at: string | null
+          received_by: string | null
+          source: string | null
+          store_id: string | null
+          yards: number | null
+        }
+        Insert: {
+          colour?: string | null
+          created_at?: string | null
+          description?: string | null
+          extras_received?: string | null
+          id?: string | null
+          order_id?: string | null
+          photo_url?: string | null
+          photo_urls?: string[] | null
+          purchased_at?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          source?: string | null
+          store_id?: string | null
+          yards?: number | null
+        }
+        Update: {
+          colour?: string | null
+          created_at?: string | null
+          description?: string | null
+          extras_received?: string | null
+          id?: string | null
+          order_id?: string | null
+          photo_url?: string | null
+          photo_urls?: string[] | null
+          purchased_at?: string | null
+          received_at?: string | null
+          received_by?: string | null
+          source?: string | null
+          store_id?: string | null
+          yards?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_materials_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_materials_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_materials_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_materials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_materials_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       orders_for_tailor: {
         Row: {
           assigned_to: string | null
@@ -4981,6 +5080,10 @@ export type Database = {
       }
       refund_ai_credits: {
         Args: { p_ledger_id: string; p_reason: string; p_usage?: Json }
+        Returns: undefined
+      }
+      remove_material_photo: {
+        Args: { p_material_id: string; p_path: string }
         Returns: undefined
       }
       reserve_ai_credits: {
