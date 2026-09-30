@@ -1,0 +1,19 @@
+{
+  "page_title": "Soro usoro ihe i tinyere n'aka",
+  "order_not_found_title": "Anyị enweghị ike ịchọta ihe a",
+  "delivery_date": "Ụbọchị nnyefe: {{date}}",
+  "cancelled": "Akagbuola ihe a.",
+  "created_as_prefix": "Ọ malitere dị ka",
+  "no_updates": "Enwebeghị mmelite ọhụrụ.",
+  "next_fitting": "Mmata ọzọ: {{date}} na {{time}}",
+  "paid_so_far": "Ego akwụọla ruo ugbu a",
+  "balance": "Ego fọdụrụ",
+  "pay_by_transfer": "Kwụọ site na mbufe gaa",
+  "starting_payment": "Na-amalite ịkwụ ụgwọ...",
+  "pay_amount": "Kwụọ {{amount}}",
+  "payment_confirmed": "Akwadoro ịkwụ ụgwọ",
+  "payment_not_confirmed": "Ekwadoghị ịkwụ ụgwọ",
+  "could_not_confirm_payment": "Enweghị ike ikwado ịkwụ ụgwọ a",
+  "could_not_start_payment": "Enweghị ike ịmalite ịkwụ ụgwọ",
+  "_meta_status": "machine-drafted-needs-review"
+}

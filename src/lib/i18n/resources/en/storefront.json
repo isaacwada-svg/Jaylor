@@ -1,0 +1,15 @@
+{
+  "shop_not_found_title": "We couldn't find that shop",
+  "no_styles_published": "This shop hasn't published any styles yet.",
+  "price_on_request": "Price on request",
+  "price_from": "From {{price}}",
+  "ready_in_days": "Ready in about {{days}} days",
+  "message_whatsapp": "Message on WhatsApp",
+  "order_whatsapp": "Order on WhatsApp",
+  "sew_this_for_me": "Sew this for me",
+  "pay_by_transfer": "Pay by transfer to",
+  "account_copied": "Account number copied",
+  "copy_failed": "Could not copy",
+  "on_time_badge": "Delivered on time: {{rate}}% of the last {{count}} orders",
+  "no_photo_yet": "No photo yet"
+}

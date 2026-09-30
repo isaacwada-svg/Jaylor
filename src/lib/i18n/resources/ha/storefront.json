@@ -1,0 +1,16 @@
+{
+  "shop_not_found_title": "Ba mu sami wannan shago ba",
+  "no_styles_published": "Wannan shago bai wallafa wani salo ba tukuna.",
+  "price_on_request": "Farashi idan an tambaya",
+  "price_from": "Daga {{price}}",
+  "ready_in_days": "Zai shirya cikin kimanin kwana {{days}}",
+  "message_whatsapp": "Aika sako ta WhatsApp",
+  "order_whatsapp": "Yi oda ta WhatsApp",
+  "sew_this_for_me": "Dinka mini wannan",
+  "pay_by_transfer": "Biya ta hanyar canja wuri zuwa",
+  "account_copied": "An kwafi lambar asusu",
+  "copy_failed": "An kasa kwafa",
+  "on_time_badge": "An kai a kan lokaci: kaso {{rate}}% na odar {{count}} na baya-bayan nan",
+  "no_photo_yet": "Babu hoto tukuna",
+  "_meta_status": "machine-drafted-needs-review"
+}

@@ -32,6 +32,8 @@ export type QuotePreview = {
   storeName: string;
   storeAddress: string | null;
   storeLogoUrl: string | null;
+  storeLanguage: string | null;
+  clientPreferredLanguage: string | null;
   payoutAccount: { accountNumber: string; accountName: string; bankName: string } | null;
 };
 
@@ -51,10 +53,14 @@ export const getQuotePreview = createServerFn({ method: "GET" })
     if (!quote) return null;
 
     const [{ data: client }, { data: store }, { data: dedicatedAccount }] = await Promise.all([
-      supabaseAdmin.from("clients").select("full_name").eq("id", quote.client_id).maybeSingle(),
+      supabaseAdmin
+        .from("clients")
+        .select("full_name, preferred_language")
+        .eq("id", quote.client_id)
+        .maybeSingle(),
       supabaseAdmin
         .from("stores")
-        .select("name, address, logo_url")
+        .select("name, address, logo_url, language")
         .eq("id", quote.store_id)
         .maybeSingle(),
       supabaseAdmin
@@ -78,6 +84,8 @@ export const getQuotePreview = createServerFn({ method: "GET" })
       storeName: store?.name ?? "Jaylor",
       storeAddress: store?.address ?? null,
       storeLogoUrl: store?.logo_url ?? null,
+      storeLanguage: store?.language ?? null,
+      clientPreferredLanguage: client?.preferred_language ?? null,
       payoutAccount:
         dedicatedAccount?.status === "active" && dedicatedAccount.account_number
           ? {

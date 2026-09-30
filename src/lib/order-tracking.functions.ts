@@ -30,6 +30,8 @@ export type OrderTrackingTimelineEntry = {
 export type OrderTrackingView = {
   storeName: string;
   storeLogoUrl: string | null;
+  storeLanguage: string | null;
+  clientPreferredLanguage: string | null;
   garmentType: string;
   quantity: number;
   status: string;
@@ -65,6 +67,8 @@ export const getOrderTracking = createServerFn({ method: "GET" })
     const raw = view as {
       store_name: string;
       store_logo_url: string | null;
+      store_language: string | null;
+      client_preferred_language: string | null;
       garment_type: string;
       quantity: number;
       status: string;
@@ -95,6 +99,8 @@ export const getOrderTracking = createServerFn({ method: "GET" })
     return {
       storeName: raw.store_name,
       storeLogoUrl: raw.store_logo_url,
+      storeLanguage: raw.store_language,
+      clientPreferredLanguage: raw.client_preferred_language,
       garmentType: raw.garment_type,
       quantity: raw.quantity,
       status: raw.status,

@@ -52,6 +52,8 @@ export type OrderApprovalSnapshot = {
 export type OrderApprovalView = {
   storeName: string;
   storeLogoUrl: string | null;
+  storeLanguage: string | null;
+  clientPreferredLanguage: string | null;
   status: "pending" | "approved" | "changes_requested";
   snapshot: OrderApprovalSnapshot;
   clientComment: string | null;
@@ -81,6 +83,8 @@ export const getOrderApproval = createServerFn({ method: "GET" })
     const raw = view as {
       store_name: string;
       store_logo_url: string | null;
+      store_language: string | null;
+      client_preferred_language: string | null;
       status: "pending" | "approved" | "changes_requested";
       snapshot: OrderApprovalSnapshot;
       client_comment: string | null;
@@ -122,6 +126,8 @@ export const getOrderApproval = createServerFn({ method: "GET" })
     return {
       storeName: raw.store_name,
       storeLogoUrl: raw.store_logo_url,
+      storeLanguage: raw.store_language,
+      clientPreferredLanguage: raw.client_preferred_language,
       status: raw.status,
       snapshot: {
         ...raw.snapshot,

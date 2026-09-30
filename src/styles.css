@@ -19,11 +19,15 @@
   --radius-3xl: calc(var(--radius) + 12px);
   --radius-4xl: calc(var(--radius) + 16px);
 
-  --font-display: "Playfair Display", ui-serif, Georgia, serif;
-  --font-heading: "Playfair Display", ui-serif, Georgia, serif;
-  --font-sans: "Montserrat", ui-sans-serif, system-ui, sans-serif;
-  --font-editorial: "Playfair Display", ui-serif, Georgia, serif;
-  --font-work: "Montserrat", ui-sans-serif, system-ui, sans-serif;
+  /* "Noto Sans" is appended (not a replacement) so any glyph Montserrat/Playfair
+     Display lack -- Yoruba tone marks (ẹ ọ ṣ), Hausa hooked letters (ƙ ɗ ɓ),
+     Igbo (ị ọ ụ ṅ) -- falls through per character to a font that covers them,
+     via the browser's normal font-family cascade. */
+  --font-display: "Playfair Display", "Noto Sans", ui-serif, Georgia, serif;
+  --font-heading: "Playfair Display", "Noto Sans", ui-serif, Georgia, serif;
+  --font-sans: "Montserrat", "Noto Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-editorial: "Playfair Display", "Noto Sans", ui-serif, Georgia, serif;
+  --font-work: "Montserrat", "Noto Sans", ui-sans-serif, system-ui, sans-serif;
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);

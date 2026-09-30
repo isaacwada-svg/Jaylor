@@ -7,14 +7,34 @@ import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney, ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
 import { getOrderTracking } from "@/lib/order-tracking.functions";
 import { getFunctionErrorMessage } from "@/lib/utils";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/t/$token")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): { lang?: string } => ({
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
+  }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ params, deps }) => {
+    const order = await getOrderTracking({ data: { token: params.token } });
+    const language = await resolveLanguage({
+      data: {
+        urlLang: deps.lang,
+        clientPreferredLanguage: order?.clientPreferredLanguage,
+        storeLanguage: order?.storeLanguage,
+      },
+    });
+    const resources = await loadNamespaces(language, ["common", "tracking"]);
+    return { order, language, resources };
+  },
   head: () => ({
     meta: [
       { title: "Track your order — Jaylor" },
@@ -24,11 +44,23 @@ export const Route = createFileRoute("/t/$token")({
       },
     ],
   }),
-  component: OrderTrackingPage,
+  component: OrderTrackingRoute,
 });
+
+function OrderTrackingRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <OrderTrackingPage />
+    </I18nProvider>
+  );
+}
 
 function OrderTrackingPage() {
   const { token } = Route.useParams();
+  const { order: initialOrder } = Route.useLoaderData();
+  const tc = useT("common");
+  const t = useT("tracking");
   const queryClient = useQueryClient();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [paying, setPaying] = useState(false);
@@ -37,6 +69,7 @@ function OrderTrackingPage() {
   const { data: order, isLoading } = useQuery({
     queryKey: ["order-tracking", token],
     queryFn: () => getOrderTracking({ data: { token } }),
+    initialData: initialOrder,
   });
 
   // Returning from a Paystack checkout redirect.
@@ -56,13 +89,13 @@ function OrderTrackingPage() {
         if (error) throw error;
         const status = (data as { status: string }).status;
         if (status === "success") {
-          toast.success("Payment confirmed");
+          toast.success(t("payment_confirmed"));
           queryClient.invalidateQueries({ queryKey: ["order-tracking", token] });
         } else {
-          toast.error("Payment wasn't confirmed");
+          toast.error(t("payment_not_confirmed"));
         }
       } catch (error) {
-        toast.error(await getFunctionErrorMessage(error, "Could not confirm this payment"));
+        toast.error(await getFunctionErrorMessage(error, t("could_not_confirm_payment")));
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -82,7 +115,7 @@ function OrderTrackingPage() {
       const { authorization_url } = data as { authorization_url: string };
       window.location.href = authorization_url;
     } catch (error) {
-      toast.error(await getFunctionErrorMessage(error, "Could not start payment"));
+      toast.error(await getFunctionErrorMessage(error, t("could_not_start_payment")));
       setPaying(false);
     }
   }
@@ -107,23 +140,27 @@ function OrderTrackingPage() {
         <Link to="/" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
-        <h1 className="mt-8 text-xl">We couldn&apos;t find this order</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Double-check the link your tailor shared with you.
-        </p>
+        <h1 className="mt-8 text-xl">{t("order_not_found_title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{tc("not_found_description")}</p>
         <Button asChild className="mt-6" variant="outline">
-          <Link to="/">Go to Jaylor</Link>
+          <Link to="/">{tc("go_home")}</Link>
         </Button>
       </main>
     );
   }
 
   const statusIndex = ORDER_STATUSES_DB.indexOf(order.status as (typeof ORDER_STATUSES_DB)[number]);
-  const timelinePhotos = order.timeline.map((t) => t.photo_url).filter((p): p is string => !!p);
+  const timelinePhotos = order.timeline
+    .map((entry) => entry.photo_url)
+    .filter((p): p is string => !!p);
 
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-md">
+        <div className="flex items-center justify-between">
+          <span />
+          <LanguageSwitcher />
+        </div>
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
@@ -142,14 +179,14 @@ function OrderTrackingPage() {
           </h1>
           {order.deliveryDate && (
             <p className="mt-1 text-sm text-muted-foreground">
-              Delivery date: {new Date(order.deliveryDate).toLocaleDateString()}
+              {t("delivery_date", { date: new Date(order.deliveryDate).toLocaleDateString() })}
             </p>
           )}
         </div>
 
         <div className="mt-6 rounded-2xl border bg-card p-6 shadow-sm">
           {order.status === "cancelled" ? (
-            <p className="text-center text-sm text-owed">This order was cancelled.</p>
+            <p className="text-center text-sm text-owed">{t("cancelled")}</p>
           ) : (
             <StitchTrack
               steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
@@ -170,7 +207,7 @@ function OrderTrackingPage() {
                   <p>
                     {entry.from_status
                       ? `${orderStatusLabel(entry.from_status)} → `
-                      : "Created as "}
+                      : `${t("created_as_prefix")} `}
                     {orderStatusLabel(entry.to_status)}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
@@ -194,7 +231,7 @@ function OrderTrackingPage() {
             {order.timeline.length === 0 && (
               <p className="flex items-center gap-2 text-sm text-muted-foreground">
                 <ImageIcon className="size-4" />
-                No updates yet.
+                {t("no_updates")}
               </p>
             )}
           </div>
@@ -205,16 +242,16 @@ function OrderTrackingPage() {
               <div className="flex items-center gap-2 rounded-xl border border-gold/40 bg-accent/30 p-3 text-sm">
                 <CalendarClock className="size-4 shrink-0 text-gold" />
                 <span>
-                  Next fitting:{" "}
-                  {new Date(order.nextFitting.startsAt).toLocaleDateString(undefined, {
-                    weekday: "long",
-                    month: "long",
-                    day: "numeric",
-                  })}{" "}
-                  at{" "}
-                  {new Date(order.nextFitting.startsAt).toLocaleTimeString([], {
-                    hour: "numeric",
-                    minute: "2-digit",
+                  {t("next_fitting", {
+                    date: new Date(order.nextFitting.startsAt).toLocaleDateString(undefined, {
+                      weekday: "long",
+                      month: "long",
+                      day: "numeric",
+                    }),
+                    time: new Date(order.nextFitting.startsAt).toLocaleTimeString([], {
+                      hour: "numeric",
+                      minute: "2-digit",
+                    }),
                   })}
                 </span>
               </div>
@@ -225,11 +262,11 @@ function OrderTrackingPage() {
 
           <div className="rounded-xl border border-border p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Paid so far</span>
+              <span className="text-muted-foreground">{t("paid_so_far")}</span>
               <span className="figures text-paid">{formatMoney(order.paid)}</span>
             </div>
             <div className="mt-1 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Balance</span>
+              <span className="text-muted-foreground">{t("balance")}</span>
               <span className="figures text-owed">{formatMoney(order.balance)}</span>
             </div>
 
@@ -237,7 +274,7 @@ function OrderTrackingPage() {
               <div className="mt-3 space-y-2">
                 {order.dedicatedAccount && (
                   <div className="rounded-lg border border-dashed border-border p-3 text-center text-sm">
-                    <p className="text-xs text-muted-foreground">Pay by transfer to</p>
+                    <p className="text-xs text-muted-foreground">{t("pay_by_transfer")}</p>
                     <p className="figures font-medium">{order.dedicatedAccount.accountNumber}</p>
                     <p className="text-xs text-muted-foreground">
                       {order.dedicatedAccount.accountName} · {order.dedicatedAccount.bankName}
@@ -254,7 +291,9 @@ function OrderTrackingPage() {
                     disabled={paying}
                   >
                     <CreditCard className="size-4" />
-                    {paying ? "Starting payment..." : `Pay ${formatMoney(order.balance)}`}
+                    {paying
+                      ? t("starting_payment")
+                      : t("pay_amount", { amount: formatMoney(order.balance) })}
                   </Button>
                 )}
               </div>

@@ -4,6 +4,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,29 +13,49 @@ import { COMPANY_LINE } from "@/lib/jaylor";
 import { displayPhone } from "@/lib/portal-phone";
 import { requestPassportCode, verifyPassportCode } from "@/lib/passport-claim.functions";
 import { savePassportSession } from "@/lib/passport-session";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/passport/claim")({
   staticData: { sitemap: false },
   validateSearch: (
     search: Record<string, unknown>,
-  ): { shareTo?: string; shareToName?: string; shareToWhatsapp?: string } => ({
+  ): { shareTo?: string; shareToName?: string; shareToWhatsapp?: string; lang?: string } => ({
     ...(typeof search["shareTo"] === "string" ? { shareTo: search["shareTo"] } : {}),
     ...(typeof search["shareToName"] === "string" ? { shareToName: search["shareToName"] } : {}),
     ...(typeof search["shareToWhatsapp"] === "string"
       ? { shareToWhatsapp: search["shareToWhatsapp"] }
       : {}),
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
   }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ deps }) => {
+    const language = await resolveLanguage({ data: { urlLang: deps.lang } });
+    const resources = await loadNamespaces(language, ["common", "passport"]);
+    return { language, resources };
+  },
   head: () => ({
     meta: [
       { title: "Claim your Passport — Jaylor" },
       { name: "description", content: "Verify your phone number to see your measurements." },
     ],
   }),
-  component: ClaimPassportPage,
+  component: ClaimPassportRoute,
 });
+
+function ClaimPassportRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <ClaimPassportPage />
+    </I18nProvider>
+  );
+}
 
 function ClaimPassportPage() {
   const navigate = useNavigate();
+  const t = useT("passport");
   const { shareToName, shareToWhatsapp } = Route.useSearch();
   const online = useOnlineStatus();
   const requestCode = useServerFn(requestPassportCode);
@@ -58,13 +79,13 @@ function ClaimPassportPage() {
       setPhone(phoneInput);
       if (result.status === "sent") {
         setStep("code");
-        toast.success("Check WhatsApp for your code");
+        toast.success(t("code_sent_toast"));
       } else {
         setWaLink(result.whatsappLink);
         setStep("whatsapp");
       }
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("verify_error"));
     } finally {
       setBusy(false);
     }
@@ -84,7 +105,7 @@ function ClaimPassportPage() {
         search: shareToName && shareToWhatsapp ? { shareToName, shareToWhatsapp } : {},
       });
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("verify_error"));
     } finally {
       setBusy(false);
     }
@@ -93,32 +114,33 @@ function ClaimPassportPage() {
   return (
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
+        <div className="flex items-center justify-between">
+          <span />
+          <LanguageSwitcher />
+        </div>
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">
-          <h1 className="text-xl">Claim your Passport</h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Enter your phone number and we&apos;ll send a one-time code on WhatsApp to confirm
-            it&apos;s you.
-          </p>
+          <h1 className="text-xl">{t("claim_title")}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t("claim_description")}</p>
 
           {!online ? (
             <div className="mt-6">
-              <OfflineNotice label="Connect to the internet to claim your Passport." />
+              <OfflineNotice label={t("offline_claim")} />
             </div>
           ) : step === "phone" ? (
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="claim-phone">Your phone number</Label>
+                <Label htmlFor="claim-phone">{t("phone_label")}</Label>
                 <Input
                   id="claim-phone"
                   type="tel"
                   inputMode="tel"
                   value={phoneInput}
                   onChange={(e) => setPhoneInput(e.target.value)}
-                  placeholder="0800 000 0000"
+                  placeholder={t("phone_placeholder")}
                   autoComplete="tel"
                 />
               </div>
@@ -127,46 +149,44 @@ function ClaimPassportPage() {
                 disabled={busy || phoneInput.trim().length < 6}
                 onClick={handleRequestCode}
               >
-                {busy ? "Sending..." : "Send my code"}
+                {busy ? t("sending") : t("send_code_button")}
               </Button>
             </div>
           ) : step === "whatsapp" ? (
             <div className="mt-6 space-y-4">
-              <p className="text-sm text-muted-foreground">
-                To protect your details, WhatsApp needs you to message us first. Tap below — it
-                opens WhatsApp with a message ready to send. Your code arrives in the same chat
-                within seconds.
-              </p>
+              <p className="text-sm text-muted-foreground">{t("whatsapp_message_first")}</p>
               <Button className="w-full" asChild>
                 <a href={waLink ?? "#"} target="_blank" rel="noopener noreferrer">
-                  Open WhatsApp and send
+                  {t("open_whatsapp_button")}
                 </a>
               </Button>
               <Button variant="outline" className="w-full" onClick={() => setStep("code")}>
-                I have my code
+                {t("have_code_button")}
               </Button>
             </div>
           ) : (
             <div className="mt-6 space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="claim-code">6-digit code</Label>
+                <Label htmlFor="claim-code">{t("code_label")}</Label>
                 <Input
                   id="claim-code"
                   inputMode="numeric"
                   maxLength={6}
                   value={code}
                   onChange={(e) => setCode(e.target.value.replace(/\D/g, ""))}
-                  placeholder="123456"
+                  placeholder={t("code_placeholder")}
                 />
                 <p className="text-xs text-muted-foreground">
-                  Sent to {phone ? displayPhone(phone) : "your WhatsApp"}
+                  {t("sent_to", {
+                    phone: phone ? displayPhone(phone) : t("sent_to_whatsapp_fallback"),
+                  })}
                 </p>
               </div>
               <Button className="w-full" disabled={busy || code.length < 4} onClick={handleVerify}>
-                {busy ? "Checking..." : "Verify and continue"}
+                {busy ? t("checking") : t("verify_button")}
               </Button>
               <Button variant="ghost" className="w-full" onClick={() => setStep("phone")}>
-                Use a different number
+                {t("use_different_number")}
               </Button>
             </div>
           )}

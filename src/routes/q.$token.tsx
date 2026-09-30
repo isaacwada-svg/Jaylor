@@ -5,26 +5,58 @@ import { toast } from "sonner";
 import { Copy, Printer } from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatMoney, COMPANY_LINE } from "@/lib/jaylor";
 import { computeQuoteTotal } from "@/lib/quote-totals";
 import { getQuotePreview, acceptQuote } from "@/lib/quotes.functions";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/q/$token")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): { lang?: string } => ({
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
+  }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ params, deps }) => {
+    const quote = await getQuotePreview({ data: { token: params.token } });
+    const language = await resolveLanguage({
+      data: {
+        urlLang: deps.lang,
+        clientPreferredLanguage: quote?.clientPreferredLanguage,
+        storeLanguage: quote?.storeLanguage,
+      },
+    });
+    const resources = await loadNamespaces(language, ["common", "quotes"]);
+    return { quote, language, resources };
+  },
   head: () => ({ meta: [{ title: "Your quote — Jaylor" }] }),
-  component: PublicQuote,
+  component: PublicQuoteRoute,
 });
+
+function PublicQuoteRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <PublicQuote />
+    </I18nProvider>
+  );
+}
 
 function PublicQuote() {
   const { token } = Route.useParams();
+  const { quote: initialQuote } = Route.useLoaderData();
+  const t = useT("quotes");
   const [accepting, setAccepting] = useState(false);
   const [accepted, setAccepted] = useState(false);
 
   const { data: quote, isLoading } = useQuery({
     queryKey: ["public-quote", token],
     queryFn: () => getQuotePreview({ data: { token } }),
+    initialData: initialQuote,
   });
 
   async function handleAccept() {
@@ -32,13 +64,13 @@ function PublicQuote() {
     try {
       const result = await acceptQuote({ data: { token } });
       if (!result.ok) {
-        toast.error("This quote can no longer be accepted");
+        toast.error(t("quote_no_longer_acceptable"));
         return;
       }
       setAccepted(true);
-      toast.success("Quote accepted — the shop will be in touch");
+      toast.success(t("accept_success"));
     } catch {
-      toast.error("Something went wrong. Please try again.");
+      toast.error(t("generic_error"));
     } finally {
       setAccepting(false);
     }
@@ -56,8 +88,8 @@ function PublicQuote() {
     return (
       <main className="linen flex min-h-screen flex-col items-center justify-center gap-2 bg-background px-4 text-center">
         <BrandLogo markClassName="h-10 w-auto" />
-        <h1 className="mt-4 text-xl">This link isn't valid</h1>
-        <p className="text-sm text-muted-foreground">Ask the shop for a fresh quote link.</p>
+        <h1 className="mt-4 text-xl">{t("invalid_link_title")}</h1>
+        <p className="text-sm text-muted-foreground">{t("invalid_link_description")}</p>
       </main>
     );
   }
@@ -74,13 +106,17 @@ function PublicQuote() {
     if (!quote?.payoutAccount) return;
     navigator.clipboard
       .writeText(quote.payoutAccount.accountNumber)
-      .then(() => toast.success("Account number copied"))
-      .catch(() => toast.error("Could not copy"));
+      .then(() => toast.success(t("account_copied")))
+      .catch(() => toast.error(t("copy_failed")));
   }
 
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-md">
+        <div className="flex items-center justify-between print:hidden">
+          <span />
+          <LanguageSwitcher />
+        </div>
         <div className="flex justify-center">
           <BrandLogo markClassName="h-10 w-auto" />
         </div>
@@ -97,20 +133,22 @@ function PublicQuote() {
               )}
             </div>
             <div className="shrink-0 text-right">
-              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">Quote</p>
+              <p className="text-[10px] uppercase tracking-[0.15em] text-muted-foreground">
+                {t("quote_label")}
+              </p>
               <p className="font-medium">{quote.quoteNumber}</p>
             </div>
           </div>
 
           <div className="border-t border-dashed border-border pt-3">
-            <p className="text-xs font-medium text-muted-foreground">Quoted for</p>
+            <p className="text-xs font-medium text-muted-foreground">{t("quoted_for")}</p>
             <p className="font-medium">{quote.clientName}</p>
           </div>
 
           <div className="pt-1">
             <div className="flex justify-between pb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
-              <span>Description</span>
-              <span>Amount</span>
+              <span>{t("description_label")}</span>
+              <span>{t("amount_label")}</span>
             </div>
             <div className="flex justify-between pt-1">
               <span>
@@ -120,7 +158,7 @@ function PublicQuote() {
             </div>
             {quote.discountPercent > 0 && (
               <div className="mt-1 flex justify-between text-xs text-muted-foreground">
-                <span>Discount ({quote.discountPercent}%)</span>
+                <span>{t("discount_label", { percent: quote.discountPercent })}</span>
                 <span className="figures">-{formatMoney(discountAmount)}</span>
               </div>
             )}
@@ -129,14 +167,14 @@ function PublicQuote() {
 
           <div className="ml-auto w-48 space-y-1 border-t-2 border-foreground/80 pt-3">
             <div className="flex justify-between font-medium">
-              <span>Total</span>
+              <span>{t("total_label")}</span>
               <span className="figures">{formatMoney(total)}</span>
             </div>
           </div>
 
           {quote.payoutAccount && (
             <div className="border-t border-dashed border-border pt-3 text-center">
-              <p className="text-xs text-muted-foreground">Pay by transfer to</p>
+              <p className="text-xs text-muted-foreground">{t("pay_by_transfer")}</p>
               <p className="figures font-medium">{quote.payoutAccount.accountNumber}</p>
               <p className="text-xs text-muted-foreground">
                 {quote.payoutAccount.accountName} · {quote.payoutAccount.bankName}
@@ -146,8 +184,8 @@ function PublicQuote() {
 
           <p className="border-t border-border pt-3 text-center text-[10px] text-muted-foreground">
             {quote.expired
-              ? "This quote has expired."
-              : `Valid until ${new Date(quote.validUntil).toLocaleDateString()}.`}
+              ? t("expired")
+              : t("valid_until", { date: new Date(quote.validUntil).toLocaleDateString() })}
           </p>
         </div>
 
@@ -155,21 +193,21 @@ function PublicQuote() {
           {quote.payoutAccount && (
             <Button variant="outline" onClick={copyAccountNumber}>
               <Copy className="size-4" />
-              Copy account number
+              {t("copy_account_number")}
             </Button>
           )}
           {isAccepted ? (
             <p className="rounded-xl border border-paid/40 bg-paid/10 p-3 text-center text-sm text-paid">
-              You've accepted this quote.
+              {t("accepted_message")}
             </p>
           ) : canAccept ? (
             <Button onClick={handleAccept} disabled={accepting}>
-              {accepting ? "Accepting..." : "Accept this quote"}
+              {accepting ? t("accepting") : t("accept_quote_button")}
             </Button>
           ) : null}
           <Button variant="outline" onClick={() => window.print()}>
             <Printer className="size-4" />
-            Download / Print
+            {t("download_print")}
           </Button>
         </div>
 

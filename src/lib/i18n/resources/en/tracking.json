@@ -1,0 +1,18 @@
+{
+  "page_title": "Track your order",
+  "order_not_found_title": "We couldn't find this order",
+  "delivery_date": "Delivery date: {{date}}",
+  "cancelled": "This order was cancelled.",
+  "created_as_prefix": "Created as",
+  "no_updates": "No updates yet.",
+  "next_fitting": "Next fitting: {{date}} at {{time}}",
+  "paid_so_far": "Paid so far",
+  "balance": "Balance",
+  "pay_by_transfer": "Pay by transfer to",
+  "starting_payment": "Starting payment...",
+  "pay_amount": "Pay {{amount}}",
+  "payment_confirmed": "Payment confirmed",
+  "payment_not_confirmed": "Payment wasn't confirmed",
+  "could_not_confirm_payment": "Could not confirm this payment",
+  "could_not_start_payment": "Could not start payment"
+}

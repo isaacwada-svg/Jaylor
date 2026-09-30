@@ -26,7 +26,7 @@ import { ORDER_STATUSES_DB, orderStatusLabel, effectiveTier } from "@/lib/jaylor
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
 import { CapacityLoadChart } from "@/components/jaylor/capacity-load-chart";
 import { LowStockCard } from "@/components/jaylor/low-stock-card";
-import { orderReadyMessage } from "@/lib/whatsapp";
+import { orderReadyMessageI18n, resolveMessageLanguage } from "@/lib/whatsapp-i18n";
 import { useFeature } from "@/lib/use-feature";
 import { useMessageTopups } from "@/lib/use-message-topups";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -340,7 +340,7 @@ function Home() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("clients")
-        .select("id, full_name, phone, whatsapp_phone, consent_whatsapp")
+        .select("id, full_name, phone, whatsapp_phone, consent_whatsapp, preferred_language")
         .in("id", relatedClientIds);
       if (error) throw error;
       return data;
@@ -686,7 +686,11 @@ function Home() {
                               phone={client.whatsapp_phone ?? client.phone}
                               consentWhatsapp={client.consent_whatsapp}
                               template="order_ready"
-                              message={orderReadyMessage(
+                              message={orderReadyMessageI18n(
+                                resolveMessageLanguage(
+                                  client.preferred_language,
+                                  currentStore.language,
+                                ),
                                 client.full_name,
                                 o.garment_type,
                                 currentStore.name,

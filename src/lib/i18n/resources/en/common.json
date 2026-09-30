@@ -1,0 +1,11 @@
+{
+  "offline_message": "Connect to the internet to see this page.",
+  "not_found_title": "We couldn't find that page",
+  "not_found_description": "Double-check the link your tailor shared with you.",
+  "go_home": "Go to Jaylor",
+  "language_label": "Language",
+  "loading": "Loading...",
+  "something_wrong": "Something went wrong. Please try again.",
+  "copied": "Copied",
+  "copy_failed": "Could not copy"
+}

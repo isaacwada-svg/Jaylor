@@ -22,9 +22,26 @@ import {
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/$handle")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): { lang?: string } => ({
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
+  }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ params, deps }) => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data: storeLanguage } = await supabase.rpc("get_store_language_by_slug", {
+      p_slug: params.handle,
+    });
+    const language = await resolveLanguage({ data: { urlLang: deps.lang, storeLanguage } });
+    const resources = await loadNamespaces(language, ["common", "storefront"]);
+    return { language, resources };
+  },
   head: () => ({
     meta: [
       { title: "Shop — Jaylor" },
@@ -39,21 +56,35 @@ export const Route = createFileRoute("/$handle")({
       },
     ],
   }),
-  component: PublicStorefront,
+  component: PublicStorefrontRoute,
 });
+
+function PublicStorefrontRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <PublicStorefront />
+    </I18nProvider>
+  );
+}
 
 type ItemRow = Tables<"storefront_items">;
 
-function priceLabel(item: ItemRow): string {
+function priceLabel(
+  item: ItemRow,
+  t: (key: string, vars?: Record<string, string | number>) => string,
+): string {
   if (item.price_min && item.price_max && item.price_max !== item.price_min) {
     return `${formatMoney(item.price_min)} – ${formatMoney(item.price_max)}`;
   }
-  if (item.price_min) return `From ${formatMoney(item.price_min)}`;
-  return "Price on request";
+  if (item.price_min) return t("price_from", { price: formatMoney(item.price_min) });
+  return t("price_on_request");
 }
 
 function PublicStorefront() {
   const { handle } = Route.useParams();
+  const t = useT("storefront");
+  const tc = useT("common");
   const [selectedItem, setSelectedItem] = useState<ItemRow | null>(null);
   const [sewFormOpen, setSewFormOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -135,12 +166,10 @@ function PublicStorefront() {
   if (storeError || !store) {
     return (
       <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10 text-center">
-        <h1 className="text-xl">We couldn&apos;t find that shop</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Double-check the link your tailor shared with you.
-        </p>
+        <h1 className="text-xl">{t("shop_not_found_title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{tc("not_found_description")}</p>
         <Button asChild className="mt-6" variant="outline">
-          <Link to="/">Go to Jaylor</Link>
+          <Link to="/">{tc("go_home")}</Link>
         </Button>
       </main>
     );
@@ -150,6 +179,9 @@ function PublicStorefront() {
 
   return (
     <main className="linen min-h-screen bg-background">
+      <div className="flex justify-end px-4 pt-4">
+        <LanguageSwitcher />
+      </div>
       <div
         className="flex h-40 items-end bg-gradient-to-br from-primary to-primary/70 lg:h-56"
         style={
@@ -185,7 +217,7 @@ function PublicStorefront() {
         )}
         {onTimeBadge && (
           <p className="mt-2 inline-flex items-center rounded-full border border-paid/40 bg-paid/10 px-3 py-1 text-xs text-paid">
-            Delivered on time: {onTimeBadge.rate}% of the last {onTimeBadge.orders_counted} orders
+            {t("on_time_badge", { rate: onTimeBadge.rate, count: onTimeBadge.orders_counted })}
           </p>
         )}
 
@@ -199,7 +231,7 @@ function PublicStorefront() {
                 )}
               >
                 <MessageCircle className="size-4" />
-                Message on WhatsApp
+                {t("message_whatsapp")}
               </a>
             </Button>
           )}
@@ -213,7 +245,7 @@ function PublicStorefront() {
         {payoutAccount && (
           <div className="mt-4 flex items-center justify-between gap-3 rounded-xl border border-border bg-card p-3 sm:max-w-sm">
             <div className="min-w-0">
-              <p className="text-xs text-muted-foreground">Pay by transfer to</p>
+              <p className="text-xs text-muted-foreground">{t("pay_by_transfer")}</p>
               <p className="figures font-medium">{payoutAccount.account_number}</p>
               <p className="truncate text-xs text-muted-foreground">
                 {payoutAccount.account_name} · {payoutAccount.bank_name}
@@ -225,8 +257,8 @@ function PublicStorefront() {
               onClick={() => {
                 navigator.clipboard
                   .writeText(payoutAccount.account_number ?? "")
-                  .then(() => toast.success("Account number copied"))
-                  .catch(() => toast.error("Could not copy"));
+                  .then(() => toast.success(t("account_copied")))
+                  .catch(() => toast.error(t("copy_failed")));
               }}
             >
               <Copy className="size-4" />
@@ -243,9 +275,7 @@ function PublicStorefront() {
             ))}
           </div>
         ) : !items || items.length === 0 ? (
-          <p className="text-sm text-muted-foreground">
-            This shop hasn&apos;t published any styles yet.
-          </p>
+          <p className="text-sm text-muted-foreground">{t("no_styles_published")}</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((item) => (
@@ -264,15 +294,15 @@ function PublicStorefront() {
                     />
                   ) : (
                     <div className="flex h-48 w-full items-center justify-center bg-accent text-sm text-muted-foreground">
-                      No photo yet
+                      {t("no_photo_yet")}
                     </div>
                   )}
                   <CardContent className="p-4">
                     <p className="font-medium">{item.title}</p>
-                    <p className="mt-1 text-sm text-muted-foreground">{priceLabel(item)}</p>
+                    <p className="mt-1 text-sm text-muted-foreground">{priceLabel(item, t)}</p>
                     {item.turnaround_days && (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Ready in about {item.turnaround_days} days
+                        {t("ready_in_days", { days: item.turnaround_days })}
                       </p>
                     )}
                   </CardContent>
@@ -313,10 +343,10 @@ function PublicStorefront() {
                   ))}
                 </div>
               )}
-              <p className="text-sm font-medium">{priceLabel(selectedItem)}</p>
+              <p className="text-sm font-medium">{priceLabel(selectedItem, t)}</p>
               {selectedItem.turnaround_days && (
                 <p className="text-sm text-muted-foreground">
-                  Ready in about {selectedItem.turnaround_days} days
+                  {t("ready_in_days", { days: selectedItem.turnaround_days })}
                 </p>
               )}
               {selectedItem.description && (
@@ -331,12 +361,12 @@ function PublicStorefront() {
                     )}
                   >
                     <MessageCircle className="size-4" />
-                    Order on WhatsApp
+                    {t("order_whatsapp")}
                   </a>
                 </Button>
               ) : (
                 <Button className="w-full" onClick={() => setSewFormOpen(true)}>
-                  Sew this for me
+                  {t("sew_this_for_me")}
                 </Button>
               )}
             </>

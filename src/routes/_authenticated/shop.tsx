@@ -16,6 +16,19 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  LANGUAGES,
+  isLanguageCode,
+  DEFAULT_LANGUAGE,
+  type LanguageCode,
+} from "@/lib/i18n/languages";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
@@ -456,6 +469,9 @@ function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () =>
   const [bio, setBio] = useState(currentStore?.bio ?? "");
   const [whatsappPhone, setWhatsappPhone] = useState(currentStore?.whatsapp_phone ?? "");
   const [openingHours, setOpeningHours] = useState(currentStore?.opening_hours ?? "");
+  const [language, setLanguage] = useState<LanguageCode>(
+    isLanguageCode(currentStore?.language) ? currentStore.language : DEFAULT_LANGUAGE,
+  );
   const [busy, setBusy] = useState(false);
 
   async function handleSubmit(event: FormEvent) {
@@ -468,6 +484,7 @@ function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () =>
           bio: bio.trim() || null,
           whatsapp_phone: whatsappPhone.trim() || null,
           opening_hours: openingHours.trim() || null,
+          language,
         })
         .eq("id", storeId);
       if (error) throw error;
@@ -509,6 +526,25 @@ function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () =>
           onChange={(e) => setOpeningHours(e.target.value)}
           placeholder="Mon–Sat, 9am–6pm"
         />
+      </div>
+      <div className="space-y-2">
+        <Label htmlFor="shop-language">Language for your clients</Label>
+        <Select value={language} onValueChange={(v) => setLanguage(v as LanguageCode)}>
+          <SelectTrigger id="shop-language">
+            <SelectValue />
+          </SelectTrigger>
+          <SelectContent>
+            {LANGUAGES.map((l) => (
+              <SelectItem key={l.code} value={l.code}>
+                {l.nativeName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <p className="text-xs text-muted-foreground">
+          Used for client-facing pages and tap-to-send messages when a client hasn&apos;t set their
+          own language. Clients can always switch on their own pages.
+        </p>
       </div>
       <Button type="submit" disabled={busy}>
         {busy ? "Saving..." : "Save profile"}
