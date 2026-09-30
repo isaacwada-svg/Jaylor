@@ -32,6 +32,15 @@ export function balanceDueMessage(
   return `Hello ${firstNameOf(clientName)}, your balance for ${garment} at ${storeName} is ${formatMoney(balance)}. Reply STOP to opt out.${trackingLine}`;
 }
 
+export function approvalRequestMessage(
+  clientName: string,
+  garment: string,
+  storeName: string,
+  approvalUrl: string,
+): string {
+  return `Hello ${firstNameOf(clientName)}, before we start cutting your ${garment} at ${storeName}, please review and approve the details here: ${approvalUrl}`;
+}
+
 /** Sent once, right after an order is created. */
 export function orderConfirmationMessage(
   clientName: string,

@@ -43,6 +43,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
 import { Route as AuthenticatedUnmatchedPaymentsRouteImport } from './routes/_authenticated/unmatched-payments'
+import { Route as ATokenRouteImport } from './routes/a.$token'
 import { Route as BookHandleRouteImport } from './routes/book.$handle'
 import { Route as DesignTokenRouteImport } from './routes/design.$token'
 import { Route as ETokenRouteImport } from './routes/e.$token'
@@ -236,6 +237,11 @@ const AuthenticatedUnmatchedPaymentsRoute =
     path: '/unmatched-payments',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const ATokenRoute = ATokenRouteImport.update({
+  id: '/a/$token',
+  path: '/a/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const BookHandleRoute = BookHandleRouteImport.update({
   id: '/book/$handle',
   path: '/book/$handle',
@@ -385,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
   '/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
+  '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
@@ -441,6 +448,7 @@ export interface FileRoutesByTo {
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
   '/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
+  '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
@@ -499,6 +507,7 @@ export interface FileRoutesById {
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
   '/_authenticated/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
+  '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
   '/design/$token': typeof DesignTokenRoute
   '/e/$token': typeof ETokenRoute
@@ -557,6 +566,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/staff'
     | '/unmatched-payments'
+    | '/a/$token'
     | '/book/$handle'
     | '/design/$token'
     | '/e/$token'
@@ -613,6 +623,7 @@ export interface FileRouteTypes {
     | '/shop'
     | '/staff'
     | '/unmatched-payments'
+    | '/a/$token'
     | '/book/$handle'
     | '/design/$token'
     | '/e/$token'
@@ -670,6 +681,7 @@ export interface FileRouteTypes {
     | '/_authenticated/shop'
     | '/_authenticated/staff'
     | '/_authenticated/unmatched-payments'
+    | '/a/$token'
     | '/book/$handle'
     | '/design/$token'
     | '/e/$token'
@@ -714,6 +726,7 @@ export interface RootRouteChildren {
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TermsRoute: typeof TermsRoute
+  ATokenRoute: typeof ATokenRoute
   BookHandleRoute: typeof BookHandleRoute
   DesignTokenRoute: typeof DesignTokenRoute
   ETokenRoute: typeof ETokenRoute
@@ -969,6 +982,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUnmatchedPaymentsRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/a/$token': {
+      id: '/a/$token'
+      path: '/a/$token'
+      fullPath: '/a/$token'
+      preLoaderRoute: typeof ATokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/book/$handle': {
       id: '/book/$handle'
       path: '/book/$handle'
@@ -1213,6 +1233,7 @@ const rootRouteChildren: RootRouteChildren = {
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TermsRoute: TermsRoute,
+  ATokenRoute: ATokenRoute,
   BookHandleRoute: BookHandleRoute,
   DesignTokenRoute: DesignTokenRoute,
   ETokenRoute: ETokenRoute,

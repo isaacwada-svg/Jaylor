@@ -32,7 +32,13 @@ import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
 import { isBridalRemeasureDue } from "@/lib/measurements";
-import { orderReadyMessage, balanceDueMessage, orderConfirmationMessage } from "@/lib/whatsapp";
+import {
+  orderReadyMessage,
+  balanceDueMessage,
+  orderConfirmationMessage,
+  approvalRequestMessage,
+  whatsappLink,
+} from "@/lib/whatsapp";
 import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { resizeImageFile } from "@/lib/image";
 
@@ -63,6 +69,7 @@ function OrderDetail() {
   const [statusPhotoPath, setStatusPhotoPath] = useState<string | null>(null);
   const [statusPhotoPreview, setStatusPhotoPreview] = useState<string | null>(null);
   const [uploadingStatusPhoto, setUploadingStatusPhoto] = useState(false);
+  const [requestingApproval, setRequestingApproval] = useState(false);
   const [paymentFormOpen, setPaymentFormOpen] = useState(false);
   const [receiptOpen, setReceiptOpen] = useState(false);
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
@@ -238,6 +245,60 @@ function OrderDetail() {
     },
   });
 
+  const { data: latestApproval } = useQuery({
+    queryKey: ["order-approval-latest", orderId],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("order_approvals")
+        .select("id, token, status, created_at")
+        .eq("order_id", orderId)
+        .order("created_at", { ascending: false })
+        .limit(1)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  async function requestApproval() {
+    if (!client || !currentStore || !order) return;
+    setRequestingApproval(true);
+    try {
+      const { data: created, error } = await supabase.rpc("create_order_approval_request", {
+        p_order_id: orderId,
+      });
+      if (error) throw error;
+      const approvalToken = (created as { token: string }).token;
+      const approvalUrl = `${window.location.origin}/a/${approvalToken}`;
+      const message = approvalRequestMessage(
+        client.full_name ?? "",
+        order.garment_type ?? "",
+        currentStore.name ?? "",
+        approvalUrl,
+      );
+      window.open(
+        whatsappLink(client.whatsapp_phone ?? client.phone ?? "", message),
+        "_blank",
+        "noopener,noreferrer",
+      );
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase.from("messages").insert({
+        store_id: currentStore.id,
+        client_id: client.id,
+        order_id: orderId,
+        template: "approval_request",
+        channel: "tap",
+        sent_by: userData.user?.id ?? null,
+      });
+      queryClient.invalidateQueries({ queryKey: ["order-approval-latest", orderId] });
+      toast.success("Approval request sent");
+    } catch (error) {
+      toast.error(getErrorMessage(error, "Could not create an approval request"));
+    } finally {
+      setRequestingApproval(false);
+    }
+  }
+
   const historyRows = (history ?? []) as OrderStatusHistoryRow[];
   const historyPhotoPaths = historyRows.map((h) => h.photo_url).filter((p): p is string => !!p);
 
@@ -372,6 +433,8 @@ function OrderDetail() {
   const statusIndex = ORDER_STATUSES_DB.indexOf(order.status as (typeof ORDER_STATUSES_DB)[number]);
   const trackingToken = (order as TrackedOrder).tracking_token;
   const trackingUrl = trackingToken ? `${window.location.origin}/t/${trackingToken}` : null;
+  const cuttingWithoutApproval =
+    pendingStatus === "cutting" && latestApproval?.status !== "approved";
   const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
 
   const fullOrder = canSeeMoney ? (order as Tables<"orders">) : null;
@@ -422,6 +485,21 @@ function OrderDetail() {
             {order.delivery_date && (
               <Badge variant="outline" className="border-gold text-gold">
                 Due {new Date(order.delivery_date).toLocaleDateString()}
+              </Badge>
+            )}
+            {latestApproval?.status === "pending" && (
+              <Badge variant="outline" className="border-gold text-gold">
+                Awaiting approval
+              </Badge>
+            )}
+            {latestApproval?.status === "approved" && (
+              <Badge variant="outline" className="border-paid text-paid">
+                Approved
+              </Badge>
+            )}
+            {latestApproval?.status === "changes_requested" && (
+              <Badge variant="outline" className="border-owed text-owed">
+                Changes requested
               </Badge>
             )}
           </div>
@@ -560,6 +638,21 @@ function OrderDetail() {
                       )}
                       label="Send tracking link"
                     />
+                  )}
+                  {order.status !== "collected" && order.status !== "cancelled" && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={requestingApproval || !client.consent_whatsapp}
+                      title={
+                        client.consent_whatsapp
+                          ? undefined
+                          : "This client hasn't given WhatsApp consent"
+                      }
+                      onClick={requestApproval}
+                    >
+                      {requestingApproval ? "Sending..." : "Request approval"}
+                    </Button>
                   )}
                   <AiReplyDraftButton
                     storeId={currentStore.id}
@@ -836,6 +929,11 @@ function OrderDetail() {
                   A balance of <MoneyText amount={balance.balance ?? 0} variant="owed" /> is still
                   owed. Confirm collection anyway?
                 </span>
+              ) : cuttingWithoutApproval ? (
+                <span className="text-owed">
+                  This order hasn&apos;t been approved by the client yet. You can still proceed, but
+                  a reason is required below.
+                </span>
               ) : (
                 "This updates the order's status for everyone who can see it."
               )}
@@ -844,7 +942,11 @@ function OrderDetail() {
 
           <div className="space-y-3">
             <Textarea
-              placeholder="Add a note for this update (optional)"
+              placeholder={
+                cuttingWithoutApproval
+                  ? "Reason for cutting without approval (required)"
+                  : "Add a note for this update (optional)"
+              }
               value={statusNote}
               onChange={(e) => setStatusNote(e.target.value)}
               rows={2}
@@ -887,7 +989,10 @@ function OrderDetail() {
             >
               Cancel
             </Button>
-            <Button onClick={confirmStatusChange} disabled={updating}>
+            <Button
+              onClick={confirmStatusChange}
+              disabled={updating || (cuttingWithoutApproval && !statusNote.trim())}
+            >
               {updating ? "Updating..." : "Confirm"}
             </Button>
           </DialogFooter>

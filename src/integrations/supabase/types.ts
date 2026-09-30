@@ -1954,6 +1954,78 @@ export type Database = {
           },
         ]
       }
+      order_approvals: {
+        Row: {
+          client_comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          responded_at: string | null
+          snapshot: Json
+          status: string
+          store_id: string
+          token: string
+        }
+        Insert: {
+          client_comment?: string | null
+          created_at?: string
+          id?: string
+          order_id: string
+          responded_at?: string | null
+          snapshot: Json
+          status?: string
+          store_id: string
+          token?: string
+        }
+        Update: {
+          client_comment?: string | null
+          created_at?: string
+          id?: string
+          order_id?: string
+          responded_at?: string | null
+          snapshot?: Json
+          status?: string
+          store_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_approvals_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       order_materials: {
         Row: {
           colour: string | null
@@ -2180,6 +2252,7 @@ export type Database = {
           other_cost: number | null
           price: number
           priority: string
+          promised_date: string | null
           quantity: number
           ready_at: string | null
           status: string
@@ -2206,6 +2279,7 @@ export type Database = {
           other_cost?: number | null
           price?: number
           priority?: string
+          promised_date?: string | null
           quantity?: number
           ready_at?: string | null
           status?: string
@@ -2232,6 +2306,7 @@ export type Database = {
           other_cost?: number | null
           price?: number
           priority?: string
+          promised_date?: string | null
           quantity?: number
           ready_at?: string | null
           status?: string
@@ -3835,6 +3910,7 @@ export type Database = {
           measurement_set_id: string | null
           number: string | null
           priority: string | null
+          promised_date: string | null
           quantity: number | null
           ready_at: string | null
           status: string | null
@@ -3855,6 +3931,7 @@ export type Database = {
           measurement_set_id?: string | null
           number?: string | null
           priority?: string | null
+          promised_date?: string | null
           quantity?: number | null
           ready_at?: string | null
           status?: string | null
@@ -3875,11 +3952,13 @@ export type Database = {
           measurement_set_id?: string | null
           number?: string | null
           priority?: string | null
+          promised_date?: string | null
           quantity?: number | null
           ready_at?: string | null
           status?: string | null
           store_id?: string | null
           style_notes?: string | null
+          tracking_token?: string | null
           updated_at?: string | null
         }
         Relationships: [
@@ -4067,6 +4146,20 @@ export type Database = {
         }
         Returns: undefined
       }
+      create_order_approval_request: {
+        Args: { p_order_id: string }
+        Returns: {
+          client_comment: string | null
+          created_at: string
+          id: string
+          order_id: string
+          responded_at: string | null
+          snapshot: Json
+          status: string
+          store_id: string
+          token: string
+        }
+      }
       decline_passport_share: {
         Args: { p_share_id: string }
         Returns: undefined
@@ -4105,6 +4198,7 @@ export type Database = {
         Returns: Json
       }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
+      get_order_approval: { Args: { p_token: string }; Returns: Json }
       get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
@@ -4215,6 +4309,10 @@ export type Database = {
       }
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
+      respond_to_order_approval: {
+        Args: { p_comment?: string | null; p_status: string; p_token: string }
+        Returns: undefined
+      }
       revoke_measurement_passport_by_store: {
         Args: { p_client_id: string }
         Returns: undefined
