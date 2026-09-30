@@ -2711,6 +2711,7 @@ export type Database = {
       }
       order_status_history: {
         Row: {
+          assigned_to: string | null
           changed_at: string
           changed_by: string | null
           from_status: string | null
@@ -2721,6 +2722,7 @@ export type Database = {
           to_status: string
         }
         Insert: {
+          assigned_to?: string | null
           changed_at?: string
           changed_by?: string | null
           from_status?: string | null
@@ -2731,6 +2733,7 @@ export type Database = {
           to_status: string
         }
         Update: {
+          assigned_to?: string | null
           changed_at?: string
           changed_by?: string | null
           from_status?: string | null
@@ -2877,6 +2880,58 @@ export type Database = {
           },
           {
             foreignKeyName: "orders_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pay_rates: {
+        Row: {
+          amount: number
+          garment_type_code: string
+          id: string
+          stage: string
+          store_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          amount?: number
+          garment_type_code: string
+          id?: string
+          stage: string
+          store_id: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          amount?: number
+          garment_type_code?: string
+          id?: string
+          stage?: string
+          store_id?: string
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pay_rates_garment_type_code_fkey"
+            columns: ["garment_type_code"]
+            isOneToOne: false
+            referencedRelation: "garment_types"
+            referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "pay_rates_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pay_rates_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -3084,6 +3139,115 @@ export type Database = {
           },
           {
             foreignKeyName: "payments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_lines: {
+        Row: {
+          advances: number
+          carried_forward: number
+          gross: number
+          id: string
+          jobs_count: number
+          member_ref: string
+          net: number
+          run_id: string
+          store_id: string
+        }
+        Insert: {
+          advances?: number
+          carried_forward?: number
+          gross?: number
+          id?: string
+          jobs_count?: number
+          member_ref: string
+          net?: number
+          run_id: string
+          store_id: string
+        }
+        Update: {
+          advances?: number
+          carried_forward?: number
+          gross?: number
+          id?: string
+          jobs_count?: number
+          member_ref?: string
+          net?: number
+          run_id?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_lines_run_id_fkey"
+            columns: ["run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_lines_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_lines_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      payroll_runs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          period_end: string
+          period_start: string
+          status: string
+          store_id: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          period_end: string
+          period_start: string
+          status?: string
+          store_id: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          paid_at?: string | null
+          paid_by?: string | null
+          period_end?: string
+          period_start?: string
+          status?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payroll_runs_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payroll_runs_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -3598,6 +3762,155 @@ export type Database = {
           },
           {
             foreignKeyName: "sew_requests_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_advances: {
+        Row: {
+          amount: number
+          given_at: string
+          given_by: string | null
+          id: string
+          member_ref: string
+          note: string | null
+          payroll_run_id: string | null
+          store_id: string
+        }
+        Insert: {
+          amount: number
+          given_at?: string
+          given_by?: string | null
+          id?: string
+          member_ref: string
+          note?: string | null
+          payroll_run_id?: string | null
+          store_id: string
+        }
+        Update: {
+          amount?: number
+          given_at?: string
+          given_by?: string | null
+          id?: string
+          member_ref?: string
+          note?: string | null
+          payroll_run_id?: string | null
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_advances_payroll_run_id_fkey"
+            columns: ["payroll_run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_advances_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_advances_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      staff_earnings: {
+        Row: {
+          amount: number
+          created_at: string
+          earned_at: string
+          garment_type_code: string | null
+          id: string
+          member_ref: string | null
+          order_id: string
+          payroll_run_id: string | null
+          quantity: number
+          rate: number
+          stage: string
+          status: string
+          store_id: string
+          void_reason: string | null
+        }
+        Insert: {
+          amount?: number
+          created_at?: string
+          earned_at?: string
+          garment_type_code?: string | null
+          id?: string
+          member_ref?: string | null
+          order_id: string
+          payroll_run_id?: string | null
+          quantity?: number
+          rate?: number
+          stage: string
+          status?: string
+          store_id: string
+          void_reason?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          earned_at?: string
+          garment_type_code?: string | null
+          id?: string
+          member_ref?: string | null
+          order_id?: string
+          payroll_run_id?: string | null
+          quantity?: number
+          rate?: number
+          stage?: string
+          status?: string
+          store_id?: string
+          void_reason?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "staff_earnings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "order_balances"
+            referencedColumns: ["order_id"]
+          },
+          {
+            foreignKeyName: "staff_earnings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_earnings_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_earnings_payroll_run_id_fkey"
+            columns: ["payroll_run_id"]
+            isOneToOne: false
+            referencedRelation: "payroll_runs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_earnings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "staff_earnings_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -4941,6 +5254,31 @@ export type Database = {
         Args: { p_days?: number; p_store_id: string }
         Returns: Json
       }
+      fix_staff_earning: {
+        Args: { p_earning_id: string; p_member_ref?: string | undefined; p_rate?: number | undefined }
+        Returns: {
+          amount: number
+          created_at: string
+          earned_at: string
+          garment_type_code: string | null
+          id: string
+          member_ref: string | null
+          order_id: string
+          payroll_run_id: string | null
+          quantity: number
+          rate: number
+          stage: string
+          status: string
+          store_id: string
+          void_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "staff_earnings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       generate_delivery_reminder_notifications: {
         Args: never
         Returns: undefined
@@ -4948,6 +5286,26 @@ export type Database = {
       generate_overdue_balance_notifications: {
         Args: never
         Returns: undefined
+      }
+      generate_payroll_run: {
+        Args: { p_period_end: string; p_period_start: string; p_store_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          period_end: string
+          period_start: string
+          status: string
+          store_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payroll_runs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       generate_plan_limit_notifications: { Args: never; Returns: undefined }
       get_ai_wallet: { Args: { p_store_id: string }; Returns: Json }
@@ -4974,6 +5332,10 @@ export type Database = {
       get_order_capacity_check: { Args: { p_date: string; p_store_id: string }; Returns: Json }
       get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
+      get_payroll_period_warnings: {
+        Args: { p_period_end: string; p_period_start: string; p_store_id: string }
+        Returns: Json
+      }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
       get_store_capacity_forecast: {
         Args: { p_store_id: string; p_weeks?: number }
@@ -5054,6 +5416,26 @@ export type Database = {
         }
         Returns: undefined
       }
+      mark_payroll_run_paid: {
+        Args: { p_run_id: string }
+        Returns: {
+          created_at: string
+          created_by: string | null
+          id: string
+          paid_at: string | null
+          paid_by: string | null
+          period_end: string
+          period_start: string
+          status: string
+          store_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "payroll_runs"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       match_incoming_transfer: {
         Args: { p_transfer_id: string }
         Returns: string
@@ -5077,6 +5459,30 @@ export type Database = {
       nth_weekday_date: {
         Args: { p_dow: number; p_month: number; p_n: number; p_year: number }
         Returns: string
+      }
+      record_staff_advance: {
+        Args: {
+          p_amount: number
+          p_member_ref: string
+          p_note?: string | undefined
+          p_store_id: string
+        }
+        Returns: {
+          amount: number
+          given_at: string
+          given_by: string | null
+          id: string
+          member_ref: string
+          note: string | null
+          payroll_run_id: string | null
+          store_id: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "staff_advances"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
       refund_ai_credits: {
         Args: { p_ledger_id: string; p_reason: string; p_usage?: Json }
@@ -5170,6 +5576,49 @@ export type Database = {
           last_year_top_garment_types: string
           lead_weeks_message: string
         }[]
+      }
+      upsert_pay_rate: {
+        Args: { p_amount: number; p_garment_type_code: string; p_stage: string; p_store_id: string }
+        Returns: {
+          amount: number
+          garment_type_code: string
+          id: string
+          stage: string
+          store_id: string
+          updated_at: string
+          updated_by: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "pay_rates"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
+      void_staff_earning: {
+        Args: { p_earning_id: string; p_reason: string }
+        Returns: {
+          amount: number
+          created_at: string
+          earned_at: string
+          garment_type_code: string | null
+          id: string
+          member_ref: string | null
+          order_id: string
+          payroll_run_id: string | null
+          quantity: number
+          rate: number
+          stage: string
+          status: string
+          store_id: string
+          void_reason: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "staff_earnings"
+          isOneToOne: true
+          isSetofReturn: false
+        }
       }
     }
     Enums: {

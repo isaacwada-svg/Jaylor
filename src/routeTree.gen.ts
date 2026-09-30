@@ -39,7 +39,9 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedFestiveRouteImport } from './routes/_authenticated/festive'
 import { Route as AuthenticatedMomentsRouteImport } from './routes/_authenticated/moments'
 import { Route as AuthenticatedMoreRouteImport } from './routes/_authenticated/more'
+import { Route as AuthenticatedMyEarningsRouteImport } from './routes/_authenticated/my-earnings'
 import { Route as AuthenticatedPaymentsRouteImport } from './routes/_authenticated/payments'
+import { Route as AuthenticatedPayrollRouteImport } from './routes/_authenticated/payroll'
 import { Route as AuthenticatedPrivacyRouteImport } from './routes/_authenticated/privacy'
 import { Route as AuthenticatedQuotationsRouteImport } from './routes/_authenticated/quotations'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
@@ -219,9 +221,19 @@ const AuthenticatedMoreRoute = AuthenticatedMoreRouteImport.update({
   path: '/more',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedMyEarningsRoute = AuthenticatedMyEarningsRouteImport.update({
+  id: '/my-earnings',
+  path: '/my-earnings',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedPaymentsRoute = AuthenticatedPaymentsRouteImport.update({
   id: '/payments',
   path: '/payments',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedPayrollRoute = AuthenticatedPayrollRouteImport.update({
+  id: '/payroll',
+  path: '/payroll',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
 const AuthenticatedPrivacyRoute = AuthenticatedPrivacyRouteImport.update({
@@ -405,7 +417,9 @@ export interface FileRoutesByFullPath {
   '/festive': typeof AuthenticatedFestiveRoute
   '/moments': typeof AuthenticatedMomentsRoute
   '/more': typeof AuthenticatedMoreRoute
+  '/my-earnings': typeof AuthenticatedMyEarningsRoute
   '/payments': typeof AuthenticatedPaymentsRoute
+  '/payroll': typeof AuthenticatedPayrollRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
   '/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
@@ -465,7 +479,9 @@ export interface FileRoutesByTo {
   '/festive': typeof AuthenticatedFestiveRoute
   '/moments': typeof AuthenticatedMomentsRoute
   '/more': typeof AuthenticatedMoreRoute
+  '/my-earnings': typeof AuthenticatedMyEarningsRoute
   '/payments': typeof AuthenticatedPaymentsRoute
+  '/payroll': typeof AuthenticatedPayrollRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
   '/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
@@ -527,7 +543,9 @@ export interface FileRoutesById {
   '/_authenticated/festive': typeof AuthenticatedFestiveRoute
   '/_authenticated/moments': typeof AuthenticatedMomentsRoute
   '/_authenticated/more': typeof AuthenticatedMoreRoute
+  '/_authenticated/my-earnings': typeof AuthenticatedMyEarningsRoute
   '/_authenticated/payments': typeof AuthenticatedPaymentsRoute
+  '/_authenticated/payroll': typeof AuthenticatedPayrollRoute
   '/_authenticated/privacy': typeof AuthenticatedPrivacyRoute
   '/_authenticated/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
@@ -589,7 +607,9 @@ export interface FileRouteTypes {
     | '/festive'
     | '/moments'
     | '/more'
+    | '/my-earnings'
     | '/payments'
+    | '/payroll'
     | '/privacy'
     | '/quotations'
     | '/reports'
@@ -649,7 +669,9 @@ export interface FileRouteTypes {
     | '/festive'
     | '/moments'
     | '/more'
+    | '/my-earnings'
     | '/payments'
+    | '/payroll'
     | '/privacy'
     | '/quotations'
     | '/reports'
@@ -710,7 +732,9 @@ export interface FileRouteTypes {
     | '/_authenticated/festive'
     | '/_authenticated/moments'
     | '/_authenticated/more'
+    | '/_authenticated/my-earnings'
     | '/_authenticated/payments'
+    | '/_authenticated/payroll'
     | '/_authenticated/privacy'
     | '/_authenticated/quotations'
     | '/_authenticated/reports'
@@ -991,11 +1015,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedMoreRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/my-earnings': {
+      id: '/_authenticated/my-earnings'
+      path: '/my-earnings'
+      fullPath: '/my-earnings'
+      preLoaderRoute: typeof AuthenticatedMyEarningsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/payments': {
       id: '/_authenticated/payments'
       path: '/payments'
       fullPath: '/payments'
       preLoaderRoute: typeof AuthenticatedPaymentsRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/payroll': {
+      id: '/_authenticated/payroll'
+      path: '/payroll'
+      fullPath: '/payroll'
+      preLoaderRoute: typeof AuthenticatedPayrollRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/privacy': {
@@ -1221,7 +1259,9 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedFestiveRoute: typeof AuthenticatedFestiveRoute
   AuthenticatedMomentsRoute: typeof AuthenticatedMomentsRoute
   AuthenticatedMoreRoute: typeof AuthenticatedMoreRoute
+  AuthenticatedMyEarningsRoute: typeof AuthenticatedMyEarningsRoute
   AuthenticatedPaymentsRoute: typeof AuthenticatedPaymentsRoute
+  AuthenticatedPayrollRoute: typeof AuthenticatedPayrollRoute
   AuthenticatedPrivacyRoute: typeof AuthenticatedPrivacyRoute
   AuthenticatedQuotationsRoute: typeof AuthenticatedQuotationsRouteWithChildren
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
@@ -1246,7 +1286,9 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedFestiveRoute: AuthenticatedFestiveRoute,
   AuthenticatedMomentsRoute: AuthenticatedMomentsRoute,
   AuthenticatedMoreRoute: AuthenticatedMoreRoute,
+  AuthenticatedMyEarningsRoute: AuthenticatedMyEarningsRoute,
   AuthenticatedPaymentsRoute: AuthenticatedPaymentsRoute,
+  AuthenticatedPayrollRoute: AuthenticatedPayrollRoute,
   AuthenticatedPrivacyRoute: AuthenticatedPrivacyRoute,
   AuthenticatedQuotationsRoute: AuthenticatedQuotationsRouteWithChildren,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
