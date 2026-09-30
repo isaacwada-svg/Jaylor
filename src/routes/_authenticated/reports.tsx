@@ -274,6 +274,25 @@ function Reports() {
   const tailorName = (id: string) =>
     tailorProfiles?.find((p) => p.id === id)?.full_name ?? "Tailor";
 
+  // Shared with the dashboard card and the storefront badge -- same
+  // ready-vs-promised-date definition, same rolling 90-day window, rather
+  // than this page computing its own month-scoped figure off delivery_date.
+  const { data: onTimeScore } = useQuery({
+    queryKey: ["store-on-time-score", storeId],
+    enabled: !!storeId,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_store_on_time_score", {
+        p_store_id: storeId as string,
+      });
+      if (error) throw error;
+      return data as unknown as {
+        rate: number | null;
+        orders_counted: number;
+        has_enough_data: boolean;
+      };
+    },
+  });
+
   const collectedRevenue = (paymentsInMonth ?? []).reduce((sum, p) => sum + p.amount, 0);
   const expensesTotal = (expensesInMonth ?? []).reduce((sum, e) => sum + e.amount, 0);
   const netProfit = collectedRevenue - expensesTotal;
@@ -296,18 +315,17 @@ function Reports() {
 
   // Monthly review, rule-based (no AI): a text template filled with this month's own figures.
   const ordersCompletedCount = ordersCollected?.length ?? 0;
-  const onTimeCount = (ordersCollected ?? []).filter(
-    (o) => o.delivery_date && o.collected_at && o.collected_at <= `${o.delivery_date}T23:59:59`,
-  ).length;
-  const onTimeRate =
-    ordersCompletedCount > 0 ? Math.round((onTimeCount / ordersCompletedCount) * 100) : null;
+  // Same definition as the dashboard card and storefront badge (ready vs
+  // promised_date, rolling 90 days) rather than a separate month-scoped
+  // calculation off delivery_date -- only shown once 10 orders are counted.
+  const onTimeRate = onTimeScore?.has_enough_data ? onTimeScore.rate : null;
   const monthlyReviewTip =
     onTimeRate != null && onTimeRate < 80
       ? "A number of orders finished after their due date this month — consider building in more buffer time when you promise a date."
       : outstandingBalance > collectedRevenue
         ? "You're owed more than you collected this month — sending balance reminders could recover some of this."
         : "Keep it up — collection and delivery both look healthy this month.";
-  const monthlyReviewText = `${format(monthStart, "MMMM yyyy")} at ${currentStore?.name ?? "your shop"}: collected ${formatMoney(collectedRevenue)}, ${formatMoney(outstandingBalance)} still owed, ${ordersCompletedCount} order${ordersCompletedCount === 1 ? "" : "s"} completed${onTimeRate != null ? `, ${onTimeRate}% on time` : ""}. ${monthlyReviewTip}`;
+  const monthlyReviewText = `${format(monthStart, "MMMM yyyy")} at ${currentStore?.name ?? "your shop"}: collected ${formatMoney(collectedRevenue)}, ${formatMoney(outstandingBalance)} still owed, ${ordersCompletedCount} order${ordersCompletedCount === 1 ? "" : "s"} completed${onTimeRate != null ? ` (${onTimeRate}% on time over your last ${onTimeScore?.orders_counted} orders)` : ""}. ${monthlyReviewTip}`;
 
   const trendMonths = useMemo(() => {
     const months: Date[] = [];
