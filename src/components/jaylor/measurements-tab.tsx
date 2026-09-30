@@ -1,7 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { Info, Share2, X } from "lucide-react";
+import { ArrowDown, ArrowUp, History, Info, Share2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { computeAgeGroup, computeTemplateSex, isMinor, type AgeGroup } from "@/lib/jaylor";
@@ -13,6 +13,13 @@ import {
   RE_MEASURE_MS,
   type TemplateField,
 } from "@/lib/measurements";
+import {
+  diffMeasurementFields,
+  countChanged,
+  templateChangedBetween,
+  makeValueKeyLabeller,
+  type MeasurementFieldChange,
+} from "@/lib/measurement-diff";
 import { getErrorMessage, cn } from "@/lib/utils";
 import { useLatestFitFeedback, fitFeedbackHint } from "@/lib/moments";
 import { enqueue, isNetworkFailure } from "@/lib/offline/outbox";
@@ -60,18 +67,24 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
     },
   });
 
-  const { data: sets, isLoading: setsLoading } = useQuery({
-    queryKey: ["measurement-sets", client.id],
+  // Only the latest two versions are needed here (for the "latest" card and
+  // the changed-since summary) -- the full history is loaded lazily, only
+  // when the history dialog is actually opened.
+  const { data: latestSets, isLoading: setsLoading } = useQuery({
+    queryKey: ["measurement-sets-latest", client.id],
     queryFn: async () => {
       const { data, error } = await supabase
         .from("measurement_sets")
         .select("*")
         .eq("client_id", client.id)
-        .order("version", { ascending: false });
+        .order("version", { ascending: false })
+        .limit(2);
       if (error) throw error;
       return data;
     },
   });
+
+  const [historyOpen, setHistoryOpen] = useState(false);
 
   if (templatesLoading || setsLoading) {
     return <Skeleton className="h-40 rounded-2xl" />;
@@ -80,7 +93,8 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
   const ageGroup = computeAgeGroup(client.birthday);
   const sex = computeTemplateSex(client.gender);
   const defaultTemplate = pickDefaultTemplate(templates ?? [], ageGroup, sex);
-  const latest = sets?.[0];
+  const latest = latestSets?.[0];
+  const previousVersion = latestSets?.[1];
 
   if (editing) {
     return (
@@ -91,7 +105,8 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
         previous={latest}
         onCancel={() => setEditing(false)}
         onSaved={() => {
-          queryClient.invalidateQueries({ queryKey: ["measurement-sets", client.id] });
+          queryClient.invalidateQueries({ queryKey: ["measurement-sets-latest", client.id] });
+          queryClient.invalidateQueries({ queryKey: ["measurement-sets-all", client.id] });
           setEditing(false);
         }}
       />
@@ -115,6 +130,15 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
         />
       )}
 
+      {latest && previousVersion && (
+        <MeasurementChangesSummary
+          older={previousVersion}
+          newer={latest}
+          templates={templates ?? []}
+          onOpenHistory={() => setHistoryOpen(true)}
+        />
+      )}
+
       <div className="flex flex-wrap gap-2">
         <Button onClick={() => setEditing(true)}>
           {latest ? "New measurement" : "Take measurements"}
@@ -127,10 +151,197 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
             phone={client.whatsapp_phone ?? client.phone}
           />
         )}
+        {latest && (
+          <Button variant="outline" onClick={() => setHistoryOpen(true)}>
+            <History className="size-4" />
+            Measurement history
+          </Button>
+        )}
       </div>
 
-      {sets && sets.length > 1 && <HistoryList sets={sets.slice(1)} templates={templates ?? []} />}
+      {latest && (
+        <MeasurementHistoryDialog
+          open={historyOpen}
+          onOpenChange={setHistoryOpen}
+          clientId={client.id}
+          templates={templates ?? []}
+        />
+      )}
     </div>
+  );
+}
+
+function MeasurementChangesSummary({
+  older,
+  newer,
+  templates,
+  onOpenHistory,
+}: {
+  older: MeasurementSetRow;
+  newer: MeasurementSetRow;
+  templates: TemplateRow[];
+  onOpenHistory: () => void;
+}) {
+  const olderTemplate = templates.find((t) => t.id === older.template_id);
+  const newerTemplate = templates.find((t) => t.id === newer.template_id);
+  const labeller = makeValueKeyLabeller(
+    olderTemplate ? templateFields(olderTemplate) : [],
+    newerTemplate ? templateFields(newerTemplate) : [],
+  );
+  const changes = diffMeasurementFields(
+    {
+      values: older.values as Record<string, unknown>,
+      extra_fields: older.extra_fields as Record<string, unknown>,
+      unit: older.unit,
+      template_id: older.template_id,
+    },
+    {
+      values: newer.values as Record<string, unknown>,
+      extra_fields: newer.extra_fields as Record<string, unknown>,
+      unit: newer.unit,
+      template_id: newer.template_id,
+    },
+    labeller,
+  );
+  const changed = countChanged(changes);
+
+  return (
+    <button
+      type="button"
+      onClick={onOpenHistory}
+      className="w-full rounded-xl border border-gold/40 bg-accent/30 p-3 text-left text-sm hover:bg-accent/50"
+    >
+      {changed} measurement{changed === 1 ? "" : "s"} changed since{" "}
+      {new Date(older.taken_at).toLocaleDateString()}
+    </button>
+  );
+}
+
+function MeasurementFieldChangeRow({ change }: { change: MeasurementFieldChange }) {
+  const arrow =
+    change.status === "increased" ? (
+      <ArrowUp className="size-3.5 shrink-0 text-owed" />
+    ) : change.status === "decreased" ? (
+      <ArrowDown className="size-3.5 shrink-0 text-paid" />
+    ) : null;
+
+  return (
+    <div className="flex items-center gap-2 text-sm">
+      {arrow}
+      <span className="min-w-0 flex-1">
+        <span className="font-medium">{change.label}</span>{" "}
+        {change.status === "added" ? (
+          <span className="text-muted-foreground">{change.newDisplay} (added)</span>
+        ) : change.status === "removed" ? (
+          <span className="text-muted-foreground">{change.oldDisplay} (removed)</span>
+        ) : (
+          <span className="text-muted-foreground">
+            {change.oldDisplay} → {change.newDisplay}
+            {change.deltaText && ` (${change.deltaText})`}
+          </span>
+        )}
+      </span>
+    </div>
+  );
+}
+
+function MeasurementHistoryDialog({
+  open,
+  onOpenChange,
+  clientId,
+  templates,
+}: {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  clientId: string;
+  templates: TemplateRow[];
+}) {
+  const { data: allSets, isLoading } = useQuery({
+    queryKey: ["measurement-sets-all", clientId],
+    enabled: open,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("measurement_sets")
+        .select("*")
+        .eq("client_id", clientId)
+        .order("version", { ascending: false });
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-h-[85vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>Measurement history</DialogTitle>
+        </DialogHeader>
+
+        {isLoading ? (
+          <Skeleton className="h-40 rounded-2xl" />
+        ) : !allSets || allSets.length === 0 ? (
+          <p className="text-sm text-muted-foreground">No measurements yet.</p>
+        ) : allSets.length === 1 ? (
+          <p className="text-sm text-muted-foreground">
+            First measurement, nothing to compare yet.
+          </p>
+        ) : (
+          <div className="space-y-5">
+            {allSets.slice(0, -1).map((newer, i) => {
+              const older = allSets[i + 1];
+              if (!older) return null;
+              const olderTemplate = templates.find((t) => t.id === older.template_id);
+              const newerTemplate = templates.find((t) => t.id === newer.template_id);
+              const labeller = makeValueKeyLabeller(
+                olderTemplate ? templateFields(olderTemplate) : [],
+                newerTemplate ? templateFields(newerTemplate) : [],
+              );
+              const changes = diffMeasurementFields(
+                {
+                  values: older.values as Record<string, unknown>,
+                  extra_fields: older.extra_fields as Record<string, unknown>,
+                  unit: older.unit,
+                  template_id: older.template_id,
+                },
+                {
+                  values: newer.values as Record<string, unknown>,
+                  extra_fields: newer.extra_fields as Record<string, unknown>,
+                  unit: newer.unit,
+                  template_id: newer.template_id,
+                },
+                labeller,
+              ).filter((c) => c.status !== "unchanged");
+              const templateNoteNeeded = templateChangedBetween(older, newer);
+
+              return (
+                <div key={newer.id} className="rounded-xl border border-border p-3">
+                  <div className="flex items-center justify-between">
+                    <p className="text-sm font-medium">
+                      v{older.version} → v{newer.version}
+                    </p>
+                    <p className="text-xs text-muted-foreground">
+                      {new Date(newer.taken_at).toLocaleDateString()}
+                    </p>
+                  </div>
+                  {templateNoteNeeded && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      Measured with a different template
+                    </p>
+                  )}
+                  <div className="mt-2 space-y-1.5">
+                    {changes.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">No meaningful changes.</p>
+                    ) : (
+                      changes.map((c) => <MeasurementFieldChangeRow key={c.key} change={c} />)
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -218,32 +429,6 @@ function LatestSummary({ set, templates }: { set: MeasurementSetRow; templates: 
         )}
       </div>
       {set.notes && <p className="mt-3 text-sm text-muted-foreground">{set.notes}</p>}
-    </div>
-  );
-}
-
-function HistoryList({ sets, templates }: { sets: MeasurementSetRow[]; templates: TemplateRow[] }) {
-  return (
-    <div>
-      <p className="mb-2 text-sm font-medium text-muted-foreground">History</p>
-      <div className="space-y-2">
-        {sets.map((s) => {
-          const template = templates.find((t) => t.id === s.template_id);
-          return (
-            <div
-              key={s.id}
-              className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
-            >
-              <span>
-                {template?.name ?? "Measurements"} · v{s.version}
-              </span>
-              <span className="text-muted-foreground">
-                {new Date(s.taken_at).toLocaleDateString()}
-              </span>
-            </div>
-          );
-        })}
-      </div>
     </div>
   );
 }
