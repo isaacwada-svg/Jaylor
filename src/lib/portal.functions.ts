@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { normalisePhone, phoneVariants, PORTAL_KEYWORD } from "@/lib/portal-phone";
 
-const SHOP_WHATSAPP = "2349028101389";
+export const SHOP_WHATSAPP = "2349028101389";
 
 export type PortalStart = {
   status: "sent" | "needs_message";

@@ -3182,6 +3182,157 @@ export type Database = {
           },
         ]
       }
+      passport_access_log: {
+        Row: {
+          action: string
+          at: string
+          holder_id: string
+          id: string
+          store_id: string | null
+        }
+        Insert: {
+          action: string
+          at?: string
+          holder_id: string
+          id?: string
+          store_id?: string | null
+        }
+        Update: {
+          action?: string
+          at?: string
+          holder_id?: string
+          id?: string
+          store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_access_log_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "passport_holders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_access_log_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_access_log_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_holders: {
+        Row: {
+          created_at: string
+          id: string
+          phone_e164: string
+          verified_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          phone_e164: string
+          verified_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          phone_e164?: string
+          verified_at?: string
+        }
+        Relationships: []
+      }
+      passport_sessions: {
+        Row: {
+          created_at: string
+          expires_at: string
+          holder_id: string
+          last_seen_at: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string
+          holder_id: string
+          last_seen_at?: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string
+          holder_id?: string
+          last_seen_at?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_sessions_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "passport_holders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      passport_shares: {
+        Row: {
+          created_at: string
+          holder_id: string
+          id: string
+          last_accessed_at: string | null
+          revoked_at: string | null
+          token: string
+          used_by_store_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          holder_id: string
+          id?: string
+          last_accessed_at?: string | null
+          revoked_at?: string | null
+          token?: string
+          used_by_store_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          holder_id?: string
+          id?: string
+          last_accessed_at?: string | null
+          revoked_at?: string | null
+          token?: string
+          used_by_store_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "passport_shares_holder_id_fkey"
+            columns: ["holder_id"]
+            isOneToOne: false
+            referencedRelation: "passport_holders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_shares_used_by_store_id_fkey"
+            columns: ["used_by_store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "passport_shares_used_by_store_id_fkey"
+            columns: ["used_by_store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       pay_rates: {
         Row: {
           amount: number
@@ -4704,6 +4855,7 @@ export type Database = {
           plan_code: string
           plan_paid_until: string | null
           referral_code: string | null
+          referred_by_passport_share_id: string | null
           referred_by_store_id: string | null
           sews_for: string | null
           slug: string
@@ -4741,6 +4893,7 @@ export type Database = {
           plan_code?: string
           plan_paid_until?: string | null
           referral_code?: string | null
+          referred_by_passport_share_id?: string | null
           referred_by_store_id?: string | null
           sews_for?: string | null
           slug: string
@@ -4778,6 +4931,7 @@ export type Database = {
           plan_code?: string
           plan_paid_until?: string | null
           referral_code?: string | null
+          referred_by_passport_share_id?: string | null
           referred_by_store_id?: string | null
           sews_for?: string | null
           slug?: string
@@ -4802,6 +4956,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "plans"
             referencedColumns: ["code"]
+          },
+          {
+            foreignKeyName: "stores_referred_by_passport_share_id_fkey"
+            columns: ["referred_by_passport_share_id"]
+            isOneToOne: false
+            referencedRelation: "passport_shares"
+            referencedColumns: ["id"]
           },
           {
             foreignKeyName: "stores_referred_by_store_id_fkey"
@@ -5774,6 +5935,24 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_passport_share: {
+        Args: { p_session_token: string }
+        Returns: {
+          created_at: string
+          holder_id: string
+          id: string
+          last_accessed_at: string | null
+          revoked_at: string | null
+          token: string
+          used_by_store_id: string | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "passport_shares"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decline_passport_share: {
         Args: { p_share_id: string }
         Returns: undefined
@@ -5871,6 +6050,11 @@ export type Database = {
       get_order_capacity_check: { Args: { p_date: string; p_store_id: string }; Returns: Json }
       get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
+      get_passport_share_preview: {
+        Args: { p_share_token: string; p_store_id: string }
+        Returns: Json
+      }
+      get_passport_view: { Args: { p_session_token: string }; Returns: Json }
       get_payroll_period_warnings: {
         Args: { p_period_end: string; p_period_start: string; p_store_id: string }
         Returns: Json
@@ -5909,6 +6093,10 @@ export type Database = {
       ignore_incoming_transfer: {
         Args: { p_transfer_id: string }
         Returns: undefined
+      }
+      import_passport_share: {
+        Args: { p_share_token: string; p_store_id: string }
+        Returns: Json
       }
       increment_advisor_usage: {
         Args: { p_store_id: string }
@@ -5949,6 +6137,7 @@ export type Database = {
         }
         Returns: Json
       }
+      list_passport_shares: { Args: { p_session_token: string }; Returns: Json }
       log_audit_event: {
         Args: {
           p_action: string
@@ -6002,6 +6191,11 @@ export type Database = {
       nth_weekday_date: {
         Args: { p_dow: number; p_month: number; p_n: number; p_year: number }
         Returns: string
+      }
+      passport_start_session: { Args: { p_phone_e164: string }; Returns: string }
+      record_passport_referral: {
+        Args: { p_share_token: string; p_store_id: string }
+        Returns: undefined
       }
       record_staff_advance: {
         Args: {
@@ -6112,6 +6306,10 @@ export type Database = {
       }
       revoke_measurement_passport_by_store: {
         Args: { p_client_id: string }
+        Returns: undefined
+      }
+      revoke_passport_share: {
+        Args: { p_session_token: string; p_share_id: string }
         Returns: undefined
       }
       set_order_status_note: {

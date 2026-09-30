@@ -185,6 +185,9 @@ export const PENDING_INVITE_KEY = "jaylor:pendingInvite";
 /** sessionStorage key holding a referral code while the user signs up. */
 export const PENDING_REFERRAL_KEY = "jaylor:pendingReferral";
 
+/** sessionStorage key holding a Passport share token while the user signs up. */
+export const PENDING_PASSPORT_SHARE_KEY = "jaylor:pendingPassportShare";
+
 export const COMPANY_LINE =
   "Jaylor is a product of Bethjay Global Enterprise Limited, RC 3283706 — FCT Abuja, Nigeria.";
 

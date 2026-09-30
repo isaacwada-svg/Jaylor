@@ -24,6 +24,7 @@ import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
 import { Route as MeasurementPassportRouteImport } from './routes/measurement-passport'
 import { Route as OnboardingRouteImport } from './routes/onboarding'
+import { Route as PassportRouteImport } from './routes/passport'
 import { Route as PortalRouteImport } from './routes/portal'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
@@ -57,6 +58,8 @@ import { Route as FTokenRouteImport } from './routes/f.$token'
 import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
 import { Route as PassportTokenRouteImport } from './routes/passport.$token'
+import { Route as PassportClaimRouteImport } from './routes/passport.claim'
+import { Route as PassportMeRouteImport } from './routes/passport.me'
 import { Route as QTokenRouteImport } from './routes/q.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as TTokenRouteImport } from './routes/t.$token'
@@ -71,6 +74,7 @@ import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$s
 import { Route as ApiCronDigestRouteImport } from './routes/api/cron/digest'
 import { Route as ApiInternalTransferAlertRouteImport } from './routes/api/internal/transfer-alert'
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
+import { Route as PassportShareTokenRouteImport } from './routes/passport.share.$token'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
 
 const IndexRoute = IndexRouteImport.update({
@@ -145,6 +149,11 @@ const MeasurementPassportRoute = MeasurementPassportRouteImport.update({
 const OnboardingRoute = OnboardingRouteImport.update({
   id: '/onboarding',
   path: '/onboarding',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PassportRoute = PassportRouteImport.update({
+  id: '/passport',
+  path: '/passport',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PortalRoute = PortalRouteImport.update({
@@ -310,9 +319,19 @@ const JoinTokenRoute = JoinTokenRouteImport.update({
   getParentRoute: () => rootRouteImport,
 } as any)
 const PassportTokenRoute = PassportTokenRouteImport.update({
-  id: '/passport/$token',
-  path: '/passport/$token',
-  getParentRoute: () => rootRouteImport,
+  id: '/$token',
+  path: '/$token',
+  getParentRoute: () => PassportRoute,
+} as any)
+const PassportClaimRoute = PassportClaimRouteImport.update({
+  id: '/claim',
+  path: '/claim',
+  getParentRoute: () => PassportRoute,
+} as any)
+const PassportMeRoute = PassportMeRouteImport.update({
+  id: '/me',
+  path: '/me',
+  getParentRoute: () => PassportRoute,
 } as any)
 const QTokenRoute = QTokenRouteImport.update({
   id: '/q/$token',
@@ -392,6 +411,11 @@ const FitcheckOrderIdClientIdRoute = FitcheckOrderIdClientIdRouteImport.update({
   path: '/fitcheck/$orderId/$clientId',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PassportShareTokenRoute = PassportShareTokenRouteImport.update({
+  id: '/share/$token',
+  path: '/share/$token',
+  getParentRoute: () => PassportRoute,
+} as any)
 const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
@@ -414,6 +438,7 @@ export interface FileRoutesByFullPath {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/passport': typeof PassportRouteWithChildren
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -447,6 +472,8 @@ export interface FileRoutesByFullPath {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/passport/claim': typeof PassportClaimRoute
+  '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
@@ -458,6 +485,7 @@ export interface FileRoutesByFullPath {
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
+  '/passport/share/$token': typeof PassportShareTokenRoute
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -478,6 +506,7 @@ export interface FileRoutesByTo {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/passport': typeof PassportRouteWithChildren
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -511,6 +540,8 @@ export interface FileRoutesByTo {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/passport/claim': typeof PassportClaimRoute
+  '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
@@ -522,6 +553,7 @@ export interface FileRoutesByTo {
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
+  '/passport/share/$token': typeof PassportShareTokenRoute
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
@@ -544,6 +576,7 @@ export interface FileRoutesById {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
+  '/passport': typeof PassportRouteWithChildren
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
@@ -577,6 +610,8 @@ export interface FileRoutesById {
   '/jobs/$slug': typeof JobsSlugRoute
   '/join/$token': typeof JoinTokenRoute
   '/passport/$token': typeof PassportTokenRoute
+  '/passport/claim': typeof PassportClaimRoute
+  '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
@@ -588,6 +623,7 @@ export interface FileRoutesById {
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
+  '/passport/share/$token': typeof PassportShareTokenRoute
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
@@ -610,6 +646,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/passport'
     | '/portal'
     | '/pricing'
     | '/privacy-policy'
@@ -643,6 +680,8 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/passport/claim'
+    | '/passport/me'
     | '/q/$token'
     | '/style/$token'
     | '/t/$token'
@@ -654,6 +693,7 @@ export interface FileRouteTypes {
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
+    | '/passport/share/$token'
     | '/clients/'
     | '/events/'
     | '/orders/'
@@ -674,6 +714,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/passport'
     | '/portal'
     | '/pricing'
     | '/privacy-policy'
@@ -707,6 +748,8 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/passport/claim'
+    | '/passport/me'
     | '/q/$token'
     | '/style/$token'
     | '/t/$token'
@@ -718,6 +761,7 @@ export interface FileRouteTypes {
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
+    | '/passport/share/$token'
     | '/clients'
     | '/events'
     | '/orders'
@@ -739,6 +783,7 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
+    | '/passport'
     | '/portal'
     | '/pricing'
     | '/privacy-policy'
@@ -772,6 +817,8 @@ export interface FileRouteTypes {
     | '/jobs/$slug'
     | '/join/$token'
     | '/passport/$token'
+    | '/passport/claim'
+    | '/passport/me'
     | '/q/$token'
     | '/style/$token'
     | '/t/$token'
@@ -783,6 +830,7 @@ export interface FileRouteTypes {
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
+    | '/passport/share/$token'
     | '/_authenticated/clients/'
     | '/_authenticated/events/'
     | '/_authenticated/orders/'
@@ -805,6 +853,7 @@ export interface RootRouteChildren {
   MeasureGuideRoute: typeof MeasureGuideRoute
   MeasurementPassportRoute: typeof MeasurementPassportRoute
   OnboardingRoute: typeof OnboardingRoute
+  PassportRoute: typeof PassportRouteWithChildren
   PortalRoute: typeof PortalRoute
   PricingRoute: typeof PricingRoute
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
@@ -818,7 +867,6 @@ export interface RootRouteChildren {
   FTokenRoute: typeof FTokenRoute
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
-  PassportTokenRoute: typeof PassportTokenRoute
   QTokenRoute: typeof QTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
   TTokenRoute: typeof TTokenRoute
@@ -933,6 +981,13 @@ declare module '@tanstack/react-router' {
       path: '/onboarding'
       fullPath: '/onboarding'
       preLoaderRoute: typeof OnboardingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/passport': {
+      id: '/passport'
+      path: '/passport'
+      fullPath: '/passport'
+      preLoaderRoute: typeof PassportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/portal': {
@@ -1161,10 +1216,24 @@ declare module '@tanstack/react-router' {
     }
     '/passport/$token': {
       id: '/passport/$token'
-      path: '/passport/$token'
+      path: '/$token'
       fullPath: '/passport/$token'
       preLoaderRoute: typeof PassportTokenRouteImport
-      parentRoute: typeof rootRouteImport
+      parentRoute: typeof PassportRoute
+    }
+    '/passport/claim': {
+      id: '/passport/claim'
+      path: '/claim'
+      fullPath: '/passport/claim'
+      preLoaderRoute: typeof PassportClaimRouteImport
+      parentRoute: typeof PassportRoute
+    }
+    '/passport/me': {
+      id: '/passport/me'
+      path: '/me'
+      fullPath: '/passport/me'
+      preLoaderRoute: typeof PassportMeRouteImport
+      parentRoute: typeof PassportRoute
     }
     '/q/$token': {
       id: '/q/$token'
@@ -1264,6 +1333,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof FitcheckOrderIdClientIdRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/passport/share/$token': {
+      id: '/passport/share/$token'
+      path: '/share/$token'
+      fullPath: '/passport/share/$token'
+      preLoaderRoute: typeof PassportShareTokenRouteImport
+      parentRoute: typeof PassportRoute
+    }
     '/api/public/whatsapp/webhook': {
       id: '/api/public/whatsapp/webhook'
       path: '/api/public/whatsapp/webhook'
@@ -1357,6 +1433,24 @@ const AdminRouteChildren: AdminRouteChildren = {
 
 const AdminRouteWithChildren = AdminRoute._addFileChildren(AdminRouteChildren)
 
+interface PassportRouteChildren {
+  PassportTokenRoute: typeof PassportTokenRoute
+  PassportClaimRoute: typeof PassportClaimRoute
+  PassportMeRoute: typeof PassportMeRoute
+  PassportShareTokenRoute: typeof PassportShareTokenRoute
+}
+
+const PassportRouteChildren: PassportRouteChildren = {
+  PassportTokenRoute: PassportTokenRoute,
+  PassportClaimRoute: PassportClaimRoute,
+  PassportMeRoute: PassportMeRoute,
+  PassportShareTokenRoute: PassportShareTokenRoute,
+}
+
+const PassportRouteWithChildren = PassportRoute._addFileChildren(
+  PassportRouteChildren,
+)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -1373,6 +1467,7 @@ const rootRouteChildren: RootRouteChildren = {
   MeasureGuideRoute: MeasureGuideRoute,
   MeasurementPassportRoute: MeasurementPassportRoute,
   OnboardingRoute: OnboardingRoute,
+  PassportRoute: PassportRouteWithChildren,
   PortalRoute: PortalRoute,
   PricingRoute: PricingRoute,
   PrivacyPolicyRoute: PrivacyPolicyRoute,
@@ -1386,7 +1481,6 @@ const rootRouteChildren: RootRouteChildren = {
   FTokenRoute: FTokenRoute,
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
-  PassportTokenRoute: PassportTokenRoute,
   QTokenRoute: QTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
   TTokenRoute: TTokenRoute,
