@@ -5,15 +5,35 @@ import { toast } from "sonner";
 import { Check, MessageSquareWarning } from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { getOrderApproval, respondToOrderApproval } from "@/lib/order-approvals.functions";
 import { getErrorMessage } from "@/lib/utils";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/a/$token")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): { lang?: string } => ({
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
+  }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ params, deps }) => {
+    const approval = await getOrderApproval({ data: { token: params.token } });
+    const language = await resolveLanguage({
+      data: {
+        urlLang: deps.lang,
+        clientPreferredLanguage: approval?.clientPreferredLanguage,
+        storeLanguage: approval?.storeLanguage,
+      },
+    });
+    const resources = await loadNamespaces(language, ["common", "approval"]);
+    return { approval, language, resources };
+  },
   head: () => ({
     meta: [
       { title: "Approve your order — Jaylor" },
@@ -23,11 +43,23 @@ export const Route = createFileRoute("/a/$token")({
       },
     ],
   }),
-  component: OrderApprovalPage,
+  component: OrderApprovalRoute,
 });
+
+function OrderApprovalRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <OrderApprovalPage />
+    </I18nProvider>
+  );
+}
 
 function OrderApprovalPage() {
   const { token } = Route.useParams();
+  const { approval: initialApproval } = Route.useLoaderData();
+  const tc = useT("common");
+  const t = useT("approval");
   const queryClient = useQueryClient();
   const [comment, setComment] = useState("");
   const [responding, setResponding] = useState(false);
@@ -36,6 +68,7 @@ function OrderApprovalPage() {
   const { data: approval, isLoading } = useQuery({
     queryKey: ["order-approval", token],
     queryFn: () => getOrderApproval({ data: { token } }),
+    initialData: initialApproval,
   });
 
   async function respond(status: "approved" | "changes_requested") {
@@ -45,13 +78,13 @@ function OrderApprovalPage() {
         data: { token, status, comment: comment.trim() || undefined },
       });
       if (!result.ok) {
-        toast.error("This request can no longer be responded to");
+        toast.error(t("error_cannot_respond"));
         return;
       }
-      toast.success(status === "approved" ? "Approved" : "Changes requested");
+      toast.success(status === "approved" ? t("success_approved") : t("success_changes_requested"));
       await queryClient.invalidateQueries({ queryKey: ["order-approval", token] });
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not send your response"));
+      toast.error(getErrorMessage(error, t("error_send_response")));
     } finally {
       setResponding(false);
     }
@@ -77,12 +110,10 @@ function OrderApprovalPage() {
         <Link to="/" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
-        <h1 className="mt-8 text-xl">We couldn&apos;t find this request</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Double-check the link your tailor shared with you.
-        </p>
+        <h1 className="mt-8 text-xl">{t("request_not_found_title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{tc("not_found_description")}</p>
         <Button asChild className="mt-6" variant="outline">
-          <Link to="/">Go to Jaylor</Link>
+          <Link to="/">{tc("go_home")}</Link>
         </Button>
       </main>
     );
@@ -96,6 +127,10 @@ function OrderApprovalPage() {
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-md">
+        <div className="flex items-center justify-between">
+          <span />
+          <LanguageSwitcher />
+        </div>
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
@@ -112,16 +147,14 @@ function OrderApprovalPage() {
           <h1 className="mt-2 font-heading text-2xl">
             {snapshot.garment_type} × {snapshot.quantity}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Please review before we start cutting
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">{t("review_before_cutting")}</p>
         </div>
 
         <div className="mt-6 rounded-2xl border bg-card p-6 shadow-sm">
           {snapshot.style_notes && (
             <div>
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Style notes
+                {t("style_notes")}
               </p>
               <p className="mt-1 text-sm">{snapshot.style_notes}</p>
             </div>
@@ -130,7 +163,7 @@ function OrderApprovalPage() {
           {snapshot.style_reference_photos.length > 0 && (
             <div className="mt-4">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Reference photos
+                {t("reference_photos")}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {snapshot.style_reference_photos.map((url) => (
@@ -143,7 +176,9 @@ function OrderApprovalPage() {
           {snapshot.materials.length > 0 && (
             <>
               <StitchDivider className="my-5" />
-              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Fabric</p>
+              <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                {t("fabric")}
+              </p>
               <div className="mt-2 space-y-2">
                 {snapshot.materials.map((m, i) => (
                   <div key={i} className="rounded-xl border border-border p-3 text-sm">
@@ -171,7 +206,7 @@ function OrderApprovalPage() {
                     </div>
                     {m.extras_received && (
                       <p className="mt-2 text-xs text-muted-foreground">
-                        Also received: {m.extras_received}
+                        {t("also_received", { text: m.extras_received })}
                       </p>
                     )}
                   </div>
@@ -184,7 +219,7 @@ function OrderApprovalPage() {
             <>
               <StitchDivider className="my-5" />
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Measurements ({snapshot.measurements?.unit})
+                {t("measurements", { unit: snapshot.measurements?.unit ?? "" })}
               </p>
               <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm">
                 {measurementEntries.map(([key, value]) => (
@@ -201,16 +236,16 @@ function OrderApprovalPage() {
 
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Price</span>
+              <span className="text-muted-foreground">{t("price")}</span>
               <span className="figures">{formatMoney(snapshot.price)}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-muted-foreground">Paid so far</span>
+              <span className="text-muted-foreground">{t("paid_so_far")}</span>
               <span className="figures text-paid">{formatMoney(snapshot.amount_paid)}</span>
             </div>
             {snapshot.delivery_date && (
               <div className="flex items-center justify-between">
-                <span className="text-muted-foreground">Delivery date</span>
+                <span className="text-muted-foreground">{t("delivery_date")}</span>
                 <span>{new Date(snapshot.delivery_date).toLocaleDateString()}</span>
               </div>
             )}
@@ -222,7 +257,7 @@ function OrderApprovalPage() {
             showChangesForm ? (
               <div className="space-y-3">
                 <Textarea
-                  placeholder="What would you like changed?"
+                  placeholder={t("changes_placeholder")}
                   value={comment}
                   onChange={(e) => setComment(e.target.value)}
                   rows={3}
@@ -234,14 +269,14 @@ function OrderApprovalPage() {
                     onClick={() => setShowChangesForm(false)}
                     disabled={responding}
                   >
-                    Back
+                    {t("back")}
                   </Button>
                   <Button
                     className="flex-1"
                     onClick={() => respond("changes_requested")}
                     disabled={responding || !comment.trim()}
                   >
-                    {responding ? "Sending..." : "Send"}
+                    {responding ? t("sending") : t("send")}
                   </Button>
                 </div>
               </div>
@@ -254,7 +289,7 @@ function OrderApprovalPage() {
                   disabled={responding}
                 >
                   <MessageSquareWarning className="size-4" />
-                  Request changes
+                  {t("request_changes")}
                 </Button>
                 <Button
                   className="flex-1"
@@ -262,17 +297,17 @@ function OrderApprovalPage() {
                   disabled={responding}
                 >
                   <Check className="size-4" />
-                  {responding ? "Sending..." : "Approve"}
+                  {responding ? t("sending") : t("approve")}
                 </Button>
               </div>
             )
           ) : approval.status === "approved" ? (
             <p className="rounded-xl border border-paid/40 bg-paid/10 p-3 text-center text-sm text-paid">
-              You&apos;ve approved this order.
+              {t("approved_message")}
             </p>
           ) : (
             <div className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm text-owed">
-              <p>You asked for changes.</p>
+              <p>{t("changes_requested_message")}</p>
               {approval.clientComment && <p className="mt-1">{approval.clientComment}</p>}
             </div>
           )}

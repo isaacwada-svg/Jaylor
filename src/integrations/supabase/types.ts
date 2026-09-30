@@ -834,6 +834,7 @@ export type Database = {
           notes: string | null
           phone: string
           photo_url: string | null
+          preferred_language: string | null
           store_id: string
           tags: string[]
           updated_at: string
@@ -858,6 +859,7 @@ export type Database = {
           notes?: string | null
           phone: string
           photo_url?: string | null
+          preferred_language?: string | null
           store_id: string
           tags?: string[]
           updated_at?: string
@@ -882,6 +884,7 @@ export type Database = {
           notes?: string | null
           phone?: string
           photo_url?: string | null
+          preferred_language?: string | null
           store_id?: string
           tags?: string[]
           updated_at?: string
@@ -4907,6 +4910,7 @@ export type Database = {
           garment_types: string[] | null
           id: string
           is_active: boolean
+          language: string
           legal_line: string | null
           logo_url: string | null
           name: string
@@ -4946,6 +4950,7 @@ export type Database = {
           garment_types?: string[] | null
           id?: string
           is_active?: boolean
+          language?: string
           legal_line?: string | null
           logo_url?: string | null
           name: string
@@ -4985,6 +4990,7 @@ export type Database = {
           garment_types?: string[] | null
           id?: string
           is_active?: boolean
+          language?: string
           legal_line?: string | null
           logo_url?: string | null
           name?: string
@@ -6134,6 +6140,7 @@ export type Database = {
       }
       get_directory_locations: { Args: never; Returns: Json }
       get_directory_specialties: { Args: never; Returns: Json }
+      get_event_language_context: { Args: { p_token: string }; Returns: Json }
       get_fitcheck_context: {
         Args: { p_client_id: string; p_order_id: string }
         Returns: Json
@@ -6162,6 +6169,7 @@ export type Database = {
         Args: { p_days?: number; p_store_id: string }
         Returns: Json
       }
+      get_store_language_by_slug: { Args: { p_slug: string }; Returns: string }
       get_store_on_time_score: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_on_time_badge: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_payout_account: {

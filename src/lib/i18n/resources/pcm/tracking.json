@@ -1,0 +1,19 @@
+{
+  "page_title": "Track your order",
+  "order_not_found_title": "We no fit find dis order",
+  "delivery_date": "Delivery date: {{date}}",
+  "cancelled": "Dem don cancel dis order.",
+  "created_as_prefix": "E start as",
+  "no_updates": "No update yet.",
+  "next_fitting": "Next fitting: {{date}} for {{time}}",
+  "paid_so_far": "Wetin you don pay",
+  "balance": "Balance",
+  "pay_by_transfer": "Pay by transfer to",
+  "starting_payment": "E dey start payment...",
+  "pay_amount": "Pay {{amount}}",
+  "payment_confirmed": "Payment don confirm",
+  "payment_not_confirmed": "Dem no confirm di payment",
+  "could_not_confirm_payment": "E no fit confirm dis payment",
+  "could_not_start_payment": "E no fit start payment",
+  "_meta_status": "machine-drafted-needs-review"
+}

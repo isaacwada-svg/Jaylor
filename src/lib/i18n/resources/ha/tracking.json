@@ -1,0 +1,19 @@
+{
+  "page_title": "Bibiyar oda ku",
+  "order_not_found_title": "Ba mu sami wannan oda ba",
+  "delivery_date": "Ranar isarwa: {{date}}",
+  "cancelled": "An soke wannan oda.",
+  "created_as_prefix": "An fara a matsayin",
+  "no_updates": "Babu sabuntawa tukuna.",
+  "next_fitting": "Auna na gaba: {{date}} da karfe {{time}}",
+  "paid_so_far": "Abin da aka biya har yanzu",
+  "balance": "Sauran kudi",
+  "pay_by_transfer": "Biya ta hanyar canja wuri zuwa",
+  "starting_payment": "Ana fara biyan kuɗi...",
+  "pay_amount": "Biya {{amount}}",
+  "payment_confirmed": "An tabbatar da biyan kuɗi",
+  "payment_not_confirmed": "Ba a tabbatar da biyan kuɗi ba",
+  "could_not_confirm_payment": "An kasa tabbatar da wannan biyan kuɗi",
+  "could_not_start_payment": "An kasa fara biyan kuɗi",
+  "_meta_status": "machine-drafted-needs-review"
+}

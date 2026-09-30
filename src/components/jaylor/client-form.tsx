@@ -25,6 +25,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { LANGUAGES, isLanguageCode, type LanguageCode } from "@/lib/i18n/languages";
 
 type ClientRow = Tables<"clients">;
 
@@ -57,6 +58,7 @@ export function ClientForm({
   const [guardianPhone, setGuardianPhone] = useState("");
   const [consentWhatsapp, setConsentWhatsapp] = useState(false);
   const [consentPhotos, setConsentPhotos] = useState(false);
+  const [preferredLanguage, setPreferredLanguage] = useState<LanguageCode | "">("");
   const [busy, setBusy] = useState(false);
   const [phoneError, setPhoneError] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<{ id: string; full_name: string } | null>(null);
@@ -74,6 +76,9 @@ export function ClientForm({
     setGuardianPhone(client?.guardian_phone ?? "");
     setConsentWhatsapp(client?.consent_whatsapp ?? false);
     setConsentPhotos(client?.consent_photos ?? false);
+    setPreferredLanguage(
+      isLanguageCode(client?.preferred_language) ? client.preferred_language : "",
+    );
     setPhoneError(null);
     setDuplicate(null);
   }, [open, client]);
@@ -148,6 +153,7 @@ export function ClientForm({
             ? client.consent_photos_at
             : now
           : null,
+        preferred_language: preferredLanguage || null,
       };
 
       if (isEdit && client) {
@@ -283,6 +289,26 @@ export function ClientForm({
             onChange={(e) => setBirthday(e.target.value)}
           />
         </div>
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="preferred_language">Client&apos;s preferred language</Label>
+        <Select
+          value={preferredLanguage || "unset"}
+          onValueChange={(v) => setPreferredLanguage(v === "unset" ? "" : (v as LanguageCode))}
+        >
+          <SelectTrigger id="preferred_language">
+            <SelectValue placeholder="Same as shop" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="unset">Same as shop</SelectItem>
+            {LANGUAGES.map((l) => (
+              <SelectItem key={l.code} value={l.code}>
+                {l.nativeName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
       </div>
 
       {minor && (

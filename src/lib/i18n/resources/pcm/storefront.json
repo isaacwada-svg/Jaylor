@@ -1,0 +1,16 @@
+{
+  "shop_not_found_title": "We no fit find dat shop",
+  "no_styles_published": "Dis shop never publish any style yet.",
+  "price_on_request": "Price na if you ask",
+  "price_from": "From {{price}}",
+  "ready_in_days": "E go ready for like {{days}} days",
+  "message_whatsapp": "Message for WhatsApp",
+  "order_whatsapp": "Order for WhatsApp",
+  "sew_this_for_me": "Sew dis for me",
+  "pay_by_transfer": "Pay by transfer to",
+  "account_copied": "Account number don copy",
+  "copy_failed": "E no fit copy",
+  "on_time_badge": "Dem deliver on time: {{rate}}% for di last {{count}} orders",
+  "no_photo_yet": "No picture yet",
+  "_meta_status": "machine-drafted-needs-review"
+}

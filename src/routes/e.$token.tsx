@@ -27,18 +27,43 @@ import {
 } from "@/lib/jobs.functions";
 import { QuoteDocument } from "@/components/jaylor/quote-document";
 import { AiDesignGenerator } from "@/components/jaylor/ai-design-generator";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT } from "@/lib/i18n/i18n-context";
 
 const SELF_MEASUREMENT_FIELDS = [
-  { key: "chest", label: "Chest / bust" },
-  { key: "waist", label: "Waist" },
-  { key: "hip", label: "Hip" },
-  { key: "shoulder", label: "Shoulder" },
-  { key: "sleeve", label: "Sleeve length" },
-  { key: "length", label: "Garment length" },
+  { key: "chest", labelKey: "label_chest" },
+  { key: "waist", labelKey: "label_waist" },
+  { key: "hip", labelKey: "label_hip" },
+  { key: "shoulder", labelKey: "label_shoulder" },
+  { key: "sleeve", labelKey: "label_sleeve" },
+  { key: "length", labelKey: "label_length" },
 ] as const;
 
 export const Route = createFileRoute("/e/$token")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): { lang?: string } => ({
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
+  }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ params, deps }) => {
+    const { supabase } = await import("@/integrations/supabase/client");
+    const { data } = await supabase.rpc("get_event_language_context", { p_token: params.token });
+    const ctx = data as {
+      store_language: string | null;
+      client_preferred_language: string | null;
+    } | null;
+    const language = await resolveLanguage({
+      data: {
+        urlLang: deps.lang,
+        clientPreferredLanguage: ctx?.client_preferred_language,
+        storeLanguage: ctx?.store_language,
+      },
+    });
+    const resources = await loadNamespaces(language, ["common", "events"]);
+    return { language, resources };
+  },
   head: () => ({
     meta: [
       { title: "Your event order — Jaylor" },
@@ -53,18 +78,18 @@ export const Route = createFileRoute("/e/$token")({
       },
     ],
   }),
-  component: GuestEventPage,
+  component: GuestEventRoute,
 });
 
-const STATUS_STEPS = [
-  "Invited",
-  "Measured",
-  "Paid deposit",
-  "Paid full",
-  "In production",
-  "Ready",
-  "Collected",
-];
+function GuestEventRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <GuestEventPage />
+    </I18nProvider>
+  );
+}
+
 const STATUS_KEYS = [
   "invited",
   "measured",
@@ -103,6 +128,8 @@ type GuestData = {
 
 function GuestEventPage() {
   const { token } = Route.useParams();
+  const t = useT("events");
+  const tc = useT("common");
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
   const [showMeasureFallback, setShowMeasureFallback] = useState(false);
@@ -153,7 +180,7 @@ function GuestEventPage() {
       await setMeasuringSession({ data: { token, sessionId } });
       await refetch();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your slot"));
+      toast.error(getErrorMessage(error, t("could_not_save_slot")));
     } finally {
       setBusy(false);
     }
@@ -163,10 +190,10 @@ function GuestEventPage() {
     setBusy(true);
     try {
       await acceptJobQuote({ data: { token } });
-      toast.success("Quote accepted");
+      toast.success(t("quote_accepted"));
       await refetch();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not accept this quote"));
+      toast.error(getErrorMessage(error, t("could_not_accept_quote")));
     } finally {
       setBusy(false);
     }
@@ -178,7 +205,7 @@ function GuestEventPage() {
       await setParticipantSize({ data: { token, sizeKey } });
       await refetch();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your size"));
+      toast.error(getErrorMessage(error, t("could_not_save_size")));
     } finally {
       setBusy(false);
     }
@@ -194,7 +221,7 @@ function GuestEventPage() {
       if (error) throw error;
       await refetch();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your style"));
+      toast.error(getErrorMessage(error, t("could_not_save_style")));
     } finally {
       setBusy(false);
     }
@@ -210,7 +237,7 @@ function GuestEventPage() {
       if (error) throw error;
       await refetch();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your choice"));
+      toast.error(getErrorMessage(error, t("could_not_save_choice")));
     } finally {
       setBusy(false);
     }
@@ -230,7 +257,9 @@ function GuestEventPage() {
       if (!dataUrl.startsWith("data:image/jpeg;base64,")) {
         throw new Error("Please choose a photo in JPG format");
       }
-      const { path } = await uploadFabricPhoto({ data: { storeId: extras.storeId, token, dataUrl } });
+      const { path } = await uploadFabricPhoto({
+        data: { storeId: extras.storeId, token, dataUrl },
+      });
       const { error } = await supabase.rpc("set_participant_fabric_photo", {
         p_token: token,
         p_path: path,
@@ -238,9 +267,9 @@ function GuestEventPage() {
       if (error) throw error;
       setFabricPreview(dataUrl);
       await refetch();
-      toast.success("Fabric photo sent");
+      toast.success(t("fabric_photo_sent"));
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not upload your fabric photo"));
+      toast.error(getErrorMessage(error, t("could_not_upload_fabric")));
     } finally {
       setUploadingFabric(false);
     }
@@ -256,9 +285,9 @@ function GuestEventPage() {
       });
       if (error) throw error;
       await refetch();
-      toast.success("Measurements sent");
+      toast.success(t("measurements_sent"));
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your measurements"));
+      toast.error(getErrorMessage(error, t("could_not_save_measurements")));
     } finally {
       setSavingMeasurements(false);
     }
@@ -291,7 +320,7 @@ function GuestEventPage() {
           </div>
           <QuoteDocument data={quote} variant="quote" />
           <Button className="mt-4 w-full" onClick={acceptQuote} disabled={busy}>
-            {busy ? "Accepting..." : "Accept this quote"}
+            {busy ? t("accepting") : t("accept_quote_button")}
           </Button>
           <p className="mt-8 text-center text-xs text-muted-foreground">{COMPANY_LINE}</p>
         </div>
@@ -305,12 +334,10 @@ function GuestEventPage() {
         <Link to="/" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
-        <h1 className="mt-8 text-xl">We couldn&apos;t find your invite</h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Double-check the link the organiser shared with you.
-        </p>
+        <h1 className="mt-8 text-xl">{t("not_found_title")}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{tc("not_found_description")}</p>
         <Button asChild className="mt-6" variant="outline">
-          <Link to="/">Go to Jaylor</Link>
+          <Link to="/">{tc("go_home")}</Link>
         </Button>
       </main>
     );
@@ -331,6 +358,10 @@ function GuestEventPage() {
   return (
     <main className="linen min-h-screen bg-background px-4 py-10">
       <div className="mx-auto w-full max-w-md">
+        <div className="flex items-center justify-between">
+          <span />
+          <LanguageSwitcher />
+        </div>
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
           <BrandLogo markClassName="h-12 w-auto" />
         </Link>
@@ -344,14 +375,14 @@ function GuestEventPage() {
           )}
           {event.organiser_name && (
             <p className="mt-1 text-xs text-muted-foreground">
-              Organised by {event.organiser_name}
+              {t("organised_by", { name: event.organiser_name })}
             </p>
           )}
         </div>
 
         <div className="mt-6 rounded-2xl border bg-card p-6 shadow-sm">
           <p className="text-sm">
-            Hi {participant.full_name.split(" ")[0]}, welcome to the group order.
+            {t("welcome", { name: participant.full_name.split(" ")[0] ?? "" })}
           </p>
           {event.fabric_description && (
             <p className="mt-2 text-sm text-muted-foreground">{event.fabric_description}</p>
@@ -359,12 +390,24 @@ function GuestEventPage() {
 
           <StitchDivider className="my-5" />
 
-          <StitchTrack steps={STATUS_STEPS} currentIndex={statusIndex} compact />
+          <StitchTrack
+            steps={[
+              t("invited"),
+              t("measured"),
+              t("paid_deposit"),
+              t("paid_full"),
+              t("in_production"),
+              t("ready"),
+              t("collected"),
+            ]}
+            currentIndex={statusIndex}
+            compact
+          />
 
           <StitchDivider className="my-5" />
 
           <div>
-            <p className="text-sm font-medium">Choose your style</p>
+            <p className="text-sm font-medium">{t("choose_style")}</p>
             <div className="mt-2 space-y-2">
               {event.styles.map((style) => (
                 <button
@@ -388,9 +431,9 @@ function GuestEventPage() {
           <StitchDivider className="my-5" />
 
           <div className="rounded-xl border border-border p-3">
-            <p className="text-sm font-medium">Fabric photo (optional)</p>
+            <p className="text-sm font-medium">{t("fabric_photo_label")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
-              Send a photo of your fabric so {event.store_name} can see it before they start.
+              {t("fabric_photo_description", { shop: event.store_name })}
             </p>
             {fabricPreview || extras?.fabricPhotoPath ? (
               <div className="relative mt-2 w-24">
@@ -399,7 +442,7 @@ function GuestEventPage() {
                 )}
                 {!fabricPreview && (
                   <div className="flex size-24 items-center justify-center rounded-xl border border-dashed border-border text-xs text-muted-foreground">
-                    Sent
+                    {t("sent_label")}
                   </div>
                 )}
                 <button
@@ -408,7 +451,7 @@ function GuestEventPage() {
                     setFabricPreview(null);
                     fabricInputRef.current?.click();
                   }}
-                  aria-label="Replace fabric photo"
+                  aria-label={t("replace_fabric_photo")}
                   className="absolute -right-2 -top-2 flex size-6 items-center justify-center rounded-full bg-background shadow-sm"
                 >
                   <X className="size-3.5" />
@@ -428,7 +471,7 @@ function GuestEventPage() {
                 ) : (
                   <ImagePlus className="size-4" />
                 )}
-                Add fabric photo
+                {t("add_fabric_photo")}
               </Button>
             )}
             <input
@@ -457,7 +500,7 @@ function GuestEventPage() {
 
           {extras && usesSizeChart && !showMeasureFallback ? (
             <div>
-              <p className="text-sm font-medium">Choose your size</p>
+              <p className="text-sm font-medium">{t("choose_size")}</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 {extras.sizeChart.map((size) => (
                   <button
@@ -473,7 +516,8 @@ function GuestEventPage() {
                   >
                     <span className="block text-foreground">{size.label}</span>
                     <span className="block text-xs text-muted-foreground">
-                      Chest {size.chest} · Waist {size.waist} · Length {size.length}
+                      {t("chest_short")} {size.chest} · {t("waist_short")} {size.waist} ·{" "}
+                      {t("length_short")} {size.length}
                     </span>
                   </button>
                 ))}
@@ -483,12 +527,12 @@ function GuestEventPage() {
                 onClick={() => setShowMeasureFallback(true)}
                 className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
               >
-                My size isn&apos;t listed — take my measurements instead
+                {t("size_not_listed")}
               </button>
             </div>
           ) : measuringSessions && measuringSessions.sessions.length > 0 ? (
             <div>
-              <p className="text-sm font-medium">Pick a measuring day slot</p>
+              <p className="text-sm font-medium">{t("pick_measuring_slot")}</p>
               <div className="mt-2 space-y-2">
                 {measuringSessions.sessions.map((session) => (
                   <button
@@ -507,7 +551,9 @@ function GuestEventPage() {
                       {session.sessionTime ? ` · ${session.sessionTime}` : ""}
                       {session.venue ? ` · ${session.venue}` : ""}
                     </span>
-                    <span className="figures shrink-0 text-xs">{session.bookedCount} booked</span>
+                    <span className="figures shrink-0 text-xs">
+                      {t("booked_count", { count: session.bookedCount })}
+                    </span>
                   </button>
                 ))}
               </div>
@@ -517,15 +563,13 @@ function GuestEventPage() {
                 onClick={() => chooseMeasurement("book")}
                 className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
               >
-                I&apos;ve already sent my measurements
+                {t("already_sent_measurements")}
               </button>
             </div>
           ) : usesConfirmOnly ? (
             <div>
-              <p className="text-sm font-medium">Your measurements on file</p>
-              <p className="mt-1 text-xs text-muted-foreground">
-                We&apos;ll use what we already have for you, unless something has changed.
-              </p>
+              <p className="text-sm font-medium">{t("measurements_on_file")}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{t("measurements_on_file_note")}</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -537,7 +581,7 @@ function GuestEventPage() {
                       : "border-border text-muted-foreground"
                   }`}
                 >
-                  Confirm — still the same
+                  {t("confirm_same")}
                 </button>
                 <button
                   type="button"
@@ -549,13 +593,13 @@ function GuestEventPage() {
                       : "border-border text-muted-foreground"
                   }`}
                 >
-                  I need to update mine
+                  {t("need_update")}
                 </button>
               </div>
             </div>
           ) : (
             <div>
-              <p className="text-sm font-medium">Your measurements</p>
+              <p className="text-sm font-medium">{t("your_measurements")}</p>
               <div className="mt-2 grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -567,7 +611,7 @@ function GuestEventPage() {
                       : "border-border text-muted-foreground"
                   }`}
                 >
-                  I&apos;ll come in to be measured
+                  {t("will_come_in")}
                 </button>
                 <button
                   type="button"
@@ -579,7 +623,7 @@ function GuestEventPage() {
                       : "border-border text-muted-foreground"
                   }`}
                 >
-                  I&apos;ve already sent my measurements
+                  {t("already_sent_measurements")}
                 </button>
               </div>
             </div>
@@ -588,17 +632,17 @@ function GuestEventPage() {
           <StitchDivider className="my-5" />
 
           <div className="rounded-xl border border-border p-3">
-            <p className="text-sm font-medium">Or type your measurements here</p>
+            <p className="text-sm font-medium">{t("type_measurements_here")}</p>
             <p className="mt-1 text-xs text-muted-foreground">
               {extras?.selfMeasurementsSubmittedAt
-                ? "You've already sent these — update and send again if anything's changed."
-                : "In inches, if you have a measuring tape handy."}
+                ? t("already_sent_update_note")
+                : t("in_inches_note")}
             </p>
             <div className="mt-3 grid grid-cols-2 gap-3">
               {SELF_MEASUREMENT_FIELDS.map((f) => (
                 <div key={f.key} className="space-y-1">
                   <Label htmlFor={`sm-${f.key}`} className="text-xs">
-                    {f.label}
+                    {t(f.labelKey)}
                   </Label>
                   <Input
                     id={`sm-${f.key}`}
@@ -617,7 +661,7 @@ function GuestEventPage() {
               disabled={savingMeasurements}
               onClick={submitMeasurements}
             >
-              {savingMeasurements ? "Sending..." : "Send my measurements"}
+              {savingMeasurements ? t("sending") : t("send_measurements_button")}
             </Button>
           </div>
 
@@ -625,9 +669,9 @@ function GuestEventPage() {
 
           <div className="rounded-xl border border-border p-3">
             <div className="flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Amount</span>
+              <span className="text-muted-foreground">{t("amount_label")}</span>
               <span className="figures font-medium">
-                {amountDue != null ? formatMoney(amountDue) : "To be confirmed"}
+                {amountDue != null ? formatMoney(amountDue) : t("to_be_confirmed")}
               </span>
             </div>
             {isAbroad && amountDue != null && (
@@ -637,24 +681,24 @@ function GuestEventPage() {
             )}
             {isAbroad && extras?.shippingFee && (
               <div className="mt-1 flex items-center justify-between text-sm">
-                <span className="text-muted-foreground">Shipping</span>
+                <span className="text-muted-foreground">{t("shipping_label")}</span>
                 <span className="figures">{formatMoney(extras.shippingFee)}</span>
               </div>
             )}
             <div className="mt-1 flex items-center justify-between text-sm">
-              <span className="text-muted-foreground">Paid so far</span>
+              <span className="text-muted-foreground">{t("paid_so_far")}</span>
               <span className="figures text-paid">{formatMoney(participant.paid_amount)}</span>
             </div>
             {isAbroad && (
               <p className="mt-2 text-xs text-muted-foreground">
-                You can pay by card in your own currency — it settles to the shop in naira.
-                {extras?.deliveryAddress ? ` Delivering to: ${extras.deliveryAddress}.` : ""}
+                {t("pay_by_card_note")}
+                {extras?.deliveryAddress
+                  ? ` ${t("delivering_to", { address: extras.deliveryAddress })}`
+                  : ""}
               </p>
             )}
             {sponsored ? (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Your organiser is covering this order — no payment needed from you.
-              </p>
+              <p className="mt-3 text-xs text-muted-foreground">{t("sponsor_covering")}</p>
             ) : whatsappTarget ? (
               <Button asChild className="mt-3 w-full">
                 <a
@@ -664,13 +708,11 @@ function GuestEventPage() {
                   )}
                 >
                   <MessageCircle className="size-4" />
-                  Message us to pay
+                  {t("message_us_to_pay")}
                 </a>
               </Button>
             ) : (
-              <p className="mt-3 text-xs text-muted-foreground">
-                Online payment isn&apos;t set up yet. The organiser will collect your deposit.
-              </p>
+              <p className="mt-3 text-xs text-muted-foreground">{t("online_payment_not_set_up")}</p>
             )}
           </div>
         </div>

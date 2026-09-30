@@ -1,0 +1,19 @@
+{
+  "page_title": "Tọpinpin ẹ̀bùn rẹ",
+  "order_not_found_title": "A kò rí ẹ̀bùn yìí",
+  "delivery_date": "Ọjọ́ ìfijiṣẹ́: {{date}}",
+  "cancelled": "A ti fagilé ẹ̀bùn yìí.",
+  "created_as_prefix": "Ó bẹ̀rẹ̀ gẹ́gẹ́ bí",
+  "no_updates": "Kò sí ìròyìn tuntun síbẹ̀.",
+  "next_fitting": "Ìwọ̀n tí ń bọ̀: {{date}} ní {{time}}",
+  "paid_so_far": "Owó tí a ti sanwó",
+  "balance": "Ìyókù owó",
+  "pay_by_transfer": "San owó nípa ìfiránṣẹ́ sí",
+  "starting_payment": "Ń bẹ̀rẹ̀ sísanwó...",
+  "pay_amount": "San {{amount}}",
+  "payment_confirmed": "A ti jẹ́rìí sísanwó",
+  "payment_not_confirmed": "A kò jẹ́rìí sísanwó",
+  "could_not_confirm_payment": "A kò lè jẹ́rìí sísanwó yìí",
+  "could_not_start_payment": "A kò lè bẹ̀rẹ̀ sísanwó",
+  "_meta_status": "machine-drafted-needs-review"
+}

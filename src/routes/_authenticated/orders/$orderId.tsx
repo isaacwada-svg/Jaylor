@@ -36,13 +36,14 @@ import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
 import { isBridalRemeasureDue } from "@/lib/measurements";
+import { whatsappLink } from "@/lib/whatsapp";
 import {
-  orderReadyMessage,
-  balanceDueMessage,
-  orderConfirmationMessage,
-  approvalRequestMessage,
-  whatsappLink,
-} from "@/lib/whatsapp";
+  orderReadyMessageI18n,
+  balanceDueMessageI18n,
+  orderConfirmationMessageI18n,
+  approvalRequestMessageI18n,
+  resolveMessageLanguage,
+} from "@/lib/whatsapp-i18n";
 import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { resizeImageFile } from "@/lib/image";
 import { useOnlineStatus } from "@/lib/use-online-status";
@@ -385,7 +386,8 @@ function OrderDetail() {
       if (error) throw error;
       const approvalToken = (created as { token: string }).token;
       const approvalUrl = `${window.location.origin}/a/${approvalToken}`;
-      const message = approvalRequestMessage(
+      const message = approvalRequestMessageI18n(
+        resolveMessageLanguage(client.preferred_language, currentStore.language),
         client.full_name ?? "",
         order.garment_type ?? "",
         currentStore.name ?? "",
@@ -787,14 +789,22 @@ function OrderDetail() {
                       template={order.status === "ready" ? "order_ready" : "balance_due"}
                       message={
                         order.status === "ready"
-                          ? orderReadyMessage(
+                          ? orderReadyMessageI18n(
+                              resolveMessageLanguage(
+                                client.preferred_language,
+                                currentStore.language,
+                              ),
                               client.full_name ?? "",
                               order.garment_type ?? "",
                               currentStore.name ?? "",
                               balance?.balance ?? 0,
                               trackingUrl,
                             )
-                          : balanceDueMessage(
+                          : balanceDueMessageI18n(
+                              resolveMessageLanguage(
+                                client.preferred_language,
+                                currentStore.language,
+                              ),
                               client.full_name ?? "",
                               order.garment_type ?? "",
                               currentStore.name ?? "",
@@ -817,7 +827,8 @@ function OrderDetail() {
                       phone={client.whatsapp_phone ?? client.phone ?? ""}
                       consentWhatsapp={client.consent_whatsapp}
                       template="order_confirmation"
-                      message={orderConfirmationMessage(
+                      message={orderConfirmationMessageI18n(
+                        resolveMessageLanguage(client.preferred_language, currentStore.language),
                         client.full_name ?? "",
                         order.garment_type ?? "",
                         currentStore.name ?? "",
