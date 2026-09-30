@@ -15,6 +15,15 @@ import { savePassportSession } from "@/lib/passport-session";
 
 export const Route = createFileRoute("/passport/claim")({
   staticData: { sitemap: false },
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { shareTo?: string; shareToName?: string; shareToWhatsapp?: string } => ({
+    ...(typeof search["shareTo"] === "string" ? { shareTo: search["shareTo"] } : {}),
+    ...(typeof search["shareToName"] === "string" ? { shareToName: search["shareToName"] } : {}),
+    ...(typeof search["shareToWhatsapp"] === "string"
+      ? { shareToWhatsapp: search["shareToWhatsapp"] }
+      : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Claim your Passport — Jaylor" },
@@ -26,6 +35,7 @@ export const Route = createFileRoute("/passport/claim")({
 
 function ClaimPassportPage() {
   const navigate = useNavigate();
+  const { shareToName, shareToWhatsapp } = Route.useSearch();
   const online = useOnlineStatus();
   const requestCode = useServerFn(requestPassportCode);
   const verifyCode = useServerFn(verifyPassportCode);
@@ -69,7 +79,10 @@ function ClaimPassportPage() {
         return;
       }
       savePassportSession(result.sessionToken);
-      navigate({ to: "/passport/me" });
+      navigate({
+        to: "/passport/me",
+        search: shareToName && shareToWhatsapp ? { shareToName, shareToWhatsapp } : {},
+      });
     } catch {
       toast.error("Something went wrong. Please try again.");
     } finally {

@@ -30,6 +30,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as PrivacyPolicyRouteImport } from './routes/privacy-policy'
 import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
+import { Route as TailorsRouteImport } from './routes/tailors'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
 import { Route as AuthenticatedAiStudioRouteImport } from './routes/_authenticated/ai-studio'
@@ -63,6 +64,7 @@ import { Route as PassportMeRouteImport } from './routes/passport.me'
 import { Route as QTokenRouteImport } from './routes/q.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as TTokenRouteImport } from './routes/t.$token'
+import { Route as TailorsCitySlugRouteImport } from './routes/tailors.$citySlug'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
 import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenticated/events/index'
@@ -179,6 +181,11 @@ const SecurityRoute = SecurityRouteImport.update({
 const SitemapDotxmlRoute = SitemapDotxmlRouteImport.update({
   id: '/sitemap.xml',
   path: '/sitemap.xml',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TailorsRoute = TailorsRouteImport.update({
+  id: '/tailors',
+  path: '/tailors',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TermsRoute = TermsRouteImport.update({
@@ -348,6 +355,11 @@ const TTokenRoute = TTokenRouteImport.update({
   path: '/t/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const TailorsCitySlugRoute = TailorsCitySlugRouteImport.update({
+  id: '/$citySlug',
+  path: '/$citySlug',
+  getParentRoute: () => TailorsRoute,
+} as any)
 const AuthenticatedClientsIndexRoute =
   AuthenticatedClientsIndexRouteImport.update({
     id: '/clients/',
@@ -444,6 +456,7 @@ export interface FileRoutesByFullPath {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
@@ -477,6 +490,7 @@ export interface FileRoutesByFullPath {
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
+  '/tailors/$citySlug': typeof TailorsCitySlugRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -512,6 +526,7 @@ export interface FileRoutesByTo {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
@@ -545,6 +560,7 @@ export interface FileRoutesByTo {
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
+  '/tailors/$citySlug': typeof TailorsCitySlugRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -582,6 +598,7 @@ export interface FileRoutesById {
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
+  '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
   '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/_authenticated/ai-studio': typeof AuthenticatedAiStudioRoute
@@ -615,6 +632,7 @@ export interface FileRoutesById {
   '/q/$token': typeof QTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
+  '/tailors/$citySlug': typeof TailorsCitySlugRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
@@ -652,6 +670,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/security'
     | '/sitemap.xml'
+    | '/tailors'
     | '/terms'
     | '/ai-designs'
     | '/ai-studio'
@@ -685,6 +704,7 @@ export interface FileRouteTypes {
     | '/q/$token'
     | '/style/$token'
     | '/t/$token'
+    | '/tailors/$citySlug'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -720,6 +740,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/security'
     | '/sitemap.xml'
+    | '/tailors'
     | '/terms'
     | '/ai-designs'
     | '/ai-studio'
@@ -753,6 +774,7 @@ export interface FileRouteTypes {
     | '/q/$token'
     | '/style/$token'
     | '/t/$token'
+    | '/tailors/$citySlug'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
@@ -789,6 +811,7 @@ export interface FileRouteTypes {
     | '/privacy-policy'
     | '/security'
     | '/sitemap.xml'
+    | '/tailors'
     | '/terms'
     | '/_authenticated/ai-designs'
     | '/_authenticated/ai-studio'
@@ -822,6 +845,7 @@ export interface FileRouteTypes {
     | '/q/$token'
     | '/style/$token'
     | '/t/$token'
+    | '/tailors/$citySlug'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
@@ -859,6 +883,7 @@ export interface RootRouteChildren {
   PrivacyPolicyRoute: typeof PrivacyPolicyRoute
   SecurityRoute: typeof SecurityRoute
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
+  TailorsRoute: typeof TailorsRouteWithChildren
   TermsRoute: typeof TermsRoute
   ATokenRoute: typeof ATokenRoute
   BookHandleRoute: typeof BookHandleRoute
@@ -1023,6 +1048,13 @@ declare module '@tanstack/react-router' {
       path: '/sitemap.xml'
       fullPath: '/sitemap.xml'
       preLoaderRoute: typeof SitemapDotxmlRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tailors': {
+      id: '/tailors'
+      path: '/tailors'
+      fullPath: '/tailors'
+      preLoaderRoute: typeof TailorsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/terms': {
@@ -1256,6 +1288,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tailors/$citySlug': {
+      id: '/tailors/$citySlug'
+      path: '/$citySlug'
+      fullPath: '/tailors/$citySlug'
+      preLoaderRoute: typeof TailorsCitySlugRouteImport
+      parentRoute: typeof TailorsRoute
+    }
     '/_authenticated/clients/': {
       id: '/_authenticated/clients/'
       path: '/clients'
@@ -1451,6 +1490,17 @@ const PassportRouteWithChildren = PassportRoute._addFileChildren(
   PassportRouteChildren,
 )
 
+interface TailorsRouteChildren {
+  TailorsCitySlugRoute: typeof TailorsCitySlugRoute
+}
+
+const TailorsRouteChildren: TailorsRouteChildren = {
+  TailorsCitySlugRoute: TailorsCitySlugRoute,
+}
+
+const TailorsRouteWithChildren =
+  TailorsRoute._addFileChildren(TailorsRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
@@ -1473,6 +1523,7 @@ const rootRouteChildren: RootRouteChildren = {
   PrivacyPolicyRoute: PrivacyPolicyRoute,
   SecurityRoute: SecurityRoute,
   SitemapDotxmlRoute: SitemapDotxmlRoute,
+  TailorsRoute: TailorsRouteWithChildren,
   TermsRoute: TermsRoute,
   ATokenRoute: ATokenRoute,
   BookHandleRoute: BookHandleRoute,

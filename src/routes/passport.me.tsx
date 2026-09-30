@@ -32,9 +32,19 @@ import {
 } from "@/lib/passport-me.functions";
 import { clearPassportSession, getPassportSession } from "@/lib/passport-session";
 import { getErrorMessage } from "@/lib/utils";
+import { whatsappLink, directoryPassportShareMessage } from "@/lib/whatsapp";
 
 export const Route = createFileRoute("/passport/me")({
   staticData: { sitemap: false },
+  validateSearch: (
+    search: Record<string, unknown>,
+  ): { shareTo?: string; shareToName?: string; shareToWhatsapp?: string } => ({
+    ...(typeof search["shareTo"] === "string" ? { shareTo: search["shareTo"] } : {}),
+    ...(typeof search["shareToName"] === "string" ? { shareToName: search["shareToName"] } : {}),
+    ...(typeof search["shareToWhatsapp"] === "string"
+      ? { shareToWhatsapp: search["shareToWhatsapp"] }
+      : {}),
+  }),
   head: () => ({
     meta: [{ title: "My Passport — Jaylor" }],
   }),
@@ -54,6 +64,7 @@ function PassportMePage() {
   const navigate = useNavigate();
   const online = useOnlineStatus();
   const queryClient = useQueryClient();
+  const { shareToName, shareToWhatsapp } = Route.useSearch();
 
   const [sessionToken, setSessionToken] = useState<string | null>(null);
   const [shareOpen, setShareOpen] = useState(false);
@@ -218,16 +229,33 @@ function PassportMePage() {
         <StitchDivider className="my-6" />
 
         <div className="rounded-2xl border bg-card p-5">
-          <p className="font-medium">Share with a new tailor</p>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Generate a link and QR code. Any Jaylor shop can scan it to bring in your latest
-            measurements instantly.
-          </p>
+          {shareToName ? (
+            <>
+              <p className="font-medium">Share your Passport with {shareToName}</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Create a link, then send it to them on WhatsApp.
+              </p>
+            </>
+          ) : (
+            <>
+              <p className="font-medium">Share with a new tailor</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Generate a link and QR code. Any Jaylor shop can scan it to bring in your latest
+                measurements instantly.
+              </p>
+            </>
+          )}
           <Button className="mt-3 w-full" disabled={creatingShare} onClick={handleShare}>
             <QrCodeIcon className="size-4" />
             {creatingShare ? "Creating..." : "Create a share link"}
           </Button>
         </div>
+
+        <p className="mt-4 text-center text-sm">
+          <Link to="/tailors" className="font-medium text-gold underline-offset-4 hover:underline">
+            Find a Jaylor tailor
+          </Link>
+        </p>
 
         {(shopsWithAccess.length > 0 || (shares && shares.length > 0)) && (
           <div className="mt-4 rounded-2xl border bg-card p-5">
@@ -275,6 +303,17 @@ function PassportMePage() {
             Show this to a new tailor, or send them the link. If they&apos;re not on Jaylor yet, it
             takes them to sign up first.
           </p>
+          {shareToWhatsapp && shareUrl && (
+            <Button asChild className="w-full">
+              <a
+                href={whatsappLink(shareToWhatsapp, directoryPassportShareMessage(shareUrl))}
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Send to {shareToName ?? "this tailor"} on WhatsApp
+              </a>
+            </Button>
+          )}
         </DialogContent>
       </Dialog>
 

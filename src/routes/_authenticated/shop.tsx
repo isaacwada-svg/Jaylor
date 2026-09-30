@@ -24,6 +24,7 @@ import { formatMoney, planCodeToTier, effectiveTier } from "@/lib/jaylor";
 import { OnTimeBadgeSettings } from "@/components/jaylor/on-time-badge-settings";
 import { CapacityEstimateSettings } from "@/components/jaylor/capacity-estimate-settings";
 import { FittingHoursSettings } from "@/components/jaylor/fitting-hours-settings";
+import { TailorDirectorySettings } from "@/components/jaylor/tailor-directory-settings";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
@@ -405,6 +406,7 @@ function Shop() {
               />
             )}
             {currentStore && <ShopProfileForm storeId={currentStore.id} onSaved={refetchStore} />}
+            {currentStore && <TailorDirectorySettings store={currentStore} />}
             {currentStore && effectiveTier(currentStore) !== "Free" && (
               <>
                 <OnTimeBadgeSettings storeId={currentStore.id} />

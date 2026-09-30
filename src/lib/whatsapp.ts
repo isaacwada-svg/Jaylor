@@ -63,6 +63,16 @@ export function fittingReminderMessage(clientName: string, storeName: string, wh
   return `Hi ${firstNameOf(clientName)}, just a reminder of your fitting at ${storeName} on ${when.toLocaleDateString()} at ${when.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
 }
 
+/** A client tapping "Chat on WhatsApp" from the /tailors directory. */
+export function directoryIntroMessage(): string {
+  return "Hello, I found your shop on Jaylor.";
+}
+
+/** A client sharing their Passport with a specific tailor found in the directory. */
+export function directoryPassportShareMessage(passportUrl: string): string {
+  return `Hi, here are my measurements from my Jaylor Passport: ${passportUrl}`;
+}
+
 /** A self-reminder message, tap-to-send to the shop's own WhatsApp number. */
 export function seasonAlertMessage(
   eventLabel: string,
