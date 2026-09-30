@@ -20,7 +20,8 @@ import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStore } from "@/lib/store-context";
-import { formatMoney, planCodeToTier } from "@/lib/jaylor";
+import { formatMoney, planCodeToTier, effectiveTier } from "@/lib/jaylor";
+import { OnTimeBadgeSettings } from "@/components/jaylor/on-time-badge-settings";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
@@ -402,6 +403,9 @@ function Shop() {
               />
             )}
             {currentStore && <ShopProfileForm storeId={currentStore.id} onSaved={refetchStore} />}
+            {currentStore && effectiveTier(currentStore) !== "Free" && (
+              <OnTimeBadgeSettings storeId={currentStore.id} />
+            )}
           </TabsContent>
         </Tabs>
       </div>

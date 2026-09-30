@@ -87,6 +87,18 @@ function PublicStorefront() {
     },
   });
 
+  const { data: onTimeBadge } = useQuery({
+    queryKey: ["storefront-on-time-badge", store?.id],
+    enabled: !!store,
+    queryFn: async () => {
+      const { data, error } = await supabase.rpc("get_storefront_on_time_badge", {
+        p_store_id: store?.id as string,
+      });
+      if (error) throw error;
+      return data as unknown as { rate: number; orders_counted: number } | null;
+    },
+  });
+
   const { data: items, isLoading: itemsLoading } = useQuery({
     queryKey: ["storefront-public-items", store?.id],
     enabled: !!store,
@@ -170,6 +182,11 @@ function PublicStorefront() {
         {store.bio && <p className="mt-3 max-w-xl text-sm text-muted-foreground">{store.bio}</p>}
         {store.opening_hours && (
           <p className="mt-1 text-xs text-muted-foreground">{store.opening_hours}</p>
+        )}
+        {onTimeBadge && (
+          <p className="mt-2 inline-flex items-center rounded-full border border-paid/40 bg-paid/10 px-3 py-1 text-xs text-paid">
+            Delivered on time: {onTimeBadge.rate}% of the last {onTimeBadge.orders_counted} orders
+          </p>
         )}
 
         <div className="flex flex-wrap gap-2">

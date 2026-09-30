@@ -22,7 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
+import { ORDER_STATUSES_DB, orderStatusLabel, effectiveTier } from "@/lib/jaylor";
+import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
 import { orderReadyMessage } from "@/lib/whatsapp";
 import { useFeature } from "@/lib/use-feature";
 import { useMessageTopups } from "@/lib/use-message-topups";
@@ -474,6 +475,12 @@ function Home() {
                     }
                   }}
                 />
+              </div>
+            )}
+
+            {storeId && effectiveTier(currentStore) !== "Free" && (
+              <div className="mb-6">
+                <OnTimeScoreCard storeId={storeId} />
               </div>
             )}
 

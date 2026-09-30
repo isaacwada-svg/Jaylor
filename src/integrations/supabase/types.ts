@@ -3874,6 +3874,7 @@ export type Database = {
           digest_weekly: boolean
           email: string | null
           late_payer_deposit_percent: number
+          on_time_badge_enabled: boolean
           phone: string | null
           public_location: string | null
           receipt_footer: string | null
@@ -3890,6 +3891,7 @@ export type Database = {
           digest_weekly?: boolean
           email?: string | null
           late_payer_deposit_percent?: number
+          on_time_badge_enabled?: boolean
           phone?: string | null
           public_location?: string | null
           receipt_footer?: string | null
@@ -3906,6 +3908,7 @@ export type Database = {
           digest_weekly?: boolean
           email?: string | null
           late_payer_deposit_percent?: number
+          on_time_badge_enabled?: boolean
           phone?: string | null
           public_location?: string | null
           receipt_footer?: string | null
@@ -4869,6 +4872,8 @@ export type Database = {
       get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
+      get_store_on_time_score: { Args: { p_store_id: string }; Returns: Json }
+      get_storefront_on_time_badge: { Args: { p_store_id: string }; Returns: Json }
       get_storefront_payout_account: {
         Args: { p_store_id: string }
         Returns: {
@@ -4994,9 +4999,9 @@ export type Database = {
       }
       set_order_status_note: {
         Args: {
-          p_note?: string
+          p_note?: string | null
           p_order_id: string
-          p_photo_path?: string
+          p_photo_path?: string | null
           p_to_status: string
         }
         Returns: undefined
