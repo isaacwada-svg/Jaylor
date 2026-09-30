@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Plus, Check, X } from "lucide-react";
@@ -103,6 +103,34 @@ function Consultations() {
   });
   const clientName = (id: string | null) =>
     (id && clients?.find((c) => c.id === id)?.full_name) || "Walk-in";
+
+  const orderIds = useMemo(
+    () => [
+      ...new Set((consultations ?? []).map((c) => c.order_id).filter((id): id is string => !!id)),
+    ],
+    [consultations],
+  );
+  const { data: orders } = useQuery({
+    queryKey: ["consultations-orders", orderIds, canCreate],
+    enabled: orderIds.length > 0,
+    queryFn: async () => {
+      if (canCreate) {
+        const { data, error } = await supabase
+          .from("orders")
+          .select("id, number")
+          .in("id", orderIds);
+        if (error) throw error;
+        return data;
+      }
+      const { data, error } = await supabase
+        .from("orders_for_tailor")
+        .select("id, number")
+        .in("id", orderIds);
+      if (error) throw error;
+      return data;
+    },
+  });
+  const orderNumber = (id: string | null) => orders?.find((o) => o.id === id)?.number ?? null;
 
   const now = new Date();
   const upcoming = (consultations ?? []).filter((c) => new Date(c.ends_at) >= now);
@@ -282,6 +310,15 @@ function Consultations() {
                     <p className="truncate text-sm text-muted-foreground">
                       {TYPE_LABELS[c.type] ?? c.type} · {new Date(c.starts_at).toLocaleString()}
                     </p>
+                    {c.order_id && orderNumber(c.order_id) && (
+                      <Link
+                        to="/orders/$orderId"
+                        params={{ orderId: c.order_id }}
+                        className="text-sm text-gold underline"
+                      >
+                        Order {orderNumber(c.order_id)}
+                      </Link>
+                    )}
                   </div>
                   <Badge variant="outline" className="border-gold text-gold sm:shrink-0">
                     {c.status}
@@ -311,7 +348,18 @@ function Consultations() {
                   key={c.id}
                   className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
                 >
-                  <span>{clientName(c.client_id)}</span>
+                  <span>
+                    {clientName(c.client_id)}
+                    {c.order_id && orderNumber(c.order_id) && (
+                      <Link
+                        to="/orders/$orderId"
+                        params={{ orderId: c.order_id }}
+                        className="ml-2 text-gold underline"
+                      >
+                        Order {orderNumber(c.order_id)}
+                      </Link>
+                    )}
+                  </span>
                   <span className="text-muted-foreground">
                     {TYPE_LABELS[c.type] ?? c.type} · {new Date(c.starts_at).toLocaleDateString()}
                   </span>

@@ -51,6 +51,18 @@ export function orderConfirmationMessage(
   return `Hello ${firstNameOf(clientName)}, thank you for your order (${garment}) with ${storeName}. Track its progress here: ${trackingUrl}`;
 }
 
+export function fittingBookingLinkMessage(
+  clientName: string,
+  storeName: string,
+  link: string,
+): string {
+  return `Hi ${firstNameOf(clientName)}, please pick a time for your fitting at ${storeName}: ${link}`;
+}
+
+export function fittingReminderMessage(clientName: string, storeName: string, when: Date): string {
+  return `Hi ${firstNameOf(clientName)}, just a reminder of your fitting at ${storeName} on ${when.toLocaleDateString()} at ${when.toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })}.`;
+}
+
 /** A self-reminder message, tap-to-send to the shop's own WhatsApp number. */
 export function seasonAlertMessage(
   eventLabel: string,

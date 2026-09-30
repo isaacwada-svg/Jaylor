@@ -9,6 +9,7 @@ import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { MoneyText } from "@/components/jaylor/money-text";
 import { PaymentForm } from "@/components/jaylor/payment-form";
 import { RemindButton } from "@/components/jaylor/remind-button";
+import { OrderFittingsCard } from "@/components/jaylor/order-fittings-card";
 import { AiReplyDraftButton } from "@/components/jaylor/ai-reply-draft-button";
 import { RequestPaymentButton } from "@/components/jaylor/request-payment-button";
 import { ReceiptDialog } from "@/components/jaylor/receipt-dialog";
@@ -1053,6 +1054,26 @@ function OrderDetail() {
                 ))}
               </div>
             </div>
+          )}
+
+          {currentStore && (
+            <OrderFittingsCard
+              storeId={currentStore.id}
+              storeName={currentStore.name ?? ""}
+              orderId={orderId}
+              orderStatus={order.status ?? ""}
+              client={
+                client
+                  ? {
+                      id: client.id,
+                      full_name: client.full_name ?? "",
+                      phone: client.phone ?? "",
+                      whatsapp_phone: client.whatsapp_phone,
+                      consent_whatsapp: client.consent_whatsapp,
+                    }
+                  : null
+              }
+            />
           )}
         </div>
 

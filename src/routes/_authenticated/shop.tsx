@@ -23,6 +23,7 @@ import { useStore } from "@/lib/store-context";
 import { formatMoney, planCodeToTier, effectiveTier } from "@/lib/jaylor";
 import { OnTimeBadgeSettings } from "@/components/jaylor/on-time-badge-settings";
 import { CapacityEstimateSettings } from "@/components/jaylor/capacity-estimate-settings";
+import { FittingHoursSettings } from "@/components/jaylor/fitting-hours-settings";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
@@ -408,6 +409,7 @@ function Shop() {
               <>
                 <OnTimeBadgeSettings storeId={currentStore.id} />
                 <CapacityEstimateSettings storeId={currentStore.id} />
+                <FittingHoursSettings storeId={currentStore.id} />
               </>
             )}
           </TabsContent>
