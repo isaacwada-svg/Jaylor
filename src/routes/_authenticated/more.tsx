@@ -20,9 +20,11 @@ import {
   LifeBuoy,
   LogOut,
   Calculator,
+  Coins,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
+import { useStore } from "@/lib/store-context";
 import type { Tier } from "@/lib/jaylor";
 import type { DiscoveryFeature } from "@/lib/feature-discovery";
 
@@ -52,6 +54,7 @@ const ITEMS: {
   icon: typeof Users2;
   tier?: Tier;
   feature?: DiscoveryFeature;
+  roles?: ("owner" | "manager" | "tailor")[];
 }[] = [
   {
     label: "Consultations",
@@ -84,6 +87,19 @@ const ITEMS: {
     icon: Users2,
     tier: "Business",
   },
+  {
+    label: "Staff payroll",
+    hint: "Piece-rate pay, advances and payroll runs",
+    icon: Coins,
+    tier: "Business",
+    roles: ["owner", "manager"],
+  },
+  {
+    label: "My earnings",
+    hint: "What you've earned per garment and stage",
+    icon: Coins,
+    roles: ["tailor"],
+  },
   { label: "Expenses and reports", hint: "Costs and net profit", icon: Receipt, tier: "Business" },
   { label: "Payments and receipts", hint: "Balances and receipts", icon: Wallet },
   { label: "Moments", hint: "Birthdays, festive greetings, check-ins", icon: Gift },
@@ -106,6 +122,7 @@ const ITEMS: {
 function More() {
   const discovery = useFeatureDiscovery();
   const navigate = useNavigate();
+  const { currentRole } = useStore();
 
   async function handleSignOut() {
     try {
@@ -117,13 +134,17 @@ function More() {
     }
   }
 
+  const visibleItems = ITEMS.filter(
+    (item) => !item.roles || (currentRole && item.roles.includes(currentRole)),
+  );
+
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <h1 className="text-3xl">More</h1>
         <StitchDivider className="my-6" />
         <div className="grid gap-3 sm:grid-cols-2">
-          {ITEMS.map(({ label, hint, icon: Icon, tier, feature }) => {
+          {visibleItems.map(({ label, hint, icon: Icon, tier, feature }) => {
             const iconSpan = (
               <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent text-gold">
                 {feature ? (
@@ -198,6 +219,24 @@ function More() {
             if (label === "Staff and job board") {
               return (
                 <Link key={label} to="/staff">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Staff payroll") {
+              return (
+                <Link key={label} to="/payroll">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "My earnings") {
+              return (
+                <Link key={label} to="/my-earnings">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>
