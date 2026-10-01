@@ -19,7 +19,6 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CustomRouteImport } from './routes/custom'
-import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
@@ -33,11 +32,9 @@ import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TailorsRouteImport } from './routes/tailors'
 import { Route as TermsRouteImport } from './routes/terms'
-import { Route as DotwellKnownAssetlinksDotjsonRouteImport } from './routes/[.]well-known/assetlinks[.]json'
 import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
 import { Route as AuthenticatedAiStudioRouteImport } from './routes/_authenticated/ai-studio'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
-import { Route as AuthenticatedBusinessReportRouteImport } from './routes/_authenticated/business-report'
 import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authenticated/consultations'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -65,7 +62,6 @@ import { Route as PassportTokenRouteImport } from './routes/passport.$token'
 import { Route as PassportClaimRouteImport } from './routes/passport.claim'
 import { Route as PassportMeRouteImport } from './routes/passport.me'
 import { Route as QTokenRouteImport } from './routes/q.$token'
-import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as TTokenRouteImport } from './routes/t.$token'
 import { Route as TailorsCitySlugRouteImport } from './routes/tailors.$citySlug'
@@ -82,6 +78,7 @@ import { Route as ApiInternalTransferAlertRouteImport } from './routes/api/inter
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
 import { Route as PassportShareTokenRouteImport } from './routes/passport.share.$token'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -130,11 +127,6 @@ const CookiesRoute = CookiesRouteImport.update({
 const CustomRoute = CustomRouteImport.update({
   id: '/custom',
   path: '/custom',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const DeleteAccountRoute = DeleteAccountRouteImport.update({
-  id: '/delete-account',
-  path: '/delete-account',
   getParentRoute: () => rootRouteImport,
 } as any)
 const FeaturesRoute = FeaturesRouteImport.update({
@@ -202,12 +194,6 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
-const DotwellKnownAssetlinksDotjsonRoute =
-  DotwellKnownAssetlinksDotjsonRouteImport.update({
-    id: '/.well-known/assetlinks.json',
-    path: '/.well-known/assetlinks.json',
-    getParentRoute: () => rootRouteImport,
-  } as any)
 const AuthenticatedAiDesignsRoute = AuthenticatedAiDesignsRouteImport.update({
   id: '/ai-designs',
   path: '/ai-designs',
@@ -223,12 +209,6 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
-const AuthenticatedBusinessReportRoute =
-  AuthenticatedBusinessReportRouteImport.update({
-    id: '/business-report',
-    path: '/business-report',
-    getParentRoute: () => AuthenticatedRouteRoute,
-  } as any)
 const AuthenticatedConsultationsRoute =
   AuthenticatedConsultationsRouteImport.update({
     id: '/consultations',
@@ -366,11 +346,6 @@ const QTokenRoute = QTokenRouteImport.update({
   path: '/q/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
-const RTokenRoute = RTokenRouteImport.update({
-  id: '/r/$token',
-  path: '/r/$token',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const StyleTokenRoute = StyleTokenRouteImport.update({
   id: '/style/$token',
   path: '/style/$token',
@@ -460,6 +435,12 @@ const ApiPublicWhatsappWebhookRoute =
     path: '/api/public/whatsapp/webhook',
     getParentRoute: () => rootRouteImport,
   } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -471,7 +452,6 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
-  '/delete-account': typeof DeleteAccountRoute
   '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
@@ -485,11 +465,9 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
-  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
-  '/business-report': typeof AuthenticatedBusinessReportRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -517,7 +495,6 @@ export interface FileRoutesByFullPath {
   '/passport/claim': typeof PassportClaimRoute
   '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
-  '/r/$token': typeof RTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
@@ -534,6 +511,7 @@ export interface FileRoutesByFullPath {
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -545,7 +523,6 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
-  '/delete-account': typeof DeleteAccountRoute
   '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
@@ -559,11 +536,9 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
-  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
-  '/business-report': typeof AuthenticatedBusinessReportRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -591,7 +566,6 @@ export interface FileRoutesByTo {
   '/passport/claim': typeof PassportClaimRoute
   '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
-  '/r/$token': typeof RTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
@@ -608,6 +582,7 @@ export interface FileRoutesByTo {
   '/events': typeof AuthenticatedEventsIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -621,7 +596,6 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
-  '/delete-account': typeof DeleteAccountRoute
   '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
@@ -635,11 +609,9 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
-  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/_authenticated/ai-studio': typeof AuthenticatedAiStudioRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
-  '/_authenticated/business-report': typeof AuthenticatedBusinessReportRoute
   '/_authenticated/consultations': typeof AuthenticatedConsultationsRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -667,7 +639,6 @@ export interface FileRoutesById {
   '/passport/claim': typeof PassportClaimRoute
   '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
-  '/r/$token': typeof RTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
@@ -684,6 +655,7 @@ export interface FileRoutesById {
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -697,7 +669,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/custom'
-    | '/delete-account'
     | '/features'
     | '/import'
     | '/measure-guide'
@@ -711,11 +682,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tailors'
     | '/terms'
-    | '/.well-known/assetlinks.json'
     | '/ai-designs'
     | '/ai-studio'
     | '/billing'
-    | '/business-report'
     | '/consultations'
     | '/contracts'
     | '/dashboard'
@@ -743,7 +712,6 @@ export interface FileRouteTypes {
     | '/passport/claim'
     | '/passport/me'
     | '/q/$token'
-    | '/r/$token'
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
@@ -760,6 +728,7 @@ export interface FileRouteTypes {
     | '/events/'
     | '/orders/'
     | '/api/public/whatsapp/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -771,7 +740,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/custom'
-    | '/delete-account'
     | '/features'
     | '/import'
     | '/measure-guide'
@@ -785,11 +753,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tailors'
     | '/terms'
-    | '/.well-known/assetlinks.json'
     | '/ai-designs'
     | '/ai-studio'
     | '/billing'
-    | '/business-report'
     | '/consultations'
     | '/contracts'
     | '/dashboard'
@@ -817,7 +783,6 @@ export interface FileRouteTypes {
     | '/passport/claim'
     | '/passport/me'
     | '/q/$token'
-    | '/r/$token'
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
@@ -834,6 +799,7 @@ export interface FileRouteTypes {
     | '/events'
     | '/orders'
     | '/api/public/whatsapp/webhook'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -846,7 +812,6 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/custom'
-    | '/delete-account'
     | '/features'
     | '/import'
     | '/measure-guide'
@@ -860,11 +825,9 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tailors'
     | '/terms'
-    | '/.well-known/assetlinks.json'
     | '/_authenticated/ai-designs'
     | '/_authenticated/ai-studio'
     | '/_authenticated/billing'
-    | '/_authenticated/business-report'
     | '/_authenticated/consultations'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
@@ -892,7 +855,6 @@ export interface FileRouteTypes {
     | '/passport/claim'
     | '/passport/me'
     | '/q/$token'
-    | '/r/$token'
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
@@ -909,6 +871,7 @@ export interface FileRouteTypes {
     | '/_authenticated/events/'
     | '/_authenticated/orders/'
     | '/api/public/whatsapp/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -922,7 +885,6 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CustomRoute: typeof CustomRoute
-  DeleteAccountRoute: typeof DeleteAccountRoute
   FeaturesRoute: typeof FeaturesRoute
   ImportRoute: typeof ImportRoute
   MeasureGuideRoute: typeof MeasureGuideRoute
@@ -936,7 +898,6 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TailorsRoute: typeof TailorsRouteWithChildren
   TermsRoute: typeof TermsRoute
-  DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
   ATokenRoute: typeof ATokenRoute
   BookHandleRoute: typeof BookHandleRoute
   DesignTokenRoute: typeof DesignTokenRoute
@@ -945,13 +906,13 @@ export interface RootRouteChildren {
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   QTokenRoute: typeof QTokenRoute
-  RTokenRoute: typeof RTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
   TTokenRoute: typeof TTokenRoute
   ApiCronDigestRoute: typeof ApiCronDigestRoute
   ApiInternalTransferAlertRoute: typeof ApiInternalTransferAlertRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1024,13 +985,6 @@ declare module '@tanstack/react-router' {
       path: '/custom'
       fullPath: '/custom'
       preLoaderRoute: typeof CustomRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/delete-account': {
-      id: '/delete-account'
-      path: '/delete-account'
-      fullPath: '/delete-account'
-      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -1124,13 +1078,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TermsRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/.well-known/assetlinks.json': {
-      id: '/.well-known/assetlinks.json'
-      path: '/.well-known/assetlinks.json'
-      fullPath: '/.well-known/assetlinks.json'
-      preLoaderRoute: typeof DotwellKnownAssetlinksDotjsonRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/_authenticated/ai-designs': {
       id: '/_authenticated/ai-designs'
       path: '/ai-designs'
@@ -1150,13 +1097,6 @@ declare module '@tanstack/react-router' {
       path: '/billing'
       fullPath: '/billing'
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
-      parentRoute: typeof AuthenticatedRouteRoute
-    }
-    '/_authenticated/business-report': {
-      id: '/_authenticated/business-report'
-      path: '/business-report'
-      fullPath: '/business-report'
-      preLoaderRoute: typeof AuthenticatedBusinessReportRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/consultations': {
@@ -1348,13 +1288,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/r/$token': {
-      id: '/r/$token'
-      path: '/r/$token'
-      fullPath: '/r/$token'
-      preLoaderRoute: typeof RTokenRouteImport
-      parentRoute: typeof rootRouteImport
-    }
     '/style/$token': {
       id: '/style/$token'
       path: '/style/$token'
@@ -1467,6 +1400,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1488,7 +1428,6 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiDesignsRoute: typeof AuthenticatedAiDesignsRoute
   AuthenticatedAiStudioRoute: typeof AuthenticatedAiStudioRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
-  AuthenticatedBusinessReportRoute: typeof AuthenticatedBusinessReportRoute
   AuthenticatedConsultationsRoute: typeof AuthenticatedConsultationsRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1517,7 +1456,6 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiDesignsRoute: AuthenticatedAiDesignsRoute,
   AuthenticatedAiStudioRoute: AuthenticatedAiStudioRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
-  AuthenticatedBusinessReportRoute: AuthenticatedBusinessReportRoute,
   AuthenticatedConsultationsRoute: AuthenticatedConsultationsRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1595,7 +1533,6 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CustomRoute: CustomRoute,
-  DeleteAccountRoute: DeleteAccountRoute,
   FeaturesRoute: FeaturesRoute,
   ImportRoute: ImportRoute,
   MeasureGuideRoute: MeasureGuideRoute,
@@ -1609,7 +1546,6 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TailorsRoute: TailorsRouteWithChildren,
   TermsRoute: TermsRoute,
-  DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
   ATokenRoute: ATokenRoute,
   BookHandleRoute: BookHandleRoute,
   DesignTokenRoute: DesignTokenRoute,
@@ -1618,13 +1554,13 @@ const rootRouteChildren: RootRouteChildren = {
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   QTokenRoute: QTokenRoute,
-  RTokenRoute: RTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
   TTokenRoute: TTokenRoute,
   ApiCronDigestRoute: ApiCronDigestRoute,
   ApiInternalTransferAlertRoute: ApiInternalTransferAlertRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

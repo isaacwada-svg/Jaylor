@@ -8,6 +8,7 @@
  * an address on file, and WhatsApp is a bonus that only fires when the
  * owner's own number is inside its own 24h window.
  */
+import { sendTemplateEmail } from "@/lib/email-templates/send-email";
 import { sendWhatsAppText } from "@/lib/whatsapp-send.server";
 import { hasOpenWindow } from "@/lib/portal-login.server";
 import type { LanguageCode } from "@/lib/i18n/languages";
@@ -76,17 +77,24 @@ async function getRecipients(storeId: string): Promise<DigestRecipients | null> 
   };
 }
 
-async function sendEmail(to: string, subject: string, text: string): Promise<boolean> {
-  const apiKey = process.env["RESEND_API_KEY"];
-  if (!apiKey) return false;
+/** Sends through Lovable's managed email API (no Resend key needed).
+ *  Returns false on any failure — a digest email is best-effort. */
+async function sendDigestEmail(
+  templateName: string,
+  to: string,
+  subject: string,
+  text: string,
+  storeName: string,
+  idempotencyKey: string,
+): Promise<boolean> {
   try {
-    const res = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      body: JSON.stringify({ from: "Jaylor <alerts@jaylor.app>", to: [to], subject, text }),
+    const result = await sendTemplateEmail(templateName, to, {
+      templateData: { subject, body: text, storeName },
+      idempotencyKey,
     });
-    return res.ok;
-  } catch {
+    return result.sent;
+  } catch (error) {
+    console.error(`Digest email '${templateName}' failed:`, error);
     return false;
   }
 }
@@ -121,7 +129,14 @@ export async function sendDailyDigest(
   });
 
   const emailSent = recipients.email
-    ? await sendEmail(recipients.email, dailyDigestSubject(recipients.language), text)
+    ? await sendDigestEmail(
+        "daily-digest",
+        recipients.email,
+        dailyDigestSubject(recipients.language),
+        text,
+        recipients.storeName,
+        `daily-digest-${storeId}-${new Date().toISOString().slice(0, 10)}`,
+      )
     : false;
   let whatsappSent = false;
   if (recipients.whatsappPhone && (await hasOpenWindow(recipients.whatsappPhone))) {
@@ -159,7 +174,14 @@ export async function sendWeeklyDigest(
   });
 
   const emailSent = recipients.email
-    ? await sendEmail(recipients.email, weeklyDigestSubject(recipients.language), text)
+    ? await sendDigestEmail(
+        "weekly-digest",
+        recipients.email,
+        weeklyDigestSubject(recipients.language),
+        text,
+        recipients.storeName,
+        `weekly-digest-${storeId}-${new Date().toISOString().slice(0, 10)}`,
+      )
     : false;
   let whatsappSent = false;
   if (recipients.whatsappPhone && (await hasOpenWindow(recipients.whatsappPhone))) {
@@ -218,7 +240,14 @@ export async function sendTransferAlert(
   });
 
   const emailSent = recipients.email
-    ? await sendEmail(recipients.email, transferAlertSubject(recipients.language), text)
+    ? await sendDigestEmail(
+        "transfer-alert",
+        recipients.email,
+        transferAlertSubject(recipients.language),
+        text,
+        recipients.storeName,
+        `transfer-alert-${transferId}`,
+      )
     : false;
 
   return { skipped: false, email: emailSent, whatsapp: false, notification: true };
