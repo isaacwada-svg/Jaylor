@@ -41,7 +41,7 @@ const Email = ({ subject, body, storeName }: Props) => (
     <Body style={main}>
       <Container style={container}>
         <Heading style={heading}>Jaylor</Heading>
-        <Lines text={body} />
+        <Lines text={body ?? ''} />
         <Text style={footer}>Sent by Jaylor for {storeName ?? 'your shop'}</Text>
       </Container>
     </Body>
@@ -50,7 +50,7 @@ const Email = ({ subject, body, storeName }: Props) => (
 
 export const template = {
   component: Email,
-  subject: (data: Record<string, any>) => data.subject || 'Your Jaylor daily digest',
+  subject: (data: Record<string, any>) => data['subject'] || 'Your Jaylor daily digest',
   displayName: 'Daily digest',
   previewData: {
     subject: 'Your shop today',
