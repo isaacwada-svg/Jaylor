@@ -7,6 +7,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
 import { formatMoney } from "@/lib/jaylor";
 import { formatPhoneNG } from "@/lib/phone";
+import { useFeature } from "@/lib/use-feature";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
@@ -41,8 +42,10 @@ export function ReceiptDialog({
   payments: PaymentRow[];
 }) {
   const [format, setFormat] = useState<"pos" | "a4">("a4");
+  const { data: receiptLogoFeature } = useFeature(store.id, "receipt_logo");
+  const logoAllowed = receiptLogoFeature?.allowed ?? false;
   const photoUrl = useStorefrontPhotoUrls([store.logo_url]);
-  const logo = photoUrl(store.logo_url);
+  const logo = logoAllowed ? photoUrl(store.logo_url) : null;
   const activePayments = payments.filter((p) => !p.voided);
   const total = balance?.total ?? order.price;
   const paid = balance?.paid ?? 0;
@@ -131,6 +134,11 @@ export function ReceiptDialog({
                 </div>
                 <div>
                   <p className="font-heading text-xl">{store.name}</p>
+                  {!logoAllowed && (
+                    <p className="text-[10px] uppercase tracking-wide opacity-50">
+                      Made with Jaylor
+                    </p>
+                  )}
                   {store.address && (
                     <p className="mt-0.5 max-w-xs text-xs opacity-70">{store.address}</p>
                   )}
@@ -160,6 +168,9 @@ export function ReceiptDialog({
                 )}
               </div>
               <p className="mt-2 font-heading text-base">{store.name}</p>
+              {!logoAllowed && (
+                <p className="text-[9px] uppercase tracking-wide opacity-50">Made with Jaylor</p>
+              )}
               {store.address && <p className="text-xs opacity-70">{store.address}</p>}
               {store.city && <p className="text-xs opacity-70">{store.city}</p>}
               {store.whatsapp_phone && (

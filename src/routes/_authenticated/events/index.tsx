@@ -6,6 +6,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { EventForm } from "@/components/jaylor/event-form";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { UpgradeButton } from "@/components/jaylor/upgrade-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -14,6 +15,7 @@ import { useStore } from "@/lib/store-context";
 import { jobTemplate } from "@/lib/job-templates";
 import { useJobTemplates } from "@/lib/use-job-templates";
 import { useFeatureDiscovery } from "@/lib/feature-discovery";
+import { useFeature } from "@/lib/use-feature";
 
 export const Route = createFileRoute("/_authenticated/events/")({
   staticData: { sitemap: false },
@@ -38,6 +40,7 @@ function Events() {
   const discovery = useFeatureDiscovery();
   const [formOpen, setFormOpen] = useState(false);
   const { data: storeTemplates } = useJobTemplates(storeId);
+  const { data: groupEventsFeature } = useFeature(storeId, "group_events");
 
   const { data: events, isLoading } = useQuery({
     queryKey: ["events", storeId],
@@ -58,12 +61,15 @@ function Events() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl">Group orders</h1>
-          {canCreate && (
-            <Button onClick={() => setFormOpen(true)}>
-              <Plus className="size-4" />
-              New group order
-            </Button>
-          )}
+          {canCreate &&
+            (groupEventsFeature?.allowed ? (
+              <Button onClick={() => setFormOpen(true)}>
+                <Plus className="size-4" />
+                New group order
+              </Button>
+            ) : (
+              <UpgradeButton requiredPlan={groupEventsFeature?.required_plan} />
+            ))}
         </div>
         <StitchDivider className="my-6" />
 
@@ -79,7 +85,11 @@ function Events() {
             description="Aso-ebi, burial, uniforms, or one client who can't come in — share one link and let them measure and pay their own share."
             action={
               canCreate ? (
-                <Button onClick={() => setFormOpen(true)}>New group order</Button>
+                groupEventsFeature?.allowed ? (
+                  <Button onClick={() => setFormOpen(true)}>New group order</Button>
+                ) : (
+                  <UpgradeButton requiredPlan={groupEventsFeature?.required_plan} />
+                )
               ) : undefined
             }
           />

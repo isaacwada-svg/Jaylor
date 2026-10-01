@@ -6,11 +6,13 @@ import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { sendTestDigest } from "@/lib/digest.functions";
+import { UpgradeButton } from "@/components/jaylor/upgrade-button";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { useFeature } from "@/lib/use-feature";
 
 /** Owner alerts and digests -- delivered as an in-app notification + email always,
  *  plus WhatsApp when the owner's own number is inside its 24h contact window (no
@@ -18,6 +20,7 @@ import { Switch } from "@/components/ui/switch";
 export function DigestSettings({ storeId, isAdmin }: { storeId: string; isAdmin: boolean }) {
   const queryClient = useQueryClient();
   const online = useOnlineStatus();
+  const { data: digestsFeature } = useFeature(storeId, "digests");
   const runTestDigest = useServerFn(sendTestDigest);
   const [saving, setSaving] = useState(false);
   const [testing, setTesting] = useState<"daily" | "weekly" | null>(null);
@@ -130,14 +133,32 @@ export function DigestSettings({ storeId, isAdmin }: { storeId: string; isAdmin:
               onCheckedChange={setAlertTransfer}
             />
           </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="digest-daily">Daily digest</Label>
-            <Switch id="digest-daily" checked={digestDaily} onCheckedChange={setDigestDaily} />
-          </div>
-          <div className="flex items-center justify-between">
-            <Label htmlFor="digest-weekly">Weekly digest</Label>
-            <Switch id="digest-weekly" checked={digestWeekly} onCheckedChange={setDigestWeekly} />
-          </div>
+          {digestsFeature?.allowed ? (
+            <>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="digest-daily">Daily digest</Label>
+                <Switch id="digest-daily" checked={digestDaily} onCheckedChange={setDigestDaily} />
+              </div>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="digest-weekly">Weekly digest</Label>
+                <Switch
+                  id="digest-weekly"
+                  checked={digestWeekly}
+                  onCheckedChange={setDigestWeekly}
+                />
+              </div>
+            </>
+          ) : (
+            <div className="flex items-center justify-between rounded-xl border border-border p-3">
+              <div>
+                <p className="text-sm font-medium">Daily &amp; weekly digests</p>
+                <p className="text-xs text-muted-foreground">
+                  Available on the Growth plan and above.
+                </p>
+              </div>
+              <UpgradeButton requiredPlan={digestsFeature?.required_plan} />
+            </div>
+          )}
         </div>
 
         <Button onClick={save} disabled={saving} className="w-full">

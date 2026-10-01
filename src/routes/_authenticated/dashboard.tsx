@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ORDER_STATUSES_DB, effectiveTier } from "@/lib/jaylor";
+import { ORDER_STATUSES_DB } from "@/lib/jaylor";
 import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 import { useAppT } from "@/lib/i18n/i18n-context";
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
@@ -122,6 +122,8 @@ function Home() {
   const location = [currentStore?.city, "Nigeria"].filter(Boolean).join(", ");
 
   const { data: messagesFeature } = useFeature(storeId, "whatsapp_auto");
+  const { data: onTimeBadgeFeature } = useFeature(storeId, "on_time_badge");
+  const { data: capacityPlanningFeature } = useFeature(storeId, "capacity_planning");
   const { data: messageTopups } = useMessageTopups(storeId);
   const messagesLimit =
     typeof messagesFeature?.limit === "number"
@@ -504,10 +506,10 @@ function Home() {
               </div>
             )}
 
-            {storeId && effectiveTier(currentStore) !== "Free" && (
+            {storeId && (onTimeBadgeFeature?.allowed || capacityPlanningFeature?.allowed) && (
               <div className="mb-6 grid gap-3 lg:grid-cols-2">
-                <OnTimeScoreCard storeId={storeId} />
-                <CapacityLoadChart storeId={storeId} />
+                {onTimeBadgeFeature?.allowed && <OnTimeScoreCard storeId={storeId} />}
+                {capacityPlanningFeature?.allowed && <CapacityLoadChart storeId={storeId} />}
               </div>
             )}
 

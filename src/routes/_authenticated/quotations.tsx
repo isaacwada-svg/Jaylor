@@ -6,6 +6,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { QuoteForm } from "@/components/jaylor/quote-form";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { UpgradeButton } from "@/components/jaylor/upgrade-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -13,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { formatMoney } from "@/lib/jaylor";
 import { computeQuoteTotal, quoteStatusLabel } from "@/lib/quote-totals";
+import { useFeature } from "@/lib/use-feature";
 
 export const Route = createFileRoute("/_authenticated/quotations")({
   staticData: { sitemap: false },
@@ -39,6 +41,7 @@ function Quotations() {
   const storeId = currentStore?.id;
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
+  const { data: quotationsFeature } = useFeature(storeId, "quotations");
 
   const { data: canManage } = useQuery({
     queryKey: ["can-manage-quotations", storeId, currentRole],
@@ -96,12 +99,15 @@ function Quotations() {
               Build a quote, share it on WhatsApp, and convert it to an order in one tap.
             </p>
           </div>
-          {canManage && (
-            <Button onClick={() => setFormOpen(true)} className="shrink-0">
-              <Plus className="size-4" />
-              New quote
-            </Button>
-          )}
+          {canManage &&
+            (quotationsFeature?.allowed ? (
+              <Button onClick={() => setFormOpen(true)} className="shrink-0">
+                <Plus className="size-4" />
+                New quote
+              </Button>
+            ) : (
+              <UpgradeButton requiredPlan={quotationsFeature?.required_plan} />
+            ))}
         </div>
         <StitchDivider className="my-6" />
 
@@ -116,7 +122,13 @@ function Quotations() {
             title="No quotes yet"
             description="Quotes you build for customers will show up here."
             action={
-              canManage ? <Button onClick={() => setFormOpen(true)}>New quote</Button> : undefined
+              canManage ? (
+                quotationsFeature?.allowed ? (
+                  <Button onClick={() => setFormOpen(true)}>New quote</Button>
+                ) : (
+                  <UpgradeButton requiredPlan={quotationsFeature?.required_plan} />
+                )
+              ) : undefined
             }
           />
         ) : (

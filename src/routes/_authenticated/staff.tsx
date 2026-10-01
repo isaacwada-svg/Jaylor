@@ -8,6 +8,7 @@ import { EmptyState } from "@/components/jaylor/empty-state";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { InviteStaffForm } from "@/components/jaylor/invite-staff-form";
 import { FeatureLimitSheet } from "@/components/jaylor/feature-limit-sheet";
+import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -27,6 +28,7 @@ import { planCodeToTier, ORDER_STATUSES_DB } from "@/lib/jaylor";
 import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 import { getErrorMessage } from "@/lib/utils";
 import { useFeatureLimit } from "@/lib/use-feature-limit";
+import { useJobBoardAccess } from "@/lib/use-job-board-access";
 
 export const Route = createFileRoute("/_authenticated/staff")({
   staticData: { sitemap: false },
@@ -61,6 +63,7 @@ function Staff() {
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const canManage = currentRole === "owner" || currentRole === "manager";
+  const { data: jobBoardAccess } = useJobBoardAccess(storeId);
   const isOwner = currentRole === "owner";
   const queryClient = useQueryClient();
 
@@ -370,124 +373,144 @@ function Staff() {
           </TabsList>
 
           <TabsContent value="board" className="mt-6">
-            <div className="flex flex-wrap items-center gap-3">
-              <Select value={tailorFilter} onValueChange={setTailorFilter}>
-                <SelectTrigger className="w-48">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All tailors</SelectItem>
-                  <SelectItem value="unassigned">Unassigned</SelectItem>
-                  {tailors.map((t) => (
-                    <SelectItem key={t.user_id} value={t.user_id}>
-                      {profileById(t.user_id)?.full_name ?? "Tailor"}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {ordersLoading ? (
-              <div className="mt-4 grid gap-3 lg:grid-cols-3">
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <Skeleton key={i} className="h-40 rounded-2xl" />
-                ))}
-              </div>
+            {jobBoardAccess === false ? (
+              <EmptyState
+                title="Upgrade to unlock the job board"
+                description="See every order by stage, assigned tailor and due date, in one board. Available on the Business plan and above (or during your trial)."
+                action={
+                  <div className="flex flex-col items-center gap-2">
+                    <TierBadge tier={planCodeToTier("business")} />
+                    <Button onClick={() => toast("Billing isn't set up yet — coming soon")}>
+                      Upgrade to Business
+                    </Button>
+                  </div>
+                }
+              />
             ) : (
-              <div className="relative mt-4">
-                {canScrollLeft && (
-                  <>
-                    <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-background to-transparent" />
-                    <button
-                      type="button"
-                      onClick={() => scrollBoard("left")}
-                      aria-label="Scroll board left"
-                      className="absolute left-1 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm"
-                    >
-                      <ChevronLeft className="size-4" />
-                    </button>
-                  </>
-                )}
-                {canScrollRight && (
-                  <>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-background to-transparent" />
-                    <button
-                      type="button"
-                      onClick={() => scrollBoard("right")}
-                      aria-label="Scroll board right"
-                      className="absolute right-1 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm"
-                    >
-                      <ChevronRight className="size-4" />
-                    </button>
-                  </>
-                )}
-                <div ref={boardScrollRef} className="flex gap-3 overflow-x-auto pb-2">
-                  {BOARD_STATUSES.map((status) => {
-                    const columnOrders = filteredOrders.filter((o) => o.status === status);
-                    return (
-                      <div key={status} className="w-64 shrink-0">
-                        <div className="flex items-center justify-between px-1">
-                          <p className="text-sm font-medium">{statusLabel(status)}</p>
-                          <Badge variant="outline">{columnOrders.length}</Badge>
-                        </div>
-                        <div className="mt-2 space-y-2">
-                          {columnOrders.map((order) => {
-                            const overdue =
-                              !!order.delivery_date && new Date(order.delivery_date) < today;
-                            return (
-                              <div key={order.id} className="rounded-xl border border-border p-3">
-                                <p className="truncate text-sm font-medium">
-                                  {clientFirstName(order.client_id)}
-                                </p>
-                                <p className="truncate text-xs text-muted-foreground">
-                                  {order.garment_type}
-                                </p>
-                                <p
-                                  className={`mt-1 text-xs ${overdue ? "text-owed" : "text-muted-foreground"}`}
-                                >
-                                  {order.delivery_date
-                                    ? new Date(order.delivery_date).toLocaleDateString()
-                                    : "No date"}
-                                </p>
-                                <Select
-                                  value={order.assigned_to ?? "none"}
-                                  onValueChange={(v) =>
-                                    assignTailor(order.id, v === "none" ? null : v)
-                                  }
-                                >
-                                  <SelectTrigger className="mt-2 h-8 text-xs">
-                                    <SelectValue placeholder="Assign" />
-                                  </SelectTrigger>
-                                  <SelectContent>
-                                    <SelectItem value="none">Unassigned</SelectItem>
-                                    {tailors.map((t) => (
-                                      <SelectItem key={t.user_id} value={t.user_id}>
-                                        {profileById(t.user_id)?.full_name ?? "Tailor"}
-                                      </SelectItem>
-                                    ))}
-                                  </SelectContent>
-                                </Select>
-                                {status !== "ready" && (
-                                  <Button
-                                    size="sm"
-                                    variant="ghost"
-                                    className="mt-1 h-7 w-full text-xs"
-                                    onClick={() => advanceStatus(order.id, order.status)}
-                                  >
-                                    Move on
-                                    <ArrowRight className="size-3" />
-                                  </Button>
-                                )}
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </div>
-                    );
-                  })}
-                  <div className="w-2 shrink-0" aria-hidden />
+              <>
+                <div className="flex flex-wrap items-center gap-3">
+                  <Select value={tailorFilter} onValueChange={setTailorFilter}>
+                    <SelectTrigger className="w-48">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">All tailors</SelectItem>
+                      <SelectItem value="unassigned">Unassigned</SelectItem>
+                      {tailors.map((t) => (
+                        <SelectItem key={t.user_id} value={t.user_id}>
+                          {profileById(t.user_id)?.full_name ?? "Tailor"}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
-              </div>
+
+                {ordersLoading ? (
+                  <div className="mt-4 grid gap-3 lg:grid-cols-3">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                      <Skeleton key={i} className="h-40 rounded-2xl" />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="relative mt-4">
+                    {canScrollLeft && (
+                      <>
+                        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-10 bg-gradient-to-r from-background to-transparent" />
+                        <button
+                          type="button"
+                          onClick={() => scrollBoard("left")}
+                          aria-label="Scroll board left"
+                          className="absolute left-1 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm"
+                        >
+                          <ChevronLeft className="size-4" />
+                        </button>
+                      </>
+                    )}
+                    {canScrollRight && (
+                      <>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-10 bg-gradient-to-l from-background to-transparent" />
+                        <button
+                          type="button"
+                          onClick={() => scrollBoard("right")}
+                          aria-label="Scroll board right"
+                          className="absolute right-1 top-1/2 z-20 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-border bg-background shadow-sm"
+                        >
+                          <ChevronRight className="size-4" />
+                        </button>
+                      </>
+                    )}
+                    <div ref={boardScrollRef} className="flex gap-3 overflow-x-auto pb-2">
+                      {BOARD_STATUSES.map((status) => {
+                        const columnOrders = filteredOrders.filter((o) => o.status === status);
+                        return (
+                          <div key={status} className="w-64 shrink-0">
+                            <div className="flex items-center justify-between px-1">
+                              <p className="text-sm font-medium">{statusLabel(status)}</p>
+                              <Badge variant="outline">{columnOrders.length}</Badge>
+                            </div>
+                            <div className="mt-2 space-y-2">
+                              {columnOrders.map((order) => {
+                                const overdue =
+                                  !!order.delivery_date && new Date(order.delivery_date) < today;
+                                return (
+                                  <div
+                                    key={order.id}
+                                    className="rounded-xl border border-border p-3"
+                                  >
+                                    <p className="truncate text-sm font-medium">
+                                      {clientFirstName(order.client_id)}
+                                    </p>
+                                    <p className="truncate text-xs text-muted-foreground">
+                                      {order.garment_type}
+                                    </p>
+                                    <p
+                                      className={`mt-1 text-xs ${overdue ? "text-owed" : "text-muted-foreground"}`}
+                                    >
+                                      {order.delivery_date
+                                        ? new Date(order.delivery_date).toLocaleDateString()
+                                        : "No date"}
+                                    </p>
+                                    <Select
+                                      value={order.assigned_to ?? "none"}
+                                      onValueChange={(v) =>
+                                        assignTailor(order.id, v === "none" ? null : v)
+                                      }
+                                    >
+                                      <SelectTrigger className="mt-2 h-8 text-xs">
+                                        <SelectValue placeholder="Assign" />
+                                      </SelectTrigger>
+                                      <SelectContent>
+                                        <SelectItem value="none">Unassigned</SelectItem>
+                                        {tailors.map((t) => (
+                                          <SelectItem key={t.user_id} value={t.user_id}>
+                                            {profileById(t.user_id)?.full_name ?? "Tailor"}
+                                          </SelectItem>
+                                        ))}
+                                      </SelectContent>
+                                    </Select>
+                                    {status !== "ready" && (
+                                      <Button
+                                        size="sm"
+                                        variant="ghost"
+                                        className="mt-1 h-7 w-full text-xs"
+                                        onClick={() => advanceStatus(order.id, order.status)}
+                                      >
+                                        Move on
+                                        <ArrowRight className="size-3" />
+                                      </Button>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                      <div className="w-2 shrink-0" aria-hidden />
+                    </div>
+                  </div>
+                )}
+              </>
             )}
           </TabsContent>
 
