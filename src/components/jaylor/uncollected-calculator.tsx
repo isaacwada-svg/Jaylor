@@ -81,7 +81,7 @@ export function UncollectedCalculator() {
               </p>
               <p className="mt-2 text-sm text-muted-foreground">carried through the workroom each month</p>
               <p className="mt-4 text-sm text-muted-foreground">
-                Jaylor costs ₦6,000 a month. Recovering one balance pays for it.
+                Jaylor Growth costs ₦6,000 a month. Recovering one unpaid balance pays for it.
               </p>
             </div>
 
