@@ -66,12 +66,12 @@ export const Route = createFileRoute("/e/$token")({
   },
   head: () => ({
     meta: [
-      { title: "Your event order — Jaylor" },
+      { title: "Your event order: Jaylor" },
       {
         name: "description",
         content: "Measure, choose your style and pay your share for this group order.",
       },
-      { property: "og:title", content: "Your event order — Jaylor" },
+      { property: "og:title", content: "Your event order: Jaylor" },
       {
         property: "og:description",
         content: "Measure, choose your style and pay your share for this group order.",

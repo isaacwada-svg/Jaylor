@@ -22,13 +22,13 @@ export const Route = createFileRoute("/passport")({
   },
   head: () => ({
     meta: [
-      { title: "Your Measurement Passport — Jaylor" },
+      { title: "Your Measurement Passport: Jaylor" },
       {
         name: "description",
         content:
           "Get measured once. Use it with any Jaylor tailor. Your measurements belong to you.",
       },
-      { property: "og:title", content: "Your Measurement Passport — Jaylor" },
+      { property: "og:title", content: "Your Measurement Passport: Jaylor" },
       {
         property: "og:description",
         content: "Get measured once. Use it with any Jaylor tailor.",

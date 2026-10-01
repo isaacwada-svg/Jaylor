@@ -20,7 +20,7 @@ export const Route = createFileRoute("/onboarding")({
   staticData: { sitemap: false },
   ssr: false,
   head: () => ({
-    meta: [{ title: "Set up your store — Jaylor" }],
+    meta: [{ title: "Set up your store: Jaylor" }],
   }),
   component: Onboarding,
 });
@@ -466,7 +466,7 @@ function Onboarding() {
                   onClick={() =>
                     finish(
                       "/dashboard",
-                      "AI notebook scan is coming soon — for now, add clients one by one.",
+                      "AI notebook scan is coming soon. For now, add clients one by one.",
                     )
                   }
                   className="touch-target w-full rounded-2xl border border-border p-4 text-left transition-colors hover:border-gold hover:bg-accent/60"

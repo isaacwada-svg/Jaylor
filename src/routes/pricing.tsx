@@ -166,8 +166,7 @@ function Pricing() {
             Optional, and only ever charged when you choose them.
           </p>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Included automatic WhatsApp messages are transactional utility messages, not marketing
-            campaigns. Provider rules and fair-use limits apply.
+            Automatic WhatsApp reminders are coming soon, for Growth and Business plans.
           </p>
           <div className="mt-6 overflow-x-auto rounded-2xl border border-border">
             <table className="w-full min-w-[420px] text-sm">

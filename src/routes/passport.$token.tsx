@@ -31,12 +31,12 @@ export const Route = createFileRoute("/passport/$token")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "Measurement card — Jaylor" },
+      { title: "Measurement card: Jaylor" },
       {
         name: "description",
         content: "A client's private measurement card, issued by their tailor on Jaylor.",
       },
-      { property: "og:title", content: "Measurement card — Jaylor" },
+      { property: "og:title", content: "Measurement card: Jaylor" },
       {
         property: "og:description",
         content: "A client's private measurement card, issued by their tailor on Jaylor.",
@@ -278,7 +278,11 @@ function ShareDialog({
             </p>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={busy || !slug.trim() || !phone.trim()} className="w-full">
+            <Button
+              type="submit"
+              disabled={busy || !slug.trim() || !phone.trim()}
+              className="w-full"
+            >
               <Share2 className="size-4" />
               {busy ? "Sending..." : "Send request"}
             </Button>

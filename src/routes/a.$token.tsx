@@ -36,7 +36,7 @@ export const Route = createFileRoute("/a/$token")({
   },
   head: () => ({
     meta: [
-      { title: "Approve your order — Jaylor" },
+      { title: "Approve your order: Jaylor" },
       {
         name: "description",
         content: "Review your order's details before it goes into production.",

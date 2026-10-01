@@ -12,13 +12,13 @@ export const Route = createFileRoute("/measurement-passport")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Measurement Passport — Jaylor" },
+      { title: "Measurement Passport: Jaylor" },
       {
         name: "description",
         content:
           "Your measurements, saved once and yours to share with any tailor on Jaylor. No re-measuring, no lost notebook page.",
       },
-      { property: "og:title", content: "Measurement Passport — Jaylor" },
+      { property: "og:title", content: "Measurement Passport: Jaylor" },
       {
         property: "og:description",
         content: "Save your measurements once. Share them with any Jaylor tailor in one tap.",

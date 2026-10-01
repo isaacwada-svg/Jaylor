@@ -14,13 +14,13 @@ export const Route = createFileRoute("/custom")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Custom plan — Jaylor" },
+      { title: "Custom plan: Jaylor" },
       {
         name: "description",
         content:
           "Your own WhatsApp number, your own domain, integrations and a migration from your old system.",
       },
-      { property: "og:title", content: "Custom plan — Jaylor" },
+      { property: "og:title", content: "Custom plan: Jaylor" },
       {
         property: "og:description",
         content: "A Jaylor plan built around your fashion house, with your own migration support.",

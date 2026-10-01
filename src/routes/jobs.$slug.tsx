@@ -17,9 +17,9 @@ export const Route = createFileRoute("/jobs/$slug")({
   head: ({ loaderData }) => ({
     meta: loaderData
       ? [
-          { title: `${loaderData.tileLabel} — Jaylor` },
+          { title: `${loaderData.tileLabel}: Jaylor` },
           { name: "description", content: loaderData.headline },
-          { property: "og:title", content: `${loaderData.tileLabel} — Jaylor` },
+          { property: "og:title", content: `${loaderData.tileLabel}: Jaylor` },
           { property: "og:description", content: loaderData.headline },
         ]
       : [],

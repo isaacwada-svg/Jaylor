@@ -45,13 +45,13 @@ export const Route = createFileRoute("/auth")({
   },
   head: () => ({
     meta: [
-      { title: "Sign in — Jaylor" },
+      { title: "Sign in: Jaylor" },
       {
         name: "description",
         content:
           "Sign in to Jaylor to track every order and collect every naira for your tailoring business.",
       },
-      { property: "og:title", content: "Sign in — Jaylor" },
+      { property: "og:title", content: "Sign in: Jaylor" },
       {
         property: "og:description",
         content: "Sign in to your Jaylor workroom: orders, measurements, payments and reminders.",
