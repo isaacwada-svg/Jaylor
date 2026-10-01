@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { AppShell } from "@/components/jaylor/app-shell";
@@ -204,6 +204,8 @@ function Privacy() {
             <p className="mt-1 text-sm text-muted-foreground">
               Closing a store is permanent and needs a short verification step. Message us on
               WhatsApp or email to start the process — nothing is deleted without your confirmation.
+              See <Link to="/delete-account">Delete your account</Link> for what gets deleted, what
+              we may keep, and how long it takes.
             </p>
           </>
         )}
