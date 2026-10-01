@@ -223,8 +223,8 @@ function PayrollPage() {
     try {
       const { error } = await supabase.rpc("fix_staff_earning", {
         p_earning_id: earningId,
-        p_member_ref: memberRef ?? undefined,
-        p_rate: rate ?? undefined,
+        ...(memberRef != null ? { p_member_ref: memberRef } : {}),
+        ...(rate != null ? { p_rate: rate } : {}),
       });
       if (error) throw error;
       toast.success(t("toast_earning_fixed") || "Earning fixed");
@@ -259,7 +259,7 @@ function PayrollPage() {
         p_store_id: storeId,
         p_member_ref: memberRef,
         p_amount: amount,
-        p_note: note || undefined,
+        ...(note ? { p_note: note } : {}),
       });
       if (error) throw error;
       toast.success(t("toast_advance_recorded") || "Advance recorded");

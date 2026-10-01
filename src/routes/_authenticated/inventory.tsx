@@ -352,7 +352,7 @@ function NewItemDialog({
         p_unit: unit,
         p_reorder_level: Number(reorderLevel) || 0,
         p_initial_quantity: Number(initialQuantity) || 0,
-        p_cost_per_unit: costPerUnit ? Number(costPerUnit) : undefined,
+        ...(costPerUnit ? { p_cost_per_unit: Number(costPerUnit) } : {}),
       });
       if (error) throw error;
       toast.success(t("toast_item_added") || "Item added");
@@ -470,8 +470,8 @@ function StockInDialog({
       const { error } = await supabase.rpc("record_stock_in", {
         p_item_id: item.id,
         p_quantity: Number(quantity),
-        p_unit_cost: unitCost ? Number(unitCost) : undefined,
-        p_note: note.trim() || undefined,
+        ...(unitCost ? { p_unit_cost: Number(unitCost) } : {}),
+        ...(note.trim() ? { p_note: note.trim() } : {}),
       });
       if (error) throw error;
       toast.success(t("toast_stock_added") || "Stock added");
