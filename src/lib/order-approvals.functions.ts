@@ -45,6 +45,7 @@ export type OrderApprovalSnapshot = {
     taken_at: string;
   } | null;
   price: number;
+  currency: string;
   amount_paid: number;
   delivery_date: string | null;
 };

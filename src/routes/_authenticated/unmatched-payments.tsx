@@ -176,6 +176,7 @@ function AssignDialog({
         .from("order_balances")
         .select("order_id, balance")
         .eq("store_id", storeId)
+        .eq("currency" as never, "NGN")
         .gt("balance", 0);
       if (error) throw error;
       const orderIds = balances.map((b) => b.order_id).filter((id): id is string => !!id);

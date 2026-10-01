@@ -237,11 +237,13 @@ function OrderApprovalPage() {
           <div className="space-y-1 text-sm">
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t("price")}</span>
-              <span className="figures">{formatMoney(snapshot.price)}</span>
+              <span className="figures">{formatMoney(snapshot.price, snapshot.currency)}</span>
             </div>
             <div className="flex items-center justify-between">
               <span className="text-muted-foreground">{t("paid_so_far")}</span>
-              <span className="figures text-paid">{formatMoney(snapshot.amount_paid)}</span>
+              <span className="figures text-paid">
+                {formatMoney(snapshot.amount_paid, snapshot.currency)}
+              </span>
             </div>
             {snapshot.delivery_date && (
               <div className="flex items-center justify-between">

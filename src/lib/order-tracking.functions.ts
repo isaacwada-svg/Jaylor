@@ -37,6 +37,7 @@ export type OrderTrackingView = {
   status: string;
   deliveryDate: string | null;
   readyAt: string | null;
+  currency: string;
   paid: number;
   balance: number;
   timeline: OrderTrackingTimelineEntry[];
@@ -74,6 +75,7 @@ export const getOrderTracking = createServerFn({ method: "GET" })
       status: string;
       delivery_date: string | null;
       ready_at: string | null;
+      currency: string;
       paid: number;
       balance: number;
       timeline: OrderTrackingTimelineEntry[];
@@ -106,6 +108,7 @@ export const getOrderTracking = createServerFn({ method: "GET" })
       status: raw.status,
       deliveryDate: raw.delivery_date,
       readyAt: raw.ready_at,
+      currency: raw.currency,
       paid: raw.paid,
       balance: raw.balance,
       timeline: raw.timeline.map((t) => ({

@@ -75,6 +75,10 @@ type OrderStatusHistoryRow = Tables<"order_status_history"> & {
   photo_url?: string | null;
 };
 type TrackedOrder = { tracking_token?: string | null };
+type OrderWithCurrency = Tables<"orders"> & {
+  currency?: string;
+  fx_rate_to_ngn?: number | null;
+};
 
 function OrderDetail() {
   const { orderId } = Route.useParams();
@@ -609,14 +613,24 @@ function OrderDetail() {
     pendingStatus === "cutting" && latestApproval?.status !== "approved";
   const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
 
-  const fullOrder = canSeeMoney ? (order as Tables<"orders">) : null;
+  const fullOrder = canSeeMoney ? (order as OrderWithCurrency) : null;
   const fullMaterial = canSeeMoney ? (material as Tables<"order_materials"> | null) : null;
   const materialCost = fullMaterial?.source === "tailor" ? (fullMaterial.cost ?? 0) : 0;
   const labourCost = fullOrder?.labour_cost ?? 0;
   const otherCost = fullOrder?.other_cost ?? 0;
   const totalCost = materialCost + labourCost + otherCost;
-  const profit = (price ?? 0) - totalCost;
-  const margin = price && price > 0 ? (profit / price) * 100 : null;
+  // Profit/margin are always NGN (costs are NGN) -- a foreign-currency
+  // order's price is converted via its own fx_rate_to_ngn first. One
+  // missing its rate shows "rate missing" rather than a wrong number.
+  const priceInNgn =
+    !fullOrder || fullOrder.currency === "NGN"
+      ? (price ?? 0)
+      : fullOrder.fx_rate_to_ngn
+        ? (price ?? 0) * fullOrder.fx_rate_to_ngn
+        : null;
+  const profit = priceInNgn != null ? priceInNgn - totalCost : null;
+  const margin =
+    priceInNgn && priceInNgn > 0 && profit != null ? (profit / priceInNgn) * 100 : null;
 
   function startEditingCosts() {
     setLabourCostInput(fullOrder?.labour_cost != null ? String(fullOrder.labour_cost) : "");
@@ -780,7 +794,7 @@ function OrderDetail() {
                     {t("price_label") || "Price"}
                   </p>
                   <p className="mt-1 text-lg">
-                    <MoneyText amount={price ?? 0} />
+                    <MoneyText amount={price ?? 0} currency={fullOrder?.currency ?? "NGN"} />
                   </p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {t("quantity_colon", { count: order.quantity ?? 0 }) ||
@@ -791,13 +805,21 @@ function OrderDetail() {
                   <Button size="sm" onClick={() => setPaymentFormOpen(true)}>
                     {t("record_payment") || "Record payment"}
                   </Button>
-                  {(balance?.balance ?? 0) > 0 && client && (
-                    <RequestPaymentButton
-                      orderId={order.id ?? ""}
-                      defaultAmount={balance?.balance ?? 0}
-                      clientName={client.full_name ?? ""}
-                      clientPhone={client.whatsapp_phone ?? client.phone ?? ""}
-                    />
+                  {(fullOrder?.currency ?? "NGN") === "NGN" ? (
+                    (balance?.balance ?? 0) > 0 &&
+                    client && (
+                      <RequestPaymentButton
+                        orderId={order.id ?? ""}
+                        defaultAmount={balance?.balance ?? 0}
+                        clientName={client.full_name ?? ""}
+                        clientPhone={client.whatsapp_phone ?? client.phone ?? ""}
+                      />
+                    )
+                  ) : (
+                    <p className="max-w-40 text-right text-xs text-muted-foreground">
+                      {t("jaylor_pay_ngn_only") ||
+                        "Jaylor Pay is NGN only — record this payment manually."}
+                    </p>
                   )}
                   {client && currentStore && (
                     <Button size="sm" variant="outline" onClick={() => setReceiptOpen(true)}>
@@ -809,7 +831,11 @@ function OrderDetail() {
               {balance && (
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-sm">
                   <span className="text-muted-foreground">{t("paid_label") || "Paid"}</span>
-                  <MoneyText amount={balance.paid ?? 0} variant="paid" />
+                  <MoneyText
+                    amount={balance.paid ?? 0}
+                    currency={fullOrder?.currency ?? "NGN"}
+                    variant="paid"
+                  />
                 </div>
               )}
               {balance && (
@@ -817,6 +843,7 @@ function OrderDetail() {
                   <span className="text-muted-foreground">{t("balance_label") || "Balance"}</span>
                   <MoneyText
                     amount={balance.balance ?? 0}
+                    currency={fullOrder?.currency ?? "NGN"}
                     variant={(balance.balance ?? 0) > 0 ? "owed" : "paid"}
                   />
                 </div>
@@ -1083,7 +1110,13 @@ function OrderDetail() {
                   </div>
                   <div className="flex items-center justify-between">
                     <span className="text-muted-foreground">{t("profit_label") || "Profit"}</span>
-                    <MoneyText amount={profit} variant={profit >= 0 ? "paid" : "owed"} />
+                    {profit != null ? (
+                      <MoneyText amount={profit} variant={profit >= 0 ? "paid" : "owed"} />
+                    ) : (
+                      <span className="text-xs text-muted-foreground">
+                        {t("rate_missing") || "Rate missing"}
+                      </span>
+                    )}
                   </div>
                   {margin != null && (
                     <div className="flex items-center justify-between">
@@ -1192,7 +1225,11 @@ function OrderDetail() {
                   className="flex items-center justify-between rounded-xl border border-border p-3 text-sm"
                 >
                   <div>
-                    <MoneyText amount={p.amount} variant={p.voided ? "muted" : "paid"} />
+                    <MoneyText
+                      amount={p.amount}
+                      currency={fullOrder?.currency ?? "NGN"}
+                      variant={p.voided ? "muted" : "paid"}
+                    />
                     <span className="ml-2 text-muted-foreground">
                       {p.method}
                       {p.voided ? " · voided" : ""}
@@ -1253,6 +1290,7 @@ function OrderDetail() {
           orderId={orderId}
           storeId={order.store_id ?? ""}
           balance={balance?.balance ?? 0}
+          currency={fullOrder?.currency ?? "NGN"}
           onSaved={() => {
             queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] });
             queryClient.invalidateQueries({ queryKey: ["order-payments", orderId] });
