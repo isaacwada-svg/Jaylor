@@ -1,8 +1,8 @@
 import { useMemo, useState } from "react";
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { addMonths, format, parse, subMonths } from "date-fns";
-import { ChevronLeft, ChevronRight, Download, Plus, Share2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Download, FileText, Plus, Share2 } from "lucide-react";
 import { toast } from "sonner";
 import { Bar, BarChart, CartesianGrid, Line, LineChart, XAxis, YAxis } from "recharts";
 import { AppShell } from "@/components/jaylor/app-shell";
@@ -475,6 +475,15 @@ function Reports() {
               <ChevronRight className="size-4" />
             </Button>
           </div>
+        </div>
+
+        <div className="mt-3">
+          <Button asChild variant="outline" size="sm">
+            <Link to="/business-report">
+              <FileText className="size-4" />
+              Business report (money, profit, work, clients -- shareable with a lender)
+            </Link>
+          </Button>
         </div>
         <StitchDivider className="my-6" />
 
