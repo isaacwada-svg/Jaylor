@@ -8,6 +8,8 @@
   "upgrade_now": "Upgrade now",
   "messages_running_low": "You've used {{used}} of {{limit}} automatic WhatsApp messages this month. Tap-to-send stays free and unlimited either way.",
   "top_up_messages": "Top up messages",
+  "coming_up_title": "Coming up",
+  "this_month_title": "Your numbers",
   "collected_label": "Jaylor has helped you collect",
   "recovered_prefix": "Including",
   "recovered_suffix": "recovered after a reminder",

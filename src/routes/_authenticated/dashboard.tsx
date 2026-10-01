@@ -33,6 +33,8 @@ import { useFeature } from "@/lib/use-feature";
 import { useMessageTopups } from "@/lib/use-message-topups";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, Bar, BarChart, CartesianGrid, XAxis, YAxis } from "recharts";
+import { SectionHeader } from "@/components/jaylor/section-header";
+import { Wallet, Banknote, CalendarClock, Package } from "lucide-react";
 
 function compactMoney(n: number) {
   return new Intl.NumberFormat("en-NG", { notation: "compact", maximumFractionDigits: 1 }).format(
@@ -457,15 +459,19 @@ function Home() {
         {canSeeMoney && <MilestoneCelebration storeId={storeId} />}
         {canSeeMoney && <MomentsSection storeId={storeId} />}
 
-        <div className="mb-6 space-y-6">
-          <ComingUpCard storeId={storeId} />
-          <DailyWorkPlan storeId={storeId} />
-        </div>
+        <section className="mb-10">
+          <SectionHeader eyebrow="Ahead" title={t("coming_up_title") || "Coming up"} />
+          <div className="mt-4 space-y-6">
+            <ComingUpCard storeId={storeId} />
+            <DailyWorkPlan storeId={storeId} />
+          </div>
+        </section>
 
         {canSeeMoney ? (
           <>
+            <SectionHeader eyebrow="This month" title={t("this_month_title") || "Your numbers"} />
             {collection && (
-              <div className="mb-6 grid gap-3 lg:grid-cols-2">
+              <div className="mt-4 mb-6 grid gap-3 lg:grid-cols-2">
                 <Card className="rounded-2xl border-gold/30">
                   <CardContent className="p-5">
                     <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
@@ -530,6 +536,7 @@ function Home() {
                     t("stat_money_owed_hint", { count: stats?.owedOrdersCount ?? 0 }) ||
                     `${stats?.owedOrdersCount ?? 0} orders`
                   }
+                  icon={Wallet}
                 />
                 <Stat
                   label={t("stat_collected_month") || "Collected this month"}
@@ -538,6 +545,7 @@ function Home() {
                     t("stat_collected_hint", { count: stats?.collectedCount ?? 0 }) ||
                     `${stats?.collectedCount ?? 0} payments`
                   }
+                  icon={Banknote}
                 />
                 <Stat
                   label={t("stat_due_week") || "Due this week"}
@@ -546,11 +554,13 @@ function Home() {
                     t("stat_due_week_hint", { count: stats?.overdueCount ?? 0 }) ||
                     `${stats?.overdueCount ?? 0} overdue`
                   }
+                  icon={CalendarClock}
                 />
                 <Stat
                   label={t("stat_in_workroom") || "In the workroom"}
                   value={<span className="figures text-2xl">{stats?.activeCount ?? 0}</span>}
                   hint={t("stat_active_hint") || "Active jobs"}
+                  icon={Package}
                 />
               </div>
             )}
@@ -651,9 +661,9 @@ function Home() {
               </Card>
             </div>
 
-            <section className="mt-8">
+            <section className="mt-10">
               <div className="flex items-end justify-between">
-                <h2 className="text-xl">{t("due_soon_title") || "Due soon"}</h2>
+                <SectionHeader eyebrow="Workroom" title={t("due_soon_title") || "Due soon"} />
                 <Button variant="ghost" size="sm" asChild>
                   <Link to="/orders">{t("view_all") || "View all"}</Link>
                 </Button>
@@ -707,10 +717,11 @@ function Home() {
 
             {stats && stats.uncollected.length > 0 && (
               <section id="uncollected" className="mt-10 scroll-mt-20">
-                <h2 className="text-xl">{t("uncollected_title") || "Uncollected"}</h2>
-                <p className="mt-1 text-sm text-muted-foreground">
-                  {t("uncollected_subtitle") || "Ready and waiting for pickup."}
-                </p>
+                <SectionHeader
+                  eyebrow="Workroom"
+                  title={t("uncollected_title") || "Uncollected"}
+                  description={t("uncollected_subtitle") || "Ready and waiting for pickup."}
+                />
                 <div className="mt-3 space-y-3">
                   {stats.uncollected.map((o) => {
                     const client = clientById(o.client_id);
@@ -765,11 +776,14 @@ function Home() {
             )}
 
             <section className="mt-10">
-              <h2 className="text-xl">{t("grow_title") || "Grow with Business"}</h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {t("grow_subtitle") ||
-                  "Locked features stay visible, so you always know what is next."}
-              </p>
+              <SectionHeader
+                eyebrow="Upgrade"
+                title={t("grow_title") || "Grow with Business"}
+                description={
+                  t("grow_subtitle") ||
+                  "Locked features stay visible, so you always know what is next."
+                }
+              />
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <LockedFeature
                   tier="Business"
@@ -867,11 +881,24 @@ function Home() {
   );
 }
 
-function Stat({ label, value, hint }: { label: string; value: React.ReactNode; hint: string }) {
+function Stat({
+  label,
+  value,
+  hint,
+  icon: Icon,
+}: {
+  label: string;
+  value: React.ReactNode;
+  hint: string;
+  icon?: typeof Wallet;
+}) {
   return (
     <Card className="rounded-2xl">
       <CardContent className="p-4">
-        <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">{label}</p>
+        <div className="flex items-center gap-2">
+          {Icon && <Icon className="size-3.5 text-gold" />}
+          <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">{label}</p>
+        </div>
         <p className="mt-2 text-2xl">{value}</p>
         <p className="mt-1 text-xs text-muted-foreground">{hint}</p>
       </CardContent>

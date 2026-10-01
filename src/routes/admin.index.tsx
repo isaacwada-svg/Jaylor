@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
 import { BrandLogo } from "@/components/jaylor/logo";
+import { SectionHeader } from "@/components/jaylor/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -32,6 +33,18 @@ import { TierBadge } from "@/components/jaylor/tier-badge";
 import { getErrorMessage } from "@/lib/utils";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Area, AreaChart, CartesianGrid, Cell, Pie, PieChart, XAxis, YAxis } from "recharts";
+import {
+  Store,
+  Wallet,
+  Receipt,
+  CalendarPlus,
+  TrendingUp,
+  Users2,
+  ShoppingBag,
+  UserCheck,
+  Eye,
+  Landmark,
+} from "lucide-react";
 
 function compactMoney(n: number) {
   return new Intl.NumberFormat("en-NG", { notation: "compact", maximumFractionDigits: 1 }).format(
@@ -576,12 +589,11 @@ function LiveBoard({
   return (
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <div>
-          <h2 className="text-xl">Live board</h2>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Last 30 days, refreshes every minute.
-          </p>
-        </div>
+        <SectionHeader
+          eyebrow="At a glance"
+          title="Live board"
+          description="Last 30 days, refreshes every minute."
+        />
         <Badge className="border-paid/40 bg-paid/10 text-paid">Live</Badge>
       </div>
 
@@ -593,11 +605,23 @@ function LiveBoard({
         </div>
       ) : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
-          <Stat label="Active stores" value={String(board.active_stores)} />
-          <Stat label="Sales, last 30 days" value={formatMoney(board.sales_30d)} />
-          <Stat label="Avg order value" value={formatMoney(board.avg_order_value_30d)} />
-          <Stat label="Sales today" value={formatMoney(board.sales_today)} />
-          <Stat label="New stores, 30 days" value={String(board.new_stores_30d)} />
+          <Stat label="Active stores" value={String(board.active_stores)} icon={Store} />
+          <Stat
+            label="Sales, last 30 days"
+            value={formatMoney(board.sales_30d)}
+            icon={TrendingUp}
+          />
+          <Stat
+            label="Avg order value"
+            value={formatMoney(board.avg_order_value_30d)}
+            icon={Receipt}
+          />
+          <Stat label="Sales today" value={formatMoney(board.sales_today)} icon={Wallet} />
+          <Stat
+            label="New stores, 30 days"
+            value={String(board.new_stores_30d)}
+            icon={CalendarPlus}
+          />
         </div>
       )}
 
@@ -807,85 +831,146 @@ function OverviewTab() {
   });
 
   return (
-    <div>
+    <div className="space-y-10">
       <LiveBoard stats={stats} stores={stores} />
 
-      <h2 className="mt-10 text-xl">Growth details</h2>
-      {statsLoading || totalsLoading ? (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-24 rounded-2xl" />
-          ))}
-        </div>
-      ) : (
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {stats && (
-            <>
-              <Stat label="Total stores" value={String(stats.total_stores)} />
-              <Stat label="New in 30 days" value={String(stats.new_stores_30d)} />
-              <Stat label="Trials ending in 7 days" value={String(stats.trials_ending_7d)} />
-              <Stat label="Active this week" value={String(stats.active_this_week)} />
-              <Stat label="Estimated MRR" value={formatMoney(stats.mrr_estimate)} />
+      <section>
+        <SectionHeader eyebrow="Growth" title="Growth and plans" />
+        {statsLoading ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          stats && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat label="Total stores" value={String(stats.total_stores)} icon={Store} />
+              <Stat
+                label="New in 30 days"
+                value={String(stats.new_stores_30d)}
+                icon={CalendarPlus}
+              />
+              <Stat
+                label="Trials ending in 7 days"
+                value={String(stats.trials_ending_7d)}
+                icon={TrendingUp}
+              />
+              <Stat
+                label="Active this week"
+                value={String(stats.active_this_week)}
+                icon={UserCheck}
+              />
+              <Stat label="Estimated MRR" value={formatMoney(stats.mrr_estimate)} icon={Landmark} />
               {Object.entries(stats.stores_by_plan).map(([plan, count]) => (
-                <Stat key={plan} label={`On ${planCodeToTier(plan)}`} value={String(count)} />
+                <Stat
+                  key={plan}
+                  label={`On ${planCodeToTier(plan)}`}
+                  value={String(count)}
+                  icon={ShoppingBag}
+                />
               ))}
-            </>
-          )}
-          {totals && (
-            <>
-              <Stat label="Total clients" value={String(totals.total_clients)} />
-              <Stat label="Total orders" value={String(totals.total_orders)} />
-              <Stat label="Registered users" value={String(totals.total_users)} />
-              <Stat label="Visitors (30 days)" value={String(totals.total_visitors_30d)} />
-              <Stat label="Collected all-time" value={formatMoney(totals.gmv_collected)} />
-            </>
-          )}
-        </div>
-      )}
+            </div>
+          )
+        )}
+      </section>
 
-      <h2 className="mt-8 text-xl">All stores</h2>
-      {storesLoading ? (
-        <div className="mt-3 space-y-2">
-          {Array.from({ length: 4 }).map((_, i) => (
-            <Skeleton key={i} className="h-16 rounded-xl" />
-          ))}
+      <section>
+        <SectionHeader eyebrow="Platform" title="All-time totals" />
+        {totalsLoading ? (
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <Skeleton key={i} className="h-20 rounded-2xl" />
+            ))}
+          </div>
+        ) : (
+          totals && (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <Stat label="Total clients" value={String(totals.total_clients)} icon={Users2} />
+              <Stat label="Total orders" value={String(totals.total_orders)} icon={ShoppingBag} />
+              <Stat label="Registered users" value={String(totals.total_users)} icon={UserCheck} />
+              <Stat
+                label="Visitors (30 days)"
+                value={String(totals.total_visitors_30d)}
+                icon={Eye}
+              />
+              <Stat
+                label="Collected all-time"
+                value={formatMoney(totals.gmv_collected)}
+                icon={Wallet}
+              />
+            </div>
+          )
+        )}
+      </section>
+
+      <section>
+        <div className="flex items-center justify-between gap-2">
+          <SectionHeader eyebrow="Directory" title="All stores" />
+          {stores && (
+            <Badge variant="outline" className="shrink-0">
+              {stores.length}
+            </Badge>
+          )}
         </div>
-      ) : (
-        <div className="mt-3 space-y-2">
-          {(stores ?? []).map((store) => (
-            <Link
-              key={store.id}
-              to="/admin/stores/$storeId"
-              params={{ storeId: store.id }}
-              className="flex items-center justify-between gap-3 rounded-xl border border-border p-3 transition-colors hover:bg-accent/40"
-            >
-              <div className="min-w-0">
-                <p className="truncate font-medium">{store.name}</p>
-                <p className="truncate text-xs text-muted-foreground">
-                  jaylor.ng/{store.slug} {store.city ? `· ${store.city}` : ""}
-                </p>
+        <Card className="mt-4 rounded-2xl">
+          <CardContent className="p-2">
+            {storesLoading ? (
+              <div className="space-y-2 p-2">
+                {Array.from({ length: 4 }).map((_, i) => (
+                  <Skeleton key={i} className="h-16 rounded-xl" />
+                ))}
               </div>
-              <div className="flex shrink-0 items-center gap-2">
-                <TierBadge tier={planCodeToTier(store.effective_plan)} />
-                {!store.is_active && <Badge variant="outline">Inactive</Badge>}
-                <span className="text-xs text-muted-foreground">
-                  {new Date(store.created_at).toLocaleDateString()}
-                </span>
+            ) : !stores || stores.length === 0 ? (
+              <p className="p-3 text-sm text-muted-foreground">No stores yet.</p>
+            ) : (
+              <div className="space-y-1">
+                {stores.map((store) => (
+                  <Link
+                    key={store.id}
+                    to="/admin/stores/$storeId"
+                    params={{ storeId: store.id }}
+                    className="flex items-center justify-between gap-3 rounded-xl p-3 transition-colors hover:bg-accent/40"
+                  >
+                    <div className="min-w-0">
+                      <p className="truncate font-medium">{store.name}</p>
+                      <p className="truncate text-xs text-muted-foreground">
+                        jaylor.ng/{store.slug} {store.city ? `· ${store.city}` : ""}
+                      </p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-2">
+                      <TierBadge tier={planCodeToTier(store.effective_plan)} />
+                      {!store.is_active && <Badge variant="outline">Inactive</Badge>}
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(store.created_at).toLocaleDateString()}
+                      </span>
+                    </div>
+                  </Link>
+                ))}
               </div>
-            </Link>
-          ))}
-        </div>
-      )}
+            )}
+          </CardContent>
+        </Card>
+      </section>
     </div>
   );
 }
 
-function Stat({ label, value }: { label: string; value: string }) {
+function Stat({ label, value, icon: Icon }: { label: string; value: string; icon?: typeof Store }) {
   return (
     <Card className="rounded-2xl">
-      <CardContent className="p-4">
-        <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">{label}</p>
-        <p className="figures mt-2 text-xl">{value}</p>
+      <CardContent className="flex items-start gap-3 p-4">
+        {Icon && (
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-gold">
+            <Icon className="size-4" />
+          </span>
+        )}
+        <div className="min-w-0">
+          <p className="truncate text-xs uppercase tracking-[0.1em] text-muted-foreground">
+            {label}
+          </p>
+          <p className="figures mt-1 text-xl">{value}</p>
+        </div>
       </CardContent>
     </Card>
   );
