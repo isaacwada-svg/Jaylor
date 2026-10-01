@@ -182,6 +182,7 @@ function StoreDetail() {
 
 function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSuperAdmin: boolean }) {
   const queryClient = useQueryClient();
+  const navigate = useNavigate();
   const [planDialogOpen, setPlanDialogOpen] = useState(false);
   const [trialDialogOpen, setTrialDialogOpen] = useState(false);
   const [supportDialogOpen, setSupportDialogOpen] = useState(false);
@@ -190,6 +191,20 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
   const [selectedPlan, setSelectedPlan] = useState("");
   const [trialDays, setTrialDays] = useState("30");
   const [busy, setBusy] = useState(false);
+
+  const [deleteStoreDialogOpen, setDeleteStoreDialogOpen] = useState(false);
+  const [deleteStoreConfirm, setDeleteStoreConfirm] = useState("");
+  const [deleteStoreReason, setDeleteStoreReason] = useState("");
+  const [deletingStore, setDeletingStore] = useState(false);
+
+  const [deleteUserTarget, setDeleteUserTarget] = useState<{
+    userId: string;
+    email: string;
+    isOwner: boolean;
+  } | null>(null);
+  const [deleteUserConfirm, setDeleteUserConfirm] = useState("");
+  const [deleteUserReason, setDeleteUserReason] = useState("");
+  const [deletingUser, setDeletingUser] = useState(false);
 
   const { data, isLoading, error } = useQuery({
     queryKey: ["admin-store-detail", storeId],
@@ -348,6 +363,62 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
     }
   }
 
+  async function deleteStore() {
+    if (!data || deleteStoreConfirm.trim() !== data.store.name) return;
+    if (!deleteStoreReason.trim()) {
+      toast.error("Enter a reason for this deletion");
+      return;
+    }
+    setDeletingStore(true);
+    try {
+      const { error } = await rpcAdmin("admin_delete_store", {
+        p_store_id: storeId,
+        p_reason: deleteStoreReason.trim(),
+      });
+      if (error) throw error;
+      toast.success("Store permanently deleted");
+      navigate({ to: "/admin" });
+    } catch (err) {
+      toast.error(getErrorMessage(err, "Could not delete this store"));
+      setDeletingStore(false);
+    }
+  }
+
+  async function deleteUserAccount() {
+    if (
+      !deleteUserTarget ||
+      deleteUserConfirm.trim().toLowerCase() !== deleteUserTarget.email.toLowerCase()
+    ) {
+      return;
+    }
+    if (!deleteUserReason.trim()) {
+      toast.error("Enter a reason for this deletion");
+      return;
+    }
+    setDeletingUser(true);
+    try {
+      const { error } = await supabase.functions.invoke("admin-delete-user", {
+        body: { userId: deleteUserTarget.userId, reason: deleteUserReason.trim() },
+      });
+      if (error) throw error;
+      toast.success(
+        deleteUserTarget.isOwner
+          ? "Account and store permanently deleted"
+          : "Account permanently deleted",
+      );
+      setDeleteUserTarget(null);
+      if (deleteUserTarget.isOwner) {
+        navigate({ to: "/admin" });
+      } else {
+        refresh();
+      }
+    } catch (err) {
+      toast.error(await getFunctionErrorMessage(err, "Could not delete this account"));
+    } finally {
+      setDeletingUser(false);
+    }
+  }
+
   return (
     <main className="linen min-h-screen bg-background">
       <header className="border-b border-border">
@@ -413,6 +484,19 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
                   Support login
                 </Button>
               )}
+              {isSuperAdmin && (
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => {
+                    setDeleteStoreConfirm("");
+                    setDeleteStoreReason("");
+                    setDeleteStoreDialogOpen(true);
+                  }}
+                >
+                  Delete store
+                </Button>
+              )}
             </div>
 
             <StitchDivider className="my-6" />
@@ -455,16 +539,36 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
 
             <h2 className="mt-8 text-xl">Owner</h2>
             <Card className="mt-3 rounded-2xl">
-              <CardContent className="p-4">
-                <p className="font-medium">{data.owner.full_name ?? "—"}</p>
-                <p className="text-sm text-muted-foreground">{data.owner.email}</p>
-                {data.store.whatsapp_phone && (
-                  <p className="text-sm text-muted-foreground">{data.store.whatsapp_phone}</p>
+              <CardContent className="flex items-start justify-between gap-3 p-4">
+                <div className="min-w-0">
+                  <p className="font-medium">{data.owner.full_name ?? "—"}</p>
+                  <p className="text-sm text-muted-foreground">{data.owner.email}</p>
+                  {data.store.whatsapp_phone && (
+                    <p className="text-sm text-muted-foreground">{data.store.whatsapp_phone}</p>
+                  )}
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Trial ends {new Date(data.store.trial_ends_at).toLocaleDateString()} · Created{" "}
+                    {new Date(data.store.created_at).toLocaleDateString()}
+                  </p>
+                </div>
+                {isSuperAdmin && data.owner.email && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    className="shrink-0"
+                    onClick={() => {
+                      setDeleteUserTarget({
+                        userId: data.owner.id,
+                        email: data.owner.email!,
+                        isOwner: true,
+                      });
+                      setDeleteUserConfirm("");
+                      setDeleteUserReason("");
+                    }}
+                  >
+                    Delete account
+                  </Button>
                 )}
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Trial ends {new Date(data.store.trial_ends_at).toLocaleDateString()} · Created{" "}
-                  {new Date(data.store.created_at).toLocaleDateString()}
-                </p>
               </CardContent>
             </Card>
 
@@ -493,6 +597,23 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
                           onClick={() => removeStaffMember(member.id)}
                         >
                           Remove
+                        </Button>
+                      )}
+                      {isSuperAdmin && member.role !== "owner" && member.email && (
+                        <Button
+                          size="sm"
+                          variant="destructive"
+                          onClick={() => {
+                            setDeleteUserTarget({
+                              userId: member.user_id,
+                              email: member.email!,
+                              isOwner: false,
+                            });
+                            setDeleteUserConfirm("");
+                            setDeleteUserReason("");
+                          }}
+                        >
+                          Delete account
                         </Button>
                       )}
                     </div>
@@ -628,6 +749,105 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
               className="w-full"
             >
               {startingSupport ? "Starting..." : "Start support session"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={deleteStoreDialogOpen} onOpenChange={setDeleteStoreDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {data?.store.name}</DialogTitle>
+            <DialogDescription>
+              Permanently deletes this store and everything in it — clients, orders, payments,
+              measurements, staff, inventory, payroll, every record. This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="delete-store-reason">Reason</Label>
+              <Input
+                id="delete-store-reason"
+                value={deleteStoreReason}
+                onChange={(e) => setDeleteStoreReason(e.target.value)}
+                placeholder="e.g. Owner requested closure under NDPA"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="delete-store-confirm">
+                Type <span className="font-medium">{data?.store.name}</span> to confirm
+              </Label>
+              <Input
+                id="delete-store-confirm"
+                value={deleteStoreConfirm}
+                onChange={(e) => setDeleteStoreConfirm(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="destructive"
+              onClick={deleteStore}
+              disabled={
+                deletingStore ||
+                !deleteStoreReason.trim() ||
+                deleteStoreConfirm !== data?.store.name
+              }
+              className="w-full"
+            >
+              {deletingStore ? "Deleting..." : "Permanently delete this store"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteUserTarget} onOpenChange={(open) => !open && setDeleteUserTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Delete {deleteUserTarget?.email}</DialogTitle>
+            <DialogDescription>
+              Permanently deletes this person's Jaylor account and sign-in.
+              {deleteUserTarget?.isOwner
+                ? " They own this store, so the store and everything in it — clients, orders, payments, measurements, every record — is deleted too."
+                : " Their membership at this and any other store is removed."}{" "}
+              This cannot be undone.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="delete-user-reason">Reason</Label>
+              <Input
+                id="delete-user-reason"
+                value={deleteUserReason}
+                onChange={(e) => setDeleteUserReason(e.target.value)}
+                placeholder="e.g. Account deletion request, abuse, spam"
+                autoFocus
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="delete-user-confirm">
+                Type <span className="font-medium">{deleteUserTarget?.email}</span> to confirm
+              </Label>
+              <Input
+                id="delete-user-confirm"
+                value={deleteUserConfirm}
+                onChange={(e) => setDeleteUserConfirm(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              variant="destructive"
+              onClick={deleteUserAccount}
+              disabled={
+                deletingUser ||
+                !deleteUserReason.trim() ||
+                deleteUserConfirm.toLowerCase() !== (deleteUserTarget?.email.toLowerCase() ?? "")
+              }
+              className="w-full"
+            >
+              {deletingUser ? "Deleting..." : "Permanently delete this account"}
             </Button>
           </DialogFooter>
         </DialogContent>
