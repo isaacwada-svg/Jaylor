@@ -49,7 +49,10 @@ export const Route = createFileRoute("/")({
         content:
           "Jaylor helps Nigerian tailors manage orders, payments, measurements and staff, with client tracking and approval built in.",
       },
-      { property: "og:title", content: "Jaylor: order, payment and staff management for Nigerian tailors" },
+      {
+        property: "og:title",
+        content: "Jaylor: order, payment and staff management for Nigerian tailors",
+      },
       {
         property: "og:description",
         content: "Every order tracked. Every measurement kept. Every naira accounted for.",
@@ -284,7 +287,10 @@ function Home() {
         </div>
       </section>
 
-      <section aria-label="The Jaylor dashboard" className="border-b border-border bg-secondary/40 py-10 lg:py-14">
+      <section
+        aria-label="The Jaylor dashboard"
+        className="border-b border-border bg-secondary/40 py-10 lg:py-14"
+      >
         <div className="mx-auto w-full max-w-5xl px-5 sm:px-8">
           <p className="text-center text-[11px] uppercase text-gold">This is Jaylor</p>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-6 text-foreground/60">
@@ -375,9 +381,9 @@ function Home() {
               Measured once. Ready at any Jaylor tailor.
             </h2>
             <p className="mt-7 text-base leading-7 text-muted-foreground">
-              Your client&apos;s measurements belong to them. With a Jaylor Passport, they can
-              share them with any Jaylor tailor in seconds, and see how their measurements have
-              changed over time.
+              Your client&apos;s measurements belong to them. With a Jaylor Passport, they can share
+              them with any Jaylor tailor in seconds, and see how their measurements have changed
+              over time.
             </p>
             <div className="mt-10 grid grid-cols-2 border-y border-border py-7">
               <div className="border-r border-border pr-6">
@@ -427,8 +433,8 @@ function Home() {
           New clients can find you.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-muted-foreground">
-          List your shop in the Jaylor tailor directory, free on every plan. Clients search by
-          city and style, then chat with you on WhatsApp.
+          List your shop in the Jaylor tailor directory, free on every plan. Clients search by city
+          and style, then chat with you on WhatsApp.
         </p>
         <Button
           asChild

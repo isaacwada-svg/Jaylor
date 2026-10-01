@@ -36,8 +36,8 @@ function Contact() {
         <div className="text-center">
           <h1 className="font-heading text-4xl">Contact & support</h1>
           <p className="mt-4 text-muted-foreground">
-            A question, a bug to report, or help with your store, send us a message and
-            we&apos;ll get back to you.
+            A question, a bug to report, or help with your store, send us a message and we&apos;ll
+            get back to you.
           </p>
         </div>
 
