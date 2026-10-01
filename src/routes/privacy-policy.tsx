@@ -96,7 +96,8 @@ function PrivacyPolicy() {
           restriction, portability, or object to certain processing. They may also withdraw consent
           without affecting earlier lawful processing. Customers should contact the store they dealt
           with directly; stores can export or delete a client&apos;s record at any time from within
-          Jaylor. Store owners and staff can contact us using the details below.
+          Jaylor. Store owners and staff can contact us using the details below, or see{" "}
+          <a href="/delete-account">Delete your account</a> for step-by-step instructions.
         </p>
       </section>
 

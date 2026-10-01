@@ -19,6 +19,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiesRouteImport } from './routes/cookies'
 import { Route as CustomRouteImport } from './routes/custom'
+import { Route as DeleteAccountRouteImport } from './routes/delete-account'
 import { Route as FeaturesRouteImport } from './routes/features'
 import { Route as ImportRouteImport } from './routes/import'
 import { Route as MeasureGuideRouteImport } from './routes/measure-guide'
@@ -32,6 +33,7 @@ import { Route as SecurityRouteImport } from './routes/security'
 import { Route as SitemapDotxmlRouteImport } from './routes/sitemap[.]xml'
 import { Route as TailorsRouteImport } from './routes/tailors'
 import { Route as TermsRouteImport } from './routes/terms'
+import { Route as DotwellKnownAssetlinksDotjsonRouteImport } from './routes/[.]well-known/assetlinks[.]json'
 import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
 import { Route as AuthenticatedAiStudioRouteImport } from './routes/_authenticated/ai-studio'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
@@ -128,6 +130,11 @@ const CustomRoute = CustomRouteImport.update({
   path: '/custom',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DeleteAccountRoute = DeleteAccountRouteImport.update({
+  id: '/delete-account',
+  path: '/delete-account',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const FeaturesRoute = FeaturesRouteImport.update({
   id: '/features',
   path: '/features',
@@ -193,6 +200,12 @@ const TermsRoute = TermsRouteImport.update({
   path: '/terms',
   getParentRoute: () => rootRouteImport,
 } as any)
+const DotwellKnownAssetlinksDotjsonRoute =
+  DotwellKnownAssetlinksDotjsonRouteImport.update({
+    id: '/.well-known/assetlinks.json',
+    path: '/.well-known/assetlinks.json',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AuthenticatedAiDesignsRoute = AuthenticatedAiDesignsRouteImport.update({
   id: '/ai-designs',
   path: '/ai-designs',
@@ -445,6 +458,7 @@ export interface FileRoutesByFullPath {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
@@ -458,6 +472,7 @@ export interface FileRoutesByFullPath {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -515,6 +530,7 @@ export interface FileRoutesByTo {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
@@ -528,6 +544,7 @@ export interface FileRoutesByTo {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
@@ -587,6 +604,7 @@ export interface FileRoutesById {
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
   '/custom': typeof CustomRoute
+  '/delete-account': typeof DeleteAccountRoute
   '/features': typeof FeaturesRoute
   '/import': typeof ImportRoute
   '/measure-guide': typeof MeasureGuideRoute
@@ -600,6 +618,7 @@ export interface FileRoutesById {
   '/sitemap.xml': typeof SitemapDotxmlRoute
   '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
+  '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/_authenticated/ai-studio': typeof AuthenticatedAiStudioRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
@@ -659,6 +678,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/custom'
+    | '/delete-account'
     | '/features'
     | '/import'
     | '/measure-guide'
@@ -672,6 +692,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tailors'
     | '/terms'
+    | '/.well-known/assetlinks.json'
     | '/ai-designs'
     | '/ai-studio'
     | '/billing'
@@ -729,6 +750,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/custom'
+    | '/delete-account'
     | '/features'
     | '/import'
     | '/measure-guide'
@@ -742,6 +764,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tailors'
     | '/terms'
+    | '/.well-known/assetlinks.json'
     | '/ai-designs'
     | '/ai-studio'
     | '/billing'
@@ -800,6 +823,7 @@ export interface FileRouteTypes {
     | '/contact'
     | '/cookies'
     | '/custom'
+    | '/delete-account'
     | '/features'
     | '/import'
     | '/measure-guide'
@@ -813,6 +837,7 @@ export interface FileRouteTypes {
     | '/sitemap.xml'
     | '/tailors'
     | '/terms'
+    | '/.well-known/assetlinks.json'
     | '/_authenticated/ai-designs'
     | '/_authenticated/ai-studio'
     | '/_authenticated/billing'
@@ -872,6 +897,7 @@ export interface RootRouteChildren {
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
   CustomRoute: typeof CustomRoute
+  DeleteAccountRoute: typeof DeleteAccountRoute
   FeaturesRoute: typeof FeaturesRoute
   ImportRoute: typeof ImportRoute
   MeasureGuideRoute: typeof MeasureGuideRoute
@@ -885,6 +911,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   TailorsRoute: typeof TailorsRouteWithChildren
   TermsRoute: typeof TermsRoute
+  DotwellKnownAssetlinksDotjsonRoute: typeof DotwellKnownAssetlinksDotjsonRoute
   ATokenRoute: typeof ATokenRoute
   BookHandleRoute: typeof BookHandleRoute
   DesignTokenRoute: typeof DesignTokenRoute
@@ -971,6 +998,13 @@ declare module '@tanstack/react-router' {
       path: '/custom'
       fullPath: '/custom'
       preLoaderRoute: typeof CustomRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/delete-account': {
+      id: '/delete-account'
+      path: '/delete-account'
+      fullPath: '/delete-account'
+      preLoaderRoute: typeof DeleteAccountRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/features': {
@@ -1062,6 +1096,13 @@ declare module '@tanstack/react-router' {
       path: '/terms'
       fullPath: '/terms'
       preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/.well-known/assetlinks.json': {
+      id: '/.well-known/assetlinks.json'
+      path: '/.well-known/assetlinks.json'
+      fullPath: '/.well-known/assetlinks.json'
+      preLoaderRoute: typeof DotwellKnownAssetlinksDotjsonRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/ai-designs': {
@@ -1512,6 +1553,7 @@ const rootRouteChildren: RootRouteChildren = {
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
   CustomRoute: CustomRoute,
+  DeleteAccountRoute: DeleteAccountRoute,
   FeaturesRoute: FeaturesRoute,
   ImportRoute: ImportRoute,
   MeasureGuideRoute: MeasureGuideRoute,
@@ -1525,6 +1567,7 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   TailorsRoute: TailorsRouteWithChildren,
   TermsRoute: TermsRoute,
+  DotwellKnownAssetlinksDotjsonRoute: DotwellKnownAssetlinksDotjsonRoute,
   ATokenRoute: ATokenRoute,
   BookHandleRoute: BookHandleRoute,
   DesignTokenRoute: DesignTokenRoute,
