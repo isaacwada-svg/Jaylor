@@ -6,6 +6,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { EventForm } from "@/components/jaylor/event-form";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { UpgradeButton } from "@/components/jaylor/upgrade-button";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,6 +16,7 @@ import { formatMoney } from "@/lib/jaylor";
 import { computeQuoteTotals } from "@/lib/quote";
 import { jobTemplate } from "@/lib/job-templates";
 import { useJobTemplates } from "@/lib/use-job-templates";
+import { useContractsAccess } from "@/lib/use-contracts-access";
 
 export const Route = createFileRoute("/_authenticated/contracts")({
   staticData: { sitemap: false },
@@ -35,6 +37,7 @@ function Contracts() {
   const storeId = currentStore?.id;
   const canCreate = currentRole === "owner" || currentRole === "manager";
   const { data: storeTemplates } = useJobTemplates(storeId);
+  const { data: contractsAccess } = useContractsAccess(storeId);
   const queryClient = useQueryClient();
   const [formOpen, setFormOpen] = useState(false);
 
@@ -87,12 +90,15 @@ function Contracts() {
               School, company and other single-payer jobs — value, deposit status and balance.
             </p>
           </div>
-          {canCreate && (
-            <Button onClick={() => setFormOpen(true)} className="shrink-0">
-              <Plus className="size-4" />
-              New contract
-            </Button>
-          )}
+          {canCreate &&
+            (contractsAccess ? (
+              <Button onClick={() => setFormOpen(true)} className="shrink-0">
+                <Plus className="size-4" />
+                New contract
+              </Button>
+            ) : (
+              <UpgradeButton requiredPlan="business" />
+            ))}
         </div>
         <StitchDivider className="my-6" />
 
@@ -108,7 +114,11 @@ function Contracts() {
             description="School uniforms, company uniforms and other single-payer jobs will show up here once you create one."
             action={
               canCreate ? (
-                <Button onClick={() => setFormOpen(true)}>New contract</Button>
+                contractsAccess ? (
+                  <Button onClick={() => setFormOpen(true)}>New contract</Button>
+                ) : (
+                  <UpgradeButton requiredPlan="business" />
+                )
               ) : undefined
             }
           />

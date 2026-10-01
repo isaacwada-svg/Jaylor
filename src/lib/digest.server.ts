@@ -106,6 +106,27 @@ export type DigestResult = {
   notification: boolean;
 };
 
+/** Growth and above -- PR Q0. The scheduled send path (this function) skips
+ *  a store without access regardless of its own digest_daily/digest_weekly
+ *  toggle; the settings UI shows an upgrade prompt instead of the toggles
+ *  (see digest-settings.tsx). Reads through _store_has_feature(), not
+ *  feature_usage() -- feature_usage() requires auth.uid(), which a
+ *  service-role call (no user JWT) never has, the same bug class PR P
+ *  found in order_balances. _store_has_feature() is auth-free and already
+ *  exists (added for consultations); this migration only grants service_role
+ *  execute on it. */
+async function hasDigestsFeature(storeId: string): Promise<boolean> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data } = await supabaseAdmin.rpc(
+    "_store_has_feature" as never,
+    {
+      p_store_id: storeId,
+      p_feature: "digests",
+    } as never,
+  );
+  return Boolean(data);
+}
+
 export async function sendDailyDigest(
   storeId: string,
   opts?: { force?: boolean },
@@ -113,6 +134,9 @@ export async function sendDailyDigest(
   const recipients = await getRecipients(storeId);
   if (!recipients) return { skipped: true, email: false, whatsapp: false, notification: false };
   if (!opts?.force && !recipients.digestDaily) {
+    return { skipped: true, email: false, whatsapp: false, notification: false };
+  }
+  if (!(await hasDigestsFeature(storeId))) {
     return { skipped: true, email: false, whatsapp: false, notification: false };
   }
 
@@ -158,6 +182,9 @@ export async function sendWeeklyDigest(
   const recipients = await getRecipients(storeId);
   if (!recipients) return { skipped: true, email: false, whatsapp: false, notification: false };
   if (!opts?.force && !recipients.digestWeekly) {
+    return { skipped: true, email: false, whatsapp: false, notification: false };
+  }
+  if (!(await hasDigestsFeature(storeId))) {
     return { skipped: true, email: false, whatsapp: false, notification: false };
   }
 
