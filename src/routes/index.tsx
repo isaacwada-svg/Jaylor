@@ -29,7 +29,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY_LINE, ORDER_STATUSES } from "@/lib/jaylor";
+import { COMPANY_LINE, ORDER_STATUSES, SHOW_DIRECTORY_IN_NAV } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
 import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
@@ -207,6 +207,14 @@ function Home() {
             <a href="#pricing" className="transition-colors hover:text-gold">
               Pricing
             </a>
+            <Link to="/passport" className="transition-colors hover:text-gold">
+              Passport
+            </Link>
+            {SHOW_DIRECTORY_IN_NAV && (
+              <Link to="/tailors" className="transition-colors hover:text-gold">
+                Find a tailor
+              </Link>
+            )}
           </nav>
           <div className="flex items-center gap-4">
             {signedIn ? (
@@ -275,6 +283,12 @@ function Home() {
             >
               See how it works
             </a>
+            <p className="mt-2 text-[11px] text-foreground/50">
+              Are you a client?{" "}
+              <Link to="/passport" className="underline underline-offset-2 hover:text-gold">
+                Claim your Measurement Passport
+              </Link>
+            </p>
           </div>
         </div>
         <div className="absolute bottom-0 right-5 hidden w-64 border-t border-gold/70 py-5 lg:block lg:right-12">
@@ -620,31 +634,55 @@ function Home() {
       </section>
 
       <footer className="py-14">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-[1fr_auto] lg:px-10">
-          <div>
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-10 sm:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase text-foreground/50">For clients</p>
+              <nav className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/passport" className="hover:text-gold">
+                  Measurement Passport
+                </Link>
+                <Link to="/tailors" className="hover:text-gold">
+                  Find a tailor
+                </Link>
+              </nav>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-foreground/50">For tailors</p>
+              <nav className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/features" className="hover:text-gold">
+                  Features
+                </Link>
+                <Link to="/pricing" className="hover:text-gold">
+                  Pricing
+                </Link>
+                <Link to="/auth" search={{ mode: "signup" }} className="hover:text-gold">
+                  Start free
+                </Link>
+              </nav>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-foreground/50">Company</p>
+              <nav className="mt-3 flex flex-col gap-2 text-xs text-muted-foreground">
+                <Link to="/about" className="hover:text-gold">
+                  About
+                </Link>
+                <Link to="/privacy-policy" className="hover:text-gold">
+                  Privacy
+                </Link>
+                <Link to="/terms" className="hover:text-gold">
+                  Terms
+                </Link>
+                <Link to="/security" className="hover:text-gold">
+                  Security
+                </Link>
+              </nav>
+            </div>
+          </div>
+          <div className="mt-10 border-t border-foreground/10 pt-8">
             <BrandLogo dark showTagline markClassName="h-12 w-auto" />
             <p className="mt-5 max-w-sm text-xs leading-5 text-muted-foreground">{COMPANY_LINE}</p>
           </div>
-          <nav className="grid grid-cols-2 gap-x-10 gap-y-3 text-xs text-muted-foreground sm:grid-cols-3">
-            <Link to="/features" className="hover:text-gold">
-              Features
-            </Link>
-            <Link to="/pricing" className="hover:text-gold">
-              Pricing
-            </Link>
-            <Link to="/about" className="hover:text-gold">
-              About
-            </Link>
-            <Link to="/privacy-policy" className="hover:text-gold">
-              Privacy
-            </Link>
-            <Link to="/terms" className="hover:text-gold">
-              Terms
-            </Link>
-            <Link to="/security" className="hover:text-gold">
-              Security
-            </Link>
-          </nav>
         </div>
       </footer>
     </main>
