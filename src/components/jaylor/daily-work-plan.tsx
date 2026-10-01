@@ -1,9 +1,9 @@
 import { useQuery } from "@tanstack/react-query";
 import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
-import { orderStatusLabel } from "@/lib/jaylor";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 
 /**
  * Daily work plan, rule-based (no AI): orders sorted by due date, current
@@ -26,6 +26,7 @@ type WorkOrder = {
 };
 
 export function DailyWorkPlan({ storeId }: { storeId: string | undefined }) {
+  const statusLabel = useOrderStatusLabel();
   const { data: plan, isLoading } = useQuery({
     queryKey: ["daily-work-plan", storeId],
     enabled: !!storeId,
@@ -65,7 +66,7 @@ export function DailyWorkPlan({ storeId }: { storeId: string | undefined }) {
                     Taking longer than usual
                   </Badge>
                 )}
-                <Badge variant="outline">{orderStatusLabel(o.status)}</Badge>
+                <Badge variant="outline">{statusLabel(o.status)}</Badge>
               </div>
             </Link>
           ))}

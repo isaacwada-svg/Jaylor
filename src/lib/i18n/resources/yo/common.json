@@ -8,5 +8,13 @@
   "something_wrong": "Àṣìṣe ṣẹlẹ̀. Jọ̀wọ́ gbìyànjú lẹ́ẹ̀kansí.",
   "copied": "Ti dàkọ",
   "copy_failed": "Kò lè dàkọ",
+  "status_received": "Ti gbà",
+  "status_cutting": "Ń gé aṣọ",
+  "status_sewing": "Ń rán aṣọ",
+  "status_fitting": "Ìwọ̀n",
+  "status_adjustments": "Àtúnṣe",
+  "status_ready": "Ti ṣetán",
+  "status_collected": "Ti gbà kúrò",
+  "status_cancelled": "Ti fagilé",
   "_meta_status": "machine-drafted-needs-review"
 }

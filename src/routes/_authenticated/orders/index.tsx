@@ -12,7 +12,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
-import { ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
+import { ORDER_STATUSES_DB } from "@/lib/jaylor";
+import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 
 export const Route = createFileRoute("/_authenticated/orders/")({
   staticData: { sitemap: false },
@@ -51,6 +52,7 @@ function startOfToday() {
 }
 
 function Orders() {
+  const statusLabel = useOrderStatusLabel();
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const queryClient = useQueryClient();
@@ -196,7 +198,7 @@ function Orders() {
                   </div>
                   {statusIndex >= 0 && (
                     <StitchTrack
-                      steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
+                      steps={ORDER_STATUSES_DB.map(statusLabel)}
                       currentIndex={statusIndex}
                       compact
                       className="mt-4"

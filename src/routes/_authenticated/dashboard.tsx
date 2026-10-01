@@ -22,7 +22,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ORDER_STATUSES_DB, orderStatusLabel, effectiveTier } from "@/lib/jaylor";
+import { ORDER_STATUSES_DB, effectiveTier } from "@/lib/jaylor";
+import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
 import { CapacityLoadChart } from "@/components/jaylor/capacity-load-chart";
 import { LowStockCard } from "@/components/jaylor/low-stock-card";
@@ -97,6 +98,7 @@ function daysSince(iso: string): number {
 }
 
 function Home() {
+  const statusLabel = useOrderStatusLabel();
   const navigate = useNavigate();
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
@@ -351,7 +353,7 @@ function Home() {
 
   const statusChartData = ORDER_STATUSES_DB.filter((status) => status !== "collected")
     .map((status) => ({
-      status: orderStatusLabel(status),
+      status: statusLabel(status),
       count: stats?.statusCounts.get(status) ?? 0,
     }))
     .filter((row) => row.count > 0);
@@ -638,7 +640,7 @@ function Home() {
                             </div>
                             {statusIndex >= 0 && (
                               <StitchTrack
-                                steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
+                                steps={ORDER_STATUSES_DB.map(statusLabel)}
                                 currentIndex={statusIndex}
                                 className="mt-5"
                               />
@@ -778,7 +780,7 @@ function Home() {
                           </div>
                           {statusIndex >= 0 && (
                             <StitchTrack
-                              steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
+                              steps={ORDER_STATUSES_DB.map(statusLabel)}
                               currentIndex={statusIndex}
                               className="mt-5"
                             />

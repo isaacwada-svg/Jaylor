@@ -8,5 +8,13 @@
   "something_wrong": "Something no gree work. Abeg try again.",
   "copied": "E don copy",
   "copy_failed": "E no fit copy",
+  "status_received": "Dem don receive am",
+  "status_cutting": "E dey cut",
+  "status_sewing": "E dey sew",
+  "status_fitting": "Fitting",
+  "status_adjustments": "Adjustment",
+  "status_ready": "E don ready",
+  "status_collected": "Dem don carry am",
+  "status_cancelled": "Dem cancel am",
   "_meta_status": "machine-drafted-needs-review"
 }

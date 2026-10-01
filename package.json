@@ -9,6 +9,7 @@
     "build:dev": "vite build --mode development",
     "preview": "vite preview",
     "lint": "eslint .",
+    "lint:i18n": "node scripts/check-hardcoded-strings.mjs",
     "format": "prettier --write ."
   },
   "overrides": {

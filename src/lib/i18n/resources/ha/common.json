@@ -8,5 +8,13 @@
   "something_wrong": "Wani abu ya faru. Da fatan a sake gwadawa.",
   "copied": "An kwafa",
   "copy_failed": "An kasa kwafa",
+  "status_received": "An karɓa",
+  "status_cutting": "Ana yankawa",
+  "status_sewing": "Ana ɗinka",
+  "status_fitting": "Auna",
+  "status_adjustments": "Gyare-gyare",
+  "status_ready": "A shirye",
+  "status_collected": "An karɓa",
+  "status_cancelled": "An soke",
   "_meta_status": "machine-drafted-needs-review"
 }

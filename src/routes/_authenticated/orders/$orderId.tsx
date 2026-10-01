@@ -34,7 +34,8 @@ import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
 import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
-import { ORDER_STATUSES_DB, orderStatusLabel, type OrderStatusDb } from "@/lib/jaylor";
+import { ORDER_STATUSES_DB, type OrderStatusDb } from "@/lib/jaylor";
+import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 import { isBridalRemeasureDue } from "@/lib/measurements";
 import { whatsappLink } from "@/lib/whatsapp";
 import {
@@ -76,6 +77,7 @@ type TrackedOrder = { tracking_token?: string | null };
 
 function OrderDetail() {
   const { orderId } = Route.useParams();
+  const statusLabel = useOrderStatusLabel();
   const queryClient = useQueryClient();
   const { currentStore, currentRole } = useStore();
   const canSeeMoney = currentRole === "owner" || currentRole === "manager";
@@ -522,7 +524,7 @@ function OrderDetail() {
         }
       }
 
-      toast.success(`Marked ${orderStatusLabel(pendingStatus)}`);
+      toast.success(`Marked ${statusLabel(pendingStatus)}`);
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["order-history", orderId] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
@@ -664,7 +666,7 @@ function OrderDetail() {
         ) : (
           <div className="mt-8">
             <StitchTrack
-              steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
+              steps={ORDER_STATUSES_DB.map(statusLabel)}
               currentIndex={statusIndex}
               className="cursor-pointer"
             />
@@ -677,7 +679,7 @@ function OrderDetail() {
                   onClick={() => setPendingStatus(s)}
                   disabled={i === statusIndex}
                 >
-                  {orderStatusLabel(s)}
+                  {statusLabel(s)}
                 </Button>
               ))}
             </div>
@@ -858,7 +860,7 @@ function OrderDetail() {
                     consentWhatsapp={client.consent_whatsapp}
                     clientName={client.full_name ?? ""}
                     garmentType={order.garment_type ?? ""}
-                    orderStatus={orderStatusLabel(order.status ?? "")}
+                    orderStatus={statusLabel(order.status ?? "")}
                     balance={balance?.balance ?? 0}
                     deliveryDate={order.delivery_date}
                   />
@@ -1151,8 +1153,8 @@ function OrderDetail() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span>
-                        {h.from_status ? `${orderStatusLabel(h.from_status)} → ` : "Created as "}
-                        {orderStatusLabel(h.to_status)}
+                        {h.from_status ? `${statusLabel(h.from_status)} → ` : "Created as "}
+                        {statusLabel(h.to_status)}
                       </span>
                       <span className="text-muted-foreground">
                         {new Date(h.changed_at).toLocaleString()}
@@ -1218,9 +1220,7 @@ function OrderDetail() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>
-              Mark as {pendingStatus ? orderStatusLabel(pendingStatus) : ""}?
-            </DialogTitle>
+            <DialogTitle>Mark as {pendingStatus ? statusLabel(pendingStatus) : ""}?</DialogTitle>
             <DialogDescription>
               {pendingStatus === "collected" &&
               canSeeMoney &&
