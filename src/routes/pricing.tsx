@@ -27,21 +27,16 @@ export const Route = createFileRoute("/pricing")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Pricing — Jaylor" },
+      { title: "Pricing: Jaylor" },
       {
         name: "description",
         content:
           "Monthly, quarterly or yearly plans for tailors and fashion houses in Nigeria. Every new store gets a 14-day Growth trial, no card required.",
       },
-      { property: "og:title", content: "Pricing — Jaylor" },
+      { property: "og:title", content: "Pricing: Jaylor" },
       {
         property: "og:description",
         content: "Simple, honest pricing for tailors and fashion houses in Nigeria.",
-      },
-      { property: "og:title", content: "Pricing — Jaylor" },
-      {
-        property: "og:description",
-        content: "Simple pricing for Nigerian tailors and fashion houses, free to start.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },

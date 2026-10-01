@@ -29,14 +29,14 @@ export const JOB_LANDING_CONTENT: JobLandingContent[] = [
     tileLabel: "Burial",
     headline: "Burial aso-ebi, sorted in minutes, not days",
     pain: "Short notice, a grieving family, and dozens of relatives who all need the same outfit by the same tight date.",
-    flow: "Start a burial order — it defaults to rush mode. Share the link, a sponsor can cover some members while others pay their own way, and you see who's measured and who's paid at a glance.",
+    flow: "Start a burial order, it defaults to rush mode. Share the link, a sponsor can cover some members while others pay their own way, and you see who's measured and who's paid at a glance.",
   },
   {
     jobType: "family_occasion",
     slug: "family-occasion",
     tileLabel: "Family occasion",
     headline: "One parent pays, the whole family measures",
-    pain: "Christmas, Sallah, a naming — one person is paying for everyone, but you still need six sets of measurements.",
+    pain: "Christmas, Sallah, a naming, one person is paying for everyone, but you still need six sets of measurements.",
     flow: "Create the occasion, one payer covers it all. Every family member gets their own link to confirm measurements, and next year you just duplicate the same job.",
   },
   {
@@ -52,7 +52,7 @@ export const JOB_LANDING_CONTENT: JobLandingContent[] = [
     slug: "school-uniforms",
     tileLabel: "School uniforms",
     headline: "A school uniform contract that looks like a real business",
-    pain: "A school wants a proper quote, a PO number and an invoice — not a WhatsApp message with a price in it.",
+    pain: "A school wants a proper quote, a PO number and an invoice, not a WhatsApp message with a price in it.",
     flow: "Pick sizes instead of measurements, set quantity price bands, and send a real quote. Once accepted it becomes a live job with an invoice number, batches and delivery tracking.",
   },
   {
@@ -60,7 +60,7 @@ export const JOB_LANDING_CONTENT: JobLandingContent[] = [
     slug: "company-uniforms",
     tileLabel: "Company uniforms",
     headline: "Win the hotel or company uniform contract",
-    pain: "Formal procurement means a quote, VAT, payment terms and an invoice — the one document that actually wins the job.",
+    pain: "Formal procurement means a quote, VAT, payment terms and an invoice. That's the one document that actually wins the job.",
     flow: "Build the quote with quantity, unit price, VAT and deposit terms. Send it, they accept it, and it becomes a tracked contract with batches, delivery and balance owed.",
   },
   {
@@ -76,7 +76,7 @@ export const JOB_LANDING_CONTENT: JobLandingContent[] = [
     slug: "clients-abroad",
     tileLabel: "Clients abroad",
     headline: "Clients abroad, without the back-and-forth",
-    pain: "A client in London or Houston wants an outfit made at home — measuring, paying and shipping all feel harder from a distance.",
+    pain: "A client in London or Houston wants an outfit made at home. Measuring, paying and shipping all feel harder from a distance.",
     flow: "Send a link with a delivery address and shipping fee attached. They self-measure, pay by card in their own currency, and you see the naira amount you'll receive.",
   },
   {
@@ -84,7 +84,7 @@ export const JOB_LANDING_CONTENT: JobLandingContent[] = [
     slug: "one-client-remote",
     tileLabel: "One client, remote",
     headline: "The client who just can't come in this week",
-    pain: "Every tailor has one — a regular who's busy, travelling, or just can't make it to the shop for measurements.",
+    pain: "Every tailor has one, a regular who's busy, travelling, or just can't make it to the shop for measurements.",
     flow: "From their client record, tap Send measure link. They open it, measure themselves, pay a deposit if you ask for one, and you carry on as normal.",
   },
   {
