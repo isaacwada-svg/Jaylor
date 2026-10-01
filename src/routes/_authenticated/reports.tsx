@@ -133,11 +133,12 @@ function Reports() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("order_materials")
-        .select("order_id, cost, source")
+        .select("order_id, cost")
         .in("order_id", orderIdsThisMonth)
-        .eq("source", "tailor");
+        .eq("billed_to_client" as never, false);
       if (error) throw error;
-      return data;
+      // `billed_to_client` predates the generated Supabase types.
+      return data as unknown as { order_id: string; cost: number | null }[];
     },
   });
 
@@ -325,10 +326,13 @@ function Reports() {
     [ordersCreated],
   );
 
-  // Order-level profit: price minus (tailor-purchased material cost + labour + other), for
-  // orders created this period -- distinct from netProfit above, which is store-wide
-  // collected revenue minus expenses for the same period. NGN only -- material/labour/other
-  // costs are recorded in NGN, so mixing in a foreign-currency price would misstate profit.
+  // Order-level profit: price minus (unbilled material cost + labour + other), for orders
+  // created this period -- distinct from netProfit above, which is store-wide collected
+  // revenue minus expenses for the same period. A material billed to the client is
+  // pass-through (added to their total elsewhere, see order_balances) and doesn't affect
+  // profit either way, so only billed_to_client = false materials count as a cost here.
+  // NGN only -- material/labour/other costs are recorded in NGN, so mixing in a
+  // foreign-currency price would misstate profit.
   const materialCostByOrder = useMemo(() => {
     const map = new Map<string, number>();
     for (const m of orderMaterialsThisMonth ?? []) {
