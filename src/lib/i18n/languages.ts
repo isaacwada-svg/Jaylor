@@ -21,10 +21,10 @@ export function isLanguageCode(value: unknown): value is LanguageCode {
 /** Every namespace shipped so far -- each file lives at
  *  src/lib/i18n/resources/{lang}/{namespace}.json.
  *  common..events: client-facing pages (PR L).
- *  auth, app_common, app_settings: the tailor's own app screens (PR M part 2,
- *  scoped to auth/onboarding-adjacent + shared chrome + settings only --
- *  see docs/translations.md for what's covered here vs. left for a follow-up
- *  PR M-2 (dashboard, orders, clients, measurements and the rest). */
+ *  auth, app_common, app_settings: the tailor's own app screens, part 2 (PR M).
+ *  app_dashboard, app_orders, app_order_form, app_clients, app_payments,
+ *  app_payroll, app_inventory: the tailor's own app screens, part 3 (PR M2) --
+ *  see docs/translations.md for what's covered and what's still deferred. */
 export const NAMESPACES = [
   "common",
   "tracking",
@@ -37,6 +37,13 @@ export const NAMESPACES = [
   "auth",
   "app_common",
   "app_settings",
+  "app_dashboard",
+  "app_orders",
+  "app_order_form",
+  "app_clients",
+  "app_payments",
+  "app_payroll",
+  "app_inventory",
 ] as const;
 
 export type Namespace = (typeof NAMESPACES)[number];

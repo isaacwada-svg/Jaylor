@@ -19,6 +19,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { downloadCsv } from "@/lib/csv";
 import { formatMoney } from "@/lib/jaylor";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/payments")({
   staticData: { sitemap: false },
@@ -29,6 +30,7 @@ export const Route = createFileRoute("/_authenticated/payments")({
 type MethodFilter = "all" | "cash" | "transfer" | "pos" | "paystack";
 
 function PaymentsScreen() {
+  const t = useAppT("app_payments");
   const { currentStore } = useStore();
   const storeId = currentStore?.id;
   const [method, setMethod] = useState<MethodFilter>("all");
@@ -88,7 +90,15 @@ function PaymentsScreen() {
   const total = filtered.reduce((sum, r) => sum + r.amount, 0);
 
   function exportCsv() {
-    const header = ["Date", "Client", "Order", "Garment", "Method", "Amount", "Reference"];
+    const header = [
+      t("csv_header_date") || "Date",
+      t("csv_header_client") || "Client",
+      t("csv_header_order") || "Order",
+      t("csv_header_garment") || "Garment",
+      t("csv_header_method") || "Method",
+      t("csv_header_amount") || "Amount",
+      t("csv_header_reference") || "Reference",
+    ];
     const body = filtered.map((r) => [
       new Date(r.paid_at).toLocaleDateString(),
       r.clientName,
@@ -106,13 +116,15 @@ function PaymentsScreen() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <Link to="/more" className="inline-flex items-center gap-1 text-sm text-muted-foreground">
           <ArrowLeft className="size-4" />
-          More
+          {t("more_link") || "More"}
         </Link>
         <div className="mt-3 flex items-center justify-between gap-3">
-          <h1 className="text-3xl">Payments</h1>
+          <h1 className="text-3xl">{t("page_title") || "Payments"}</h1>
           <div className="flex gap-2">
             <Button size="sm" variant="outline" asChild>
-              <Link to="/unmatched-payments">Unmatched transfers</Link>
+              <Link to="/unmatched-payments">
+                {t("unmatched_transfers") || "Unmatched transfers"}
+              </Link>
             </Button>
             <Button
               size="sm"
@@ -121,7 +133,7 @@ function PaymentsScreen() {
               disabled={filtered.length === 0}
             >
               <Download className="size-4" />
-              Export CSV
+              {t("export_csv") || "Export CSV"}
             </Button>
           </div>
         </div>
@@ -130,7 +142,7 @@ function PaymentsScreen() {
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search client"
+            placeholder={t("search_client_placeholder") || "Search client"}
             className="max-w-xs"
           />
           <Select value={method} onValueChange={(v) => setMethod(v as MethodFilter)}>
@@ -138,18 +150,19 @@ function PaymentsScreen() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All methods</SelectItem>
-              <SelectItem value="cash">Cash</SelectItem>
-              <SelectItem value="transfer">Transfer</SelectItem>
-              <SelectItem value="pos">POS</SelectItem>
-              <SelectItem value="paystack">Paystack</SelectItem>
+              <SelectItem value="all">{t("method_all") || "All methods"}</SelectItem>
+              <SelectItem value="cash">{t("method_cash") || "Cash"}</SelectItem>
+              <SelectItem value="transfer">{t("method_transfer") || "Transfer"}</SelectItem>
+              <SelectItem value="pos">{t("method_pos") || "POS"}</SelectItem>
+              <SelectItem value="paystack">{t("method_paystack") || "Paystack"}</SelectItem>
             </SelectContent>
           </Select>
         </div>
 
         <p className="mt-3 text-sm text-muted-foreground">
-          {filtered.length} payment{filtered.length === 1 ? "" : "s"} ·{" "}
-          <MoneyText amount={total} variant="paid" className="inline" />
+          {t("summary_count", { count: filtered.length }) ||
+            `${filtered.length} payment${filtered.length === 1 ? "" : "s"}`}{" "}
+          · <MoneyText amount={total} variant="paid" className="inline" />
         </p>
 
         <div className="mt-4 space-y-2">
@@ -160,8 +173,8 @@ function PaymentsScreen() {
             </>
           ) : filtered.length === 0 ? (
             <EmptyState
-              title="No payments yet"
-              description="Recorded payments will show up here."
+              title={t("empty_title") || "No payments yet"}
+              description={t("empty_description") || "Recorded payments will show up here."}
             />
           ) : (
             filtered.map((p) => (

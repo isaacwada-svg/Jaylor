@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Input } from "@/components/ui/input";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 function useDebounced(value: string, ms = 250) {
   const [v, setV] = useState(value);
@@ -25,8 +26,14 @@ function dayBounds() {
 }
 
 export function DashboardOverview({ storeId }: { storeId: string | undefined }) {
+  const t = useAppT("app_dashboard");
   const [q, setQ] = useState("");
-  const term = useDebounced(q.trim().replace(/[%,()*\\]/g, "").slice(0, 60));
+  const term = useDebounced(
+    q
+      .trim()
+      .replace(/[%,()*\\]/g, "")
+      .slice(0, 60),
+  );
 
   const { data: counts } = useQuery({
     queryKey: ["dashboard-overview", storeId],
@@ -79,56 +86,72 @@ export function DashboardOverview({ storeId }: { storeId: string | undefined }) 
   });
 
   const tiles = [
-    { label: "Active orders", value: counts?.active, to: "/orders" as const },
-    { label: "Due within 7 days", value: counts?.pending, to: "/orders" as const },
-    { label: "Fittings today", value: counts?.fittings, to: "/consultations" as const },
+    {
+      label: t("tile_active_orders") || "Active orders",
+      value: counts?.active,
+      to: "/orders" as const,
+    },
+    {
+      label: t("tile_due_within_week") || "Due within 7 days",
+      value: counts?.pending,
+      to: "/orders" as const,
+    },
+    {
+      label: t("tile_fittings_today") || "Fittings today",
+      value: counts?.fittings,
+      to: "/consultations" as const,
+    },
   ];
 
   return (
     <section className="mb-6 space-y-3">
       <div className="sticky top-2 z-30 -mx-1 px-1">
-      <div className="relative">
-        <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={q}
-          onChange={(ev) => setQ(ev.target.value)}
-          placeholder="Find a client or measurement by name or phone"
-          aria-label="Search clients"
-          maxLength={60}
-          className="h-12 pl-9 text-base"
-        />
-        {term.length >= 2 && (
-          <div className="absolute z-20 mt-1 w-full rounded-xl border bg-popover shadow-lg">
-            {results && results.length > 0 ? (
-              results.map((c) => (
-                <Link
-                  key={c.id}
-                  to="/clients/$clientId"
-                  params={{ clientId: c.id }}
-                  className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent"
-                >
-                  <span className="font-medium">{c.full_name}</span>
-                  <span className="text-muted-foreground">{c.phone}</span>
-                </Link>
-              ))
-            ) : (
-              <p className="px-4 py-3 text-sm text-muted-foreground">No matching clients</p>
-            )}
-          </div>
-        )}
-      </div>
+        <div className="relative">
+          <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            value={q}
+            onChange={(ev) => setQ(ev.target.value)}
+            placeholder={t("search_placeholder") || "Find a client or measurement by name or phone"}
+            aria-label={t("search_aria_label") || "Search clients"}
+            maxLength={60}
+            className="h-12 pl-9 text-base"
+          />
+          {term.length >= 2 && (
+            <div className="absolute z-20 mt-1 w-full rounded-xl border bg-popover shadow-lg">
+              {results && results.length > 0 ? (
+                results.map((c) => (
+                  <Link
+                    key={c.id}
+                    to="/clients/$clientId"
+                    params={{ clientId: c.id }}
+                    className="flex items-center justify-between px-4 py-3 text-sm hover:bg-accent"
+                  >
+                    <span className="font-medium">{c.full_name}</span>
+                    <span className="text-muted-foreground">{c.phone}</span>
+                  </Link>
+                ))
+              ) : (
+                <p className="px-4 py-3 text-sm text-muted-foreground">
+                  {t("no_matching_clients") || "No matching clients"}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
       <div className="grid grid-cols-3 gap-2 sm:gap-3">
-        {tiles.map((t) => (
+        {tiles.map((tile) => (
           <Link
-            key={t.label}
-            to={t.to}
+            key={tile.label}
+            to={tile.to}
             className="group relative min-h-[88px] overflow-hidden rounded-xl border bg-card p-3 transition-all duration-200 hover:-translate-y-0.5 hover:border-gold/60 hover:shadow-md active:translate-y-0 active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gold sm:p-4"
           >
             <span className="absolute inset-x-0 top-0 h-0.5 bg-gold opacity-0 transition-opacity group-hover:opacity-100" />
-            <p className="font-display text-2xl font-semibold tabular-nums sm:text-3xl">{t.value ?? "–"}</p>
+            <p className="font-display text-2xl font-semibold tabular-nums sm:text-3xl">
+              {tile.value ?? "–"}
+            </p>
             <p className="mt-1 text-[11px] font-medium uppercase tracking-[0.08em] text-muted-foreground sm:text-xs">
-              {t.label}
+              {tile.label}
             </p>
           </Link>
         ))}

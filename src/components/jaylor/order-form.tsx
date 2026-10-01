@@ -55,11 +55,18 @@ import {
 import { StitchTrack } from "@/components/jaylor/stitch-track";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { CapacityWarning } from "@/components/jaylor/capacity-warning";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 type ClientRow = Tables<"clients">;
 type OrderRow = Tables<"orders">;
 
-const STEPS = ["Client", "Garment", "Measurements", "Material", "Price & review"] as const;
+const STEP_KEYS = [
+  { key: "step_client", fallback: "Client" },
+  { key: "step_garment", fallback: "Garment" },
+  { key: "step_measurements", fallback: "Measurements" },
+  { key: "step_material", fallback: "Material" },
+  { key: "step_price_review", fallback: "Price & review" },
+] as const;
 
 export type OrderPrefill = {
   garment_type: string | null;
@@ -85,6 +92,7 @@ export function OrderForm({
   prefill?: OrderPrefill | null;
   onSaved: (order: OrderRow) => void;
 }) {
+  const t = useAppT("app_order_form");
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
   const queryClient = useQueryClient();
@@ -240,28 +248,28 @@ export function OrderForm({
 
   function next() {
     if (step === 0 && !selectedClient) {
-      toast.error("Pick a client first");
+      toast.error(t("toast_pick_client") || "Pick a client first");
       return;
     }
     if (step === 1 && !garmentType) {
-      toast.error("Choose a garment type");
+      toast.error(t("toast_choose_garment") || "Choose a garment type");
       return;
     }
     if (step === 3) {
       if (!materialDescription.trim()) {
         toast.error(
           materialSource === "customer"
-            ? "Describe the fabric the customer brought"
-            : "Describe the fabric you'll buy",
+            ? t("toast_describe_customer_fabric") || "Describe the fabric the customer brought"
+            : t("toast_describe_tailor_fabric") || "Describe the fabric you'll buy",
         );
         return;
       }
       if (materialSource === "tailor" && !materialCost.trim()) {
-        toast.error("Enter the estimated fabric cost");
+        toast.error(t("toast_enter_fabric_cost") || "Enter the estimated fabric cost");
         return;
       }
     }
-    setStep((s) => Math.min(s + 1, STEPS.length - 1));
+    setStep((s) => Math.min(s + 1, STEP_KEYS.length - 1));
   }
 
   function back() {
@@ -285,7 +293,9 @@ export function OrderForm({
         .map((o) => o.price)
         .filter((p): p is number => typeof p === "number" && p > 0);
       if (prices.length === 0) {
-        toast.error("No pricing history yet for this garment type");
+        toast.error(
+          t("toast_no_pricing_history") || "No pricing history yet for this garment type",
+        );
         return;
       }
 
@@ -312,17 +322,36 @@ export function OrderForm({
       const suggested = Math.round((rush ? avgPrice * RUSH_PREMIUM : avgPrice) / 500) * 500;
 
       const count = prices.length;
-      let text = `Based on ${count} past ${garmentType} order${count === 1 ? "" : "s"}, you usually charge ${formatMoney(avgPrice)} (range ${formatMoney(minPrice)}–${formatMoney(maxPrice)}).`;
+      let text =
+        t("price_suggestion_base", {
+          count,
+          garmentType,
+          avg: formatMoney(avgPrice),
+          min: formatMoney(minPrice),
+          max: formatMoney(maxPrice),
+        }) ||
+        `Based on ${count} past ${garmentType} order(s), you usually charge ${formatMoney(avgPrice)} (range ${formatMoney(minPrice)}–${formatMoney(maxPrice)}).`;
       if (rush) {
-        text += ` For a rush order, consider around ${formatMoney(suggested)}.`;
+        text +=
+          " " +
+          (t("price_suggestion_rush", { suggested: formatMoney(suggested) }) ||
+            `For a rush order, consider around ${formatMoney(suggested)}.`);
       }
       if (avgYards != null) {
-        text += ` You typically use about ${(avgYards * qty).toFixed(1)} yards for this quantity.`;
+        text +=
+          " " +
+          (t("price_suggestion_yards", { yards: (avgYards * qty).toFixed(1) }) ||
+            `You typically use about ${(avgYards * qty).toFixed(1)} yards for this quantity.`);
       }
-      text += " This is a suggestion from your own history — review before confirming.";
+      text +=
+        " " +
+        (t("price_suggestion_disclaimer") ||
+          "This is a suggestion from your own history — review before confirming.");
       setSuggestion(text);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not suggest a price"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_suggest_price") || "Could not suggest a price"),
+      );
     } finally {
       setSuggesting(false);
     }
@@ -364,11 +393,15 @@ export function OrderForm({
       setMaterialYards(String(estimate.suggestedPurchase));
       setFabricNote(
         estimate.source === "history"
-          ? `Based on this shop's own past ${garmentType} orders (${estimate.perPiece.toFixed(1)} yards each). Includes 10% waste allowance.`
-          : `Estimate from a standard formula for ${garmentType} — no order history yet for this garment type. Includes 10% waste allowance.`,
+          ? t("fabric_note_history", { garmentType, perPiece: estimate.perPiece.toFixed(1) }) ||
+              `Based on this shop's own past ${garmentType} orders (${estimate.perPiece.toFixed(1)} yards each). Includes 10% waste allowance.`
+          : t("fabric_note_formula", { garmentType }) ||
+              `Estimate from a standard formula for ${garmentType} — no order history yet for this garment type. Includes 10% waste allowance.`,
       );
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not estimate fabric"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_estimate_fabric") || "Could not estimate fabric"),
+      );
     } finally {
       setEstimatingFabric(false);
     }
@@ -378,7 +411,10 @@ export function OrderForm({
     if (!files || files.length === 0) return;
     const room = MAX_STYLE_REF_PHOTOS - styleRefPaths.length;
     if (room <= 0) {
-      toast.error(`You can attach up to ${MAX_STYLE_REF_PHOTOS} reference photos`);
+      toast.error(
+        t("toast_max_reference_photos", { count: MAX_STYLE_REF_PHOTOS }) ||
+          `You can attach up to ${MAX_STYLE_REF_PHOTOS} reference photos`,
+      );
       return;
     }
     setUploadingStyleRef(true);
@@ -394,7 +430,9 @@ export function OrderForm({
         setStyleRefPreviews((prev) => [...prev, URL.createObjectURL(resized)]);
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not upload that photo"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_upload_photo") || "Could not upload that photo"),
+      );
     } finally {
       setUploadingStyleRef(false);
     }
@@ -461,7 +499,9 @@ export function OrderForm({
           label: `New order: ${garmentType} for ${selectedClient.full_name}`,
           payload: { order: orderPayload, material: materialPayload },
         });
-        toast.success("Saved offline — will sync when you're back online");
+        toast.success(
+          t("toast_saved_offline") || "Saved offline — will sync when you're back online",
+        );
         onOpenChange(false);
         return;
       }
@@ -479,7 +519,9 @@ export function OrderForm({
           .insert({ ...materialPayload, order_id: order.id });
         if (materialError) throw materialError;
 
-        toast.success(`Order ${order.number} created`);
+        toast.success(
+          t("toast_order_created", { number: order.number }) || `Order ${order.number} created`,
+        );
         onSaved(order);
       } catch (error) {
         if (!isNetworkFailure(error)) throw error;
@@ -489,11 +531,15 @@ export function OrderForm({
           label: `New order: ${garmentType} for ${selectedClient.full_name}`,
           payload: { order: orderPayload, material: materialPayload },
         });
-        toast.success("Saved offline — will sync when you're back online");
+        toast.success(
+          t("toast_saved_offline") || "Saved offline — will sync when you're back online",
+        );
       }
       onOpenChange(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not create this order"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_create_order") || "Could not create this order"),
+      );
     } finally {
       setBusy(false);
     }
@@ -501,11 +547,15 @@ export function OrderForm({
 
   const body = (
     <div className="space-y-5">
-      <StitchTrack steps={STEPS} currentIndex={step} compact />
+      <StitchTrack
+        steps={STEP_KEYS.map((s) => t(s.key) || s.fallback)}
+        currentIndex={step}
+        compact
+      />
 
       {step === 0 && (
         <div className="space-y-3">
-          <Label htmlFor="order-client-search">Client</Label>
+          <Label htmlFor="order-client-search">{t("client_label") || "Client"}</Label>
           {selectedClient ? (
             <div className="flex items-center justify-between rounded-xl border border-border p-3">
               <div>
@@ -520,11 +570,16 @@ export function OrderForm({
                 size="sm"
                 onClick={() => setSelectedClient(null)}
               >
-                Change
+                {t("change_button") || "Change"}
               </Button>
             </div>
           ) : !online ? (
-            <OfflineNotice label="Searching clients needs an internet connection. Open this from the client's own profile instead." />
+            <OfflineNotice
+              label={
+                t("search_clients_offline") ||
+                "Searching clients needs an internet connection. Open this from the client's own profile instead."
+              }
+            />
           ) : (
             <>
               <div className="relative">
@@ -533,7 +588,7 @@ export function OrderForm({
                   id="order-client-search"
                   value={clientSearch}
                   onChange={(e) => setClientSearch(e.target.value)}
-                  placeholder="Search name or phone"
+                  placeholder={t("search_name_or_phone") || "Search name or phone"}
                   className="pl-9"
                 />
               </div>
@@ -564,7 +619,8 @@ export function OrderForm({
               )}
               {clientSearch.trim() && clientResults?.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  No clients match. Add them from the Clients page first.
+                  {t("no_clients_match") ||
+                    "No clients match. Add them from the Clients page first."}
                 </p>
               )}
             </>
@@ -578,22 +634,24 @@ export function OrderForm({
             <PaymentReliabilityBadge clientId={selectedClient.id} showDepositHint />
           )}
           <div className="space-y-2">
-            <Label>Garment</Label>
+            <Label>{t("garment_label") || "Garment"}</Label>
             <Select value={garmentType} onValueChange={setGarmentType}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose a garment type" />
+                <SelectValue
+                  placeholder={t("choose_garment_placeholder") || "Choose a garment type"}
+                />
               </SelectTrigger>
               <SelectContent>
-                {GARMENT_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
+                {GARMENT_TYPES.map((gt) => (
+                  <SelectItem key={gt} value={gt}>
+                    {gt}
                   </SelectItem>
                 ))}
               </SelectContent>
             </Select>
           </div>
           <div className="space-y-2">
-            <Label htmlFor="order-quantity">Quantity</Label>
+            <Label htmlFor="order-quantity">{t("quantity_label") || "Quantity"}</Label>
             <Input
               id="order-quantity"
               type="number"
@@ -603,13 +661,13 @@ export function OrderForm({
             />
           </div>
           <div className="space-y-2">
-            <Label htmlFor="order-style-notes">Style notes</Label>
+            <Label htmlFor="order-style-notes">{t("style_notes_label") || "Style notes"}</Label>
             <Textarea
               id="order-style-notes"
               rows={3}
               value={styleNotes}
               onChange={(e) => setStyleNotes(e.target.value)}
-              placeholder="Neckline, sleeve style, references..."
+              placeholder={t("style_notes_placeholder") || "Neckline, sleeve style, references..."}
             />
           </div>
         </div>
@@ -641,7 +699,7 @@ export function OrderForm({
           <div className="space-y-3">
             {measurementSets && measurementSets.length > 0 ? (
               <div className="space-y-2">
-                <Label>Measurement set</Label>
+                <Label>{t("measurement_set_label") || "Measurement set"}</Label>
                 <Select value={measurementSetId} onValueChange={setMeasurementSetId}>
                   <SelectTrigger>
                     <SelectValue />
@@ -660,8 +718,10 @@ export function OrderForm({
                   return (
                     <div className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-gold/40 bg-accent/30 p-3 text-sm">
                       <span>
-                        Newer measurements from {new Date(latestSet.taken_at).toLocaleDateString()}{" "}
-                        exist
+                        {t("newer_measurements_exist", {
+                          date: new Date(latestSet.taken_at).toLocaleDateString(),
+                        }) ||
+                          `Newer measurements from ${new Date(latestSet.taken_at).toLocaleDateString()} exist`}
                       </span>
                       <Button
                         type="button"
@@ -669,7 +729,7 @@ export function OrderForm({
                         variant="outline"
                         onClick={() => setMeasurementSetId(latestSet.id)}
                       >
-                        Switch to latest
+                        {t("switch_to_latest") || "Switch to latest"}
                       </Button>
                     </div>
                   );
@@ -679,16 +739,17 @@ export function OrderForm({
                   onClick={takeNewMeasurements}
                   className="text-xs text-muted-foreground underline-offset-2 hover:underline"
                 >
-                  Take new measurements instead
+                  {t("take_new_measurements_instead") || "Take new measurements instead"}
                 </button>
               </div>
             ) : (
               <div className="space-y-2">
                 <p className="text-sm text-muted-foreground">
-                  {selectedClient?.full_name} has no measurements yet.
+                  {t("client_has_no_measurements", { name: selectedClient?.full_name ?? "" }) ||
+                    `${selectedClient?.full_name} has no measurements yet.`}
                 </p>
                 <Button type="button" variant="outline" size="sm" onClick={takeNewMeasurements}>
-                  Take measurements now
+                  {t("take_measurements_now") || "Take measurements now"}
                 </Button>
               </div>
             )}
@@ -712,7 +773,9 @@ export function OrderForm({
                 )}
               >
                 <span className="block font-medium text-foreground">
-                  {source === "customer" ? "Customer brings fabric" : "I will buy the fabric"}
+                  {source === "customer"
+                    ? t("customer_brings_fabric") || "Customer brings fabric"
+                    : t("tailor_will_buy_fabric") || "I will buy the fabric"}
                 </span>
               </button>
             ))}
@@ -720,17 +783,19 @@ export function OrderForm({
           <div className="grid grid-cols-2 gap-3">
             <div className="col-span-2 space-y-2">
               <Label htmlFor="material-description">
-                {materialSource === "customer" ? "Fabric description *" : "What you'll buy *"}
+                {materialSource === "customer"
+                  ? t("fabric_description_label") || "Fabric description *"
+                  : t("fabric_purchase_label") || "What you'll buy *"}
               </Label>
               <Input
                 id="material-description"
                 value={materialDescription}
                 onChange={(e) => setMaterialDescription(e.target.value)}
-                placeholder="e.g. Ankara, lace..."
+                placeholder={t("fabric_description_placeholder") || "e.g. Ankara, lace..."}
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="material-colour">Colour</Label>
+              <Label htmlFor="material-colour">{t("colour_label") || "Colour"}</Label>
               <Input
                 id="material-colour"
                 value={materialColour}
@@ -738,7 +803,7 @@ export function OrderForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="material-yards">Yards</Label>
+              <Label htmlFor="material-yards">{t("yards_label") || "Yards"}</Label>
               <Input
                 id="material-yards"
                 inputMode="decimal"
@@ -748,16 +813,19 @@ export function OrderForm({
             </div>
             {materialSource === "tailor" && (
               <div className="col-span-2 space-y-2">
-                <Label htmlFor="material-cost">Estimated cost (added to the bill) *</Label>
+                <Label htmlFor="material-cost">
+                  {t("estimated_cost_label") || "Estimated cost (added to the bill) *"}
+                </Label>
                 <MoneyInput id="material-cost" value={materialCost} onChange={setMaterialCost} />
               </div>
             )}
           </div>
 
           <div className="space-y-3 rounded-xl border border-border p-3">
-            <p className="text-sm font-medium">Fabric photos</p>
+            <p className="text-sm font-medium">{t("fabric_photos_title") || "Fabric photos"}</p>
             <p className="text-xs text-muted-foreground">
-              A dated record of what was received, in case of a dispute later.
+              {t("fabric_photos_note") ||
+                "A dated record of what was received, in case of a dispute later."}
             </p>
             <MaterialPhotoManager
               pathPrefix={materialPhotoPathPrefix(storeId, pendingOrderId, pendingMaterialId)}
@@ -766,12 +834,17 @@ export function OrderForm({
               onRemove={(path) => setMaterialPhotoPaths((prev) => prev.filter((p) => p !== path))}
               canRemove
               disabledReason={
-                !online ? "Photos need a connection. You can add them later from the order." : null
+                !online
+                  ? t("photos_need_connection") ||
+                    "Photos need a connection. You can add them later from the order."
+                  : null
               }
             />
             {materialSource === "customer" && (
               <div className="space-y-2">
-                <Label htmlFor="material-received-at">Received on</Label>
+                <Label htmlFor="material-received-at">
+                  {t("received_on_label") || "Received on"}
+                </Label>
                 <Input
                   id="material-received-at"
                   type="date"
@@ -781,22 +854,28 @@ export function OrderForm({
               </div>
             )}
             <div className="space-y-2">
-              <Label htmlFor="material-extras">Other items received (optional)</Label>
+              <Label htmlFor="material-extras">
+                {t("other_items_label") || "Other items received (optional)"}
+              </Label>
               <Input
                 id="material-extras"
                 value={materialExtras}
                 onChange={(e) => setMaterialExtras(e.target.value)}
-                placeholder="Buttons, lining, zips..."
+                placeholder={t("other_items_placeholder") || "Buttons, lining, zips..."}
               />
             </div>
           </div>
 
           {garmentType && (
             <div className="space-y-3 rounded-xl border border-border p-3">
-              <p className="text-sm font-medium">Not sure how much fabric to buy?</p>
+              <p className="text-sm font-medium">
+                {t("not_sure_fabric_title") || "Not sure how much fabric to buy?"}
+              </p>
               <div className="grid grid-cols-2 gap-3">
                 <div className="space-y-2">
-                  <Label htmlFor="fabric-width">Fabric width (inches)</Label>
+                  <Label htmlFor="fabric-width">
+                    {t("fabric_width_label") || "Fabric width (inches)"}
+                  </Label>
                   <Input
                     id="fabric-width"
                     inputMode="decimal"
@@ -805,7 +884,7 @@ export function OrderForm({
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="fabric-pattern">Pattern</Label>
+                  <Label htmlFor="fabric-pattern">{t("pattern_label") || "Pattern"}</Label>
                   <Select
                     value={fabricPattern}
                     onValueChange={(v) => setFabricPattern(v as FabricPattern)}
@@ -830,16 +909,21 @@ export function OrderForm({
                 onClick={estimateFabric}
                 disabled={estimatingFabric || !online}
               >
-                {estimatingFabric ? "Calculating..." : "Estimate fabric needed"}
+                {estimatingFabric
+                  ? t("calculating") || "Calculating..."
+                  : t("estimate_fabric_button") || "Estimate fabric needed"}
               </Button>
               {fabricNote && <p className="text-xs text-muted-foreground">{fabricNote}</p>}
             </div>
           )}
 
           <div className="space-y-2 rounded-xl border border-border p-3">
-            <p className="text-sm font-medium">Reference photos (optional)</p>
+            <p className="text-sm font-medium">
+              {t("reference_photos_title") || "Reference photos (optional)"}
+            </p>
             <p className="text-xs text-muted-foreground">
-              A style the client wants, so your tailors can see it too.
+              {t("reference_photos_note") ||
+                "A style the client wants, so your tailors can see it too."}
             </p>
             <div className="flex flex-wrap gap-2">
               {styleRefPreviews.map((src, i) => (
@@ -848,7 +932,7 @@ export function OrderForm({
                   <button
                     type="button"
                     onClick={() => removeStyleRef(i)}
-                    aria-label="Remove photo"
+                    aria-label={t("remove_photo") || "Remove photo"}
                     className="absolute -right-1.5 -top-1.5 flex size-5 items-center justify-center rounded-full bg-background shadow-sm"
                   >
                     <X className="size-3" />
@@ -868,7 +952,7 @@ export function OrderForm({
                   ) : (
                     <ImagePlus className="size-4" />
                   )}
-                  Add photo
+                  {t("add_photo") || "Add photo"}
                 </Button>
               )}
             </div>
@@ -883,7 +967,13 @@ export function OrderForm({
                 e.target.value = "";
               }}
             />
-            {!online && <OfflineNotice label="Reference photos need an internet connection." />}
+            {!online && (
+              <OfflineNotice
+                label={
+                  t("reference_photos_offline") || "Reference photos need an internet connection."
+                }
+              />
+            )}
           </div>
         </div>
       )}
@@ -892,11 +982,13 @@ export function OrderForm({
         <form onSubmit={handleCreate} className="space-y-4">
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="order-price">Price</Label>
+              <Label htmlFor="order-price">{t("price_label") || "Price"}</Label>
               <MoneyInput id="order-price" value={price} onChange={setPrice} required />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="order-delivery-date">Delivery date</Label>
+              <Label htmlFor="order-delivery-date">
+                {t("delivery_date_label") || "Delivery date"}
+              </Label>
               <Input
                 id="order-delivery-date"
                 type="date"
@@ -916,9 +1008,8 @@ export function OrderForm({
               }
               return (
                 <p className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
-                  These measurements were taken more than 3 months before the wedding date. A
-                  bride&apos;s measurements can change — take a fresh set or book another fitting
-                  before this order goes into production.
+                  {t("bridal_remeasure_warning") ||
+                    "These measurements were taken more than 3 months before the wedding date. A bride's measurements can change — take a fresh set or book another fitting before this order goes into production."}
                 </p>
               );
             })()}
@@ -930,14 +1021,22 @@ export function OrderForm({
             onClick={suggestPrice}
             disabled={suggesting || !online}
           >
-            {suggesting ? "Checking..." : "Suggest a price"}
+            {suggesting
+              ? t("checking") || "Checking..."
+              : t("suggest_price_button") || "Suggest a price"}
           </Button>
           {suggestion && (
             <p className="rounded-xl border border-gold/30 bg-accent/30 p-3 text-sm text-muted-foreground">
               {suggestion}
             </p>
           )}
-          {!online && <OfflineNotice label="Price suggestions need an internet connection." />}
+          {!online && (
+            <OfflineNotice
+              label={
+                t("price_suggestions_offline") || "Price suggestions need an internet connection."
+              }
+            />
+          )}
 
           {online && (
             <PriceGuidancePanel
@@ -948,30 +1047,37 @@ export function OrderForm({
           )}
 
           <label className="flex items-center justify-between rounded-xl border border-border p-3">
-            <span className="text-sm">Rush order</span>
+            <span className="text-sm">{t("rush_order_label") || "Rush order"}</span>
             <Switch checked={rush} onCheckedChange={setRush} />
           </label>
 
           <StitchDivider />
 
           <div className="space-y-1 text-sm">
-            <p className="font-medium">Review</p>
+            <p className="font-medium">{t("review_title") || "Review"}</p>
             <p className="text-muted-foreground">
               {selectedClient?.full_name} · {garmentType} × {quantity}
             </p>
             <p className="text-muted-foreground">
-              {materialSource === "customer" ? "Customer's fabric" : "Store-bought fabric"}:{" "}
-              {materialDescription}
+              {materialSource === "customer"
+                ? t("customers_fabric") || "Customer's fabric"
+                : t("store_bought_fabric") || "Store-bought fabric"}
+              : {materialDescription}
             </p>
-            {price && <p className="text-muted-foreground">Price: {formatMoney(Number(price))}</p>}
+            {price && (
+              <p className="text-muted-foreground">
+                {t("price_colon", { amount: formatMoney(Number(price)) }) ||
+                  `Price: ${formatMoney(Number(price))}`}
+              </p>
+            )}
           </div>
 
           <div className="flex gap-2">
             <Button type="button" variant="outline" onClick={back} disabled={busy}>
-              Back
+              {t("back_button") || "Back"}
             </Button>
             <Button type="submit" className="flex-1" disabled={busy}>
-              {busy ? "Creating..." : "Create order"}
+              {busy ? t("creating") || "Creating..." : t("create_order_button") || "Create order"}
             </Button>
           </div>
         </form>
@@ -981,11 +1087,11 @@ export function OrderForm({
         <div className="flex gap-2">
           {step > 0 && (
             <Button type="button" variant="outline" onClick={back}>
-              Back
+              {t("back_button") || "Back"}
             </Button>
           )}
           <Button type="button" className="flex-1" onClick={next}>
-            Continue
+            {t("continue_button") || "Continue"}
           </Button>
         </div>
       )}
@@ -998,7 +1104,10 @@ export function OrderForm({
         open={open}
         onOpenChange={onOpenChange}
         requiredTier={planCodeToTier(ordersFeature.required_plan ?? "growth")}
-        message="You've reached your monthly order limit. Growth gives you unlimited orders."
+        message={
+          t("order_limit_message") ||
+          "You've reached your monthly order limit. Growth gives you unlimited orders."
+        }
       />
     );
   }
@@ -1007,19 +1116,26 @@ export function OrderForm({
     <Dialog open={measurementPromptOpen} onOpenChange={setMeasurementPromptOpen}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Use {selectedClient?.full_name}&apos;s existing measurements?</DialogTitle>
+          <DialogTitle>
+            {t("use_existing_measurements_title", { name: selectedClient?.full_name ?? "" }) ||
+              `Use ${selectedClient?.full_name}'s existing measurements?`}
+          </DialogTitle>
           <DialogDescription>
             {measurementSets?.[0] &&
-              `Latest set: v${measurementSets[0].version}, taken ${new Date(measurementSets[0].taken_at).toLocaleDateString()}.`}{" "}
-            You can reuse these, or take a fresh set for this order.
+              (t("latest_set_info", {
+                version: measurementSets[0].version,
+                date: new Date(measurementSets[0].taken_at).toLocaleDateString(),
+              }) ||
+                `Latest set: v${measurementSets[0].version}, taken ${new Date(measurementSets[0].taken_at).toLocaleDateString()}.`)}{" "}
+            {t("reuse_or_fresh") || "You can reuse these, or take a fresh set for this order."}
           </DialogDescription>
         </DialogHeader>
         <DialogFooter className="flex-col gap-2 sm:flex-col">
           <Button className="w-full" onClick={reuseExistingMeasurements}>
-            Use existing measurements
+            {t("use_existing_measurements") || "Use existing measurements"}
           </Button>
           <Button className="w-full" variant="outline" onClick={takeNewMeasurements}>
-            Take new measurements
+            {t("take_new_measurements") || "Take new measurements"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -1033,10 +1149,10 @@ export function OrderForm({
           <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
             <SheetHeader className="text-left">
               <SheetTitle className="flex items-center gap-2 text-2xl">
-                New order
+                {t("new_order_title") || "New order"}
                 <HelpTooltip>
-                  Pick a client and garment, then add measurements and a price. Balances and due
-                  dates update automatically as you record payments.
+                  {t("help_tooltip_body") ||
+                    "Pick a client and garment, then add measurements and a price. Balances and due dates update automatically as you record payments."}
                 </HelpTooltip>
               </SheetTitle>
             </SheetHeader>
@@ -1054,10 +1170,10 @@ export function OrderForm({
         <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
-              New order
+              {t("new_order_title") || "New order"}
               <HelpTooltip>
-                Pick a client and garment, then add measurements and a price. Balances and due dates
-                update automatically as you record payments.
+                {t("help_tooltip_body") ||
+                  "Pick a client and garment, then add measurements and a price. Balances and due dates update automatically as you record payments."}
               </HelpTooltip>
             </DialogTitle>
           </DialogHeader>

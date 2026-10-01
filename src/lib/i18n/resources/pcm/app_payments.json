@@ -1,0 +1,23 @@
+{
+  "page_title": "Payments",
+  "more_link": "More",
+  "unmatched_transfers": "Transfers wey no match",
+  "export_csv": "Export CSV",
+  "search_client_placeholder": "Search client",
+  "method_all": "All methods",
+  "method_cash": "Cash",
+  "method_transfer": "Transfer",
+  "method_pos": "POS",
+  "method_paystack": "Paystack",
+  "summary_count": "Payment {{count}}",
+  "empty_title": "No payment yet",
+  "empty_description": "Payments wey dem record go show here.",
+  "csv_header_date": "Date",
+  "csv_header_client": "Client",
+  "csv_header_order": "Order",
+  "csv_header_garment": "Garment",
+  "csv_header_method": "Method",
+  "csv_header_amount": "Amount",
+  "csv_header_reference": "Reference",
+  "_meta_status": "machine-drafted-needs-review"
+}
