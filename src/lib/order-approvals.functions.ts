@@ -165,7 +165,7 @@ export const respondToOrderApproval = createServerFn({ method: "POST" })
     const { error } = await supabaseAdmin.rpc("respond_to_order_approval", {
       p_token: data.token,
       p_status: data.status,
-      p_comment: data.comment?.trim() || undefined,
+      ...(data.comment?.trim() ? { p_comment: data.comment.trim() } : {}),
     });
     return { ok: !error };
   });
