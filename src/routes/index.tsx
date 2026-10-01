@@ -2,10 +2,18 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
+  BadgeCheck,
+  Banknote,
+  BarChart3,
+  Boxes,
   CalendarClock,
+  Camera,
   Check,
-  MessageCircle,
+  Gauge,
+  Globe,
   Package,
+  Radar,
+  ShieldCheck,
   Sparkles,
   Store,
   Wallet,
@@ -35,13 +43,16 @@ export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Jaylor — The modern workroom for fashion businesses" },
+      { title: "Jaylor: order, payment and staff management for Nigerian tailors" },
       {
         name: "description",
         content:
-          "Jaylor brings orders, measurements, payments and client updates into one refined workroom for tailors and fashion houses in Nigeria.",
+          "Jaylor helps Nigerian tailors manage orders, payments, measurements and staff, with client tracking and approval built in.",
       },
-      { property: "og:title", content: "Jaylor — The modern workroom for fashion businesses" },
+      {
+        property: "og:title",
+        content: "Jaylor: order, payment and staff management for Nigerian tailors",
+      },
       {
         property: "og:description",
         content: "Every order tracked. Every measurement kept. Every naira accounted for.",
@@ -53,24 +64,74 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const OPERATING_SYSTEM = [
+const CLIENT_FEATURES = [
+  {
+    number: "01",
+    icon: Radar,
+    title: "Track my order",
+    body: "Send each client a link where they can follow their garment from cutting to ready. Fewer “is my cloth ready?” calls.",
+  },
+  {
+    number: "02",
+    icon: ShieldCheck,
+    title: "Approve before cutting",
+    body: "Your client sees the fabric photos, style, measurements and price, and taps Approve before you cut. If there is ever a disagreement, you have proof.",
+  },
+  {
+    number: "03",
+    icon: BadgeCheck,
+    title: "On-time badge",
+    body: "Show clients your real on-time delivery record, taken from your work in Jaylor, not from reviews.",
+  },
+];
+
+const WORKROOM_FEATURES = [
   {
     number: "01",
     icon: Package,
     title: "Every order, in its place",
-    body: "Follow each garment from received to collected, with fittings, deadlines and responsibilities kept clear.",
+    body: "Follow each garment from received to collected, with fittings, deadlines and who is working on it.",
   },
   {
     number: "02",
     icon: Wallet,
     title: "Every naira, accounted for",
-    body: "Deposits, payments and outstanding balances stay connected to the right client and the right order.",
+    body: "Deposits, payments and balances stay linked to the right client and order. See your profit on every job.",
   },
   {
     number: "03",
-    icon: MessageCircle,
-    title: "Every client, informed",
-    body: "Send considered WhatsApp updates and reminders without leaving the place where the work is managed.",
+    icon: Gauge,
+    title: "No more overbooking",
+    body: "Jaylor warns you when a week is already full, before you promise another date. Plan December properly.",
+  },
+  {
+    number: "04",
+    icon: Camera,
+    title: "Fabric on record",
+    body: "Photograph the fabric your client brings. No more arguments about what was received.",
+  },
+];
+
+const FASHION_HOUSE_FEATURES = [
+  {
+    icon: Banknote,
+    title: "Piece-rate payroll",
+    body: "Set a rate per garment or per stage. Jaylor works out what each tailor earned and prepares the weekly payroll.",
+  },
+  {
+    icon: Boxes,
+    title: "Stock that adds up",
+    body: "Track linings, zips, thread and buttons. Know what is running low before a job stops.",
+  },
+  {
+    icon: BarChart3,
+    title: "A business report you can share",
+    body: "A monthly summary of sales, collections and profit, ready to show a bank or partner.",
+  },
+  {
+    icon: Globe,
+    title: "Clients abroad",
+    body: "Price orders in pounds, dollars or cedis.",
   },
 ];
 
@@ -194,7 +255,8 @@ function Home() {
               Run your tailoring business without the chaos.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-foreground/70 sm:text-lg">
-              Track orders, measurements and payments from your phone. Built for Nigerian tailors.
+              Orders, measurements, payments and staff in one place. Your clients can follow their
+              order and approve it before you cut. Built for Nigerian tailors and fashion houses.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-5">
               <Button
@@ -225,11 +287,14 @@ function Home() {
         </div>
       </section>
 
-      <section aria-label="The Jaylor dashboard" className="border-b border-border bg-secondary/40 py-10 lg:py-14">
+      <section
+        aria-label="The Jaylor dashboard"
+        className="border-b border-border bg-secondary/40 py-10 lg:py-14"
+      >
         <div className="mx-auto w-full max-w-5xl px-5 sm:px-8">
           <p className="text-center text-[11px] uppercase text-gold">This is Jaylor</p>
           <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-6 text-foreground/60">
-            Your orders, balances and fittings — the real workroom, exactly as you will see it.
+            Your orders, balances and fittings, the real workroom, exactly as you will see it.
           </p>
           <img
             src={dashboardProduct}
@@ -242,17 +307,45 @@ function Home() {
         </div>
       </section>
 
+      <section id="clients-see" className="border-b border-border py-20 lg:py-28">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div>
+              <p className="text-xs uppercase text-gold">What your clients see</p>
+              <h2 className="mt-5 max-w-md text-5xl leading-none sm:text-6xl">
+                Clients who trust you come back.
+              </h2>
+            </div>
+            <div className="border-t border-border">
+              {CLIENT_FEATURES.map(({ number, icon: Icon, title, body }) => (
+                <article
+                  key={number}
+                  className="group grid gap-5 border-b border-border py-8 sm:grid-cols-[56px_1fr_auto] sm:items-start"
+                >
+                  <span className="text-xs text-gold">{number}</span>
+                  <div>
+                    <h3 className="text-3xl">{title}</h3>
+                    <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">{body}</p>
+                  </div>
+                  <Icon className="size-5 text-gold transition-transform duration-500 group-hover:translate-x-1" />
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       <section id="workroom" className="border-b border-border py-20 lg:py-28">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
             <div>
               <p className="text-xs uppercase text-gold">Built around the workroom</p>
               <h2 className="mt-5 max-w-md text-5xl leading-none sm:text-6xl">
-                You know the craft. Jaylor keeps its business in order.
+                You know the craft. Jaylor keeps the business in order.
               </h2>
             </div>
             <div className="border-t border-border">
-              {OPERATING_SYSTEM.map(({ number, icon: Icon, title, body }) => (
+              {WORKROOM_FEATURES.map(({ number, icon: Icon, title, body }) => (
                 <article
                   key={number}
                   className="group grid gap-5 border-b border-border py-8 sm:grid-cols-[56px_1fr_auto] sm:items-start"
@@ -283,13 +376,14 @@ function Home() {
         </div>
         <div className="flex items-center bg-card px-5 py-16 sm:px-10 lg:px-16">
           <div className="max-w-xl">
-            <p className="text-xs uppercase text-gold">Precision, remembered</p>
+            <p className="text-xs uppercase text-gold">Measurement Passport</p>
             <h2 className="mt-5 text-5xl leading-none sm:text-6xl">
-              A fitting should begin with confidence.
+              Measured once. Ready at any Jaylor tailor.
             </h2>
             <p className="mt-7 text-base leading-7 text-muted-foreground">
-              Keep each client’s measurements, garment history and fitting notes ready for the next
-              visit. No searching. No second guessing.
+              Your client&apos;s measurements belong to them. With a Jaylor Passport, they can share
+              them with any Jaylor tailor in seconds, and see how their measurements have changed
+              over time.
             </p>
             <div className="mt-10 grid grid-cols-2 border-y border-border py-7">
               <div className="border-r border-border pr-6">
@@ -307,12 +401,51 @@ function Home() {
               size="lg"
               className="mt-10 rounded-none border-gold text-foreground hover:bg-gold hover:text-accent-foreground"
             >
-              <Link to="/features">
-                Explore the workroom <ArrowRight />
+              <Link to="/passport">
+                Learn about the Passport <ArrowRight />
               </Link>
             </Button>
           </div>
         </div>
+      </section>
+
+      <section className="border-b border-border bg-card py-20 lg:py-28">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">For fashion houses</p>
+          <h2 className="mt-5 max-w-2xl text-5xl leading-none sm:text-6xl">
+            Built for a workroom with staff.
+          </h2>
+          <div className="mt-14 grid gap-x-10 gap-y-12 sm:grid-cols-2 lg:grid-cols-4">
+            {FASHION_HOUSE_FEATURES.map(({ icon: Icon, title, body }) => (
+              <article key={title} className="border-t border-border pt-7">
+                <Icon className="size-5 text-gold" />
+                <h3 className="mt-5 text-2xl leading-tight">{title}</h3>
+                <p className="mt-4 text-sm leading-6 text-muted-foreground">{body}</p>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section className="border-b border-border px-5 py-20 text-center sm:px-8 lg:py-28">
+        <p className="text-xs uppercase text-gold">Get found</p>
+        <h2 className="mx-auto mt-5 max-w-2xl text-5xl leading-none sm:text-6xl">
+          New clients can find you.
+        </h2>
+        <p className="mx-auto mt-6 max-w-xl text-base leading-7 text-muted-foreground">
+          List your shop in the Jaylor tailor directory, free on every plan. Clients search by city
+          and style, then chat with you on WhatsApp.
+        </p>
+        <Button
+          asChild
+          variant="outline"
+          size="lg"
+          className="mt-9 rounded-none border-gold text-foreground hover:bg-gold hover:text-accent-foreground"
+        >
+          <Link to="/tailors">
+            Browse tailors <ArrowRight />
+          </Link>
+        </Button>
       </section>
 
       <UncollectedCalculator />

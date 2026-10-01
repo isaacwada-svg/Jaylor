@@ -34,14 +34,14 @@ export const PRICE_TIERS: PriceTier[] = [
       "20 orders / month",
       "Unlimited clients",
       "Unlimited tap-to-send WhatsApp",
-      "10 storefront items",
-      "Receipts with a Jaylor footer",
-      "View your orders offline",
+      "Client tracking links and approvals",
+      "Fabric photos and Measurement Passport",
+      "Listing in the tailor directory",
     ],
   },
   {
     tier: "Growth",
-    blurb: "For a growing shop that wants automatic reminders and its own storefront.",
+    blurb: "For a growing shop that wants to look professional and plan ahead.",
     jaylorPayFee: "1%",
     mostPopular: true,
     cta: "trial",
@@ -51,19 +51,19 @@ export const PRICE_TIERS: PriceTier[] = [
       yearly: { total: "₦54,000", perMonth: "₦4,500 / month" },
     },
     features: [
+      "Everything in Free",
       "3 users",
       "Unlimited orders",
+      "Your own storefront and logo on receipts",
+      "On-time badge and capacity planning",
+      "Quotations, group events and consultations",
+      "Daily and weekly business summaries",
       "Automatic WhatsApp reminders (coming soon)",
-      "Own logo on receipts",
-      "Unlimited storefront items",
-      "Public booking page",
-      "1 active group event",
-      "Full offline",
     ],
   },
   {
     tier: "Business",
-    blurb: "For a fashion house with staff, branches and reports to manage.",
+    blurb: "For a fashion house with staff, stock and reports to manage.",
     jaylorPayFee: "0.7%",
     cta: "trial",
     prices: {
@@ -72,12 +72,13 @@ export const PRICE_TIERS: PriceTier[] = [
       yearly: { total: "₦144,000", perMonth: "₦12,000 / month" },
     },
     features: [
+      "Everything in Growth",
       "10 users with roles",
-      "Automatic WhatsApp reminders (coming soon)",
-      "Staff job board",
-      "Expenses and net profit reports",
-      "Unlimited group events",
-      "Priority support",
+      "Staff job board and piece-rate payroll",
+      "Inventory with low-stock alerts",
+      "Expenses, net profit and monthly business report",
+      "Prices in pounds, dollars and cedis",
+      "School and company uniform contracts",
     ],
   },
   {
@@ -124,8 +125,31 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: { Free: "Unlimited", Growth: "Unlimited", Business: "Unlimited", Custom: "Unlimited" },
   },
   {
-    label: "Automatic WhatsApp / month",
-    values: { Free: "—", Growth: "Coming soon", Business: "Coming soon", Custom: "Agreed volume" },
+    label: "Client tracking links and approvals",
+    values: {
+      Free: "Included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Fabric photos and Measurement Passport",
+    values: {
+      Free: "Included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Listing in the tailor directory",
+    values: {
+      Free: "Included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
   },
   {
     label: "Storefront items",
@@ -134,16 +158,84 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     label: "Receipts",
     values: {
-      Free: "Jaylor footer",
+      Free: "Made with Jaylor",
       Growth: "Own logo",
       Business: "Own logo",
       Custom: "Own branding",
     },
   },
-  { label: "Branches", values: { Free: "1", Growth: "1", Business: "1", Custom: "Unlimited" } },
   {
-    label: "Group and aso-ebi events",
-    values: { Free: "—", Growth: "1 active", Business: "Unlimited", Custom: "Unlimited" },
+    label: "On-time badge and capacity planning",
+    values: {
+      Free: "Not included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Quotations, group events and consultations",
+    values: {
+      Free: "Not included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Daily and weekly business summaries",
+    values: {
+      Free: "Not included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Automatic WhatsApp / month",
+    values: {
+      Free: "Not included",
+      Growth: "Coming soon",
+      Business: "Coming soon",
+      Custom: "Agreed volume",
+    },
+  },
+  { label: "Branches", values: { Free: "1", Growth: "1", Business: "3", Custom: "Unlimited" } },
+  {
+    label: "Staff job board and piece-rate payroll",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Inventory with low-stock alerts",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Prices in pounds, dollars and cedis",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "School and company uniform contracts",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
   },
   {
     label: "Jaylor Pay fee",
@@ -154,7 +246,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: {
       Free: "Basic",
       Growth: "Money owed and collected",
-      Business: "Expenses, net profit, staff",
+      Business: "Expenses, net profit and business report",
       Custom: "Custom reports",
     },
   },
@@ -173,7 +265,7 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "What happens after 14 days?",
     answer:
-      "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted — anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
+      "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted: anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
   },
   {
     question: "What happens if I downgrade?",

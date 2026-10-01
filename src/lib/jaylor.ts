@@ -193,7 +193,7 @@ export const PENDING_REFERRAL_KEY = "jaylor:pendingReferral";
 export const PENDING_PASSPORT_SHARE_KEY = "jaylor:pendingPassportShare";
 
 export const COMPANY_LINE =
-  "Jaylor is a product of Bethjay Global Enterprise Limited, RC 3283706 — FCT Abuja, Nigeria.";
+  "Jaylor is a product of Bethjay Global Enterprise Limited, RC 3283706, FCT Abuja, Nigeria.";
 
 export const SUPPORT_EMAIL = "info@jaylor.com.ng";
 export const SUPPORT_PHONE = "+234 902 810 1389";

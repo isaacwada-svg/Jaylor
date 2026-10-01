@@ -16,9 +16,12 @@ export function UncollectedCalculator() {
       <div className="mx-auto grid w-full max-w-7xl gap-14 px-5 lg:grid-cols-[0.8fr_1.2fr] lg:px-10">
         <div className="lg:pr-10">
           <p className="text-xs uppercase text-gold">The cost of loose records</p>
-          <h2 className="mt-5 text-4xl leading-tight sm:text-5xl">How much is your notebook costing you?</h2>
+          <h2 className="mt-5 text-4xl leading-tight sm:text-5xl">
+            How much is your notebook costing you?
+          </h2>
           <p className="mt-6 max-w-md text-sm leading-7 text-muted-foreground">
-            Match the figures to your workroom. The estimate shows how quickly small outstanding balances become serious money.
+            Match the figures to your workroom. The estimate shows how quickly small outstanding
+            balances become serious money.
           </p>
           <p className="mt-12 border-t border-border pt-5 text-xs uppercase text-muted-foreground">
             Private by design · No card required
@@ -45,7 +48,9 @@ export function UncollectedCalculator() {
             <div>
               <div className="flex items-end justify-between gap-4 text-sm">
                 <span className="text-xs uppercase text-muted-foreground">Average order value</span>
-                <span className="figures font-heading text-2xl text-gold">{formatMoney(avgValue)}</span>
+                <span className="figures font-heading text-2xl text-gold">
+                  {formatMoney(avgValue)}
+                </span>
               </div>
               <Slider
                 className="mt-3"
@@ -75,17 +80,26 @@ export function UncollectedCalculator() {
             </div>
 
             <div className="border-t border-gold/60 pt-8 text-center">
-              <p className="text-xs uppercase text-muted-foreground">Estimated uncollected balance</p>
+              <p className="text-xs uppercase text-muted-foreground">
+                Estimated uncollected balance
+              </p>
               <p className="figures mt-3 font-heading text-5xl text-gold transition-all sm:text-6xl">
                 {formatMoney(uncollected)}
               </p>
-              <p className="mt-2 text-sm text-muted-foreground">carried through the workroom each month</p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                carried through the workroom each month
+              </p>
               <p className="mt-4 text-sm text-muted-foreground">
-                Jaylor costs ₦6,000 a month. Recovering one balance pays for it.
+                Jaylor Growth costs ₦6,000 a month. Recovering one unpaid balance pays for it.
               </p>
             </div>
 
-            <Button asChild variant="premium" size="lg" className="mt-7 w-full rounded-none uppercase">
+            <Button
+              asChild
+              variant="premium"
+              size="lg"
+              className="mt-7 w-full rounded-none uppercase"
+            >
               <Link to="/auth" search={{ mode: "signup" }}>
                 Start free
               </Link>
