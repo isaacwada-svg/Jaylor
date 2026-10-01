@@ -15,6 +15,7 @@ import { StoreLocationSettings } from "@/components/jaylor/store-location-settin
 import { GarmentTypeMappingCard } from "@/components/jaylor/garment-type-mapping-card";
 import { CalendarEventPrefsCard } from "@/components/jaylor/calendar-event-prefs-card";
 import { LatePayerDepositSetting } from "@/components/jaylor/late-payer-deposit-setting";
+import { LanguageSettingsCard } from "@/components/jaylor/language-settings-card";
 import { Card, CardContent } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
@@ -223,6 +224,7 @@ function Billing() {
 
         {currentStore && (
           <div className="mt-6 space-y-6">
+            <LanguageSettingsCard />
             <StoreLocationSettings
               storeId={currentStore.id}
               city={currentStore.city}

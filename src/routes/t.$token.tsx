@@ -10,7 +10,7 @@ import { PhotoLightbox } from "@/components/jaylor/photo-lightbox";
 import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { COMPANY_LINE, formatMoney, ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
+import { COMPANY_LINE, formatMoney, ORDER_STATUSES_DB } from "@/lib/jaylor";
 import { getOrderTracking } from "@/lib/order-tracking.functions";
 import { getFunctionErrorMessage } from "@/lib/utils";
 import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
@@ -61,6 +61,7 @@ function OrderTrackingPage() {
   const { order: initialOrder } = Route.useLoaderData();
   const tc = useT("common");
   const t = useT("tracking");
+  const statusLabel = (status: string) => tc(`status_${status}`) || status;
   const queryClient = useQueryClient();
   const [lightboxIndex, setLightboxIndex] = useState<number | null>(null);
   const [paying, setPaying] = useState(false);
@@ -189,7 +190,7 @@ function OrderTrackingPage() {
             <p className="text-center text-sm text-owed">{t("cancelled")}</p>
           ) : (
             <StitchTrack
-              steps={ORDER_STATUSES_DB.map(orderStatusLabel)}
+              steps={ORDER_STATUSES_DB.map(statusLabel)}
               currentIndex={statusIndex}
               compact
             />
@@ -206,9 +207,9 @@ function OrderTrackingPage() {
                 <div>
                   <p>
                     {entry.from_status
-                      ? `${orderStatusLabel(entry.from_status)} → `
+                      ? `${statusLabel(entry.from_status)} → `
                       : `${t("created_as_prefix")} `}
-                    {orderStatusLabel(entry.to_status)}
+                    {statusLabel(entry.to_status)}
                   </p>
                   <p className="mt-0.5 text-xs text-muted-foreground">
                     {new Date(entry.changed_at).toLocaleString()}

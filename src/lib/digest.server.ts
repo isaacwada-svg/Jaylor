@@ -10,7 +10,18 @@
  */
 import { sendWhatsAppText } from "@/lib/whatsapp-send.server";
 import { hasOpenWindow } from "@/lib/portal-login.server";
-import { formatMoney } from "@/lib/jaylor";
+import type { LanguageCode } from "@/lib/i18n/languages";
+import {
+  resolveOwnerMessageLanguage,
+  buildDailyTextI18n,
+  buildWeeklyTextI18n,
+  transferAlertTextI18n,
+  dailyDigestSubject,
+  weeklyDigestSubject,
+  transferAlertSubject,
+  type DailyDigestData,
+  type WeeklyDigestData,
+} from "@/lib/digest-i18n";
 
 type DigestRecipients = {
   storeName: string;
@@ -19,14 +30,15 @@ type DigestRecipients = {
   alertTransferReceived: boolean;
   digestDaily: boolean;
   digestWeekly: boolean;
+  language: LanguageCode;
 };
 
 async function getRecipients(storeId: string): Promise<DigestRecipients | null> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const [{ data: store }, { data: settings }] = await Promise.all([
+  const [{ data: store }, { data: settings }, { data: ownerMembership }] = await Promise.all([
     supabaseAdmin
       .from("stores")
-      .select("name, contact_email, whatsapp_phone")
+      .select("name, contact_email, whatsapp_phone, language")
       .eq("id", storeId)
       .maybeSingle(),
     supabaseAdmin
@@ -34,8 +46,25 @@ async function getRecipients(storeId: string): Promise<DigestRecipients | null> 
       .select("email, whatsapp_number, alert_transfer_received, digest_daily, digest_weekly")
       .eq("store_id", storeId)
       .maybeSingle(),
+    supabaseAdmin
+      .from("store_members")
+      .select("user_id")
+      .eq("store_id", storeId)
+      .eq("role", "owner")
+      .maybeSingle(),
   ]);
   if (!store) return null;
+
+  let ownerUiLanguage: string | null = null;
+  if (ownerMembership?.user_id) {
+    const { data: ownerProfile } = await supabaseAdmin
+      .from("profiles")
+      .select("ui_language")
+      .eq("id", ownerMembership.user_id)
+      .maybeSingle();
+    ownerUiLanguage = ownerProfile?.ui_language ?? null;
+  }
+
   return {
     storeName: store.name ?? "your shop",
     email: settings?.email ?? store.contact_email ?? null,
@@ -43,6 +72,7 @@ async function getRecipients(storeId: string): Promise<DigestRecipients | null> 
     alertTransferReceived: settings?.alert_transfer_received ?? true,
     digestDaily: settings?.digest_daily ?? true,
     digestWeekly: settings?.digest_weekly ?? true,
+    language: resolveOwnerMessageLanguage(ownerUiLanguage, store.language),
   };
 }
 
@@ -59,73 +89,6 @@ async function sendEmail(to: string, subject: string, text: string): Promise<boo
   } catch {
     return false;
   }
-}
-
-type OrderRef = { order_id: string; number: string; garment_type: string; client_name: string };
-type LowStockItem = { id: string; name: string; quantity: number; unit: string };
-type DailyDigestData = {
-  due_today: OrderRef[];
-  due_next_3_days: (OrderRef & { delivery_date: string })[];
-  overdue: (OrderRef & { delivery_date: string })[];
-  outstanding_total: number;
-  top_balances: { client_name: string; balance: number; number: string }[];
-  low_stock_items: LowStockItem[];
-};
-type WeeklyDigestData = {
-  new_orders: number;
-  billed: number;
-  collected: number;
-  outstanding_total: number;
-  overdue_count: number;
-  garments_due_this_week: number;
-  overloaded_weeks: string[];
-};
-
-function buildDailyText(storeName: string, d: DailyDigestData): string {
-  const lines = [`Good morning from Jaylor — ${storeName}'s daily digest.`];
-  lines.push(
-    d.due_today.length > 0
-      ? `Due today (${d.due_today.length}): ${d.due_today.map((o) => `${o.client_name} (${o.number})`).join(", ")}`
-      : "Nothing due today.",
-  );
-  if (d.due_next_3_days.length > 0) {
-    lines.push(
-      `Due in the next 3 days (${d.due_next_3_days.length}): ${d.due_next_3_days.map((o) => `${o.client_name} (${o.number})`).join(", ")}`,
-    );
-  }
-  if (d.overdue.length > 0) {
-    lines.push(
-      `Overdue (${d.overdue.length}): ${d.overdue.map((o) => `${o.client_name} (${o.number})`).join(", ")}`,
-    );
-  }
-  lines.push(`Total outstanding: ${formatMoney(d.outstanding_total)}`);
-  if (d.top_balances.length > 0) {
-    lines.push(
-      `Top balances to chase: ${d.top_balances.map((b) => `${b.client_name} ${formatMoney(b.balance)}`).join(", ")}`,
-    );
-  }
-  if (d.low_stock_items?.length > 0) {
-    lines.push(
-      `Running low: ${d.low_stock_items.map((i) => `${i.name} (${i.quantity} ${i.unit})`).join(", ")}`,
-    );
-  }
-  return lines.join("\n");
-}
-
-function buildWeeklyText(storeName: string, d: WeeklyDigestData): string {
-  const lines = [
-    `${storeName}'s weekly digest.`,
-    `New orders: ${d.new_orders} · Billed: ${formatMoney(d.billed)} · Collected: ${formatMoney(d.collected)}`,
-    `Outstanding: ${formatMoney(d.outstanding_total)} · Overdue orders: ${d.overdue_count}`,
-    `Garments due this week: ${d.garments_due_this_week}`,
-  ];
-  const firstOverloadedWeek = d.overloaded_weeks?.[0];
-  if (firstOverloadedWeek) {
-    lines.push(
-      `Heads up: ${d.overloaded_weeks.length} of the next 6 weeks are over your usual capacity (starting ${new Date(firstOverloadedWeek).toLocaleDateString()}).`,
-    );
-  }
-  return lines.join("\n");
 }
 
 export type DigestResult = {
@@ -148,7 +111,7 @@ export async function sendDailyDigest(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.rpc("get_daily_digest_data", { p_store_id: storeId });
   const digest = data as unknown as DailyDigestData;
-  const text = buildDailyText(recipients.storeName, digest);
+  const text = buildDailyTextI18n(recipients.language, recipients.storeName, digest);
 
   await supabaseAdmin.rpc("create_notification", {
     p_store_id: storeId,
@@ -158,7 +121,7 @@ export async function sendDailyDigest(
   });
 
   const emailSent = recipients.email
-    ? await sendEmail(recipients.email, "Your Jaylor daily digest", text)
+    ? await sendEmail(recipients.email, dailyDigestSubject(recipients.language), text)
     : false;
   let whatsappSent = false;
   if (recipients.whatsappPhone && (await hasOpenWindow(recipients.whatsappPhone))) {
@@ -186,7 +149,7 @@ export async function sendWeeklyDigest(
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
   const { data } = await supabaseAdmin.rpc("get_weekly_digest_data", { p_store_id: storeId });
   const digest = data as unknown as WeeklyDigestData;
-  const text = buildWeeklyText(recipients.storeName, digest);
+  const text = buildWeeklyTextI18n(recipients.language, recipients.storeName, digest);
 
   await supabaseAdmin.rpc("create_notification", {
     p_store_id: storeId,
@@ -196,7 +159,7 @@ export async function sendWeeklyDigest(
   });
 
   const emailSent = recipients.email
-    ? await sendEmail(recipients.email, "Your Jaylor weekly digest", text)
+    ? await sendEmail(recipients.email, weeklyDigestSubject(recipients.language), text)
     : false;
   let whatsappSent = false;
   if (recipients.whatsappPhone && (await hasOpenWindow(recipients.whatsappPhone))) {
@@ -239,7 +202,13 @@ export async function sendTransferAlert(
     .eq("id", order.client_id)
     .maybeSingle();
 
-  const text = `Transfer received: ${formatMoney(transfer.amount)} from ${client?.full_name ?? "a client"} for order ${order.number}. New balance: ${formatMoney(balance?.balance ?? 0)}.`;
+  const text = transferAlertTextI18n(
+    recipients.language,
+    transfer.amount,
+    client?.full_name ?? "a client",
+    order.number,
+    balance?.balance ?? 0,
+  );
 
   await supabaseAdmin.rpc("create_notification", {
     p_store_id: storeId,
@@ -249,7 +218,7 @@ export async function sendTransferAlert(
   });
 
   const emailSent = recipients.email
-    ? await sendEmail(recipients.email, "Jaylor: transfer received", text)
+    ? await sendEmail(recipients.email, transferAlertSubject(recipients.language), text)
     : false;
 
   return { skipped: false, email: emailSent, whatsapp: false, notification: true };

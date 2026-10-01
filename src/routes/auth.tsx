@@ -20,18 +20,29 @@ import { trackEvent } from "@/lib/analytics";
 import { normalizePhoneNG } from "@/lib/phone";
 import { signInWithPhone } from "@/lib/auth-lookup.functions";
 import { TermsGateDialog } from "@/components/jaylor/terms-gate-dialog";
+import { LanguageSwitcher } from "@/components/jaylor/language-switcher";
+import { resolveLanguage } from "@/lib/i18n/resolve-language.server";
+import { loadNamespaces } from "@/lib/i18n/load-namespaces";
+import { I18nProvider, useT, useLanguage } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/auth")({
   staticData: { sitemap: false },
   validateSearch: (
     search: Record<string, unknown>,
-  ): { mode?: "signup"; ref?: string; passport_share?: string } => ({
+  ): { mode?: "signup"; ref?: string; passport_share?: string; lang?: string } => ({
     ...(search["mode"] === "signup" ? { mode: "signup" as const } : {}),
     ...(typeof search["ref"] === "string" && search["ref"] ? { ref: search["ref"] } : {}),
     ...(typeof search["passport_share"] === "string" && search["passport_share"]
       ? { passport_share: search["passport_share"] }
       : {}),
+    ...(typeof search["lang"] === "string" ? { lang: search["lang"] } : {}),
   }),
+  loaderDeps: ({ search }) => ({ lang: search.lang }),
+  loader: async ({ deps }) => {
+    const language = await resolveLanguage({ data: { urlLang: deps.lang } });
+    const resources = await loadNamespaces(language, ["common", "auth"]);
+    return { language, resources };
+  },
   head: () => ({
     meta: [
       { title: "Sign in — Jaylor" },
@@ -49,11 +60,22 @@ export const Route = createFileRoute("/auth")({
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
-  component: AuthPage,
+  component: AuthRoute,
 });
+
+function AuthRoute() {
+  const { language, resources } = Route.useLoaderData();
+  return (
+    <I18nProvider language={language} resources={resources}>
+      <AuthPage />
+    </I18nProvider>
+  );
+}
 
 function AuthPage() {
   const navigate = useNavigate();
+  const t = useT("auth");
+  const language = useLanguage();
   const {
     mode: initialMode,
     ref: referralCode,
@@ -123,7 +145,7 @@ function AuthPage() {
       if (error) throw error;
       setSent(true);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Something went wrong"));
+      toast.error(getErrorMessage(error, t("something_wrong")));
     } finally {
       setBusy(false);
     }
@@ -135,10 +157,10 @@ function AuthPage() {
     try {
       const { error } = await supabase.auth.updateUser({ password });
       if (error) throw error;
-      toast.success("Password updated. You're signed in.");
+      toast.success(t("password_updated"));
       navigate({ to: "/dashboard" });
     } catch (error) {
-      toast.error(getErrorMessage(error, "Something went wrong"));
+      toast.error(getErrorMessage(error, t("something_wrong")));
     } finally {
       setBusy(false);
     }
@@ -161,7 +183,7 @@ function AuthPage() {
   async function performSignup() {
     const whatsapp = normalizePhoneNG(whatsappRaw);
     if (!whatsapp) {
-      toast.error("Enter a valid Nigerian WhatsApp number");
+      toast.error(t("invalid_whatsapp"));
       return;
     }
     setBusy(true);
@@ -182,9 +204,13 @@ function AuthPage() {
         return;
       }
       if (data.user) void trackEvent("signup_completed", data.user.id);
+      // Carry the language picked on this page (via the switcher, already
+      // written to the jaylor_lang cookie) into the new profile's own
+      // ui_language, now that signup gave us a session to call this as.
+      void supabase.rpc("set_my_ui_language", { p_language: language });
       goToPostAuthDestination();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Something went wrong"));
+      toast.error(getErrorMessage(error, t("something_wrong")));
     } finally {
       setBusy(false);
     }
@@ -196,7 +222,7 @@ function AuthPage() {
     if (mode === "signup") {
       const whatsapp = normalizePhoneNG(whatsappRaw);
       if (!whatsapp) {
-        toast.error("Enter a valid Nigerian WhatsApp number");
+        toast.error(t("invalid_whatsapp"));
         return;
       }
       setTermsOpen(true);
@@ -209,13 +235,13 @@ function AuthPage() {
       if (!loginEmail.includes("@")) {
         const phone = normalizePhoneNG(loginEmail);
         if (!phone) {
-          toast.error("Enter your email or a valid WhatsApp number");
+          toast.error(t("invalid_identifier"));
           setBusy(false);
           return;
         }
         const result = await signInWithPhone({ data: { phone, password } });
         if (!result.ok) {
-          toast.error("That WhatsApp number and password don't match an account");
+          toast.error(t("whatsapp_login_mismatch"));
           setBusy(false);
           return;
         }
@@ -234,7 +260,7 @@ function AuthPage() {
       if (error) throw error;
       goToPostAuthDestination();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Something went wrong"));
+      toast.error(getErrorMessage(error, t("something_wrong")));
     } finally {
       setBusy(false);
     }
@@ -247,7 +273,7 @@ function AuthPage() {
     });
     if (result.error) {
       setBusy(false);
-      toast.error("Google sign-in could not start. Please try again.");
+      toast.error(t("google_signin_failed"));
       return;
     }
     if (result.redirected) return;
@@ -257,23 +283,24 @@ function AuthPage() {
   return (
     <main className="linen flex min-h-screen flex-col items-center justify-center bg-background px-4 py-10">
       <div className="w-full max-w-md">
+        <div className="flex justify-end">
+          <LanguageSwitcher />
+        </div>
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
           <BrandLogo showTagline markClassName="h-12 w-auto" />
         </Link>
-        <p className="mt-3 text-center text-sm text-muted-foreground">
-          Every order tracked. Every naira collected.
-        </p>
+        <p className="mt-3 text-center text-sm text-muted-foreground">{t("tagline")}</p>
 
         <div className="mt-8 rounded-2xl border bg-card p-6 shadow-sm">
           {recovery ? (
             <>
-              <h1 className="text-xl">Set a new password</h1>
+              <h1 className="text-xl">{t("set_new_password_title")}</h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                Choose a new password for your account.
+                {t("set_new_password_description")}
               </p>
               <form onSubmit={handleSetNewPassword} className="mt-6 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="new-password">New password</Label>
+                  <Label htmlFor="new-password">{t("new_password_label")}</Label>
                   <PasswordInput
                     id="new-password"
                     value={password}
@@ -284,28 +311,26 @@ function AuthPage() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
-                  Update password
+                  {t("update_password_button")}
                 </Button>
               </form>
             </>
           ) : sent ? (
             <div className="text-center">
-              <h1 className="text-xl">Check your email</h1>
+              <h1 className="text-xl">{t("check_email_title")}</h1>
               <p className="mt-2 text-sm text-muted-foreground">
                 {mode === "reset"
-                  ? `We sent a password reset link to ${email}.`
-                  : `We sent a confirmation link to ${email}. Open it to finish setting up your workroom.`}
+                  ? t("check_email_reset", { email })
+                  : t("check_email_confirm", { email })}
               </p>
             </div>
           ) : mode === "reset" ? (
             <>
-              <h1 className="text-xl">Reset your password</h1>
-              <p className="mt-1 text-sm text-muted-foreground">
-                We&apos;ll email you a link to choose a new one.
-              </p>
+              <h1 className="text-xl">{t("reset_title")}</h1>
+              <p className="mt-1 text-sm text-muted-foreground">{t("reset_description")}</p>
               <form onSubmit={handleResetRequest} className="mt-6 space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="reset-email">Email</Label>
+                  <Label htmlFor="reset-email">{t("email_label")}</Label>
                   <Input
                     id="reset-email"
                     type="email"
@@ -317,7 +342,7 @@ function AuthPage() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
-                  Send reset link
+                  {t("send_reset_link_button")}
                 </Button>
               </form>
               <p className="mt-6 text-center text-sm text-muted-foreground">
@@ -326,26 +351,24 @@ function AuthPage() {
                   className="font-medium text-gold underline-offset-4 hover:underline"
                   onClick={() => setMode("signin")}
                 >
-                  Back to sign in
+                  {t("back_to_sign_in")}
                 </button>
               </p>
             </>
           ) : (
             <>
               <h1 className="text-xl">
-                {mode === "signin" ? "Welcome back" : "Create your account"}
+                {mode === "signin" ? t("welcome_back") : t("create_your_account")}
               </h1>
               <p className="mt-1 text-sm text-muted-foreground">
-                {mode === "signin"
-                  ? "Sign in to your workroom."
-                  : "Set up your tailoring business in a minute."}
+                {mode === "signin" ? t("sign_in_subtitle") : t("signup_subtitle")}
               </p>
 
               <form onSubmit={handleSubmit} className="mt-6 space-y-4">
                 {mode === "signup" && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="name">Your name</Label>
+                      <Label htmlFor="name">{t("name_label")}</Label>
                       <Input
                         id="name"
                         value={name}
@@ -356,7 +379,7 @@ function AuthPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-whatsapp">WhatsApp number</Label>
+                      <Label htmlFor="signup-whatsapp">{t("whatsapp_label")}</Label>
                       <Input
                         id="signup-whatsapp"
                         type="tel"
@@ -371,7 +394,7 @@ function AuthPage() {
                 )}
                 {mode === "signup" ? (
                   <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
+                    <Label htmlFor="email">{t("email_label")}</Label>
                     <Input
                       id="email"
                       type="email"
@@ -384,7 +407,7 @@ function AuthPage() {
                   </div>
                 ) : (
                   <div className="space-y-2">
-                    <Label htmlFor="identifier">Email or WhatsApp number</Label>
+                    <Label htmlFor="identifier">{t("identifier_label")}</Label>
                     <Input
                       id="identifier"
                       value={identifier}
@@ -397,14 +420,14 @@ function AuthPage() {
                 )}
                 <div className="space-y-2">
                   <div className="flex items-center justify-between">
-                    <Label htmlFor="password">Password</Label>
+                    <Label htmlFor="password">{t("password_label")}</Label>
                     {mode === "signin" && (
                       <button
                         type="button"
                         className="text-xs font-medium text-gold underline-offset-4 hover:underline"
                         onClick={() => setMode("reset")}
                       >
-                        Forgot password?
+                        {t("forgot_password")}
                       </button>
                     )}
                   </div>
@@ -418,25 +441,25 @@ function AuthPage() {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={busy}>
-                  {mode === "signin" ? "Sign in" : "Create account"}
+                  {mode === "signin" ? t("sign_in_button") : t("create_account_button")}
                 </Button>
                 {mode === "signup" && (
                   <p className="text-center text-xs text-muted-foreground">
-                    You&apos;ll be asked to review and agree to our{" "}
+                    {t("terms_agreement_prefix")}{" "}
                     <Link
                       to="/terms"
                       className="underline underline-offset-4 hover:text-foreground"
                     >
-                      Terms
+                      {t("terms_link")}
                     </Link>{" "}
-                    and{" "}
+                    {t("terms_agreement_middle")}{" "}
                     <Link
                       to="/privacy-policy"
                       className="underline underline-offset-4 hover:text-foreground"
                     >
-                      Privacy Policy
+                      {t("privacy_link")}
                     </Link>{" "}
-                    before your account is created.
+                    {t("terms_agreement_suffix")}
                   </p>
                 )}
               </form>
@@ -450,17 +473,17 @@ function AuthPage() {
                 onClick={handleGoogle}
                 disabled={busy}
               >
-                Continue with Google
+                {t("continue_google")}
               </Button>
 
               <p className="mt-6 text-center text-sm text-muted-foreground">
-                {mode === "signin" ? "New to Jaylor?" : "Already have an account?"}{" "}
+                {mode === "signin" ? t("new_to_jaylor") : t("already_have_account")}{" "}
                 <button
                   type="button"
                   className="font-medium text-gold underline-offset-4 hover:underline"
                   onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
                 >
-                  {mode === "signin" ? "Create an account" : "Sign in"}
+                  {mode === "signin" ? t("create_an_account") : t("sign_in_link")}
                 </button>
               </p>
             </>

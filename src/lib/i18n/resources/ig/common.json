@@ -8,5 +8,13 @@
   "something_wrong": "Ihe adịghị mma mere. Biko nwaa ọzọ.",
   "copied": "Edepụtala",
   "copy_failed": "Enweghị ike idepụta",
+  "status_received": "Anatala",
+  "status_cutting": "Na-egbutu",
+  "status_sewing": "Na-akwa",
+  "status_fitting": "Nnyagide",
+  "status_adjustments": "Mmezi",
+  "status_ready": "Dị njikere",
+  "status_collected": "Ewerela",
+  "status_cancelled": "Akagbuola",
   "_meta_status": "machine-drafted-needs-review"
 }

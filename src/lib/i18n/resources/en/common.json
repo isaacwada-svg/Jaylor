@@ -7,5 +7,13 @@
   "loading": "Loading...",
   "something_wrong": "Something went wrong. Please try again.",
   "copied": "Copied",
-  "copy_failed": "Could not copy"
+  "copy_failed": "Could not copy",
+  "status_received": "Received",
+  "status_cutting": "Cutting",
+  "status_sewing": "Sewing",
+  "status_fitting": "Fitting",
+  "status_adjustments": "Adjustments",
+  "status_ready": "Ready",
+  "status_collected": "Collected",
+  "status_cancelled": "Cancelled"
 }

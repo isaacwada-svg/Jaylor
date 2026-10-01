@@ -42,6 +42,7 @@ import { useFeatureDiscovery, type DiscoveryFeature } from "@/lib/feature-discov
 import { cn } from "@/lib/utils";
 import { initOutboxSync } from "@/lib/offline/outbox";
 import { supabase } from "@/integrations/supabase/client";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 const IMPERSONATION_KEY = "jaylor_support_session";
 
@@ -91,14 +92,15 @@ function useImpersonationSession() {
 }
 
 const NAV = [
-  { to: "/", label: "Home", icon: Home },
-  { to: "/orders", label: "Orders", icon: Scissors },
-  { to: "/clients", label: "Clients", icon: Users },
-  { to: "/shop", label: "Shop", icon: Store },
-  { to: "/more", label: "More", icon: MoreHorizontal },
+  { to: "/", labelKey: "nav_home", icon: Home },
+  { to: "/orders", labelKey: "nav_orders", icon: Scissors },
+  { to: "/clients", labelKey: "nav_clients", icon: Users },
+  { to: "/shop", labelKey: "nav_shop", icon: Store },
+  { to: "/more", labelKey: "nav_more", icon: MoreHorizontal },
 ] as const;
 
 export function AppShell({ children }: { children: ReactNode }) {
+  const t = useAppT("app_common");
   const [newOpen, setNewOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
   const [clientFormOpen, setClientFormOpen] = useState(false);
@@ -129,16 +131,32 @@ export function AppShell({ children }: { children: ReactNode }) {
     feature?: DiscoveryFeature;
   }[] = [
     ...(canManageOrders
-      ? [{ label: "New order", icon: Scissors, onClick: () => setOrderFormOpen(true) }]
+      ? [
+          {
+            label: t("new_order") || "New order",
+            icon: Scissors,
+            onClick: () => setOrderFormOpen(true),
+          },
+        ]
       : []),
-    { label: "New client", icon: UserPlus, onClick: () => setClientFormOpen(true) },
+    {
+      label: t("new_client") || "New client",
+      icon: UserPlus,
+      onClick: () => setClientFormOpen(true),
+    },
     ...(canManageOrders
-      ? [{ label: "Record payment", icon: Banknote, onClick: () => navigate({ to: "/orders" }) }]
+      ? [
+          {
+            label: t("record_payment") || "Record payment",
+            icon: Banknote,
+            onClick: () => navigate({ to: "/orders" }),
+          },
+        ]
       : []),
     ...(canManageOrders
       ? [
           {
-            label: "Voice order",
+            label: t("voice_order") || "Voice order",
             icon: Mic,
             onClick: () => setVoiceOrderOpen(true),
             feature: "voice_order" as const,
@@ -198,7 +216,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             </div>
             <StitchDivider className="my-4" />
             <nav className="flex flex-col gap-1">
-              {NAV.map(({ to, label, icon: Icon }) => {
+              {NAV.map(({ to, labelKey, icon: Icon }) => {
                 const active = to === "/" ? path === "/" : path.startsWith(to);
                 return (
                   <Link
@@ -212,7 +230,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                     )}
                   >
                     <Icon className={cn("size-5", active && "text-gold")} />
-                    {!collapsed && label}
+                    {!collapsed && (t(labelKey) || labelKey)}
                   </Link>
                 );
               })}
@@ -220,7 +238,7 @@ export function AppShell({ children }: { children: ReactNode }) {
             <div className="mt-6">
               <Button className="w-full" onClick={() => setNewOpen(true)}>
                 <Plus className="size-4" />
-                {!collapsed && "New"}
+                {!collapsed && (t("new_button") || "New")}
               </Button>
             </div>
             <div className="mt-auto space-y-3">
@@ -260,7 +278,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Mobile bottom nav */}
       <nav className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background/95 backdrop-blur lg:hidden">
         <ul className="mx-auto flex max-w-lg items-stretch justify-between px-2 py-1.5">
-          {NAV.map(({ to, label, icon: Icon }) => {
+          {NAV.map(({ to, labelKey, icon: Icon }) => {
             const active = to === "/" ? path === "/" : path.startsWith(to);
             return (
               <li key={to} className="flex-1">
@@ -272,7 +290,7 @@ export function AppShell({ children }: { children: ReactNode }) {
                   )}
                 >
                   <Icon className={cn("size-5", active && "text-gold")} />
-                  {label}
+                  {t(labelKey) || labelKey}
                 </Link>
               </li>
             );
@@ -283,7 +301,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       {/* Floating New button (mobile) */}
       <Button
         onClick={() => setNewOpen(true)}
-        aria-label="New"
+        aria-label={t("new_button") || "New"}
         className="fixed bottom-20 right-4 z-40 size-14 rounded-full shadow-float lg:hidden"
       >
         <Plus className="size-6" />

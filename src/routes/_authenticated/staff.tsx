@@ -23,7 +23,8 @@ import {
 } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
-import { planCodeToTier, ORDER_STATUSES_DB, orderStatusLabel } from "@/lib/jaylor";
+import { planCodeToTier, ORDER_STATUSES_DB } from "@/lib/jaylor";
+import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 import { getErrorMessage } from "@/lib/utils";
 import { useFeatureLimit } from "@/lib/use-feature-limit";
 
@@ -56,6 +57,7 @@ function startOfMonth() {
 }
 
 function Staff() {
+  const statusLabel = useOrderStatusLabel();
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const canManage = currentRole === "owner" || currentRole === "manager";
@@ -425,7 +427,7 @@ function Staff() {
                     return (
                       <div key={status} className="w-64 shrink-0">
                         <div className="flex items-center justify-between px-1">
-                          <p className="text-sm font-medium">{orderStatusLabel(status)}</p>
+                          <p className="text-sm font-medium">{statusLabel(status)}</p>
                           <Badge variant="outline">{columnOrders.length}</Badge>
                         </div>
                         <div className="mt-2 space-y-2">

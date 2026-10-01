@@ -3957,6 +3957,7 @@ export type Database = {
           full_name: string | null
           id: string
           phone: string | null
+          ui_language: string | null
           updated_at: string
         }
         Insert: {
@@ -3965,6 +3966,7 @@ export type Database = {
           full_name?: string | null
           id: string
           phone?: string | null
+          ui_language?: string | null
           updated_at?: string
         }
         Update: {
@@ -3973,6 +3975,7 @@ export type Database = {
           full_name?: string | null
           id?: string
           phone?: string | null
+          ui_language?: string | null
           updated_at?: string
         }
         Relationships: []
@@ -6437,6 +6440,10 @@ export type Database = {
       }
       set_participant_style: {
         Args: { p_style_key: string; p_token: string }
+        Returns: undefined
+      }
+      set_my_ui_language: {
+        Args: { p_language: string }
         Returns: undefined
       }
       set_store_ai_staff_allowed: {
