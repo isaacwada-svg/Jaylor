@@ -20,6 +20,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { CapacityWarning } from "@/components/jaylor/capacity-warning";
 import {
@@ -79,6 +80,9 @@ type OrderWithCurrency = Tables<"orders"> & {
   currency?: string;
   fx_rate_to_ngn?: number | null;
 };
+type OrderMaterialWithBilling = Tables<"order_materials"> & {
+  billed_to_client?: boolean;
+};
 
 function OrderDetail() {
   const { orderId } = Route.useParams();
@@ -106,6 +110,7 @@ function OrderDetail() {
   const [editingDeliveryDate, setEditingDeliveryDate] = useState(false);
   const [deliveryDateInput, setDeliveryDateInput] = useState("");
   const [savingDeliveryDate, setSavingDeliveryDate] = useState(false);
+  const [togglingMaterialId, setTogglingMaterialId] = useState<string | null>(null);
 
   // If a client (or the owner testing it) returns from a Paystack payment link.
   useEffect(() => {
@@ -234,6 +239,33 @@ function OrderDetail() {
     });
     if (error) throw error;
     await queryClient.invalidateQueries({ queryKey: ["order-material", orderId, canSeeMoney] });
+  }
+
+  async function setMaterialBilling(materialId: string, billed: boolean) {
+    setTogglingMaterialId(materialId);
+    try {
+      const { error } = await supabase.rpc(
+        "set_order_material_billed_to_client" as never,
+        {
+          p_material_id: materialId,
+          p_billed_to_client: billed,
+        } as never,
+      );
+      if (error) throw error;
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ["order-material", orderId, canSeeMoney] }),
+        queryClient.invalidateQueries({
+          queryKey: ["order-stock-materials", orderId, canSeeMoney],
+        }),
+        queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] }),
+      ]);
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error, t("could_not_update_billing") || "Could not update billing"),
+      );
+    } finally {
+      setTogglingMaterialId(null);
+    }
   }
 
   const { data: inventoryFeature } = useFeature(currentStore?.id, "inventory");
@@ -614,8 +646,18 @@ function OrderDetail() {
   const measurementValues = (measurementSet?.values ?? {}) as Record<string, number>;
 
   const fullOrder = canSeeMoney ? (order as OrderWithCurrency) : null;
-  const fullMaterial = canSeeMoney ? (material as Tables<"order_materials"> | null) : null;
-  const materialCost = fullMaterial?.source === "tailor" ? (fullMaterial.cost ?? 0) : 0;
+  const fullMaterial = canSeeMoney ? (material as OrderMaterialWithBilling | null) : null;
+  const stockMaterialsFull = canSeeMoney
+    ? ((stockMaterials ?? []) as OrderMaterialWithBilling[])
+    : [];
+  // Only a material NOT billed to the client is a real cost here -- one that
+  // is billed is pass-through (it's added to the client's total via
+  // order_balances instead), so it neither helps nor hurts profit.
+  const materialCost =
+    (fullMaterial?.source === "tailor" && !fullMaterial.billed_to_client
+      ? (fullMaterial.cost ?? 0)
+      : 0) +
+    stockMaterialsFull.reduce((sum, m) => sum + (!m.billed_to_client ? (m.cost ?? 0) : 0), 0);
   const labourCost = fullOrder?.labour_cost ?? 0;
   const otherCost = fullOrder?.other_cost ?? 0;
   const totalCost = materialCost + labourCost + otherCost;
@@ -957,9 +999,27 @@ function OrderDetail() {
                 {material.yards ? ` · ${material.yards} yds` : ""}
               </p>
               {fullMaterial && fullMaterial.source === "tailor" && fullMaterial.cost > 0 && (
-                <p className="mt-1 text-sm">
-                  {t("fabric_cost_label") || "Cost:"} <MoneyText amount={fullMaterial.cost} />
-                </p>
+                <div className="mt-1 flex items-center justify-between gap-3">
+                  <p className="text-sm">
+                    {t("fabric_cost_label") || "Cost:"} <MoneyText amount={fullMaterial.cost} />
+                  </p>
+                  {order.status !== "collected" && (
+                    <div className="flex items-center gap-2">
+                      <Label
+                        htmlFor="charge-main-material"
+                        className="text-xs text-muted-foreground"
+                      >
+                        {t("charge_client_label") || "Charge client"}
+                      </Label>
+                      <Switch
+                        id="charge-main-material"
+                        checked={!!fullMaterial.billed_to_client}
+                        onCheckedChange={(checked) => setMaterialBilling(fullMaterial.id, checked)}
+                        disabled={togglingMaterialId === fullMaterial.id || !online}
+                      />
+                    </div>
+                  )}
+                </div>
               )}
               {material.extras_received && (
                 <p className="mt-1 text-sm text-muted-foreground">
@@ -1026,15 +1086,35 @@ function OrderDetail() {
               ) : (
                 <div className="mt-2 space-y-2">
                   {stockMaterials.map((m) => {
-                    const fullM = canSeeMoney ? (m as Tables<"order_materials">) : null;
+                    const fullM = canSeeMoney ? (m as OrderMaterialWithBilling) : null;
                     return (
-                      <div key={m.id} className="flex items-center justify-between text-sm">
-                        <p>{m.description}</p>
-                        {fullM && fullM.cost > 0 && (
-                          <p className="figures">
-                            <MoneyText amount={fullM.cost} />
-                          </p>
-                        )}
+                      <div key={m.id} className="flex items-center justify-between gap-3 text-sm">
+                        <p className="min-w-0 truncate">{m.description}</p>
+                        <div className="flex shrink-0 items-center gap-3">
+                          {fullM && fullM.cost > 0 && (
+                            <p className="figures">
+                              <MoneyText amount={fullM.cost} />
+                            </p>
+                          )}
+                          {fullM && order.status !== "collected" && (
+                            <div className="flex items-center gap-1.5">
+                              <Label
+                                htmlFor={`charge-${m.id}`}
+                                className="text-xs text-muted-foreground"
+                              >
+                                {t("charge_client_label") || "Charge client"}
+                              </Label>
+                              <Switch
+                                id={`charge-${m.id}`}
+                                checked={!!fullM.billed_to_client}
+                                onCheckedChange={(checked) =>
+                                  m.id && setMaterialBilling(m.id, checked)
+                                }
+                                disabled={togglingMaterialId === m.id || !online}
+                              />
+                            </div>
+                          )}
+                        </div>
                       </div>
                     );
                   })}
