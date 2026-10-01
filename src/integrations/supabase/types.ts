@@ -5701,6 +5701,62 @@ export type Database = {
       }
     }
     Functions: {
+      _can_manage_order_fitting: {
+        Args: { p_assigned_to: string; p_store_id: string }
+        Returns: boolean
+      }
+      _compute_fitting_slots: {
+        Args: { p_days?: number; p_store_id: string }
+        Returns: Json
+      }
+      _directory_is_paid_or_trial: {
+        Args: { p_plan_code: string; p_trial_ends_at: string }
+        Returns: boolean
+      }
+      _is_fitting_slot_available: {
+        Args: { p_starts_at: string; p_store_id: string }
+        Returns: boolean
+      }
+      _passport_phone_variants: {
+        Args: { p_phone_e164: string }
+        Returns: string[]
+      }
+      _passport_session_phone: {
+        Args: { p_session_token: string }
+        Returns: string
+      }
+      _require_consultations_feature: {
+        Args: { p_store_id: string }
+        Returns: undefined
+      }
+      _require_inventory_feature: {
+        Args: { p_store_id: string }
+        Returns: undefined
+      }
+      _store_has_feature: {
+        Args: { p_feature: string; p_store_id: string }
+        Returns: boolean
+      }
+      _store_has_recent_order: {
+        Args: { p_store_id: string }
+        Returns: boolean
+      }
+      _store_on_time_stats: {
+        Args: { p_days?: number; p_store_id: string }
+        Returns: {
+          has_enough_data: boolean
+          orders_counted: number
+          rate: number
+        }[]
+      }
+      _store_weekly_throughput: {
+        Args: { p_store_id: string }
+        Returns: {
+          capacity: number
+          source: string
+          weeks_of_data: number
+        }[]
+      }
       accept_invite: { Args: { p_token: string }; Returns: string }
       accept_passport_share: { Args: { p_share_id: string }; Returns: string }
       adjust_stock: {
@@ -5968,7 +6024,7 @@ export type Database = {
       create_inventory_item: {
         Args: {
           p_category: string
-          p_cost_per_unit?: number | undefined
+          p_cost_per_unit?: number
           p_initial_quantity?: number
           p_name: string
           p_reorder_level?: number
@@ -6062,7 +6118,7 @@ export type Database = {
         Returns: Json
       }
       fix_staff_earning: {
-        Args: { p_earning_id: string; p_member_ref?: string | undefined; p_rate?: number | undefined }
+        Args: { p_earning_id: string; p_member_ref?: string; p_rate?: number }
         Returns: {
           amount: number
           created_at: string
@@ -6095,7 +6151,11 @@ export type Database = {
         Returns: undefined
       }
       generate_payroll_run: {
-        Args: { p_period_end: string; p_period_start: string; p_store_id: string }
+        Args: {
+          p_period_end: string
+          p_period_start: string
+          p_store_id: string
+        }
         Returns: {
           created_at: string
           created_by: string | null
@@ -6151,7 +6211,10 @@ export type Database = {
       get_fitting_link_details: { Args: { p_token: string }; Returns: Json }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_order_approval: { Args: { p_token: string }; Returns: Json }
-      get_order_capacity_check: { Args: { p_date: string; p_store_id: string }; Returns: Json }
+      get_order_capacity_check: {
+        Args: { p_date: string; p_store_id: string }
+        Returns: Json
+      }
       get_order_tracking: { Args: { p_token: string }; Returns: Json }
       get_participant_by_token: { Args: { p_token: string }; Returns: Json }
       get_passport_share_preview: {
@@ -6160,7 +6223,11 @@ export type Database = {
       }
       get_passport_view: { Args: { p_session_token: string }; Returns: Json }
       get_payroll_period_warnings: {
-        Args: { p_period_end: string; p_period_start: string; p_store_id: string }
+        Args: {
+          p_period_end: string
+          p_period_start: string
+          p_store_id: string
+        }
         Returns: Json
       }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
@@ -6174,7 +6241,10 @@ export type Database = {
       }
       get_store_language_by_slug: { Args: { p_slug: string }; Returns: string }
       get_store_on_time_score: { Args: { p_store_id: string }; Returns: Json }
-      get_storefront_on_time_badge: { Args: { p_store_id: string }; Returns: Json }
+      get_storefront_on_time_badge: {
+        Args: { p_store_id: string }
+        Returns: Json
+      }
       get_storefront_payout_account: {
         Args: { p_store_id: string }
         Returns: {
@@ -6297,7 +6367,10 @@ export type Database = {
         Args: { p_dow: number; p_month: number; p_n: number; p_year: number }
         Returns: string
       }
-      passport_start_session: { Args: { p_phone_e164: string }; Returns: string }
+      passport_start_session: {
+        Args: { p_phone_e164: string }
+        Returns: string
+      }
       record_passport_referral: {
         Args: { p_share_token: string; p_store_id: string }
         Returns: undefined
@@ -6306,7 +6379,7 @@ export type Database = {
         Args: {
           p_amount: number
           p_member_ref: string
-          p_note?: string | undefined
+          p_note?: string
           p_store_id: string
         }
         Returns: {
@@ -6329,9 +6402,9 @@ export type Database = {
       record_stock_in: {
         Args: {
           p_item_id: string
-          p_note?: string | undefined
+          p_note?: string
           p_quantity: number
-          p_unit_cost?: number | undefined
+          p_unit_cost?: number
         }
         Returns: {
           category: string
@@ -6406,7 +6479,7 @@ export type Database = {
       resolve_login_email: { Args: { p_phone: string }; Returns: string }
       resolve_referral_code: { Args: { p_code: string }; Returns: string }
       respond_to_order_approval: {
-        Args: { p_comment?: string | null; p_status: string; p_token: string }
+        Args: { p_comment?: string; p_status: string; p_token: string }
         Returns: undefined
       }
       revoke_measurement_passport_by_store: {
@@ -6417,11 +6490,12 @@ export type Database = {
         Args: { p_session_token: string; p_share_id: string }
         Returns: undefined
       }
+      set_my_ui_language: { Args: { p_language: string }; Returns: undefined }
       set_order_status_note: {
         Args: {
-          p_note?: string | null
+          p_note?: string
           p_order_id: string
-          p_photo_path?: string | null
+          p_photo_path?: string
           p_to_status: string
         }
         Returns: undefined
@@ -6440,10 +6514,6 @@ export type Database = {
       }
       set_participant_style: {
         Args: { p_style_key: string; p_token: string }
-        Returns: undefined
-      }
-      set_my_ui_language: {
-        Args: { p_language: string }
         Returns: undefined
       }
       set_store_ai_staff_allowed: {
@@ -6469,6 +6539,19 @@ export type Database = {
         Returns: {
           garment_type: string
           order_count: number
+        }[]
+      }
+      upcoming_calendar_events: {
+        Args: { p_store_id: string; p_weeks_ahead?: number }
+        Returns: {
+          days_away: number
+          event_date: string
+          event_end_date: string
+          event_key: string
+          label: string
+          last_year_order_count: number
+          last_year_top_garment_types: string
+          lead_weeks_message: string
         }[]
       }
       update_inventory_item: {
@@ -6501,21 +6584,13 @@ export type Database = {
           isSetofReturn: false
         }
       }
-      upcoming_calendar_events: {
-        Args: { p_store_id: string; p_weeks_ahead?: number }
-        Returns: {
-          days_away: number
-          event_date: string
-          event_end_date: string
-          event_key: string
-          label: string
-          last_year_order_count: number
-          last_year_top_garment_types: string
-          lead_weeks_message: string
-        }[]
-      }
       upsert_pay_rate: {
-        Args: { p_amount: number; p_garment_type_code: string; p_stage: string; p_store_id: string }
+        Args: {
+          p_amount: number
+          p_garment_type_code: string
+          p_stage: string
+          p_store_id: string
+        }
         Returns: {
           amount: number
           garment_type_code: string
