@@ -37,6 +37,7 @@ import { Route as DotwellKnownAssetlinksDotjsonRouteImport } from './routes/[.]w
 import { Route as AuthenticatedAiDesignsRouteImport } from './routes/_authenticated/ai-designs'
 import { Route as AuthenticatedAiStudioRouteImport } from './routes/_authenticated/ai-studio'
 import { Route as AuthenticatedBillingRouteImport } from './routes/_authenticated/billing'
+import { Route as AuthenticatedBusinessReportRouteImport } from './routes/_authenticated/business-report'
 import { Route as AuthenticatedConsultationsRouteImport } from './routes/_authenticated/consultations'
 import { Route as AuthenticatedContractsRouteImport } from './routes/_authenticated/contracts'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -64,6 +65,7 @@ import { Route as PassportTokenRouteImport } from './routes/passport.$token'
 import { Route as PassportClaimRouteImport } from './routes/passport.claim'
 import { Route as PassportMeRouteImport } from './routes/passport.me'
 import { Route as QTokenRouteImport } from './routes/q.$token'
+import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as TTokenRouteImport } from './routes/t.$token'
 import { Route as TailorsCitySlugRouteImport } from './routes/tailors.$citySlug'
@@ -221,6 +223,12 @@ const AuthenticatedBillingRoute = AuthenticatedBillingRouteImport.update({
   path: '/billing',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedBusinessReportRoute =
+  AuthenticatedBusinessReportRouteImport.update({
+    id: '/business-report',
+    path: '/business-report',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedConsultationsRoute =
   AuthenticatedConsultationsRouteImport.update({
     id: '/consultations',
@@ -358,6 +366,11 @@ const QTokenRoute = QTokenRouteImport.update({
   path: '/q/$token',
   getParentRoute: () => rootRouteImport,
 } as any)
+const RTokenRoute = RTokenRouteImport.update({
+  id: '/r/$token',
+  path: '/r/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const StyleTokenRoute = StyleTokenRouteImport.update({
   id: '/style/$token',
   path: '/style/$token',
@@ -476,6 +489,7 @@ export interface FileRoutesByFullPath {
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/business-report': typeof AuthenticatedBusinessReportRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -503,6 +517,7 @@ export interface FileRoutesByFullPath {
   '/passport/claim': typeof PassportClaimRoute
   '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
+  '/r/$token': typeof RTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
@@ -548,6 +563,7 @@ export interface FileRoutesByTo {
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/ai-studio': typeof AuthenticatedAiStudioRoute
   '/billing': typeof AuthenticatedBillingRoute
+  '/business-report': typeof AuthenticatedBusinessReportRoute
   '/consultations': typeof AuthenticatedConsultationsRoute
   '/contracts': typeof AuthenticatedContractsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -575,6 +591,7 @@ export interface FileRoutesByTo {
   '/passport/claim': typeof PassportClaimRoute
   '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
+  '/r/$token': typeof RTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
@@ -622,6 +639,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-designs': typeof AuthenticatedAiDesignsRoute
   '/_authenticated/ai-studio': typeof AuthenticatedAiStudioRoute
   '/_authenticated/billing': typeof AuthenticatedBillingRoute
+  '/_authenticated/business-report': typeof AuthenticatedBusinessReportRoute
   '/_authenticated/consultations': typeof AuthenticatedConsultationsRoute
   '/_authenticated/contracts': typeof AuthenticatedContractsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -649,6 +667,7 @@ export interface FileRoutesById {
   '/passport/claim': typeof PassportClaimRoute
   '/passport/me': typeof PassportMeRoute
   '/q/$token': typeof QTokenRoute
+  '/r/$token': typeof RTokenRoute
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
@@ -696,6 +715,7 @@ export interface FileRouteTypes {
     | '/ai-designs'
     | '/ai-studio'
     | '/billing'
+    | '/business-report'
     | '/consultations'
     | '/contracts'
     | '/dashboard'
@@ -723,6 +743,7 @@ export interface FileRouteTypes {
     | '/passport/claim'
     | '/passport/me'
     | '/q/$token'
+    | '/r/$token'
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
@@ -768,6 +789,7 @@ export interface FileRouteTypes {
     | '/ai-designs'
     | '/ai-studio'
     | '/billing'
+    | '/business-report'
     | '/consultations'
     | '/contracts'
     | '/dashboard'
@@ -795,6 +817,7 @@ export interface FileRouteTypes {
     | '/passport/claim'
     | '/passport/me'
     | '/q/$token'
+    | '/r/$token'
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
@@ -841,6 +864,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-designs'
     | '/_authenticated/ai-studio'
     | '/_authenticated/billing'
+    | '/_authenticated/business-report'
     | '/_authenticated/consultations'
     | '/_authenticated/contracts'
     | '/_authenticated/dashboard'
@@ -868,6 +892,7 @@ export interface FileRouteTypes {
     | '/passport/claim'
     | '/passport/me'
     | '/q/$token'
+    | '/r/$token'
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
@@ -920,6 +945,7 @@ export interface RootRouteChildren {
   JobsSlugRoute: typeof JobsSlugRoute
   JoinTokenRoute: typeof JoinTokenRoute
   QTokenRoute: typeof QTokenRoute
+  RTokenRoute: typeof RTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
   TTokenRoute: typeof TTokenRoute
   ApiCronDigestRoute: typeof ApiCronDigestRoute
@@ -1126,6 +1152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBillingRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/business-report': {
+      id: '/_authenticated/business-report'
+      path: '/business-report'
+      fullPath: '/business-report'
+      preLoaderRoute: typeof AuthenticatedBusinessReportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/consultations': {
       id: '/_authenticated/consultations'
       path: '/consultations'
@@ -1315,6 +1348,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof QTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/r/$token': {
+      id: '/r/$token'
+      path: '/r/$token'
+      fullPath: '/r/$token'
+      preLoaderRoute: typeof RTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/style/$token': {
       id: '/style/$token'
       path: '/style/$token'
@@ -1448,6 +1488,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedAiDesignsRoute: typeof AuthenticatedAiDesignsRoute
   AuthenticatedAiStudioRoute: typeof AuthenticatedAiStudioRoute
   AuthenticatedBillingRoute: typeof AuthenticatedBillingRoute
+  AuthenticatedBusinessReportRoute: typeof AuthenticatedBusinessReportRoute
   AuthenticatedConsultationsRoute: typeof AuthenticatedConsultationsRoute
   AuthenticatedContractsRoute: typeof AuthenticatedContractsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1476,6 +1517,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedAiDesignsRoute: AuthenticatedAiDesignsRoute,
   AuthenticatedAiStudioRoute: AuthenticatedAiStudioRoute,
   AuthenticatedBillingRoute: AuthenticatedBillingRoute,
+  AuthenticatedBusinessReportRoute: AuthenticatedBusinessReportRoute,
   AuthenticatedConsultationsRoute: AuthenticatedConsultationsRoute,
   AuthenticatedContractsRoute: AuthenticatedContractsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
@@ -1576,6 +1618,7 @@ const rootRouteChildren: RootRouteChildren = {
   JobsSlugRoute: JobsSlugRoute,
   JoinTokenRoute: JoinTokenRoute,
   QTokenRoute: QTokenRoute,
+  RTokenRoute: RTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
   TTokenRoute: TTokenRoute,
   ApiCronDigestRoute: ApiCronDigestRoute,
