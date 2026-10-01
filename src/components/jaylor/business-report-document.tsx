@@ -26,6 +26,7 @@ export type HealthReport = {
     margin: number | null;
     expenses: number;
     net_profit: number;
+    rate_missing_count: number;
   };
   work: {
     orders_created: number;
@@ -40,6 +41,14 @@ export type HealthReport = {
     top_clients: { name: string; amount: number }[];
   };
   trend: { month: string; billed: number; collected: number }[];
+  other_currencies: {
+    currency: string;
+    billed: number;
+    collected: number;
+    outstanding: number;
+    rate_missing: boolean;
+    billed_ngn_equivalent: number | null;
+  }[];
 };
 
 function compactMoney(n: number) {
@@ -137,6 +146,13 @@ export function BusinessReportDocument({ report, id }: { report: HealthReport; i
             <ReportStat label="Expenses" value={formatMoney(report.profit.expenses)} />
             <ReportStat label="Net profit" value={formatMoney(report.profit.net_profit)} />
           </div>
+          {report.profit.rate_missing_count > 0 && (
+            <p className="mt-2 text-xs text-muted-foreground">
+              {report.profit.rate_missing_count} foreign-currency order
+              {report.profit.rate_missing_count === 1 ? "" : "s"} missing an exchange rate --
+              excluded from profit above.
+            </p>
+          )}
 
           <h3 className="mt-6 text-sm font-medium uppercase tracking-[0.1em] text-muted-foreground">
             Work
@@ -215,6 +231,54 @@ export function BusinessReportDocument({ report, id }: { report: HealthReport; i
               </BarChart>
             </ChartContainer>
           </div>
+
+          {report.other_currencies.length > 0 && (
+            <>
+              <h3 className="mt-6 text-sm font-medium uppercase tracking-[0.1em] text-muted-foreground">
+                Other currencies
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                Orders priced for clients abroad -- shown in their own currency, not converted or
+                mixed into the NGN figures above.
+              </p>
+              <div className="mt-2 space-y-2">
+                {report.other_currencies.map((c) => (
+                  <div key={c.currency} className="rounded-lg border border-border p-3 text-sm">
+                    <p className="font-medium">{c.currency}</p>
+                    <div className="mt-1 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                      <span>
+                        Billed
+                        <br />
+                        <span className="figures text-sm text-foreground">
+                          {formatMoney(c.billed, c.currency)}
+                        </span>
+                      </span>
+                      <span>
+                        Collected
+                        <br />
+                        <span className="figures text-sm text-foreground">
+                          {formatMoney(c.collected, c.currency)}
+                        </span>
+                      </span>
+                      <span>
+                        Outstanding
+                        <br />
+                        <span className="figures text-sm text-foreground">
+                          {formatMoney(c.outstanding, c.currency)}
+                        </span>
+                      </span>
+                    </div>
+                    {c.rate_missing && (
+                      <p className="mt-2 text-xs text-owed">
+                        Some orders in {c.currency} are missing an exchange rate and are excluded
+                        from the NGN-equivalent estimate.
+                      </p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </>
+          )}
 
           <StitchDivider className="my-6" />
           <p className="text-center text-[10px] text-muted-foreground">

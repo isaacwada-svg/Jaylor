@@ -61,10 +61,15 @@ Deno.serve(async (req) => {
 
   const { data: order, error: orderError } = await supabase
     .from("orders")
-    .select("id, store_id, client_id")
+    .select("id, store_id, client_id, currency")
     .eq("id", body.orderId)
     .single();
   if (orderError || !order) return errorResponse("Order not found", 404);
+  // Jaylor Pay is NGN-only -- Paystack NG subaccounts/payment links are
+  // NGN-denominated, so there's no rate to charge a foreign-currency order at.
+  if (order.currency !== "NGN") {
+    return errorResponse("Record this payment manually -- Jaylor Pay is NGN only", 400);
+  }
 
   const { data: membership } = await supabase
     .from("store_members")
@@ -80,12 +85,19 @@ Deno.serve(async (req) => {
     return errorResponse("You don't have permission to do this", 403);
   }
 
-  // The request can never charge more than what the client still owes on this order.
-  const { data: balanceRow } = await supabase
-    .from("order_balances")
-    .select("balance")
-    .eq("order_id", order.id)
-    .maybeSingle();
+  // The request can never charge more than what the client still owes on this
+  // order. Reads _store_order_balances(), not the order_balances table/view
+  // directly -- that view's own WHERE clause is has_store_role(store_id, ...),
+  // which reads auth.uid(), and this service-role REST call carries no user
+  // JWT, so a direct read has always silently returned no row here, making
+  // "outstanding" always 0 and this whole endpoint always fail with "nothing
+  // left to pay" regardless of the order's real balance.
+  const { data: balances } = await supabase.rpc("_store_order_balances", {
+    p_store_id: order.store_id,
+  });
+  const balanceRow = (balances as { order_id: string; balance: number }[] | null)?.find(
+    (b) => b.order_id === order.id,
+  );
   const outstanding = Number(balanceRow?.balance ?? 0);
   if (!(outstanding > 0)) return errorResponse("This order has nothing left to pay", 400);
   if (body.amount > outstanding) {

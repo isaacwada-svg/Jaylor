@@ -29,6 +29,7 @@ export function PaymentForm({
   orderId,
   storeId,
   balance,
+  currency = "NGN",
   onSaved,
 }: {
   open: boolean;
@@ -36,6 +37,7 @@ export function PaymentForm({
   orderId: string;
   storeId: string;
   balance: number;
+  currency?: string;
   onSaved: () => void;
 }) {
   const isMobile = useIsMobile();
@@ -170,7 +172,8 @@ export function PaymentForm({
       </div>
       {amount && (
         <p className="text-sm text-muted-foreground">
-          New balance: <MoneyText amount={Math.max(balance - (Number(amount) || 0), 0)} />
+          New balance:{" "}
+          <MoneyText amount={Math.max(balance - (Number(amount) || 0), 0)} currency={currency} />
         </p>
       )}
       <Button type="submit" className="w-full" disabled={busy}>

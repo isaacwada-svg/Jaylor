@@ -87,6 +87,10 @@ export function formatMoney(amount: number, currency = "NGN", locale = "en-NG") 
   }).format(amount);
 }
 
+/** Currencies an order can be priced in (PR P). Business/Custom plans and trials only. */
+export const ORDER_CURRENCIES = ["NGN", "USD", "GBP", "GHS"] as const;
+export type OrderCurrency = (typeof ORDER_CURRENCIES)[number];
+
 export function planCodeToTier(planCode: string | null | undefined): Tier {
   switch (planCode) {
     case "free":

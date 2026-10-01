@@ -59,7 +59,8 @@ function QuoteDetail() {
     queryFn: async () => {
       const { data, error } = await supabase.from("quotes").select("*").eq("id", quoteId).single();
       if (error) throw error;
-      return data;
+      // currency/fx_rate_to_ngn predate the generated Supabase types.
+      return data as typeof data & { currency: string; fx_rate_to_ngn: number | null };
     },
   });
 
@@ -110,8 +111,10 @@ function QuoteDetail() {
           quantity: quote.quantity,
           price: total,
           style_notes: quote.notes,
+          currency: quote.currency,
+          fx_rate_to_ngn: quote.fx_rate_to_ngn,
           created_by: (await supabase.auth.getUser()).data.user?.id ?? null,
-        })
+        } as never)
         .select("id")
         .single();
       if (orderError) throw orderError;
@@ -123,7 +126,8 @@ function QuoteDetail() {
           amount: total,
           method: paymentMethod,
           paid_at: new Date().toISOString(),
-        });
+          currency: quote.currency,
+        } as never);
         if (paymentError) throw paymentError;
       }
 
@@ -232,12 +236,12 @@ function QuoteDetail() {
               <span>
                 {quote.garment_type} × {quote.quantity}
               </span>
-              <span className="figures">{formatMoney(subtotal)}</span>
+              <span className="figures">{formatMoney(subtotal, quote.currency)}</span>
             </div>
             {quote.discount_percent > 0 && (
               <div className="mt-1 flex justify-between text-xs opacity-70">
                 <span>Discount ({quote.discount_percent}%)</span>
-                <span className="figures">-{formatMoney(discountAmount)}</span>
+                <span className="figures">-{formatMoney(discountAmount, quote.currency)}</span>
               </div>
             )}
             {quote.notes && <p className="mt-2 text-xs opacity-70">{quote.notes}</p>}
@@ -246,7 +250,7 @@ function QuoteDetail() {
           <div className="ml-auto w-56 space-y-1 border-t-2 border-black/80 pt-3">
             <div className="flex justify-between font-medium">
               <span>Total</span>
-              <span className="figures">{formatMoney(total)}</span>
+              <span className="figures">{formatMoney(total, quote.currency)}</span>
             </div>
           </div>
 
@@ -307,7 +311,7 @@ function QuoteDetail() {
           <DialogHeader>
             <DialogTitle>Convert to sale</DialogTitle>
             <DialogDescription>
-              Creates an order for {formatMoney(total)} and takes it off this quote.
+              Creates an order for {formatMoney(total, quote.currency)} and takes it off this quote.
             </DialogDescription>
           </DialogHeader>
           <Select

@@ -188,13 +188,21 @@ export async function sendTransferAlert(
   }
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const [{ data: transfer }, { data: order }, { data: balance }] = await Promise.all([
+  // _store_order_balances(), not order_balances directly: that view's own
+  // WHERE clause is has_store_role(store_id, ...), which reads auth.uid(),
+  // and this service-role call carries no user JWT -- a direct read has
+  // always silently returned no row here, so this alert's "balance owed"
+  // figure has always read as 0 regardless of the order's real balance.
+  const [{ data: transfer }, { data: order }, { data: balances }] = await Promise.all([
     supabaseAdmin.from("incoming_transfers").select("amount").eq("id", transferId).maybeSingle(),
     supabaseAdmin.from("orders").select("number, client_id").eq("id", orderId).maybeSingle(),
-    supabaseAdmin.from("order_balances").select("balance").eq("order_id", orderId).maybeSingle(),
+    supabaseAdmin.rpc("_store_order_balances" as never, { p_store_id: storeId } as never),
   ]);
   if (!transfer || !order)
     return { skipped: true, email: false, whatsapp: false, notification: false };
+  const balance = (balances as { order_id: string; balance: number }[] | null)?.find(
+    (b) => b.order_id === orderId,
+  );
 
   const { data: client } = await supabaseAdmin
     .from("clients")

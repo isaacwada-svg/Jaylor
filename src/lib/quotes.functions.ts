@@ -24,6 +24,7 @@ export type QuotePreview = {
   quantity: number;
   unitPrice: number;
   discountPercent: number;
+  currency: string;
   notes: string | null;
   validUntil: string;
   status: string;
@@ -43,14 +44,29 @@ export const getQuotePreview = createServerFn({ method: "GET" })
   .inputValidator((data: unknown) => tokenSchema.parse(data))
   .handler(async ({ data }): Promise<QuotePreview | null> => {
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-    const { data: quote } = await supabaseAdmin
+    const { data: quoteRow } = await supabaseAdmin
       .from("quotes")
       .select(
-        "quote_number, garment_type, quantity, unit_price, discount_percent, notes, valid_until, status, client_id, store_id",
+        "quote_number, garment_type, quantity, unit_price, discount_percent, currency, notes, valid_until, status, client_id, store_id",
       )
       .eq("quote_token", data.token)
       .maybeSingle();
-    if (!quote) return null;
+    if (!quoteRow) return null;
+    // `currency` predates the generated Supabase types -- cast the row once
+    // here rather than scattering `as never` through every field below.
+    const quote = quoteRow as unknown as {
+      quote_number: string | null;
+      garment_type: string;
+      quantity: number;
+      unit_price: number;
+      discount_percent: number;
+      currency: string;
+      notes: string | null;
+      valid_until: string;
+      status: string;
+      client_id: string;
+      store_id: string;
+    };
 
     const [{ data: client }, { data: store }, { data: dedicatedAccount }] = await Promise.all([
       supabaseAdmin
@@ -76,6 +92,7 @@ export const getQuotePreview = createServerFn({ method: "GET" })
       quantity: quote.quantity,
       unitPrice: quote.unit_price,
       discountPercent: quote.discount_percent,
+      currency: quote.currency,
       notes: quote.notes,
       validUntil: quote.valid_until,
       status: quote.status,

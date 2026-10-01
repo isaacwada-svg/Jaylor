@@ -8,11 +8,14 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import {
   GARMENT_TYPES,
   GARMENT_TYPE_CODE_BY_NAME,
+  ORDER_CURRENCIES,
+  type OrderCurrency,
   computeAgeGroup,
   computeTemplateSex,
   formatMoney,
   planCodeToTier,
 } from "@/lib/jaylor";
+import { useMultiCurrencyAccess } from "@/lib/use-multi-currency-access";
 import { isBridalRemeasureDue, pickDefaultTemplate } from "@/lib/measurements";
 import { MeasurementForm } from "@/components/jaylor/measurements-tab";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
@@ -97,6 +100,7 @@ export function OrderForm({
   const online = useOnlineStatus();
   const queryClient = useQueryClient();
   const { data: ordersFeature } = useFeature(open ? storeId : undefined, "orders");
+  const { data: multiCurrencyAccess } = useMultiCurrencyAccess(open ? storeId : undefined);
   const [step, setStep] = useState(0);
 
   const [clientSearch, setClientSearch] = useState("");
@@ -136,6 +140,8 @@ export function OrderForm({
   const [receivedAtInput, setReceivedAtInput] = useState("");
 
   const [price, setPrice] = useState("");
+  const [currency, setCurrency] = useState<OrderCurrency>("NGN");
+  const [fxRate, setFxRate] = useState("");
   const [deliveryDate, setDeliveryDate] = useState("");
   const [rush, setRush] = useState(false);
 
@@ -168,6 +174,8 @@ export function OrderForm({
     setMaterialExtras("");
     setReceivedAtInput(new Date().toISOString().slice(0, 10));
     setPrice(prefill?.price != null ? String(prefill.price) : "");
+    setCurrency("NGN");
+    setFxRate("");
     setDeliveryDate(prefill?.delivery_date ?? "");
     setRush(prefill?.rush ?? false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -450,6 +458,12 @@ export function OrderForm({
   async function handleCreate(event: FormEvent) {
     event.preventDefault();
     if (!selectedClient) return;
+    if (currency !== "NGN" && !fxRate.trim()) {
+      toast.error(
+        t("toast_enter_fx_rate") || "Enter the exchange rate you agreed with your client",
+      );
+      return;
+    }
     setBusy(true);
     try {
       const { data: userData } = await supabase.auth.getUser();
@@ -465,6 +479,8 @@ export function OrderForm({
         measurement_set_id: measurementSetId || null,
         quantity: Number(quantity) || 1,
         price: Number(price) || 0,
+        currency,
+        fx_rate_to_ngn: currency !== "NGN" ? Number(fxRate) || null : null,
         delivery_date: deliveryDate || null,
         // No separate instalment schedule exists yet — the balance is expected
         // by delivery, so that date doubles as the payment-reliability due date.
@@ -509,7 +525,7 @@ export function OrderForm({
       try {
         const { data: order, error } = await supabase
           .from("orders")
-          .insert(orderPayload)
+          .insert(orderPayload as never)
           .select()
           .single();
         if (error) throw error;
@@ -985,6 +1001,42 @@ export function OrderForm({
               <Label htmlFor="order-price">{t("price_label") || "Price"}</Label>
               <MoneyInput id="order-price" value={price} onChange={setPrice} required />
             </div>
+            {multiCurrencyAccess && (
+              <div className="space-y-2">
+                <Label>{t("currency_label") || "Currency"}</Label>
+                <Select value={currency} onValueChange={(v) => setCurrency(v as OrderCurrency)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ORDER_CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+            {multiCurrencyAccess && currency !== "NGN" && (
+              <div className="col-span-2 space-y-2">
+                <Label htmlFor="order-fx-rate">
+                  {t("fx_rate_label", { currency }) || `Rate (1 ${currency} = ? NGN)`}
+                </Label>
+                <Input
+                  id="order-fx-rate"
+                  inputMode="decimal"
+                  value={fxRate}
+                  onChange={(e) => setFxRate(e.target.value)}
+                  placeholder="e.g. 2050"
+                  required
+                />
+                <p className="text-xs text-muted-foreground">
+                  {t("fx_rate_hint") ||
+                    "What rate did you agree with your client? Used only for your reports."}
+                </p>
+              </div>
+            )}
             <div className="space-y-2">
               <Label htmlFor="order-delivery-date">
                 {t("delivery_date_label") || "Delivery date"}
@@ -1066,8 +1118,8 @@ export function OrderForm({
             </p>
             {price && (
               <p className="text-muted-foreground">
-                {t("price_colon", { amount: formatMoney(Number(price)) }) ||
-                  `Price: ${formatMoney(Number(price))}`}
+                {t("price_colon", { amount: formatMoney(Number(price), currency) }) ||
+                  `Price: ${formatMoney(Number(price), currency)}`}
               </p>
             )}
           </div>

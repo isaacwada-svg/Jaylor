@@ -10,7 +10,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 
-type OrderRow = Tables<"orders">;
+type OrderRow = Tables<"orders"> & { currency?: string };
 type ClientRow = Tables<"clients">;
 type PaymentRow = Tables<"payments">;
 type BalanceRow = { total: number | null; paid: number | null; balance: number | null } | null;
@@ -75,7 +75,7 @@ export function ReceiptDialog({
   }
 
   function shareSummary() {
-    const text = `Receipt from ${store.name}\nOrder ${order.number} · ${order.garment_type}\nTotal: ${formatMoney(total)}\nPaid: ${formatMoney(paid)}\nBalance: ${formatMoney(owed)}`;
+    const text = `Receipt from ${store.name}\nOrder ${order.number} · ${order.garment_type}\nTotal: ${formatMoney(total, order.currency)}\nPaid: ${formatMoney(paid, order.currency)}\nBalance: ${formatMoney(owed, order.currency)}`;
     if (navigator.share) {
       navigator.share({ title: `Receipt — ${order.number}`, text }).catch(() => {});
       return;
@@ -186,7 +186,7 @@ export function ReceiptDialog({
               <span>
                 {order.garment_type} × {order.quantity}
               </span>
-              <span className="figures">{formatMoney(total)}</span>
+              <span className="figures">{formatMoney(total, order.currency)}</span>
             </div>
           </div>
 
@@ -198,7 +198,7 @@ export function ReceiptDialog({
                   <span>
                     {new Date(p.paid_at).toLocaleDateString()} · {p.method}
                   </span>
-                  <span className="figures">{formatMoney(p.amount)}</span>
+                  <span className="figures">{formatMoney(p.amount, order.currency)}</span>
                 </div>
               ))}
             </div>
@@ -213,19 +213,19 @@ export function ReceiptDialog({
           >
             <div className="flex justify-between text-xs opacity-70">
               <span>Total</span>
-              <span className="figures">{formatMoney(total)}</span>
+              <span className="figures">{formatMoney(total, order.currency)}</span>
             </div>
             <div className="flex justify-between text-xs opacity-70">
               <span>Paid</span>
-              <span className="figures">{formatMoney(paid)}</span>
+              <span className="figures">{formatMoney(paid, order.currency)}</span>
             </div>
             <div className="flex justify-between font-medium">
               <span>Balance</span>
-              <span className="figures">{formatMoney(owed)}</span>
+              <span className="figures">{formatMoney(owed, order.currency)}</span>
             </div>
           </div>
 
-          {payoutAccount && owed > 0 && (
+          {payoutAccount && owed > 0 && order.currency === "NGN" && (
             <div className="border-t border-dashed border-black/20 pt-3 text-center">
               <p className="text-xs opacity-70">Pay by transfer to</p>
               <p className="figures font-medium">{payoutAccount.account_number}</p>
@@ -246,7 +246,7 @@ export function ReceiptDialog({
           </p>
         </div>
 
-        {payoutAccount && owed > 0 && (
+        {payoutAccount && owed > 0 && order.currency === "NGN" && (
           <Button variant="outline" className="print:hidden" onClick={copyAccountNumber}>
             <Copy className="size-4" />
             Copy account number

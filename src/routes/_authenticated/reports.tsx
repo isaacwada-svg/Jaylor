@@ -69,13 +69,14 @@ function Reports() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("payments")
-        .select("amount, order_id")
+        .select("amount, order_id, currency")
         .eq("store_id", storeId as string)
         .eq("voided", false)
         .gte("paid_at", monthStart.toISOString())
         .lt("paid_at", monthEndExclusive.toISOString());
       if (error) throw error;
-      return data;
+      // `currency` predates the generated Supabase types.
+      return data as unknown as { amount: number; order_id: string; currency: string }[];
     },
   });
 
@@ -102,13 +103,26 @@ function Reports() {
       const { data, error } = await supabase
         .from("orders")
         .select(
-          "id, client_id, garment_type, price, labour_cost, other_cost, status, created_at, ready_at, collected_at",
+          "id, client_id, garment_type, price, currency, labour_cost, other_cost, status, created_at, ready_at, collected_at",
         )
         .eq("store_id", storeId as string)
         .gte("created_at", monthStart.toISOString())
         .lt("created_at", monthEndExclusive.toISOString());
       if (error) throw error;
-      return data;
+      // `currency` predates the generated Supabase types.
+      return data as unknown as {
+        id: string;
+        client_id: string;
+        garment_type: string;
+        price: number;
+        currency: string;
+        labour_cost: number | null;
+        other_cost: number | null;
+        status: string;
+        created_at: string;
+        ready_at: string | null;
+        collected_at: string | null;
+      }[];
     },
   });
 
@@ -148,11 +162,12 @@ function Reports() {
     queryFn: async () => {
       const { data, error } = await supabase
         .from("order_balances")
-        .select("balance")
+        .select("balance, currency")
         .eq("store_id", storeId as string)
         .gt("balance", 0);
       if (error) throw error;
-      return data;
+      // `currency` predates the generated Supabase types.
+      return data as unknown as { balance: number | null; currency: string }[];
     },
   });
 
@@ -165,6 +180,7 @@ function Reports() {
         .select("amount, paid_at")
         .eq("store_id", storeId as string)
         .eq("voided", false)
+        .eq("currency" as never, "NGN")
         .gte("paid_at", trendStart.toISOString())
         .lt("paid_at", monthEndExclusive.toISOString());
       if (error) throw error;
@@ -197,6 +213,7 @@ function Reports() {
         .from("orders")
         .select("price, created_at")
         .eq("store_id", storeId as string)
+        .eq("currency" as never, "NGN")
         .gte("created_at", sixMonthStart.toISOString())
         .lt("created_at", monthEndExclusive.toISOString());
       if (error) throw error;
@@ -293,14 +310,25 @@ function Reports() {
     },
   });
 
-  const collectedRevenue = (paymentsInMonth ?? []).reduce((sum, p) => sum + p.amount, 0);
+  const ngnPaymentsInMonth = useMemo(
+    () => (paymentsInMonth ?? []).filter((p) => p.currency === "NGN"),
+    [paymentsInMonth],
+  );
+  const collectedRevenue = ngnPaymentsInMonth.reduce((sum, p) => sum + p.amount, 0);
   const expensesTotal = (expensesInMonth ?? []).reduce((sum, e) => sum + e.amount, 0);
   const netProfit = collectedRevenue - expensesTotal;
-  const outstandingBalance = (outstandingRows ?? []).reduce((sum, r) => sum + (r.balance ?? 0), 0);
+  const ngnOutstandingRows = (outstandingRows ?? []).filter((r) => r.currency === "NGN");
+  const outstandingBalance = ngnOutstandingRows.reduce((sum, r) => sum + (r.balance ?? 0), 0);
+
+  const ngnOrdersCreated = useMemo(
+    () => (ordersCreated ?? []).filter((o) => o.currency === "NGN"),
+    [ordersCreated],
+  );
 
   // Order-level profit: price minus (tailor-purchased material cost + labour + other), for
   // orders created this period -- distinct from netProfit above, which is store-wide
-  // collected revenue minus expenses for the same period.
+  // collected revenue minus expenses for the same period. NGN only -- material/labour/other
+  // costs are recorded in NGN, so mixing in a foreign-currency price would misstate profit.
   const materialCostByOrder = useMemo(() => {
     const map = new Map<string, number>();
     for (const m of orderMaterialsThisMonth ?? []) {
@@ -308,10 +336,40 @@ function Reports() {
     }
     return map;
   }, [orderMaterialsThisMonth]);
-  const orderProfitTotal = (ordersCreated ?? []).reduce((sum, o) => {
+  const orderProfitTotal = ngnOrdersCreated.reduce((sum, o) => {
     const cost = (materialCostByOrder.get(o.id) ?? 0) + (o.labour_cost ?? 0) + (o.other_cost ?? 0);
     return sum + (o.price - cost);
   }, 0);
+
+  // Other-currency orders/payments/balances aren't converted or mixed into the NGN figures
+  // above -- shown separately, per currency, as their own (unconverted) totals.
+  const otherCurrencies = useMemo(() => {
+    const byCurrency = new Map<
+      string,
+      { billed: number; collected: number; outstanding: number }
+    >();
+    const entry = (currency: string) => {
+      let e = byCurrency.get(currency);
+      if (!e) {
+        e = { billed: 0, collected: 0, outstanding: 0 };
+        byCurrency.set(currency, e);
+      }
+      return e;
+    };
+    for (const o of ordersCreated ?? []) {
+      if (o.currency === "NGN") continue;
+      entry(o.currency).billed += o.price;
+    }
+    for (const p of paymentsInMonth ?? []) {
+      if (p.currency === "NGN") continue;
+      entry(p.currency).collected += p.amount;
+    }
+    for (const r of outstandingRows ?? []) {
+      if (r.currency === "NGN") continue;
+      entry(r.currency).outstanding += r.balance ?? 0;
+    }
+    return [...byCurrency.entries()].map(([currency, totals]) => ({ currency, ...totals }));
+  }, [ordersCreated, paymentsInMonth, outstandingRows]);
 
   // Monthly review, rule-based (no AI): a text template filled with this month's own figures.
   const ordersCompletedCount = ordersCollected?.length ?? 0;
@@ -373,7 +431,7 @@ function Reports() {
 
   const topClients = useMemo(() => {
     const byClient = new Map<string, number>();
-    for (const p of paymentsInMonth ?? []) {
+    for (const p of ngnPaymentsInMonth) {
       const order = paymentOrders?.find((o) => o.id === p.order_id);
       if (!order) continue;
       byClient.set(order.client_id, (byClient.get(order.client_id) ?? 0) + p.amount);
@@ -383,11 +441,11 @@ function Reports() {
       .sort((a, b) => b.amount - a.amount)
       .slice(0, 10);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [paymentsInMonth, paymentOrders, clients]);
+  }, [ngnPaymentsInMonth, paymentOrders, clients]);
 
   const topGarments = useMemo(() => {
     const byGarment = new Map<string, { count: number; revenue: number }>();
-    for (const o of ordersCreated ?? []) {
+    for (const o of ngnOrdersCreated) {
       const entry = byGarment.get(o.garment_type) ?? { count: 0, revenue: 0 };
       entry.count += 1;
       entry.revenue += o.price;
@@ -397,7 +455,7 @@ function Reports() {
       .map(([garment, stats]) => ({ garment, ...stats }))
       .sort((a, b) => b.revenue - a.revenue)
       .slice(0, 10);
-  }, [ordersCreated]);
+  }, [ngnOrdersCreated]);
 
   const avgToReady = avgDays(
     (ordersCollected ?? [])
@@ -440,6 +498,14 @@ function Reports() {
       ["Expenses by category"],
       ["Category", "Amount"],
       ...expensesByCategory.map((e) => [e.category, e.amount]),
+      ...(otherCurrencies.length > 0
+        ? [
+            [],
+            ["Other currencies (not converted, not included above)"],
+            ["Currency", "Billed", "Collected", "Outstanding"],
+            ...otherCurrencies.map((c) => [c.currency, c.billed, c.collected, c.outstanding]),
+          ]
+        : []),
     ];
     downloadCsv(`jaylor-report-${monthValue}.csv`, rows);
   }
@@ -736,6 +802,46 @@ function Reports() {
                 >
                   <span>{s.name}</span>
                   <span className="figures">{s.completed} completed</span>
+                </div>
+              ))}
+            </div>
+          </>
+        )}
+
+        {otherCurrencies.length > 0 && (
+          <>
+            <h2 className="mt-8 text-xl">Other currencies</h2>
+            <p className="mt-1 text-sm text-muted-foreground">
+              Orders priced for clients abroad -- shown in their own currency, not converted or
+              mixed into the NGN figures above.
+            </p>
+            <div className="mt-3 space-y-2">
+              {otherCurrencies.map((c) => (
+                <div key={c.currency} className="rounded-xl border border-border p-3 text-sm">
+                  <p className="font-medium">{c.currency}</p>
+                  <div className="mt-1 grid grid-cols-3 gap-2 text-xs text-muted-foreground">
+                    <span>
+                      Billed
+                      <br />
+                      <span className="figures text-sm text-foreground">
+                        {formatMoney(c.billed, c.currency)}
+                      </span>
+                    </span>
+                    <span>
+                      Collected
+                      <br />
+                      <span className="figures text-sm text-foreground">
+                        {formatMoney(c.collected, c.currency)}
+                      </span>
+                    </span>
+                    <span>
+                      Outstanding
+                      <br />
+                      <span className="figures text-sm text-foreground">
+                        {formatMoney(c.outstanding, c.currency)}
+                      </span>
+                    </span>
+                  </div>
                 </div>
               ))}
             </div>

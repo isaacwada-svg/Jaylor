@@ -108,6 +108,12 @@ async function buildStoreContext(supabase: ReturnType<typeof serviceClient>, sto
   const today = new Date();
   const weekAhead = new Date(today.getTime() + 7 * 24 * 60 * 60 * 1000);
 
+  // _store_order_balances(), not order_balances directly: that view's own
+  // WHERE clause is has_store_role(store_id, ...), which reads auth.uid(),
+  // and this service-role call carries no user JWT -- a direct read has
+  // always silently returned no row here, so the advisor's own context has
+  // always seen "no outstanding balances" regardless of the shop's real
+  // figures.
   const [ordersRes, balancesRes, paymentsRes] = await Promise.all([
     supabase
       .from("orders_for_tailor")
@@ -116,7 +122,7 @@ async function buildStoreContext(supabase: ReturnType<typeof serviceClient>, sto
       .not("status", "in", "(collected,cancelled)")
       .order("delivery_date", { ascending: true, nullsFirst: false })
       .limit(10),
-    supabase.from("order_balances").select("balance").eq("store_id", storeId).gt("balance", 0),
+    supabase.rpc("_store_order_balances", { p_store_id: storeId }),
     supabase
       .from("payments")
       .select("amount")
@@ -129,7 +135,9 @@ async function buildStoreContext(supabase: ReturnType<typeof serviceClient>, sto
   const dueSoon = activeOrders.filter(
     (o) => o.delivery_date && new Date(o.delivery_date) <= weekAhead,
   );
-  const balances = balancesRes.data ?? [];
+  const balances = ((balancesRes.data ?? []) as { balance: number }[]).filter(
+    (b) => b.balance > 0,
+  );
   const payments = paymentsRes.data ?? [];
 
   return {

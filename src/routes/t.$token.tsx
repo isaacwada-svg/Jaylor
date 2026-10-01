@@ -264,16 +264,16 @@ function OrderTrackingPage() {
           <div className="rounded-xl border border-border p-3">
             <div className="flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("paid_so_far")}</span>
-              <span className="figures text-paid">{formatMoney(order.paid)}</span>
+              <span className="figures text-paid">{formatMoney(order.paid, order.currency)}</span>
             </div>
             <div className="mt-1 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("balance")}</span>
-              <span className="figures text-owed">{formatMoney(order.balance)}</span>
+              <span className="figures text-owed">{formatMoney(order.balance, order.currency)}</span>
             </div>
 
             {order.balance > 0 && (
               <div className="mt-3 space-y-2">
-                {order.dedicatedAccount && (
+                {order.dedicatedAccount && order.currency === "NGN" && (
                   <div className="rounded-lg border border-dashed border-border p-3 text-center text-sm">
                     <p className="text-xs text-muted-foreground">{t("pay_by_transfer")}</p>
                     <p className="figures font-medium">{order.dedicatedAccount.accountNumber}</p>
@@ -294,7 +294,7 @@ function OrderTrackingPage() {
                     <CreditCard className="size-4" />
                     {paying
                       ? t("starting_payment")
-                      : t("pay_amount", { amount: formatMoney(order.balance) })}
+                      : t("pay_amount", { amount: formatMoney(order.balance, order.currency) })}
                   </Button>
                 )}
               </div>

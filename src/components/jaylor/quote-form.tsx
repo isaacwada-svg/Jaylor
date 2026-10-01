@@ -3,7 +3,9 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { GARMENT_TYPES, GARMENT_TYPE_CODE_BY_NAME } from "@/lib/jaylor";
+import { GARMENT_TYPES, GARMENT_TYPE_CODE_BY_NAME, ORDER_CURRENCIES } from "@/lib/jaylor";
+import type { OrderCurrency } from "@/lib/jaylor";
+import { useMultiCurrencyAccess } from "@/lib/use-multi-currency-access";
 import { getErrorMessage } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,7 +27,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-type Quote = Tables<"quotes">;
+type Quote = Tables<"quotes"> & { currency?: string; fx_rate_to_ngn?: number | null };
 type ClientRow = { id: string; full_name: string; phone: string };
 
 export function QuoteForm({
@@ -50,7 +52,11 @@ export function QuoteForm({
   const [discountPercent, setDiscountPercent] = useState("0");
   const [validDays, setValidDays] = useState("7");
   const [notes, setNotes] = useState("");
+  const [currency, setCurrency] = useState<OrderCurrency>("NGN");
+  const [fxRate, setFxRate] = useState("");
   const [busy, setBusy] = useState(false);
+
+  const { data: multiCurrencyAccess } = useMultiCurrencyAccess(storeId);
 
   useEffect(() => {
     if (!open) return;
@@ -65,6 +71,8 @@ export function QuoteForm({
         Math.round((new Date(quote.valid_until).getTime() - Date.now()) / 86_400_000),
       );
       setValidDays(String(days));
+      setCurrency((quote.currency as OrderCurrency | undefined) ?? "NGN");
+      setFxRate(quote.fx_rate_to_ngn != null ? String(quote.fx_rate_to_ngn) : "");
       setSelectedClient(null);
       setClientSearch("");
     } else {
@@ -74,6 +82,8 @@ export function QuoteForm({
       setDiscountPercent("0");
       setValidDays("7");
       setNotes("");
+      setCurrency("NGN");
+      setFxRate("");
       setSelectedClient(null);
       setClientSearch("");
     }
@@ -127,6 +137,10 @@ export function QuoteForm({
       toast.error("Enter a price");
       return;
     }
+    if (currency !== "NGN" && !fxRate.trim()) {
+      toast.error("Enter the exchange rate you agreed with your client");
+      return;
+    }
 
     setBusy(true);
     try {
@@ -140,23 +154,29 @@ export function QuoteForm({
         discount_percent: discount,
         notes: notes.trim() || null,
         valid_until: new Date(Date.now() + days * 86_400_000).toISOString(),
+        currency,
+        fx_rate_to_ngn: currency !== "NGN" ? Number(fxRate) || null : null,
       };
 
       if (quote) {
         const { data, error } = await supabase
           .from("quotes")
-          .update(payload)
+          .update(payload as never)
           .eq("id", quote.id)
           .select()
           .single();
         if (error) throw error;
         toast.success("Quote updated");
-        onSaved?.(data);
+        onSaved?.(data as Quote);
       } else {
-        const { data, error } = await supabase.from("quotes").insert(payload).select().single();
+        const { data, error } = await supabase
+          .from("quotes")
+          .insert(payload as never)
+          .select()
+          .single();
         if (error) throw error;
         toast.success("Quote created");
-        onSaved?.(data);
+        onSaved?.(data as Quote);
       }
       queryClient.invalidateQueries({ queryKey: ["quotes", storeId] });
       onOpenChange(false);
@@ -281,6 +301,43 @@ export function QuoteForm({
               />
             </div>
           </div>
+
+          {multiCurrencyAccess && (
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label>Currency</Label>
+                <Select value={currency} onValueChange={(v) => setCurrency(v as OrderCurrency)}>
+                  <SelectTrigger>
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ORDER_CURRENCIES.map((c) => (
+                      <SelectItem key={c} value={c}>
+                        {c}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              {currency !== "NGN" && (
+                <div className="space-y-2">
+                  <Label htmlFor="quote-fx-rate">Rate (1 {currency} = ? NGN)</Label>
+                  <Input
+                    id="quote-fx-rate"
+                    type="number"
+                    min={0}
+                    step="any"
+                    inputMode="decimal"
+                    value={fxRate}
+                    onChange={(e) => setFxRate(e.target.value)}
+                  />
+                  <p className="text-xs text-muted-foreground">
+                    What rate did you agree with your client? Used only for your reports.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label htmlFor="quote-notes">Notes (optional)</Label>

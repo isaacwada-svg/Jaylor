@@ -154,12 +154,12 @@ function PublicQuote() {
               <span>
                 {quote.garmentType} × {quote.quantity}
               </span>
-              <span className="figures">{formatMoney(subtotal)}</span>
+              <span className="figures">{formatMoney(subtotal, quote.currency)}</span>
             </div>
             {quote.discountPercent > 0 && (
               <div className="mt-1 flex justify-between text-xs text-muted-foreground">
                 <span>{t("discount_label", { percent: quote.discountPercent })}</span>
-                <span className="figures">-{formatMoney(discountAmount)}</span>
+                <span className="figures">-{formatMoney(discountAmount, quote.currency)}</span>
               </div>
             )}
             {quote.notes && <p className="mt-2 text-xs text-muted-foreground">{quote.notes}</p>}
@@ -168,11 +168,11 @@ function PublicQuote() {
           <div className="ml-auto w-48 space-y-1 border-t-2 border-foreground/80 pt-3">
             <div className="flex justify-between font-medium">
               <span>{t("total_label")}</span>
-              <span className="figures">{formatMoney(total)}</span>
+              <span className="figures">{formatMoney(total, quote.currency)}</span>
             </div>
           </div>
 
-          {quote.payoutAccount && (
+          {quote.payoutAccount && quote.currency === "NGN" && (
             <div className="border-t border-dashed border-border pt-3 text-center">
               <p className="text-xs text-muted-foreground">{t("pay_by_transfer")}</p>
               <p className="figures font-medium">{quote.payoutAccount.accountNumber}</p>
@@ -190,7 +190,7 @@ function PublicQuote() {
         </div>
 
         <div className="mt-4 flex flex-col gap-2 print:hidden">
-          {quote.payoutAccount && (
+          {quote.payoutAccount && quote.currency === "NGN" && (
             <Button variant="outline" onClick={copyAccountNumber}>
               <Copy className="size-4" />
               {t("copy_account_number")}
