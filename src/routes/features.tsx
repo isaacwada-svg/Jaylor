@@ -122,7 +122,7 @@ const GROUPS: { title: string; items: FeatureItem[] }[] = [
         id: "offline",
         icon: WifiOff,
         title: "Offline mode",
-        body: "Keep taking orders and recording payments even without a connection. Jaylor saves your work on your device and syncs everything the next time you're online, so a bad network day never stops the workroom.",
+        body: "On Growth and above, keep taking orders and recording payments even without a connection. Jaylor saves your work on your device and syncs everything the next time you're online, so a bad network day never stops the workroom. On Free, you can still view your orders offline.",
         linkTo: "/auth",
         linkLabel: "Start free",
       },
