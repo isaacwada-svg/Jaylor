@@ -4160,6 +4160,86 @@ export type Database = {
           },
         ]
       }
+      report_share_views: {
+        Row: {
+          id: string
+          share_id: string
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          share_id: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          share_id?: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_share_views_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "report_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_shares: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          period_month: string
+          revoked_at: string | null
+          snapshot: Json
+          store_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          period_month: string
+          revoked_at?: string | null
+          snapshot: Json
+          store_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          period_month?: string
+          revoked_at?: string | null
+          snapshot?: Json
+          store_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_shares_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_shares_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rls_drift_checks: {
         Row: {
           checked_at: string
@@ -5709,6 +5789,14 @@ export type Database = {
         Args: { p_days?: number; p_store_id: string }
         Returns: Json
       }
+      _compute_health_report: {
+        Args: {
+          p_anonymize: boolean
+          p_period_month: string
+          p_store_id: string
+        }
+        Returns: Json
+      }
       _directory_is_paid_or_trial: {
         Args: { p_plan_code: string; p_trial_ends_at: string }
         Returns: boolean
@@ -5803,6 +5891,14 @@ export type Database = {
       admin_billing_history: {
         Args: { p_limit?: number; p_store_id?: string }
         Returns: Json
+      }
+      admin_delete_store: {
+        Args: { p_reason?: string; p_store_id: string }
+        Returns: undefined
+      }
+      admin_delete_user_data: {
+        Args: { p_reason?: string; p_user_id: string }
+        Returns: undefined
       }
       admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
@@ -6099,6 +6195,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_report_share: {
+        Args: {
+          p_expires_days?: number
+          p_period_month: string
+          p_store_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          period_month: string
+          revoked_at: string | null
+          snapshot: Json
+          store_id: string
+          token: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "report_shares"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decline_passport_share: {
         Args: { p_share_id: string }
         Returns: undefined
@@ -6176,6 +6296,10 @@ export type Database = {
       }
       generate_plan_limit_notifications: { Args: never; Returns: undefined }
       get_ai_wallet: { Args: { p_store_id: string }; Returns: Json }
+      get_business_health_report: {
+        Args: { p_period_month: string; p_store_id: string }
+        Returns: Json
+      }
       get_daily_digest_data: { Args: { p_store_id: string }; Returns: Json }
       get_design_by_token: {
         Args: { p_token: string }
@@ -6231,6 +6355,10 @@ export type Database = {
         Returns: Json
       }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
+      get_report_share: {
+        Args: { p_token: string; p_user_agent?: string }
+        Returns: Json
+      }
       get_store_capacity_forecast: {
         Args: { p_store_id: string; p_weeks?: number }
         Returns: Json
@@ -6255,6 +6383,10 @@ export type Database = {
       }
       get_weekly_digest_data: { Args: { p_store_id: string }; Returns: Json }
       has_active_support_grant: {
+        Args: { p_store_id: string }
+        Returns: boolean
+      }
+      has_health_report_access: {
         Args: { p_store_id: string }
         Returns: boolean
       }
@@ -6313,6 +6445,7 @@ export type Database = {
         Returns: Json
       }
       list_passport_shares: { Args: { p_session_token: string }; Returns: Json }
+      list_report_shares: { Args: { p_store_id: string }; Returns: Json }
       log_audit_event: {
         Args: {
           p_action: string
@@ -6488,6 +6621,10 @@ export type Database = {
       }
       revoke_passport_share: {
         Args: { p_session_token: string; p_share_id: string }
+        Returns: undefined
+      }
+      revoke_report_share: {
+        Args: { p_share_id: string; p_store_id: string }
         Returns: undefined
       }
       set_my_ui_language: { Args: { p_language: string }; Returns: undefined }

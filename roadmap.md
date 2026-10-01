@@ -29,3 +29,11 @@
 - [x] Sitemap + robots already submitted to Search Console; no manual action outstanding ("No issues detected").
 - [ ] Add database-backed first-use discovery cues and a one-time owner tour for AI Design, Voice Order, measurement passports, and group-order links.
 - [ ] Add the owner/manager-only Ask Jaylor advisor with separate store-scoped conversations, persisted history, real business context, and plan limits.
+
+## Requested 2026-10-01
+- [x] Updated Gemini key tested against Google: accepted — Pidgin and Yoruba translation returned correctly. Voice notes, style previews and festive AI messages are live again (still needs a real-phone test by the owner).
+- [x] Email infrastructure for notify.jaylor.com.ng:
+  - [x] Domain added in Lovable; managed email API scaffolded (send helper + preview route), packages installed.
+  - [x] Owner digests (daily/weekly) and the transfer alert switched from Resend to the managed sender; no RESEND_API_KEY needed.
+  - [x] /lovable/* email routes excluded from app middleware (headers, error page, CSRF).
+  - [ ] DNS records for notify.jaylor.com.ng must be added in Cloudflare (agent's Cloudflare token is read-only, and the write approval couldn't be granted): TXT `_lovable-email.jaylor.com.ng` = `lovable_email_verify=3762a9c61e0a7f0a53b22962b86a2e336656f5533e878d4b9fb7c482643beee9`, NS `notify.jaylor.com.ng` = `ns5.lovable.cloud`, NS `notify.jaylor.com.ng` = `ns6.lovable.cloud`. Then re-check domain status; emails only send after verification.

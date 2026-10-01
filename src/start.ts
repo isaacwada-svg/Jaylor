@@ -3,7 +3,8 @@ import { createStart, createCsrfMiddleware, createMiddleware } from "@tanstack/r
 import { renderErrorPage } from "./lib/error-page";
 import { attachSupabaseAuth } from "@/integrations/supabase/auth-attacher";
 
-const errorMiddleware = createMiddleware().server(async ({ next }) => {
+const errorMiddleware = createMiddleware().server(async ({ request, next }) => {
+  if (new URL(request.url).pathname.startsWith("/lovable/")) return next();
   try {
     return await next();
   } catch (error) {
@@ -27,7 +28,10 @@ const csrfMiddleware = createCsrfMiddleware({
 
 // Browser security headers on every server response. Framing is limited to
 // our own site and the Lovable editor preview (DENY would break the preview).
-const securityHeadersMiddleware = createMiddleware().server(async ({ next }) => {
+const securityHeadersMiddleware = createMiddleware().server(async ({ request, next }) => {
+  // Lovable email routes (previews/webhooks) authenticate themselves; serve them
+  // untouched — no security headers rewrite, no error page wrap.
+  if (new URL(request.url).pathname.startsWith("/lovable/")) return next();
   const result = await next();
   const res = (result as { response?: Response }).response;
   if (res instanceof Response) {
