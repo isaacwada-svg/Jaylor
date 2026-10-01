@@ -5,12 +5,12 @@ export const Route = createFileRoute("/cookies")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Cookie Notice — Jaylor" },
+      { title: "Cookie Notice: Jaylor" },
       {
         name: "description",
         content: "How Jaylor uses essential browser storage and first-party analytics.",
       },
-      { property: "og:title", content: "Cookie Notice — Jaylor" },
+      { property: "og:title", content: "Cookie Notice: Jaylor" },
       {
         property: "og:description",
         content: "How Jaylor uses essential browser storage and first-party analytics.",

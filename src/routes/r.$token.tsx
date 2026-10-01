@@ -15,7 +15,7 @@ import { useOnlineStatus } from "@/lib/use-online-status";
 export const Route = createFileRoute("/r/$token")({
   staticData: { sitemap: false },
   ssr: false,
-  head: () => ({ meta: [{ title: "Business report — Jaylor" }] }),
+  head: () => ({ meta: [{ title: "Business report: Jaylor" }] }),
   component: PublicReportRoute,
 });
 

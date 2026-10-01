@@ -22,7 +22,7 @@ export const Route = createFileRoute("/f/$token")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "Book your fitting — Jaylor" },
+      { title: "Book your fitting: Jaylor" },
       { name: "description", content: "Pick a time for your fitting appointment." },
     ],
   }),

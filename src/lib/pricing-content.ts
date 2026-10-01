@@ -94,9 +94,7 @@ export const PRICE_TIERS: PriceTier[] = [
 export type AddOn = { name: string; price: string; href?: string };
 
 export const ADD_ONS: AddOn[] = [
-  { name: "100 automatic WhatsApp messages", price: "₦2,000" },
   { name: "Extra user", price: "₦1,500 / month" },
-  { name: "Extra branch", price: "₦4,000 / month" },
   {
     name: "Notebook import service (we type in your old records)",
     price: "₦10,000 one-off",
@@ -200,7 +198,6 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
       Custom: "Agreed volume",
     },
   },
-  { label: "Branches", values: { Free: "1", Growth: "1", Business: "3", Custom: "Unlimited" } },
   {
     label: "Staff job board and piece-rate payroll",
     values: {
@@ -273,9 +270,9 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
       "Your data stays exactly as it is. Items over your new plan's limits become read-only rather than hidden or deleted, so you can always see everything and upgrade again later.",
   },
   {
-    question: "How do automatic WhatsApp messages and top-ups work?",
+    question: "How do automatic WhatsApp reminders work?",
     answer:
-      "Tap-to-send messages (sent from your own phone) are always free and unlimited on every plan. Automatic messages (sent by Jaylor on your behalf) count against your plan's monthly allowance. If you run out, you can buy a top-up of 100 messages for ₦2,000 instead of losing automatic reminders.",
+      "Tap-to-send messages (sent from your own phone) are always free and unlimited on every plan. Automatic messages (sent by Jaylor on your behalf) are coming soon, for Growth and Business plans.",
   },
   {
     question: "How can I pay?",

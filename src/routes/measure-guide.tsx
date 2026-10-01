@@ -7,7 +7,7 @@ export const Route = createFileRoute("/measure-guide")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "How to measure yourself — Jaylor" },
+      { title: "How to measure yourself: Jaylor" },
       {
         name: "description",
         content:

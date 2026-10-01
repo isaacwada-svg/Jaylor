@@ -181,8 +181,6 @@ const HOME_FAQ = [
   },
 ];
 
-const PLANS = PRICE_TIERS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
-
 function Home() {
   const [signedIn, setSignedIn] = useState(false);
 
@@ -528,7 +526,7 @@ function Home() {
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-            {PLANS.map((plan) => (
+            {PRICE_TIERS.map((plan) => (
               <article
                 key={plan.tier}
                 className="flex min-h-[390px] flex-col border-b border-border px-1 py-8 sm:border-r sm:px-6 lg:border-b-0 lg:first:pl-0 lg:last:border-r-0"

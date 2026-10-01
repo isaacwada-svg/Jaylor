@@ -21,7 +21,7 @@ export const Route = createFileRoute("/fitcheck/$orderId/$clientId")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "How was the fit? — Jaylor" },
+      { title: "How was the fit?: Jaylor" },
       { name: "description", content: "Let your tailor know how the fit was." },
     ],
   }),

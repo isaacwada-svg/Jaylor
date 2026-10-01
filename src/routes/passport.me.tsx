@@ -57,7 +57,7 @@ export const Route = createFileRoute("/passport/me")({
     return { language, resources };
   },
   head: () => ({
-    meta: [{ title: "My Passport — Jaylor" }],
+    meta: [{ title: "My Passport: Jaylor" }],
   }),
   component: PassportMeRoute,
 });
