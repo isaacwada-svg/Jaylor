@@ -252,7 +252,11 @@ GRANT EXECUTE ON FUNCTION public._store_order_balances(uuid) TO service_role;
 --    foreign-currency order's balance -- excluded explicitly rather than
 --    left to an accidental numeric coincidence.
 -- ============================================================
-CREATE OR REPLACE FUNCTION public.match_incoming_transfer(p_transfer_id uuid)
+-- The live function's return type doesn't match (it predates this file,
+-- same as order_balances) -- CREATE OR REPLACE can't change a function's
+-- return type, so drop it first.
+DROP FUNCTION IF EXISTS public.match_incoming_transfer(uuid);
+CREATE FUNCTION public.match_incoming_transfer(p_transfer_id uuid)
 RETURNS void
 LANGUAGE plpgsql
 SECURITY DEFINER
