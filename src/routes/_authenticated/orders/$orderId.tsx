@@ -36,6 +36,7 @@ import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { ORDER_STATUSES_DB, type OrderStatusDb } from "@/lib/jaylor";
 import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
+import { useAppT } from "@/lib/i18n/i18n-context";
 import { isBridalRemeasureDue } from "@/lib/measurements";
 import { whatsappLink } from "@/lib/whatsapp";
 import {
@@ -77,6 +78,7 @@ type TrackedOrder = { tracking_token?: string | null };
 
 function OrderDetail() {
   const { orderId } = Route.useParams();
+  const t = useAppT("app_orders");
   const statusLabel = useOrderStatusLabel();
   const queryClient = useQueryClient();
   const { currentStore, currentRole } = useStore();
@@ -116,15 +118,20 @@ function OrderDetail() {
         if (error) throw error;
         const status = (data as { status: string }).status;
         if (status === "success") {
-          toast.success("Payment confirmed");
+          toast.success(t("toast_payment_confirmed") || "Payment confirmed");
           queryClient.invalidateQueries({ queryKey: ["order", orderId] });
           queryClient.invalidateQueries({ queryKey: ["order-balance", orderId] });
           queryClient.invalidateQueries({ queryKey: ["order-payments", orderId] });
         } else {
-          toast.error("Payment wasn't confirmed");
+          toast.error(t("toast_payment_not_confirmed") || "Payment wasn't confirmed");
         }
       } catch (error) {
-        toast.error(await getFunctionErrorMessage(error, "Could not confirm this payment"));
+        toast.error(
+          await getFunctionErrorMessage(
+            error,
+            t("toast_could_not_confirm_payment") || "Could not confirm this payment",
+          ),
+        );
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -410,9 +417,14 @@ function OrderDetail() {
         sent_by: userData.user?.id ?? null,
       });
       queryClient.invalidateQueries({ queryKey: ["order-approval-latest", orderId] });
-      toast.success("Approval request sent");
+      toast.success(t("toast_approval_sent") || "Approval request sent");
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not create an approval request"));
+      toast.error(
+        getErrorMessage(
+          error,
+          t("toast_could_not_create_approval") || "Could not create an approval request",
+        ),
+      );
     } finally {
       setRequestingApproval(false);
     }
@@ -451,7 +463,9 @@ function OrderDetail() {
       setStatusPhotoPath(path);
       setStatusPhotoPreview(URL.createObjectURL(resized));
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not upload that photo"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_upload_photo") || "Could not upload that photo"),
+      );
     } finally {
       setUploadingStatusPhoto(false);
     }
@@ -471,11 +485,16 @@ function OrderDetail() {
         .update({ delivery_date: deliveryDateInput || null })
         .eq("id", orderId);
       if (error) throw error;
-      toast.success("Delivery date saved");
+      toast.success(t("toast_delivery_date_saved") || "Delivery date saved");
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       setEditingDeliveryDate(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save this delivery date"));
+      toast.error(
+        getErrorMessage(
+          error,
+          t("toast_could_not_save_delivery_date") || "Could not save this delivery date",
+        ),
+      );
     } finally {
       setSavingDeliveryDate(false);
     }
@@ -492,11 +511,13 @@ function OrderDetail() {
         })
         .eq("id", orderId);
       if (error) throw error;
-      toast.success("Costs saved");
+      toast.success(t("toast_costs_saved") || "Costs saved");
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       setEditingCosts(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save these costs"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_save_costs") || "Could not save these costs"),
+      );
     } finally {
       setSavingCosts(false);
     }
@@ -520,18 +541,29 @@ function OrderDetail() {
           ...(statusPhotoPath ? { p_photo_path: statusPhotoPath } : {}),
         });
         if (noteError) {
-          toast.error(getErrorMessage(noteError, "Status updated, but the note/photo didn't save"));
+          toast.error(
+            getErrorMessage(
+              noteError,
+              t("toast_status_note_photo_failed") ||
+                "Status updated, but the note/photo didn't save",
+            ),
+          );
         }
       }
 
-      toast.success(`Marked ${statusLabel(pendingStatus)}`);
+      toast.success(
+        t("toast_marked_status", { status: statusLabel(pendingStatus) }) ||
+          `Marked ${statusLabel(pendingStatus)}`,
+      );
       queryClient.invalidateQueries({ queryKey: ["order", orderId] });
       queryClient.invalidateQueries({ queryKey: ["order-history", orderId] });
       queryClient.invalidateQueries({ queryKey: ["orders"] });
       setPendingStatus(null);
       resetStatusChangeExtras();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not update the status"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_update_status") || "Could not update the status"),
+      );
     } finally {
       setUpdating(false);
     }
@@ -553,11 +585,14 @@ function OrderDetail() {
       <AppShell>
         <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
           <EmptyState
-            title="Order not found"
-            description="This order may have been deleted, or belongs to a different store."
+            title={t("order_not_found_title") || "Order not found"}
+            description={
+              t("order_not_found_description") ||
+              "This order may have been deleted, or belongs to a different store."
+            }
             action={
               <Button asChild>
-                <Link to="/orders">Back to orders</Link>
+                <Link to="/orders">{t("back_to_orders") || "Back to orders"}</Link>
               </Button>
             }
           />
@@ -602,7 +637,7 @@ function OrderDetail() {
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Orders
+          {t("orders_title") || "Orders"}
         </Link>
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
@@ -622,27 +657,28 @@ function OrderDetail() {
           <div className="flex items-center gap-2">
             {order.priority === "rush" && (
               <Badge variant="outline" className="border-owed text-owed">
-                Rush
+                {t("rush_badge") || "Rush"}
               </Badge>
             )}
             {order.delivery_date && (
               <Badge variant="outline" className="border-gold text-gold">
-                Due {new Date(order.delivery_date).toLocaleDateString()}
+                {t("due_badge", { date: new Date(order.delivery_date).toLocaleDateString() }) ||
+                  `Due ${new Date(order.delivery_date).toLocaleDateString()}`}
               </Badge>
             )}
             {latestApproval?.status === "pending" && (
               <Badge variant="outline" className="border-gold text-gold">
-                Awaiting approval
+                {t("awaiting_approval") || "Awaiting approval"}
               </Badge>
             )}
             {latestApproval?.status === "approved" && (
               <Badge variant="outline" className="border-paid text-paid">
-                Approved
+                {t("approved_badge") || "Approved"}
               </Badge>
             )}
             {latestApproval?.status === "changes_requested" && (
               <Badge variant="outline" className="border-owed text-owed">
-                Changes requested
+                {t("changes_requested") || "Changes requested"}
               </Badge>
             )}
           </div>
@@ -653,15 +689,14 @@ function OrderDetail() {
           order.delivery_date &&
           isBridalRemeasureDue(measurementSet.taken_at, order.delivery_date) && (
             <p className="mt-4 rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
-              These measurements were taken more than 3 months before the wedding date. A
-              bride&apos;s measurements can change — take a fresh set or book another fitting before
-              this order goes into production.
+              {t("bridal_remeasure_warning") ||
+                "These measurements were taken more than 3 months before the wedding date. A bride's measurements can change — take a fresh set or book another fitting before this order goes into production."}
             </p>
           )}
 
         {order.status === "cancelled" ? (
           <Badge variant="outline" className="mt-6 border-owed text-owed">
-            Cancelled
+            {t("cancelled_badge") || "Cancelled"}
           </Badge>
         ) : (
           <div className="mt-8">
@@ -690,17 +725,17 @@ function OrderDetail() {
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Delivery date
+                {t("delivery_date_label") || "Delivery date"}
               </p>
               <p className="mt-1 text-sm">
                 {order.delivery_date
                   ? new Date(order.delivery_date).toLocaleDateString()
-                  : "Not set"}
+                  : t("not_set") || "Not set"}
               </p>
             </div>
             {!editingDeliveryDate && (
               <Button size="sm" variant="ghost" onClick={startEditingDeliveryDate}>
-                Edit
+                {t("action_edit") || "Edit"}
               </Button>
             )}
           </div>
@@ -719,7 +754,7 @@ function OrderDetail() {
                   className="flex-1"
                   onClick={() => setEditingDeliveryDate(false)}
                 >
-                  Cancel
+                  {t("action_cancel") || "Cancel"}
                 </Button>
                 <Button
                   size="sm"
@@ -727,7 +762,9 @@ function OrderDetail() {
                   onClick={saveDeliveryDate}
                   disabled={savingDeliveryDate}
                 >
-                  {savingDeliveryDate ? "Saving..." : "Save"}
+                  {savingDeliveryDate
+                    ? t("action_saving") || "Saving..."
+                    : t("action_save") || "Save"}
                 </Button>
               </div>
             </div>
@@ -739,15 +776,20 @@ function OrderDetail() {
             <div className="rounded-2xl border border-border p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">Price</p>
+                  <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
+                    {t("price_label") || "Price"}
+                  </p>
                   <p className="mt-1 text-lg">
                     <MoneyText amount={price ?? 0} />
                   </p>
-                  <p className="mt-1 text-sm text-muted-foreground">Quantity: {order.quantity}</p>
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {t("quantity_colon", { count: order.quantity ?? 0 }) ||
+                      `Quantity: ${order.quantity}`}
+                  </p>
                 </div>
                 <div className="flex shrink-0 flex-col gap-2">
                   <Button size="sm" onClick={() => setPaymentFormOpen(true)}>
-                    Record payment
+                    {t("record_payment") || "Record payment"}
                   </Button>
                   {(balance?.balance ?? 0) > 0 && client && (
                     <RequestPaymentButton
@@ -759,20 +801,20 @@ function OrderDetail() {
                   )}
                   {client && currentStore && (
                     <Button size="sm" variant="outline" onClick={() => setReceiptOpen(true)}>
-                      Receipt
+                      {t("receipt_button") || "Receipt"}
                     </Button>
                   )}
                 </div>
               </div>
               {balance && (
                 <div className="mt-3 flex items-center justify-between border-t border-border pt-3 text-sm">
-                  <span className="text-muted-foreground">Paid</span>
+                  <span className="text-muted-foreground">{t("paid_label") || "Paid"}</span>
                   <MoneyText amount={balance.paid ?? 0} variant="paid" />
                 </div>
               )}
               {balance && (
                 <div className="mt-1 flex items-center justify-between text-sm">
-                  <span className="text-muted-foreground">Balance</span>
+                  <span className="text-muted-foreground">{t("balance_label") || "Balance"}</span>
                   <MoneyText
                     amount={balance.balance ?? 0}
                     variant={(balance.balance ?? 0) > 0 ? "owed" : "paid"}
@@ -816,8 +858,8 @@ function OrderDetail() {
                       }
                       label={
                         order.status === "ready"
-                          ? "Remind: ready for pickup"
-                          : "Remind: balance due"
+                          ? t("remind_ready") || "Remind: ready for pickup"
+                          : t("remind_balance_due") || "Remind: balance due"
                       }
                     />
                   )}
@@ -836,7 +878,7 @@ function OrderDetail() {
                         currentStore.name ?? "",
                         trackingUrl,
                       )}
-                      label="Send tracking link"
+                      label={t("send_tracking_link") || "Send tracking link"}
                     />
                   )}
                   {order.status !== "collected" && order.status !== "cancelled" && (
@@ -847,11 +889,14 @@ function OrderDetail() {
                       title={
                         client.consent_whatsapp
                           ? undefined
-                          : "This client hasn't given WhatsApp consent"
+                          : t("whatsapp_consent_missing") ||
+                            "This client hasn't given WhatsApp consent"
                       }
                       onClick={requestApproval}
                     >
-                      {requestingApproval ? "Sending..." : "Request approval"}
+                      {requestingApproval
+                        ? t("sending") || "Sending..."
+                        : t("request_approval") || "Request approval"}
                     </Button>
                   )}
                   <AiReplyDraftButton
@@ -872,10 +917,12 @@ function OrderDetail() {
           {material && (
             <div className="rounded-2xl border border-border p-4">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Fabric received
+                {t("fabric_received_title") || "Fabric received"}
               </p>
               <p className="mt-1 text-sm">
-                {material.source === "customer" ? "Customer's fabric" : "Store-bought fabric"}
+                {material.source === "customer"
+                  ? t("customers_fabric") || "Customer's fabric"
+                  : t("store_bought_fabric") || "Store-bought fabric"}
               </p>
               <p className="text-sm text-muted-foreground">
                 {material.description}
@@ -884,28 +931,31 @@ function OrderDetail() {
               </p>
               {fullMaterial && fullMaterial.source === "tailor" && fullMaterial.cost > 0 && (
                 <p className="mt-1 text-sm">
-                  Cost: <MoneyText amount={fullMaterial.cost} />
+                  {t("fabric_cost_label") || "Cost:"} <MoneyText amount={fullMaterial.cost} />
                 </p>
               )}
               {material.extras_received && (
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Also received: {material.extras_received}
+                  {t("also_received", { text: material.extras_received }) ||
+                    `Also received: ${material.extras_received}`}
                 </p>
               )}
               {(material.received_at || materialReceivedByName) && (
                 <p className="mt-1 text-xs text-muted-foreground">
-                  Received
+                  {t("received_label") || "Received"}
                   {material.received_at
                     ? ` ${new Date(material.received_at).toLocaleDateString()}`
                     : ""}
-                  {materialReceivedByName ? ` by ${materialReceivedByName}` : ""}
+                  {materialReceivedByName
+                    ? ` ${t("received_by", { name: materialReceivedByName }) || `by ${materialReceivedByName}`}`
+                    : ""}
                 </p>
               )}
               <div className="mt-3">
                 {(material.photo_urls?.length ?? 0) === 0 && (
                   <p className="mb-2 text-xs text-muted-foreground">
-                    No fabric photos yet. Add a photo so you and your client have a record of what
-                    was received.
+                    {t("no_fabric_photos") ||
+                      "No fabric photos yet. Add a photo so you and your client have a record of what was received."}
                   </p>
                 )}
                 {currentStore && material.id && (
@@ -917,7 +967,8 @@ function OrderDetail() {
                     canRemove={canSeeMoney}
                     disabledReason={
                       !online
-                        ? "Photos need a connection. You can add them later from the order."
+                        ? t("photos_need_connection") ||
+                          "Photos need a connection. You can add them later from the order."
                         : null
                     }
                   />
@@ -930,7 +981,7 @@ function OrderDetail() {
             <div className="rounded-2xl border border-border p-4">
               <div className="flex items-center justify-between gap-3">
                 <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  Materials from stock
+                  {t("materials_from_stock_title") || "Materials from stock"}
                 </p>
                 <Button
                   size="sm"
@@ -938,11 +989,13 @@ function OrderDetail() {
                   disabled={!online}
                   onClick={() => setUseStockOpen(true)}
                 >
-                  Use from stock
+                  {t("use_from_stock") || "Use from stock"}
                 </Button>
               </div>
               {!stockMaterials || stockMaterials.length === 0 ? (
-                <p className="mt-2 text-sm text-muted-foreground">Nothing used from stock yet.</p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  {t("nothing_from_stock") || "Nothing used from stock yet."}
+                </p>
               ) : (
                 <div className="mt-2 space-y-2">
                   {stockMaterials.map((m) => {
@@ -967,11 +1020,11 @@ function OrderDetail() {
             <div className="rounded-2xl border border-border p-4">
               <div className="flex items-start justify-between gap-3">
                 <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  Cost &amp; profit
+                  {t("cost_profit_title") || "Cost & profit"}
                 </p>
                 {!editingCosts && (
                   <Button size="sm" variant="ghost" onClick={startEditingCosts}>
-                    Edit
+                    {t("action_edit") || "Edit"}
                   </Button>
                 )}
               </div>
@@ -979,11 +1032,15 @@ function OrderDetail() {
               {editingCosts ? (
                 <div className="mt-2 space-y-3">
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Labour cost</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("labour_cost_label") || "Labour cost"}
+                    </p>
                     <MoneyInput value={labourCostInput} onChange={setLabourCostInput} />
                   </div>
                   <div className="space-y-1">
-                    <p className="text-xs text-muted-foreground">Other cost</p>
+                    <p className="text-xs text-muted-foreground">
+                      {t("other_cost_label") || "Other cost"}
+                    </p>
                     <MoneyInput value={otherCostInput} onChange={setOtherCostInput} />
                   </div>
                   <div className="flex gap-2">
@@ -993,10 +1050,10 @@ function OrderDetail() {
                       className="flex-1"
                       onClick={() => setEditingCosts(false)}
                     >
-                      Cancel
+                      {t("action_cancel") || "Cancel"}
                     </Button>
                     <Button size="sm" className="flex-1" onClick={saveCosts} disabled={savingCosts}>
-                      {savingCosts ? "Saving..." : "Save"}
+                      {savingCosts ? t("action_saving") || "Saving..." : t("action_save") || "Save"}
                     </Button>
                   </div>
                 </div>
@@ -1004,29 +1061,33 @@ function OrderDetail() {
                 <div className="mt-2 space-y-1 text-sm">
                   {materialCost > 0 && (
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Material</span>
+                      <span className="text-muted-foreground">
+                        {t("material_label") || "Material"}
+                      </span>
                       <MoneyText amount={materialCost} variant="muted" />
                     </div>
                   )}
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Labour</span>
+                    <span className="text-muted-foreground">{t("labour_label") || "Labour"}</span>
                     <MoneyText amount={labourCost} variant="muted" />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Other</span>
+                    <span className="text-muted-foreground">{t("other_label") || "Other"}</span>
                     <MoneyText amount={otherCost} variant="muted" />
                   </div>
                   <div className="flex items-center justify-between border-t border-border pt-1">
-                    <span className="text-muted-foreground">Total cost</span>
+                    <span className="text-muted-foreground">
+                      {t("total_cost_label") || "Total cost"}
+                    </span>
                     <MoneyText amount={totalCost} />
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-muted-foreground">Profit</span>
+                    <span className="text-muted-foreground">{t("profit_label") || "Profit"}</span>
                     <MoneyText amount={profit} variant={profit >= 0 ? "paid" : "owed"} />
                   </div>
                   {margin != null && (
                     <div className="flex items-center justify-between">
-                      <span className="text-muted-foreground">Margin</span>
+                      <span className="text-muted-foreground">{t("margin_label") || "Margin"}</span>
                       <span className="figures">{margin.toFixed(0)}%</span>
                     </div>
                   )}
@@ -1037,14 +1098,16 @@ function OrderDetail() {
 
           <div className="rounded-2xl border border-border p-4 sm:col-span-2">
             <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-              Measurements used
+              {t("measurements_used_title") || "Measurements used"}
             </p>
             {measurementSet ? (
               <>
                 {latestMeasurementSet && latestMeasurementSet.id !== measurementSet.id && (
                   <p className="mt-1 text-sm text-owed">
-                    Newer measurements from{" "}
-                    {new Date(latestMeasurementSet.taken_at).toLocaleDateString()} exist.
+                    {t("newer_measurements_exist", {
+                      date: new Date(latestMeasurementSet.taken_at).toLocaleDateString(),
+                    }) ||
+                      `Newer measurements from ${new Date(latestMeasurementSet.taken_at).toLocaleDateString()} exist.`}
                   </p>
                 )}
                 <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-3">
@@ -1061,7 +1124,8 @@ function OrderDetail() {
               </>
             ) : (
               <p className="mt-1 text-sm text-muted-foreground">
-                No measurement set attached. Add one from the client&apos;s profile.
+                {t("no_measurement_set") ||
+                  "No measurement set attached. Add one from the client's profile."}
               </p>
             )}
           </div>
@@ -1069,7 +1133,7 @@ function OrderDetail() {
           {order.style_notes && (
             <div className="rounded-2xl border border-border p-4 sm:col-span-2">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Style notes
+                {t("style_notes_label") || "Style notes"}
               </p>
               <p className="mt-1 text-sm">{order.style_notes}</p>
             </div>
@@ -1078,7 +1142,7 @@ function OrderDetail() {
           {styleRefPhotos && styleRefPhotos.length > 0 && (
             <div className="rounded-2xl border border-border p-4 sm:col-span-2">
               <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                Reference photos
+                {t("reference_photos_label") || "Reference photos"}
               </p>
               <div className="mt-2 flex flex-wrap gap-2">
                 {styleRefPhotos.map((url, i) => (
@@ -1118,7 +1182,9 @@ function OrderDetail() {
 
         {canSeeMoney && payments && payments.length > 0 && (
           <div className="mt-8">
-            <p className="mb-2 text-sm font-medium text-muted-foreground">Payments</p>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
+              {t("payments_label") || "Payments"}
+            </p>
             <div className="space-y-2">
               {payments.map((p) => (
                 <div
@@ -1143,7 +1209,9 @@ function OrderDetail() {
 
         {historyRows.length > 0 && (
           <div className="mt-8">
-            <p className="mb-2 text-sm font-medium text-muted-foreground">History</p>
+            <p className="mb-2 text-sm font-medium text-muted-foreground">
+              {t("history_label") || "History"}
+            </p>
             <div className="space-y-2">
               {historyRows.map((h) => (
                 <div
@@ -1153,7 +1221,9 @@ function OrderDetail() {
                   <div>
                     <div className="flex items-center gap-2">
                       <span>
-                        {h.from_status ? `${statusLabel(h.from_status)} → ` : "Created as "}
+                        {h.from_status
+                          ? `${statusLabel(h.from_status)} → `
+                          : `${t("created_as") || "Created as"} `}
                         {statusLabel(h.to_status)}
                       </span>
                       <span className="text-muted-foreground">
@@ -1220,22 +1290,27 @@ function OrderDetail() {
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Mark as {pendingStatus ? statusLabel(pendingStatus) : ""}?</DialogTitle>
+            <DialogTitle>
+              {t("mark_as_status", { status: pendingStatus ? statusLabel(pendingStatus) : "" }) ||
+                `Mark as ${pendingStatus ? statusLabel(pendingStatus) : ""}?`}
+            </DialogTitle>
             <DialogDescription>
               {pendingStatus === "collected" &&
               canSeeMoney &&
               balance &&
               (balance.balance ?? 0) > 0 ? (
                 <span className="text-owed">
-                  A balance of <MoneyText amount={balance.balance ?? 0} variant="owed" /> is still
-                  owed. Confirm collection anyway?
+                  {t("balance_owed_prefix") || "A balance of"}{" "}
+                  <MoneyText amount={balance.balance ?? 0} variant="owed" />{" "}
+                  {t("balance_owed_suffix") || "is still owed. Confirm collection anyway?"}
                 </span>
               ) : cuttingWithoutApproval ? (
                 <span className="text-owed">
-                  This order hasn&apos;t been approved by the client yet. You can still proceed, but
-                  a reason is required below.
+                  {t("cutting_without_approval_warning") ||
+                    "This order hasn't been approved by the client yet. You can still proceed, but a reason is required below."}
                 </span>
               ) : (
+                t("status_update_note") ||
                 "This updates the order's status for everyone who can see it."
               )}
             </DialogDescription>
@@ -1245,8 +1320,9 @@ function OrderDetail() {
             <Textarea
               placeholder={
                 cuttingWithoutApproval
-                  ? "Reason for cutting without approval (required)"
-                  : "Add a note for this update (optional)"
+                  ? t("reason_cutting_placeholder") ||
+                    "Reason for cutting without approval (required)"
+                  : t("add_note_placeholder") || "Add a note for this update (optional)"
               }
               value={statusNote}
               onChange={(e) => setStatusNote(e.target.value)}
@@ -1275,7 +1351,8 @@ function OrderDetail() {
                 </label>
               )}
               <p className="text-xs text-muted-foreground">
-                Attach a progress photo (optional, needs to be online)
+                {t("attach_progress_photo") ||
+                  "Attach a progress photo (optional, needs to be online)"}
               </p>
             </div>
           </div>
@@ -1288,13 +1365,13 @@ function OrderDetail() {
                 resetStatusChangeExtras();
               }}
             >
-              Cancel
+              {t("action_cancel") || "Cancel"}
             </Button>
             <Button
               onClick={confirmStatusChange}
               disabled={updating || (cuttingWithoutApproval && !statusNote.trim())}
             >
-              {updating ? "Updating..." : "Confirm"}
+              {updating ? t("updating") || "Updating..." : t("confirm") || "Confirm"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1328,6 +1405,7 @@ function UseStockDialog({
   orderId: string;
   onSaved: () => void;
 }) {
+  const t = useAppT("app_orders");
   const [itemId, setItemId] = useState("");
   const [quantity, setQuantity] = useState("");
   const [saving, setSaving] = useState(false);
@@ -1361,13 +1439,18 @@ function UseStockDialog({
         p_quantity: Number(quantity),
       });
       if (error) throw error;
-      toast.success("Stock used on this order");
+      toast.success(t("toast_stock_used") || "Stock used on this order");
       onSaved();
       setItemId("");
       setQuantity("");
       onOpenChange(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not use stock on this order"));
+      toast.error(
+        getErrorMessage(
+          error,
+          t("toast_could_not_use_stock") || "Could not use stock on this order",
+        ),
+      );
     } finally {
       setSaving(false);
     }
@@ -1377,14 +1460,14 @@ function UseStockDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Use from stock</DialogTitle>
+          <DialogTitle>{t("use_from_stock") || "Use from stock"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label>Item</Label>
+            <Label>{t("item_label") || "Item"}</Label>
             <Select value={itemId} onValueChange={setItemId}>
               <SelectTrigger>
-                <SelectValue placeholder="Choose an item" />
+                <SelectValue placeholder={t("choose_item_placeholder") || "Choose an item"} />
               </SelectTrigger>
               <SelectContent>
                 {(items ?? []).map((i) => (
@@ -1396,7 +1479,7 @@ function UseStockDialog({
             </Select>
           </div>
           <div className="space-y-2">
-            <Label>Quantity</Label>
+            <Label>{t("quantity_field_label") || "Quantity"}</Label>
             <Input
               inputMode="decimal"
               value={quantity}
@@ -1405,8 +1488,10 @@ function UseStockDialog({
             {remaining !== null && (
               <p className="text-xs text-muted-foreground">
                 {remaining >= 0
-                  ? `${formatQuantity(remaining, selected?.unit ?? "")} will remain`
-                  : "Not enough in stock"}
+                  ? t("will_remain", {
+                      quantity: formatQuantity(remaining, selected?.unit ?? ""),
+                    }) || `${formatQuantity(remaining, selected?.unit ?? "")} will remain`
+                  : t("not_enough_stock") || "Not enough in stock"}
               </p>
             )}
           </div>
@@ -1416,7 +1501,7 @@ function UseStockDialog({
             disabled={!itemId || !Number(quantity) || (remaining ?? 0) < 0 || saving}
             onClick={() => void save()}
           >
-            {saving ? "Using..." : "Use stock"}
+            {saving ? t("using") || "Using..." : t("use_stock_button") || "Use stock"}
           </Button>
         </DialogFooter>
       </DialogContent>

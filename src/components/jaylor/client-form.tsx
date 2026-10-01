@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { LANGUAGES, isLanguageCode, type LanguageCode } from "@/lib/i18n/languages";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 type ClientRow = Tables<"clients">;
 
@@ -42,6 +43,7 @@ export function ClientForm({
   client?: ClientRow | null;
   onSaved: (client: ClientRow) => void;
 }) {
+  const t = useAppT("app_clients");
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const online = useOnlineStatus();
@@ -92,19 +94,23 @@ export function ClientForm({
 
     const phone = normalizePhoneNG(phoneRaw);
     if (!phone) {
-      setPhoneError("Enter a valid Nigerian phone number");
+      setPhoneError(t("error_invalid_phone") || "Enter a valid Nigerian phone number");
       return;
     }
     let whatsapp: string | null = null;
     if (whatsappRaw.trim()) {
       whatsapp = normalizePhoneNG(whatsappRaw);
       if (!whatsapp) {
-        toast.error("Enter a valid WhatsApp number, or leave it blank");
+        toast.error(
+          t("toast_invalid_whatsapp") || "Enter a valid WhatsApp number, or leave it blank",
+        );
         return;
       }
     }
     if (minor && (!guardianName.trim() || !guardianPhone.trim())) {
-      toast.error("Guardian name and phone are required for clients under 18");
+      toast.error(
+        t("toast_guardian_required") || "Guardian name and phone are required for clients under 18",
+      );
       return;
     }
 
@@ -126,7 +132,7 @@ export function ClientForm({
 
       const tags = tagsRaw
         .split(",")
-        .map((t) => t.trim())
+        .map((tag) => tag.trim())
         .filter(Boolean);
       const now = new Date().toISOString();
 
@@ -164,7 +170,7 @@ export function ClientForm({
           .select()
           .single();
         if (error) throw error;
-        toast.success("Client updated");
+        toast.success(t("toast_client_updated") || "Client updated");
         onSaved(data);
         onOpenChange(false);
       } else {
@@ -177,7 +183,9 @@ export function ClientForm({
             label: `New client: ${payload.full_name}`,
             payload: insertPayload,
           });
-          toast.success("Saved offline — will sync when you're back online");
+          toast.success(
+            t("toast_saved_offline") || "Saved offline — will sync when you're back online",
+          );
           onOpenChange(false);
           return;
         }
@@ -188,7 +196,7 @@ export function ClientForm({
             .select()
             .single();
           if (error) throw error;
-          toast.success("Client added");
+          toast.success(t("toast_client_added") || "Client added");
           onSaved(data);
         } catch (error) {
           if (!isNetworkFailure(error)) throw error;
@@ -198,12 +206,16 @@ export function ClientForm({
             label: `New client: ${payload.full_name}`,
             payload: insertPayload,
           });
-          toast.success("Saved offline — will sync when you're back online");
+          toast.success(
+            t("toast_saved_offline") || "Saved offline — will sync when you're back online",
+          );
         }
         onOpenChange(false);
       }
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save this client"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_save_client") || "Could not save this client"),
+      );
     } finally {
       setBusy(false);
     }
@@ -212,7 +224,7 @@ export function ClientForm({
   const body = (
     <form onSubmit={handleSubmit} className="space-y-4 px-1">
       <div className="space-y-2">
-        <Label htmlFor="full_name">Full name</Label>
+        <Label htmlFor="full_name">{t("full_name_label") || "Full name"}</Label>
         <Input
           id="full_name"
           value={fullName}
@@ -222,25 +234,25 @@ export function ClientForm({
       </div>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="phone">Phone</Label>
+          <Label htmlFor="phone">{t("phone_label") || "Phone"}</Label>
           <Input
             id="phone"
             type="tel"
             value={phoneRaw}
             onChange={(e) => setPhoneRaw(e.target.value)}
-            placeholder="0803 123 4567"
+            placeholder={t("phone_placeholder") || "0803 123 4567"}
             required
           />
           {phoneError && <p className="text-xs text-owed">{phoneError}</p>}
         </div>
         <div className="space-y-2">
-          <Label htmlFor="whatsapp">WhatsApp (if different)</Label>
+          <Label htmlFor="whatsapp">{t("whatsapp_label") || "WhatsApp (if different)"}</Label>
           <Input
             id="whatsapp"
             type="tel"
             value={whatsappRaw}
             onChange={(e) => setWhatsappRaw(e.target.value)}
-            placeholder="Same as phone"
+            placeholder={t("whatsapp_placeholder") || "Same as phone"}
           />
         </div>
       </div>
@@ -248,8 +260,14 @@ export function ClientForm({
       {duplicate && (
         <div className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
           <p>
-            <span className="font-medium">{duplicate.full_name}</span> already uses this phone
-            number.
+            {t("duplicate_warning", { name: duplicate.full_name }) ? (
+              t("duplicate_warning", { name: duplicate.full_name })
+            ) : (
+              <>
+                <span className="font-medium">{duplicate.full_name}</span> already uses this phone
+                number.
+              </>
+            )}
           </p>
           <Button
             type="button"
@@ -261,27 +279,27 @@ export function ClientForm({
               navigate({ to: "/clients/$clientId", params: { clientId: duplicate.id } });
             }}
           >
-            View existing client
+            {t("view_existing_client") || "View existing client"}
           </Button>
         </div>
       )}
 
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-2">
-          <Label htmlFor="gender">Gender</Label>
+          <Label htmlFor="gender">{t("gender_label") || "Gender"}</Label>
           <Select value={gender} onValueChange={setGender}>
             <SelectTrigger id="gender">
-              <SelectValue placeholder="Not set" />
+              <SelectValue placeholder={t("not_set") || "Not set"} />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="female">Female</SelectItem>
-              <SelectItem value="male">Male</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
+              <SelectItem value="female">{t("gender_female") || "Female"}</SelectItem>
+              <SelectItem value="male">{t("gender_male") || "Male"}</SelectItem>
+              <SelectItem value="other">{t("gender_other") || "Other"}</SelectItem>
             </SelectContent>
           </Select>
         </div>
         <div className="space-y-2">
-          <Label htmlFor="birthday">Birthday</Label>
+          <Label htmlFor="birthday">{t("birthday_label") || "Birthday"}</Label>
           <Input
             id="birthday"
             type="date"
@@ -292,16 +310,18 @@ export function ClientForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="preferred_language">Client&apos;s preferred language</Label>
+        <Label htmlFor="preferred_language">
+          {t("preferred_language_label") || "Client's preferred language"}
+        </Label>
         <Select
           value={preferredLanguage || "unset"}
           onValueChange={(v) => setPreferredLanguage(v === "unset" ? "" : (v as LanguageCode))}
         >
           <SelectTrigger id="preferred_language">
-            <SelectValue placeholder="Same as shop" />
+            <SelectValue placeholder={t("same_as_shop") || "Same as shop"} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="unset">Same as shop</SelectItem>
+            <SelectItem value="unset">{t("same_as_shop") || "Same as shop"}</SelectItem>
             {LANGUAGES.map((l) => (
               <SelectItem key={l.code} value={l.code}>
                 {l.nativeName}
@@ -314,11 +334,11 @@ export function ClientForm({
       {minor && (
         <div className="space-y-3 rounded-xl border border-border p-3">
           <p className="text-xs text-muted-foreground">
-            This client is under 18. A guardian&apos;s details are required.
+            {t("minor_notice") || "This client is under 18. A guardian's details are required."}
           </p>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label htmlFor="guardian_name">Guardian name</Label>
+              <Label htmlFor="guardian_name">{t("guardian_name_label") || "Guardian name"}</Label>
               <Input
                 id="guardian_name"
                 value={guardianName}
@@ -327,7 +347,9 @@ export function ClientForm({
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="guardian_phone">Guardian phone</Label>
+              <Label htmlFor="guardian_phone">
+                {t("guardian_phone_label") || "Guardian phone"}
+              </Label>
               <Input
                 id="guardian_phone"
                 type="tel"
@@ -341,7 +363,7 @@ export function ClientForm({
       )}
 
       <div className="space-y-2">
-        <Label htmlFor="address">Address</Label>
+        <Label htmlFor="address">{t("address_label") || "Address"}</Label>
         <Textarea
           id="address"
           value={address}
@@ -351,30 +373,30 @@ export function ClientForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="tags">Tags</Label>
+        <Label htmlFor="tags">{t("tags_label") || "Tags"}</Label>
         <Input
           id="tags"
           value={tagsRaw}
           onChange={(e) => setTagsRaw(e.target.value)}
-          placeholder="VIP, wedding, regular"
+          placeholder={t("tags_placeholder") || "VIP, wedding, regular"}
         />
       </div>
 
       <div className="space-y-3 rounded-xl border border-border p-3">
         <label className="flex items-center justify-between gap-3">
           <span className="text-sm">
-            OK to send WhatsApp updates
+            {t("whatsapp_consent_label") || "OK to send WhatsApp updates"}
             <span className="block text-xs text-muted-foreground">
-              Order ready, balance due and reminder messages.
+              {t("whatsapp_consent_sub") || "Order ready, balance due and reminder messages."}
             </span>
           </span>
           <Switch checked={consentWhatsapp} onCheckedChange={setConsentWhatsapp} />
         </label>
         <label className="flex items-center justify-between gap-3">
           <span className="text-sm">
-            OK to show photos of their outfits
+            {t("photo_consent_label") || "OK to show photos of their outfits"}
             <span className="block text-xs text-muted-foreground">
-              In your storefront and shared galleries.
+              {t("photo_consent_sub") || "In your storefront and shared galleries."}
             </span>
           </span>
           <Switch checked={consentPhotos} onCheckedChange={setConsentPhotos} />
@@ -382,11 +404,17 @@ export function ClientForm({
       </div>
 
       {isEdit && !online && (
-        <OfflineNotice label="Editing a client needs an internet connection." />
+        <OfflineNotice
+          label={t("offline_notice_editing") || "Editing a client needs an internet connection."}
+        />
       )}
 
       <Button type="submit" className="w-full" disabled={busy || (isEdit && !online)}>
-        {busy ? "Saving..." : isEdit ? "Save changes" : "Add client"}
+        {busy
+          ? t("action_saving") || "Saving..."
+          : isEdit
+            ? t("save_changes") || "Save changes"
+            : t("add_client") || "Add client"}
       </Button>
     </form>
   );
@@ -397,11 +425,11 @@ export function ClientForm({
         <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
           <SheetHeader className="text-left">
             <SheetTitle className="flex items-center gap-2 text-2xl">
-              {isEdit ? "Edit client" : "New client"}
+              {isEdit ? t("edit_client_aria") || "Edit client" : t("new_client") || "New client"}
               {!isEdit && (
                 <HelpTooltip>
-                  Save a client once and reuse their measurements for every future order — including
-                  sending them a measurement card by WhatsApp.
+                  {t("help_tooltip_body") ||
+                    "Save a client once and reuse their measurements for every future order — including sending them a measurement card by WhatsApp."}
                 </HelpTooltip>
               )}
             </SheetTitle>
@@ -417,11 +445,11 @@ export function ClientForm({
       <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            {isEdit ? "Edit client" : "New client"}
+            {isEdit ? t("edit_client_aria") || "Edit client" : t("new_client") || "New client"}
             {!isEdit && (
               <HelpTooltip>
-                Save a client once and reuse their measurements for every future order — including
-                sending them a measurement card by WhatsApp.
+                {t("help_tooltip_body") ||
+                  "Save a client once and reuse their measurements for every future order — including sending them a measurement card by WhatsApp."}
               </HelpTooltip>
             )}
           </DialogTitle>

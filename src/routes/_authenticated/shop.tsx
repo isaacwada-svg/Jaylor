@@ -42,6 +42,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 import { useStorefrontPhotoUrls } from "@/lib/storefront-photos";
 import { useFeatureLimit } from "@/lib/use-feature-limit";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/shop")({
   staticData: { sitemap: false },
@@ -68,6 +69,7 @@ type SewRequestRow = Tables<"sew_requests">;
 type ClientRow = Tables<"clients">;
 
 function Shop() {
+  const t = useAppT("app_settings");
   const { currentStore, currentRole, refetch: refetchStore } = useStore();
   const storeId = currentStore?.id;
   const canManage = currentRole === "owner" || currentRole === "manager";
@@ -139,7 +141,9 @@ function Shop() {
       if (error) throw error;
       invalidateItems();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not update this item"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_update_item") || "Could not update this item"),
+      );
     }
   }
 
@@ -148,10 +152,12 @@ function Shop() {
     try {
       const { error } = await supabase.from("storefront_items").delete().eq("id", item.id);
       if (error) throw error;
-      toast.success("Item removed");
+      toast.success(t("toast_item_removed") || "Item removed");
       invalidateItems();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not remove this item"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_remove_item") || "Could not remove this item"),
+      );
     } finally {
       setDeletingItemId(null);
     }
@@ -176,7 +182,9 @@ function Shop() {
       ]);
       invalidateItems();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not reorder items"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_reorder") || "Could not reorder items"),
+      );
     }
   }
 
@@ -189,7 +197,12 @@ function Shop() {
       if (error) throw error;
       invalidateRequests();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not update this request"));
+      toast.error(
+        getErrorMessage(
+          error,
+          t("toast_could_not_update_request") || "Could not update this request",
+        ),
+      );
     }
   }
 
@@ -219,7 +232,9 @@ function Shop() {
       }
       setOrderFormOpen(true);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not start this order"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_start_order") || "Could not start this order"),
+      );
     }
   }
 
@@ -227,12 +242,12 @@ function Shop() {
     <AppShell>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl">Shop</h1>
+          <h1 className="text-3xl">{t("shop_title") || "Shop"}</h1>
           {currentStore && (
             <Button variant="outline" size="sm" asChild>
               <Link to="/$handle" params={{ handle: currentStore.slug }} target="_blank">
                 <ExternalLink className="size-4" />
-                View shop
+                {t("view_shop") || "View shop"}
               </Link>
             </Button>
           )}
@@ -241,11 +256,12 @@ function Shop() {
 
         <Tabs defaultValue="items">
           <TabsList>
-            <TabsTrigger value="items">Items</TabsTrigger>
+            <TabsTrigger value="items">{t("tab_items") || "Items"}</TabsTrigger>
             <TabsTrigger value="requests">
-              Requests{newRequests.length > 0 ? ` (${newRequests.length})` : ""}
+              {t("tab_requests") || "Requests"}
+              {newRequests.length > 0 ? ` (${newRequests.length})` : ""}
             </TabsTrigger>
-            <TabsTrigger value="profile">Shop profile</TabsTrigger>
+            <TabsTrigger value="profile">{t("tab_shop_profile") || "Shop profile"}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="items" className="mt-6">
@@ -253,7 +269,7 @@ function Shop() {
               {canManage && (
                 <Button onClick={openNewItem}>
                   <Plus className="size-4" />
-                  Add item
+                  {t("add_item") || "Add item"}
                 </Button>
               )}
             </div>
@@ -266,9 +282,16 @@ function Shop() {
             ) : !items || items.length === 0 ? (
               <EmptyState
                 className="mt-6"
-                title="Your storefront is waiting"
-                description="Add your first style with a photo and price, and share one beautiful link."
-                action={canManage ? <Button onClick={openNewItem}>Add a style</Button> : undefined}
+                title={t("storefront_empty_title") || "Your storefront is waiting"}
+                description={
+                  t("storefront_empty_description") ||
+                  "Add your first style with a photo and price, and share one beautiful link."
+                }
+                action={
+                  canManage ? (
+                    <Button onClick={openNewItem}>{t("add_a_style") || "Add a style"}</Button>
+                  ) : undefined
+                }
               />
             ) : (
               <div className="mt-4 space-y-3">
@@ -289,8 +312,9 @@ function Shop() {
                           <p className="truncate font-medium">{item.title}</p>
                           <p className="truncate text-sm text-muted-foreground">
                             {item.price_min
-                              ? `From ${formatMoney(item.price_min)}`
-                              : "No price set"}
+                              ? t("from_price", { price: formatMoney(item.price_min) }) ||
+                                `From ${formatMoney(item.price_min)}`
+                              : t("no_price_set") || "No price set"}
                           </p>
                         </div>
                       </div>
@@ -298,7 +322,9 @@ function Shop() {
                         variant="outline"
                         className={item.published ? "border-paid text-paid" : ""}
                       >
-                        {item.published ? "Published" : "Draft"}
+                        {item.published
+                          ? t("published_badge") || "Published"
+                          : t("draft_badge") || "Draft"}
                       </Badge>
                     </div>
                     {canManage && (
@@ -312,17 +338,19 @@ function Shop() {
                           }}
                         >
                           <Pencil className="size-4" />
-                          Edit
+                          {t("edit_button") || "Edit"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => togglePublished(item)}>
-                          {item.published ? "Unpublish" : "Publish"}
+                          {item.published
+                            ? t("unpublish_button") || "Unpublish"
+                            : t("publish_button") || "Publish"}
                         </Button>
                         <Button
                           size="sm"
                           variant="outline"
                           disabled={index === 0}
                           onClick={() => moveItem(item, "up")}
-                          aria-label="Move up"
+                          aria-label={t("move_up_aria") || "Move up"}
                         >
                           <ArrowUp className="size-4" />
                         </Button>
@@ -331,7 +359,7 @@ function Shop() {
                           variant="outline"
                           disabled={index === items.length - 1}
                           onClick={() => moveItem(item, "down")}
-                          aria-label="Move down"
+                          aria-label={t("move_down_aria") || "Move down"}
                         >
                           <ArrowDown className="size-4" />
                         </Button>
@@ -340,7 +368,7 @@ function Shop() {
                           variant="outline"
                           disabled={deletingItemId === item.id}
                           onClick={() => deleteItem(item)}
-                          aria-label="Delete item"
+                          aria-label={t("delete_item_aria") || "Delete item"}
                         >
                           {deletingItemId === item.id ? (
                             <Loader2 className="size-4 animate-spin text-owed" />
@@ -359,8 +387,11 @@ function Shop() {
           <TabsContent value="requests" className="mt-6">
             {!requests || requests.length === 0 ? (
               <EmptyState
-                title="No requests yet"
-                description="When someone taps 'Sew this for me' on your shop page, it shows up here."
+                title={t("empty_requests_title") || "No requests yet"}
+                description={
+                  t("empty_requests_description") ||
+                  "When someone taps 'Sew this for me' on your shop page, it shows up here."
+                }
               />
             ) : (
               <div className="space-y-3">
@@ -374,12 +405,12 @@ function Shop() {
                         </p>
                         <p className="mt-1 truncate text-sm text-muted-foreground">
                           {request.fabric_source === "customer"
-                            ? "Has their own fabric"
-                            : "Needs fabric bought"}{" "}
+                            ? t("has_own_fabric") || "Has their own fabric"
+                            : t("needs_fabric_bought") || "Needs fabric bought"}{" "}
                           ·{" "}
                           {request.measurement_choice === "book"
-                            ? "Wants to book a measurement"
-                            : "Will measure themselves"}
+                            ? t("wants_book_measurement") || "Wants to book a measurement"
+                            : t("will_measure_self") || "Will measure themselves"}
                         </p>
                         {request.notes && (
                           <p className="mt-2 truncate text-sm text-muted-foreground">
@@ -394,10 +425,10 @@ function Shop() {
                     {canManage && request.status === "new" && (
                       <div className="mt-3 flex gap-2">
                         <Button size="sm" onClick={() => convertRequest(request)}>
-                          Convert to order
+                          {t("convert_to_order") || "Convert to order"}
                         </Button>
                         <Button size="sm" variant="outline" onClick={() => declineRequest(request)}>
-                          Decline
+                          {t("decline_button") || "Decline"}
                         </Button>
                       </div>
                     )}
@@ -447,7 +478,12 @@ function Shop() {
           open={limitSheetOpen}
           onOpenChange={setLimitSheetOpen}
           requiredTier={planCodeToTier(itemsFeature?.required_plan ?? "growth")}
-          message={`You've reached the ${typeof itemsFeature?.limit === "number" ? itemsFeature.limit : ""}-item limit on your plan. Growth gives you an unlimited shop.`}
+          message={
+            t("item_limit_message", {
+              limit: typeof itemsFeature?.limit === "number" ? itemsFeature.limit : "",
+            }) ||
+            `You've reached the ${typeof itemsFeature?.limit === "number" ? itemsFeature.limit : ""}-item limit on your plan. Growth gives you an unlimited shop.`
+          }
         />
       )}
 
@@ -465,6 +501,7 @@ function Shop() {
 }
 
 function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () => void }) {
+  const t = useAppT("app_settings");
   const { currentStore } = useStore();
   const [bio, setBio] = useState(currentStore?.bio ?? "");
   const [whatsappPhone, setWhatsappPhone] = useState(currentStore?.whatsapp_phone ?? "");
@@ -488,10 +525,15 @@ function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () =>
         })
         .eq("id", storeId);
       if (error) throw error;
-      toast.success("Shop profile updated");
+      toast.success(t("toast_shop_profile_updated") || "Shop profile updated");
       onSaved();
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not save your shop profile"));
+      toast.error(
+        getErrorMessage(
+          error,
+          t("toast_could_not_save_shop_profile") || "Could not save your shop profile",
+        ),
+      );
     } finally {
       setBusy(false);
     }
@@ -500,35 +542,40 @@ function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () =>
   return (
     <form onSubmit={handleSubmit} className="max-w-md space-y-4">
       <div className="space-y-2">
-        <Label htmlFor="shop-bio">About your shop</Label>
+        <Label htmlFor="shop-bio">{t("about_shop_label") || "About your shop"}</Label>
         <Textarea
           id="shop-bio"
           rows={3}
           value={bio}
           onChange={(e) => setBio(e.target.value)}
-          placeholder="Bespoke agbada and ankara wear, made to measure in Abuja."
+          placeholder={
+            t("about_shop_placeholder") ||
+            "Bespoke agbada and ankara wear, made to measure in Abuja."
+          }
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="shop-whatsapp">WhatsApp number</Label>
+        <Label htmlFor="shop-whatsapp">{t("whatsapp_number_label") || "WhatsApp number"}</Label>
         <Input
           id="shop-whatsapp"
           value={whatsappPhone}
           onChange={(e) => setWhatsappPhone(e.target.value)}
-          placeholder="+234 800 000 0000"
+          placeholder={t("whatsapp_number_placeholder") || "+234 800 000 0000"}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="shop-hours">Opening hours</Label>
+        <Label htmlFor="shop-hours">{t("opening_hours_label") || "Opening hours"}</Label>
         <Input
           id="shop-hours"
           value={openingHours}
           onChange={(e) => setOpeningHours(e.target.value)}
-          placeholder="Mon–Sat, 9am–6pm"
+          placeholder={t("opening_hours_placeholder") || "Mon–Sat, 9am–6pm"}
         />
       </div>
       <div className="space-y-2">
-        <Label htmlFor="shop-language">Language for your clients</Label>
+        <Label htmlFor="shop-language">
+          {t("language_for_clients_label") || "Language for your clients"}
+        </Label>
         <Select value={language} onValueChange={(v) => setLanguage(v as LanguageCode)}>
           <SelectTrigger id="shop-language">
             <SelectValue />
@@ -542,12 +589,12 @@ function ShopProfileForm({ storeId, onSaved }: { storeId: string; onSaved: () =>
           </SelectContent>
         </Select>
         <p className="text-xs text-muted-foreground">
-          Used for client-facing pages and tap-to-send messages when a client hasn&apos;t set their
-          own language. Clients can always switch on their own pages.
+          {t("language_for_clients_note") ||
+            "Used for client-facing pages and tap-to-send messages when a client hasn't set their own language. Clients can always switch on their own pages."}
         </p>
       </div>
       <Button type="submit" disabled={busy}>
-        {busy ? "Saving..." : "Save profile"}
+        {busy ? t("action_saving") || "Saving..." : t("save_profile_button") || "Save profile"}
       </Button>
     </form>
   );

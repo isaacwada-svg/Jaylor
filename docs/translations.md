@@ -18,29 +18,39 @@ Each `(language, section)` pair is its own flat JSON file:
 src/lib/i18n/resources/{language}/{section}.json
 ```
 
-Sections (8 total): `common`, `tracking`, `approval`, `passport`, `directory`, `storefront`, `quotes`, `events`.
+Sections (18 total): `common`, `tracking`, `approval`, `passport`, `directory`,
+`storefront`, `quotes`, `events`, `auth`, `app_common`, `app_settings`,
+`app_dashboard`, `app_orders`, `app_order_form`, `app_clients`, `app_payments`,
+`app_payroll`, `app_inventory`.
 
-So there are 5 languages × 8 sections = **40 files**. Every file has exactly the
-same set of keys (214 keys per language, checked below) — only the English
-file is the source of truth for which keys exist; a translated file should
-never add or remove a key, only change the value.
+So there are 5 languages × 18 sections = **90 files**. Every file has exactly
+the same set of keys per section (checked below) — only the English file is
+the source of truth for which keys exist; a translated file should never add
+or remove a key, only change the value.
 
 ## String counts per file (identical across all 5 languages)
 
-| Section      | Keys | Shipped in |
-| ------------ | ---- | ---------- |
-| common       | 17   | PR L (+8 order-status keys added in PR M) |
-| tracking     | 16   | PR L |
-| approval     | 23   | PR L |
-| passport     | 63   | PR L |
-| directory    | 6    | PR L |
-| storefront   | 13   | PR L |
-| quotes       | 22   | PR L |
-| events       | 62   | PR L |
-| auth         | 40   | PR M |
-| app_common   | 28   | PR M |
-| app_settings | 2    | PR M |
-| **Total**    | **292** | |
+| Section        | Keys | Shipped in |
+| -------------- | ---- | ---------- |
+| common         | 17   | PR L (+8 order-status keys added in PR M) |
+| tracking       | 16   | PR L |
+| approval       | 23   | PR L |
+| passport       | 63   | PR L |
+| directory      | 6    | PR L |
+| storefront     | 13   | PR L |
+| quotes         | 22   | PR L |
+| events         | 62   | PR L |
+| auth           | 40   | PR M |
+| app_common     | 28   | PR M |
+| app_settings   | 71   | PR M (2) + PR M2 (69, shop + billing) |
+| app_dashboard  | 55   | PR M2 |
+| app_orders     | 99   | PR M2 |
+| app_order_form | 87   | PR M2 |
+| app_clients    | 84   | PR M2 |
+| app_payments   | 20   | PR M2 |
+| app_payroll    | 68   | PR M2 |
+| app_inventory  | 49   | PR M2 |
+| **Total**      | **823** | |
 
 ## Translation status
 
@@ -137,25 +147,87 @@ shared, long-lived i18next instance on mount.
   render spots; a custom template's labels are untouched regardless, by
   design.
 
-**What's deliberately deferred to a follow-up PR** (framework is ready for
-all of it -- it's namespace content + wiring, not new infrastructure):
-onboarding's own screens, the dashboard's non-status text, the orders
-list/detail/order-form's non-status text, clients + client profile, the
-measurements tab's surrounding text, payments, payroll, reports, the rest of
-staff/team management, billing's plan cards, capacity warnings and the
-on-time score, the Passport *import* side (`/passport/share/$token` -- a
-staff-only utility page, not client-facing, same call as PR L), events,
-quotations, contracts, inventory, AI tools, festive/moments, consultations,
-and wiring `useRoleLabel()` into the remaining role `<Select>`s.
+**What was deferred to PR M2** (now done, see below): the dashboard's
+non-status text, the orders list/detail/order-form's non-status text,
+clients + client profile, payments, payroll, inventory, shop + billing's
+remaining copy.
+
+**Still deferred after PR M2** (framework is ready for all of it -- it's
+namespace content + wiring, not new infrastructure): onboarding's own
+screens, the measurements tab's surrounding text (its *field labels* are
+already translated via `template-labels.ts`, just not wired into the tab's
+own render spots yet), reports, the rest of staff/team management, capacity
+warnings and the on-time score, the Passport *import* side
+(`/passport/share/$token` -- a staff-only utility page, not client-facing,
+same call as PR L), events, quotations, contracts, AI tools, festive/moments,
+consultations, `unmatched-payments.tsx`, and wiring `useRoleLabel()` into the
+remaining role `<Select>`s. Three status-like badges were deliberately left
+alone because they're different enums with no existing label map at all
+(not a gap in wiring the existing hooks): a payroll **run**'s "Paid" badge,
+a sew request's raw status (new/contacted/declined) on the Shop → Requests
+tab, and a client "moment"'s raw status on the client profile's Messages tab.
 
 Run `npm run lint:i18n` for a live count of what's left (see
-`scripts/check-hardcoded-strings.mjs`) -- as of this PR: **860 candidate
-hardcoded strings across 99 files**, platform admin pages excluded by design
-(they stay English). This is a heuristic scan (JSX text, label/placeholder/
-title/aria-label/description props, `toast.*()` calls), not a strict
-AST-based i18n linter, so treat the count as "roughly this much work remains"
-rather than an exact figure -- it's meant to be re-run by whoever picks up
-the next slice, to see progress against today's baseline.
+`scripts/check-hardcoded-strings.mjs`) -- as of PR M2: **624 candidate
+hardcoded strings across 88 files** (down from 860/99 at the end of PR M),
+platform admin pages excluded by design (they stay English). This is a
+heuristic scan (JSX text, label/placeholder/title/aria-label/description
+props, `toast.*()` calls), not a strict AST-based i18n linter, so treat the
+count as "roughly this much work remains" rather than an exact figure --
+it's meant to be re-run by whoever picks up the next slice, to see progress
+against today's baseline.
+
+## PR M2: dashboard, orders, clients, payments, payroll, inventory, shop & billing
+
+PR M2 finishes translating the ten screens the user asked about by name:
+dashboard, orders list, order form, order detail, clients list, client
+profile, payments, payroll, inventory, and the remaining untranslated parts
+of settings (shop profile + billing). No new infrastructure -- same
+`useAppT`/`AppI18nProvider` framework PR M shipped, 7 new namespaces plus
+additions to the existing `app_settings` namespace:
+
+- `app_dashboard` -- greeting, trial/message-usage banners, collection
+  score advice, revenue/workroom charts, due-soon/uncollected sections,
+  the "Grow with Business" locked-feature teasers, the staff "My jobs"
+  view, and `DashboardOverview`'s search bar + stat tiles.
+- `app_orders` -- shared by the orders list (tabs, empty state, Rush/no-date
+  badges) and the order detail page (the full status-change dialog,
+  delivery date editing, price/payments panel, fabric-received panel,
+  materials-from-stock panel, cost & profit panel, measurements-used panel,
+  payments/history lists, and the "Use from stock" dialog).
+- `app_order_form` -- the entire 5-step New Order dialog/sheet: step
+  labels, client search, garment/measurements/material steps (including the
+  dynamically-built price-suggestion and fabric-estimate narrative text,
+  now built from translated sentence fragments instead of one hardcoded
+  template literal), price & review, and the measurement-reuse prompt.
+- `app_clients` -- shared by the clients list, client profile (info rows,
+  tabs, Style Book card, delete-confirmation dialog, moments empty state)
+  and `client-form.tsx` (shared add/edit dialog).
+- `app_payments` -- the payments list, method filter, and CSV export
+  column headers (the downloaded file itself is now translated too).
+- `app_payroll` -- the Run/Needs attention/Advances/Rates tabs, the rate
+  editor, the needs-attention row's fix/void flow, and the record-advance
+  panel. `STAGE_LABELS` (garment stage names) stays an external, English-only
+  map in `src/lib/payroll.ts` for this PR -- flagged, not wired, since
+  translating it is a larger, separate change to a file outside this PR's
+  screens.
+- `app_inventory` -- the items list, new-item/stock-in/adjust/history
+  dialogs, and the movement-type labels. `CATEGORY_LABELS`/`UNIT_LABELS`
+  (also in `src/lib/inventory.ts`) are the same kind of external map, same
+  reason for staying English here.
+- `app_settings` additions -- `shop.tsx`'s own copy (items/requests/profile
+  tabs, the storefront empty state, publish/unpublish, sew-request summary
+  text, the shop-profile form) and `billing.tsx`'s own copy (current-plan
+  card, usage meters, trial notice, the plans list). The already-translated
+  `LanguageSettingsCard` from PR M is untouched.
+
+All seven new namespaces were added to `NAMESPACES` in
+`src/lib/i18n/languages.ts`. Every new JSON file ships English plus
+machine-drafted `pcm`/`ha`/`yo`/`ig` (same `_meta_status` flag, same review
+process as every other section in this doc).
+
+No database changes in PR M2 -- this is translation JSON + component wiring
+only.
 
 ## What's out of scope for this round (Part 1)
 

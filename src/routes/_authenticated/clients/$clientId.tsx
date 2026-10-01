@@ -29,6 +29,7 @@ import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { getFunctionErrorMessage } from "@/lib/utils";
 import { useClientMoments, MOMENT_TYPE_LABELS } from "@/lib/moments";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/clients/$clientId")({
   staticData: { sitemap: false },
@@ -48,6 +49,7 @@ function initials(name: string) {
 }
 
 function ClientProfile() {
+  const t = useAppT("app_clients");
   const { clientId } = Route.useParams();
   const navigate = useNavigate();
   const queryClient = useQueryClient();
@@ -80,10 +82,15 @@ function ClientProfile() {
         body: { storeId: client.store_id, clientId: client.id },
       });
       if (error) throw error;
-      toast.success("Client deleted");
+      toast.success(t("toast_client_deleted") || "Client deleted");
       navigate({ to: "/clients" });
     } catch (error) {
-      toast.error(await getFunctionErrorMessage(error, "Could not delete this client"));
+      toast.error(
+        await getFunctionErrorMessage(
+          error,
+          t("toast_could_not_delete_client") || "Could not delete this client",
+        ),
+      );
       setDeleting(false);
     }
   }
@@ -104,11 +111,14 @@ function ClientProfile() {
       <AppShell>
         <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
           <EmptyState
-            title="Client not found"
-            description="This client may have been deleted, or belongs to a different store."
+            title={t("client_not_found_title") || "Client not found"}
+            description={
+              t("client_not_found_description") ||
+              "This client may have been deleted, or belongs to a different store."
+            }
             action={
               <Button asChild>
-                <Link to="/clients">Back to clients</Link>
+                <Link to="/clients">{t("back_to_clients") || "Back to clients"}</Link>
               </Button>
             }
           />
@@ -127,7 +137,7 @@ function ClientProfile() {
           className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground"
         >
           <ArrowLeft className="size-4" />
-          Clients
+          {t("page_title") || "Clients"}
         </Link>
 
         <div className="mt-4 flex flex-wrap items-start justify-between gap-4">
@@ -153,7 +163,12 @@ function ClientProfile() {
             </div>
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" size="icon" asChild aria-label="Message on WhatsApp">
+            <Button
+              variant="outline"
+              size="icon"
+              asChild
+              aria-label={t("message_whatsapp_aria") || "Message on WhatsApp"}
+            >
               <a
                 href={`https://wa.me/${whatsappNumber}`}
                 target="_blank"
@@ -172,7 +187,7 @@ function ClientProfile() {
             <Button
               variant="outline"
               size="icon"
-              aria-label="Edit client"
+              aria-label={t("edit_client_aria") || "Edit client"}
               onClick={() => setEditOpen(true)}
             >
               <Pencil className="size-4" />
@@ -181,7 +196,7 @@ function ClientProfile() {
               <Button
                 variant="outline"
                 size="icon"
-                aria-label="Delete client"
+                aria-label={t("delete_client_aria") || "Delete client"}
                 onClick={() => setDeleteOpen(true)}
               >
                 <Trash2 className="size-4 text-owed" />
@@ -192,43 +207,53 @@ function ClientProfile() {
 
         <Tabs defaultValue="overview" className="mt-8">
           <TabsList className="w-full justify-start overflow-x-auto">
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="measurements">Measurements</TabsTrigger>
-            <TabsTrigger value="orders">Orders</TabsTrigger>
-            <TabsTrigger value="payments">Payments</TabsTrigger>
-            <TabsTrigger value="messages">Messages</TabsTrigger>
+            <TabsTrigger value="overview">{t("tab_overview") || "Overview"}</TabsTrigger>
+            <TabsTrigger value="measurements">
+              {t("tab_measurements") || "Measurements"}
+            </TabsTrigger>
+            <TabsTrigger value="orders">{t("tab_orders") || "Orders"}</TabsTrigger>
+            <TabsTrigger value="payments">{t("tab_payments") || "Payments"}</TabsTrigger>
+            <TabsTrigger value="messages">{t("tab_messages") || "Messages"}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="overview" className="mt-6">
             <div className="grid gap-3 sm:grid-cols-2">
               <InfoRow
-                label="Gender"
+                label={t("gender_label") || "Gender"}
                 value={
                   client.gender
                     ? client.gender.charAt(0).toUpperCase() + client.gender.slice(1)
-                    : "Not set"
+                    : t("not_set") || "Not set"
                 }
               />
-              <InfoRow label="Address" value={client.address || "Not recorded"} />
               <InfoRow
-                label="Birthday"
+                label={t("address_label") || "Address"}
+                value={client.address || t("not_recorded") || "Not recorded"}
+              />
+              <InfoRow
+                label={t("birthday_label") || "Birthday"}
                 value={
-                  client.birthday ? new Date(client.birthday).toLocaleDateString() : "Not recorded"
+                  client.birthday
+                    ? new Date(client.birthday).toLocaleDateString()
+                    : t("not_recorded") || "Not recorded"
                 }
               />
-              <InfoRow label="Notes" value={client.notes || "None"} />
               <InfoRow
-                label="Guardian"
+                label={t("notes_label") || "Notes"}
+                value={client.notes || t("none_label") || "None"}
+              />
+              <InfoRow
+                label={t("guardian_label") || "Guardian"}
                 value={
                   client.guardian_name
                     ? `${client.guardian_name} · ${client.guardian_phone ?? ""}`
-                    : "Not applicable"
+                    : t("not_applicable") || "Not applicable"
                 }
               />
             </div>
             <p className="mt-6 text-sm text-muted-foreground">
-              Total spent, balance owed and last visit will show here once orders and payments are
-              tracked.
+              {t("overview_placeholder") ||
+                "Total spent, balance owed and last visit will show here once orders and payments are tracked."}
             </p>
           </TabsContent>
 
@@ -237,14 +262,20 @@ function ClientProfile() {
           </TabsContent>
           <TabsContent value="orders" className="mt-6">
             <EmptyState
-              title="No orders yet"
-              description="Orders you create for this client will appear here."
+              title={t("empty_orders_title") || "No orders yet"}
+              description={
+                t("empty_orders_description") ||
+                "Orders you create for this client will appear here."
+              }
             />
           </TabsContent>
           <TabsContent value="payments" className="mt-6">
             <EmptyState
-              title="No payments yet"
-              description="Payments recorded against this client's orders will appear here."
+              title={t("empty_payments_title") || "No payments yet"}
+              description={
+                t("empty_payments_description") ||
+                "Payments recorded against this client's orders will appear here."
+              }
             />
           </TabsContent>
           <TabsContent value="messages" className="mt-6 space-y-6">
@@ -268,13 +299,17 @@ function ClientProfile() {
       <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Delete {client.full_name}?</DialogTitle>
+            <DialogTitle>
+              {t("delete_confirm_title", { name: client.full_name }) ||
+                `Delete ${client.full_name}?`}
+            </DialogTitle>
             <DialogDescription>
-              This permanently removes their record. Type their name to confirm.
+              {t("delete_confirm_description") ||
+                "This permanently removes their record. Type their name to confirm."}
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-2">
-            <Label htmlFor="confirm-name">Full name</Label>
+            <Label htmlFor="confirm-name">{t("full_name_label") || "Full name"}</Label>
             <Input
               id="confirm-name"
               value={confirmText}
@@ -283,14 +318,16 @@ function ClientProfile() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDeleteOpen(false)}>
-              Cancel
+              {t("action_cancel") || "Cancel"}
             </Button>
             <Button
               variant="destructive"
               disabled={confirmText !== client.full_name || deleting}
               onClick={handleDelete}
             >
-              {deleting ? "Deleting..." : "Delete client"}
+              {deleting
+                ? t("deleting") || "Deleting..."
+                : t("delete_client_aria") || "Delete client"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -330,6 +367,7 @@ const styleBookRpc = supabase.rpc as unknown as (
 ) => Promise<{ error: { message: string } | null }>;
 
 function StyleBookCard({ clientId }: { clientId: string }) {
+  const t = useAppT("app_clients");
   const queryClient = useQueryClient();
   const [busy, setBusy] = useState(false);
 
@@ -355,9 +393,17 @@ function StyleBookCard({ clientId }: { clientId: string }) {
       });
       if (error) throw new Error(error.message);
       await queryClient.invalidateQueries({ queryKey: ["style-book-token", clientId] });
-      toast.success(revoked ? "Style Book link turned off" : "Style Book link turned on");
+      toast.success(
+        revoked
+          ? t("toast_style_book_off") || "Style Book link turned off"
+          : t("toast_style_book_on") || "Style Book link turned on",
+      );
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not update the link");
+      toast.error(
+        error instanceof Error
+          ? error.message
+          : t("toast_could_not_update_link") || "Could not update the link",
+      );
     } finally {
       setBusy(false);
     }
@@ -367,20 +413,21 @@ function StyleBookCard({ clientId }: { clientId: string }) {
     if (!data || data.style_book_revoked) return;
     const url = `${window.location.origin}/style/${data.style_book_token}`;
     await navigator.clipboard.writeText(url);
-    toast.success("Link copied");
+    toast.success(t("toast_link_copied") || "Link copied");
   }
 
   if (!data) return null;
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4">
-      <p className="font-medium">Style Book</p>
+      <p className="font-medium">{t("style_book_title") || "Style Book"}</p>
       <p className="mt-1 text-sm text-muted-foreground">
-        A private link showing every garment made for this client, with photos and dates. No prices.
+        {t("style_book_description") ||
+          "A private link showing every garment made for this client, with photos and dates. No prices."}
       </p>
       <div className="mt-3 flex flex-wrap gap-2">
         <Button size="sm" variant="outline" disabled={data.style_book_revoked} onClick={handleCopy}>
-          Copy link
+          {t("copy_link") || "Copy link"}
         </Button>
         <Button
           size="sm"
@@ -388,7 +435,7 @@ function StyleBookCard({ clientId }: { clientId: string }) {
           disabled={busy}
           onClick={() => handleToggle(!data.style_book_revoked)}
         >
-          {data.style_book_revoked ? "Turn on" : "Turn off"}
+          {data.style_book_revoked ? t("turn_on") || "Turn on" : t("turn_off") || "Turn off"}
         </Button>
       </div>
     </div>
@@ -396,6 +443,7 @@ function StyleBookCard({ clientId }: { clientId: string }) {
 }
 
 function ClientMomentsLog({ clientId }: { clientId: string }) {
+  const t = useAppT("app_clients");
   const { data: moments, isLoading } = useClientMoments(clientId);
 
   if (isLoading) return <Skeleton className="h-24 rounded-2xl" />;
@@ -403,8 +451,11 @@ function ClientMomentsLog({ clientId }: { clientId: string }) {
   if (!moments || moments.length === 0) {
     return (
       <EmptyState
-        title="No moments yet"
-        description="Birthdays, festive greetings and check-ins you send this client will be logged here."
+        title={t("empty_moments_title") || "No moments yet"}
+        description={
+          t("empty_moments_description") ||
+          "Birthdays, festive greetings and check-ins you send this client will be logged here."
+        }
       />
     );
   }

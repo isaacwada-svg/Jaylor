@@ -24,6 +24,7 @@ import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
 import { ORDER_STATUSES_DB, effectiveTier } from "@/lib/jaylor";
 import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
+import { useAppT } from "@/lib/i18n/i18n-context";
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
 import { CapacityLoadChart } from "@/components/jaylor/capacity-load-chart";
 import { LowStockCard } from "@/components/jaylor/low-stock-card";
@@ -50,17 +51,30 @@ function useFirstName() {
   return firstName;
 }
 
-function greeting() {
+function greetingKey(): "greeting_morning" | "greeting_afternoon" | "greeting_evening" {
   const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 17) return "Good afternoon";
-  return "Good evening";
+  if (hour < 12) return "greeting_morning";
+  if (hour < 17) return "greeting_afternoon";
+  return "greeting_evening";
 }
+
+const GREETING_FALLBACK = {
+  greeting_morning: "Good morning",
+  greeting_afternoon: "Good afternoon",
+  greeting_evening: "Good evening",
+} as const;
 
 function startOfToday() {
   const d = new Date();
   d.setHours(0, 0, 0, 0);
   return d;
+}
+
+function trialDaysLeft(trialEndsAt: string): number {
+  return Math.max(
+    0,
+    Math.ceil((new Date(trialEndsAt).getTime() - Date.now()) / (1000 * 60 * 60 * 24)),
+  );
 }
 
 export const Route = createFileRoute("/_authenticated/dashboard")({
@@ -98,6 +112,7 @@ function daysSince(iso: string): number {
 }
 
 function Home() {
+  const t = useAppT("app_dashboard");
   const statusLabel = useOrderStatusLabel();
   const navigate = useNavigate();
   const { currentStore, currentRole } = useStore();
@@ -315,17 +330,27 @@ function Home() {
     const uncollectedCount = stats?.uncollected.length ?? 0;
     if (uncollectedCount > 0) {
       return {
-        text: `${uncollectedCount} garment${uncollectedCount === 1 ? "" : "s"} ${uncollectedCount === 1 ? "is" : "are"} waiting for pickup. Send reminders now.`,
-        actionLabel: "See uncollected",
+        text:
+          t("advice_uncollected", { count: uncollectedCount }) ||
+          `${uncollectedCount} garment(s) waiting for pickup. Send reminders now.`,
+        actionLabel: t("action_see_uncollected") || "See uncollected",
+        actionKind: "see_uncollected" as const,
       };
     }
     if (collection && collection.score < 70) {
       return {
-        text: "Some balances are still unpaid. Follow up with clients who owe you.",
-        actionLabel: "View orders",
+        text:
+          t("advice_unpaid") ||
+          "Some balances are still unpaid. Follow up with clients who owe you.",
+        actionLabel: t("action_view_orders") || "View orders",
+        actionKind: "view_orders" as const,
       };
     }
-    return { text: "You're collecting well. Keep it up.", actionLabel: undefined };
+    return {
+      text: t("advice_good") || "You're collecting well. Keep it up.",
+      actionLabel: undefined,
+      actionKind: undefined,
+    };
   })();
 
   const relatedClientIds = useMemo(
@@ -380,11 +405,11 @@ function Home() {
       <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
         <p className="text-xs uppercase tracking-[0.18em] text-gold">{location}</p>
         <h1 className="mt-2 text-3xl leading-tight lg:text-4xl">
-          {greeting()}
+          {t(greetingKey()) || GREETING_FALLBACK[greetingKey()]}
           {firstName ? `, ${firstName}` : ""}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
-          Every order tracked. Every naira collected.
+          {t("tagline") || "Every order tracked. Every naira collected."}
         </p>
 
         <StitchDivider className="my-6" />
@@ -401,19 +426,13 @@ function Home() {
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-gold/40 bg-accent/40 px-4 py-3">
             <p className="text-sm">
               <span className="font-medium text-gold">
-                {Math.max(
-                  0,
-                  Math.ceil(
-                    (new Date(currentStore.trial_ends_at).getTime() - Date.now()) /
-                      (1000 * 60 * 60 * 24),
-                  ),
-                )}{" "}
-                days left
+                {t("trial_days_left", { count: trialDaysLeft(currentStore.trial_ends_at) }) ||
+                  `${trialDaysLeft(currentStore.trial_ends_at)} days left`}
               </span>{" "}
-              on your Growth trial.
+              {t("trial_banner_suffix") || "on your Growth trial."}
             </p>
             <Button size="sm" variant="outline" asChild>
-              <Link to="/billing">Upgrade now</Link>
+              <Link to="/billing">{t("upgrade_now") || "Upgrade now"}</Link>
             </Button>
           </div>
         )}
@@ -421,11 +440,14 @@ function Home() {
         {messagesRunningLow && (
           <div className="mb-6 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-owed/40 bg-owed/10 px-4 py-3">
             <p className="text-sm">
-              You&apos;ve used {messagesFeature?.used} of {messagesLimit} automatic WhatsApp
-              messages this month. Tap-to-send stays free and unlimited either way.
+              {t("messages_running_low", {
+                used: messagesFeature?.used ?? 0,
+                limit: messagesLimit ?? 0,
+              }) ||
+                `You've used ${messagesFeature?.used} of ${messagesLimit} automatic WhatsApp messages this month. Tap-to-send stays free and unlimited either way.`}
             </p>
             <Button size="sm" variant="outline" asChild>
-              <Link to="/billing">Top up messages</Link>
+              <Link to="/billing">{t("top_up_messages") || "Top up messages"}</Link>
             </Button>
           </div>
         )}
@@ -445,7 +467,7 @@ function Home() {
                 <Card className="rounded-2xl border-gold/30">
                   <CardContent className="p-5">
                     <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">
-                      Jaylor has helped you collect
+                      {t("collected_label") || "Jaylor has helped you collect"}
                     </p>
                     <MoneyText
                       amount={collection.totalCollected}
@@ -454,13 +476,13 @@ function Home() {
                     />
                     {collection.recoveredAfterReminder > 0 && (
                       <p className="mt-1 text-xs text-muted-foreground">
-                        Including{" "}
+                        {t("recovered_prefix") || "Including"}{" "}
                         <MoneyText
                           amount={collection.recoveredAfterReminder}
                           variant="paid"
                           className="inline text-xs"
                         />{" "}
-                        recovered after a reminder
+                        {t("recovered_suffix") || "recovered after a reminder"}
                       </p>
                     )}
                   </CardContent>
@@ -470,7 +492,7 @@ function Home() {
                   advice={collectionAdvice.text}
                   actionLabel={collectionAdvice.actionLabel}
                   onAction={() => {
-                    if (collectionAdvice.actionLabel === "See uncollected") {
+                    if (collectionAdvice.actionKind === "see_uncollected") {
                       document
                         .getElementById("uncollected")
                         ?.scrollIntoView({ behavior: "smooth" });
@@ -500,24 +522,33 @@ function Home() {
             ) : (
               <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
                 <Stat
-                  label="Money owed"
+                  label={t("stat_money_owed") || "Money owed"}
                   value={<MoneyText amount={stats?.moneyOwed ?? 0} variant="owed" />}
-                  hint={`${stats?.owedOrdersCount ?? 0} orders`}
+                  hint={
+                    t("stat_money_owed_hint", { count: stats?.owedOrdersCount ?? 0 }) ||
+                    `${stats?.owedOrdersCount ?? 0} orders`
+                  }
                 />
                 <Stat
-                  label="Collected this month"
+                  label={t("stat_collected_month") || "Collected this month"}
                   value={<MoneyText amount={stats?.collectedThisMonth ?? 0} variant="paid" />}
-                  hint={`${stats?.collectedCount ?? 0} payments`}
+                  hint={
+                    t("stat_collected_hint", { count: stats?.collectedCount ?? 0 }) ||
+                    `${stats?.collectedCount ?? 0} payments`
+                  }
                 />
                 <Stat
-                  label="Due this week"
+                  label={t("stat_due_week") || "Due this week"}
                   value={<span className="figures text-2xl">{stats?.dueThisWeekCount ?? 0}</span>}
-                  hint={`${stats?.overdueCount ?? 0} overdue`}
+                  hint={
+                    t("stat_due_week_hint", { count: stats?.overdueCount ?? 0 }) ||
+                    `${stats?.overdueCount ?? 0} overdue`
+                  }
                 />
                 <Stat
-                  label="In the workroom"
+                  label={t("stat_in_workroom") || "In the workroom"}
                   value={<span className="figures text-2xl">{stats?.activeCount ?? 0}</span>}
-                  hint="Active jobs"
+                  hint={t("stat_active_hint") || "Active jobs"}
                 />
               </div>
             )}
@@ -525,12 +556,20 @@ function Home() {
             <div className="mt-4 grid gap-3 lg:grid-cols-2">
               <Card className="rounded-2xl">
                 <CardContent className="p-5">
-                  <p className="font-medium">Revenue, last {trendDays} days</p>
+                  <p className="font-medium">
+                    {t("revenue_chart_title", { count: trendDays }) ||
+                      `Revenue, last ${trendDays} days`}
+                  </p>
                   {!revenueTrend ? (
                     <Skeleton className="mt-3 h-40 rounded-xl" />
                   ) : (
                     <ChartContainer
-                      config={{ amount: { label: "Revenue", color: "var(--color-viz-1)" } }}
+                      config={{
+                        amount: {
+                          label: t("revenue_label") || "Revenue",
+                          color: "var(--color-viz-1)",
+                        },
+                      }}
                       className="mt-3 h-40 w-full"
                     >
                       <AreaChart data={revenueTrend}>
@@ -569,14 +608,21 @@ function Home() {
 
               <Card className="rounded-2xl">
                 <CardContent className="p-5">
-                  <p className="font-medium">Orders in the workroom</p>
+                  <p className="font-medium">
+                    {t("workroom_chart_title") || "Orders in the workroom"}
+                  </p>
                   {statusChartData.length === 0 ? (
                     <p className="mt-3 text-sm text-muted-foreground">
-                      Nothing in progress right now.
+                      {t("nothing_in_progress") || "Nothing in progress right now."}
                     </p>
                   ) : (
                     <ChartContainer
-                      config={{ count: { label: "Orders", color: "var(--color-viz-2)" } }}
+                      config={{
+                        count: {
+                          label: t("orders_label") || "Orders",
+                          color: "var(--color-viz-2)",
+                        },
+                      }}
                       className="mt-3 h-40 w-full"
                     >
                       <BarChart data={statusChartData} layout="vertical">
@@ -605,16 +651,19 @@ function Home() {
 
             <section className="mt-8">
               <div className="flex items-end justify-between">
-                <h2 className="text-xl">Due soon</h2>
+                <h2 className="text-xl">{t("due_soon_title") || "Due soon"}</h2>
                 <Button variant="ghost" size="sm" asChild>
-                  <Link to="/orders">View all</Link>
+                  <Link to="/orders">{t("view_all") || "View all"}</Link>
                 </Button>
               </div>
               <div className="mt-3 space-y-3">
                 {!stats || stats.dueSoon.length === 0 ? (
                   <EmptyState
-                    title="Nothing due yet"
-                    description="Orders with a delivery date will show up here first."
+                    title={t("empty_due_title") || "Nothing due yet"}
+                    description={
+                      t("empty_due_description") ||
+                      "Orders with a delivery date will show up here first."
+                    }
                   />
                 ) : (
                   stats.dueSoon.map((o) => {
@@ -656,8 +705,10 @@ function Home() {
 
             {stats && stats.uncollected.length > 0 && (
               <section id="uncollected" className="mt-10 scroll-mt-20">
-                <h2 className="text-xl">Uncollected</h2>
-                <p className="mt-1 text-sm text-muted-foreground">Ready and waiting for pickup.</p>
+                <h2 className="text-xl">{t("uncollected_title") || "Uncollected"}</h2>
+                <p className="mt-1 text-sm text-muted-foreground">
+                  {t("uncollected_subtitle") || "Ready and waiting for pickup."}
+                </p>
                 <div className="mt-3 space-y-3">
                   {stats.uncollected.map((o) => {
                     const client = clientById(o.client_id);
@@ -676,8 +727,9 @@ function Home() {
                           >
                             <p className="truncate font-medium">{clientName(o.client_id)}</p>
                             <p className="truncate text-sm text-muted-foreground">
-                              {o.garment_type} · waiting {daysSince(o.ready_at as string)}{" "}
-                              {daysSince(o.ready_at as string) === 1 ? "day" : "days"}
+                              {o.garment_type} ·{" "}
+                              {t("waiting_days", { count: daysSince(o.ready_at as string) }) ||
+                                `waiting ${daysSince(o.ready_at as string)} day(s)`}
                             </p>
                           </Link>
                           {client && currentStore && (
@@ -699,7 +751,7 @@ function Home() {
                                 balance,
                                 trackingUrl,
                               )}
-                              label="Remind"
+                              label={t("remind_label") || "Remind"}
                             />
                           )}
                         </CardContent>
@@ -711,34 +763,45 @@ function Home() {
             )}
 
             <section className="mt-10">
-              <h2 className="text-xl">Grow with Business</h2>
+              <h2 className="text-xl">{t("grow_title") || "Grow with Business"}</h2>
               <p className="mt-1 text-sm text-muted-foreground">
-                Locked features stay visible, so you always know what is next.
+                {t("grow_subtitle") ||
+                  "Locked features stay visible, so you always know what is next."}
               </p>
               <div className="mt-4 grid gap-3 sm:grid-cols-2">
                 <LockedFeature
                   tier="Business"
-                  title="Staff job board"
-                  value="Assign jobs to tailors and see each person's workload at a glance."
+                  title={t("staff_board_title") || "Staff job board"}
+                  value={
+                    t("staff_board_value") ||
+                    "Assign jobs to tailors and see each person's workload at a glance."
+                  }
                 >
                   <Card className="rounded-2xl">
                     <CardContent className="p-5">
-                      <p className="font-medium">Staff job board</p>
+                      <p className="font-medium">{t("staff_board_title") || "Staff job board"}</p>
                       <p className="mt-1 text-sm text-muted-foreground">
-                        See jobs by tailor at a glance
+                        {t("staff_board_hint") || "See jobs by tailor at a glance"}
                       </p>
                     </CardContent>
                   </Card>
                 </LockedFeature>
                 <LockedFeature
                   tier="Business"
-                  title="Expenses and net profit"
-                  value="Track fabric, transport and staff costs to see what you really keep."
+                  title={t("expenses_title") || "Expenses and net profit"}
+                  value={
+                    t("expenses_value") ||
+                    "Track fabric, transport and staff costs to see what you really keep."
+                  }
                 >
                   <Card className="rounded-2xl">
                     <CardContent className="p-5">
-                      <p className="font-medium">Expenses and net profit</p>
-                      <p className="mt-1 text-sm text-muted-foreground">See what you really keep</p>
+                      <p className="font-medium">
+                        {t("expenses_title") || "Expenses and net profit"}
+                      </p>
+                      <p className="mt-1 text-sm text-muted-foreground">
+                        {t("expenses_hint") || "See what you really keep"}
+                      </p>
                     </CardContent>
                   </Card>
                 </LockedFeature>
@@ -747,7 +810,7 @@ function Home() {
           </>
         ) : (
           <section>
-            <h2 className="text-xl">My jobs</h2>
+            <h2 className="text-xl">{t("my_jobs_title") || "My jobs"}</h2>
             {myJobsLoading ? (
               <div className="mt-3 space-y-3">
                 {Array.from({ length: 3 }).map((_, i) => (
@@ -757,8 +820,11 @@ function Home() {
             ) : !myJobs || myJobs.length === 0 ? (
               <EmptyState
                 className="mt-6"
-                title="No jobs assigned yet"
-                description="Orders assigned to you will show up here, soonest due first."
+                title={t("empty_jobs_title") || "No jobs assigned yet"}
+                description={
+                  t("empty_jobs_description") ||
+                  "Orders assigned to you will show up here, soonest due first."
+                }
               />
             ) : (
               <div className="mt-3 space-y-3">

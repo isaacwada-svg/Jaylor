@@ -46,6 +46,7 @@ import {
   type InventoryUnit,
 } from "@/lib/inventory";
 import { getErrorMessage } from "@/lib/utils";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/inventory")({
   staticData: { sitemap: false },
@@ -70,6 +71,7 @@ type InventoryItem = {
 };
 
 function InventoryPage() {
+  const t = useAppT("app_inventory");
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
   const canManage = currentRole === "owner" || currentRole === "manager";
@@ -137,13 +139,20 @@ function InventoryPage() {
       <AppShell>
         <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
           <EmptyState
-            title="Upgrade to track inventory"
-            description="Track stock of linings, zips, thread and other materials, and get warned before you run out. Available on the Business plan and above."
+            title={t("upgrade_title") || "Upgrade to track inventory"}
+            description={
+              t("upgrade_description") ||
+              "Track stock of linings, zips, thread and other materials, and get warned before you run out. Available on the Business plan and above."
+            }
             action={
               <div className="flex flex-col items-center gap-2">
                 <TierBadge tier={planCodeToTier(feature?.required_plan ?? "business")} />
-                <Button onClick={() => toast("Billing isn't set up yet — coming soon")}>
-                  Upgrade to Business
+                <Button
+                  onClick={() =>
+                    toast(t("billing_coming_soon") || "Billing isn't set up yet — coming soon")
+                  }
+                >
+                  {t("upgrade_to_business") || "Upgrade to Business"}
                 </Button>
               </div>
             }
@@ -158,25 +167,27 @@ function InventoryPage() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <h1 className="text-3xl">Inventory</h1>
+            <h1 className="text-3xl">{t("page_title") || "Inventory"}</h1>
             <p className="mt-1 text-sm text-muted-foreground">
-              Stock of linings, zips, thread and other materials.
+              {t("subtitle") || "Track stock of linings, zips, thread and other materials."}
             </p>
           </div>
           {canManage && (
             <Button className="shrink-0" onClick={() => setNewItemOpen(true)} disabled={!online}>
               <Plus className="size-4" />
-              New item
+              {t("new_item") || "New item"}
             </Button>
           )}
         </div>
         <StitchDivider className="my-6" />
 
-        {!online && <OfflineNotice label="Inventory needs a connection." />}
+        {!online && (
+          <OfflineNotice label={t("offline_notice") || "Inventory needs a connection."} />
+        )}
 
         <div className="flex flex-wrap gap-2">
           <Input
-            placeholder="Search items"
+            placeholder={t("search_items_placeholder") || "Search items"}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
@@ -186,7 +197,7 @@ function InventoryPage() {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">All categories</SelectItem>
+              <SelectItem value="all">{t("all_categories") || "All categories"}</SelectItem>
               {INVENTORY_CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
                   {CATEGORY_LABELS[c]}
@@ -204,8 +215,11 @@ function InventoryPage() {
             </div>
           ) : filtered.length === 0 ? (
             <EmptyState
-              title="No items yet"
-              description="Add your linings, zips and other stock to track what you have."
+              title={t("empty_items_title") || "No items yet"}
+              description={
+                t("empty_items_description") ||
+                "Add your linings, zips and other stock to track what you have."
+              }
             />
           ) : (
             <div className="space-y-2">
@@ -215,9 +229,13 @@ function InventoryPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="font-medium">{item.name}</p>
-                        {!item.is_active && <Badge variant="secondary">Inactive</Badge>}
+                        {!item.is_active && (
+                          <Badge variant="secondary">{t("inactive_badge") || "Inactive"}</Badge>
+                        )}
                         {isLowStock(item) && (
-                          <Badge className="bg-owed/15 text-owed">Low stock</Badge>
+                          <Badge className="bg-owed/15 text-owed">
+                            {t("low_stock_badge") || "Low stock"}
+                          </Badge>
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
@@ -243,7 +261,7 @@ function InventoryPage() {
                         disabled={!online}
                         onClick={() => setStockInItem(item)}
                       >
-                        Stock in
+                        {t("stock_in_button") || "Stock in"}
                       </Button>
                       <Button
                         size="sm"
@@ -251,7 +269,7 @@ function InventoryPage() {
                         disabled={!online}
                         onClick={() => setAdjustItem(item)}
                       >
-                        Adjust
+                        {t("adjust_button") || "Adjust"}
                       </Button>
                       <Button
                         size="sm"
@@ -260,7 +278,7 @@ function InventoryPage() {
                         onClick={() => setHistoryItem(item)}
                       >
                         <History className="size-4" />
-                        History
+                        {t("history_button") || "History"}
                       </Button>
                     </div>
                   )}
@@ -305,6 +323,7 @@ function NewItemDialog({
   storeId: string;
   onSaved: () => void;
 }) {
+  const t = useAppT("app_inventory");
   const [name, setName] = useState("");
   const [category, setCategory] = useState<InventoryCategory>("lining");
   const [unit, setUnit] = useState<InventoryUnit>("yard");
@@ -336,12 +355,14 @@ function NewItemDialog({
         p_cost_per_unit: costPerUnit ? Number(costPerUnit) : undefined,
       });
       if (error) throw error;
-      toast.success("Item added");
+      toast.success(t("toast_item_added") || "Item added");
       onSaved();
       reset();
       onOpenChange(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not add this item"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_add_item") || "Could not add this item"),
+      );
     } finally {
       setSaving(false);
     }
@@ -351,20 +372,20 @@ function NewItemDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>New inventory item</DialogTitle>
+          <DialogTitle>{t("new_item_title") || "New inventory item"}</DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label>Name</Label>
+            <Label>{t("name_label") || "Name"}</Label>
             <Input
               value={name}
               onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. White lining"
+              placeholder={t("name_placeholder") || "e.g. White lining"}
             />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Category</Label>
+              <Label>{t("category_label") || "Category"}</Label>
               <Select value={category} onValueChange={(v) => setCategory(v as InventoryCategory)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -379,7 +400,7 @@ function NewItemDialog({
               </Select>
             </div>
             <div className="space-y-2">
-              <Label>Unit</Label>
+              <Label>{t("unit_label") || "Unit"}</Label>
               <Select value={unit} onValueChange={(v) => setUnit(v as InventoryUnit)}>
                 <SelectTrigger>
                   <SelectValue />
@@ -396,7 +417,7 @@ function NewItemDialog({
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div className="space-y-2">
-              <Label>Starting quantity</Label>
+              <Label>{t("starting_quantity_label") || "Starting quantity"}</Label>
               <Input
                 inputMode="decimal"
                 value={initialQuantity}
@@ -404,7 +425,7 @@ function NewItemDialog({
               />
             </div>
             <div className="space-y-2">
-              <Label>Reorder level</Label>
+              <Label>{t("reorder_level_label") || "Reorder level"}</Label>
               <Input
                 inputMode="decimal"
                 value={reorderLevel}
@@ -413,13 +434,13 @@ function NewItemDialog({
             </div>
           </div>
           <div className="space-y-2">
-            <Label>Cost per unit (optional)</Label>
+            <Label>{t("cost_per_unit_label") || "Cost per unit (optional)"}</Label>
             <MoneyInput value={costPerUnit} onChange={setCostPerUnit} />
           </div>
         </div>
         <DialogFooter>
           <Button disabled={!name.trim() || saving} onClick={() => void save()}>
-            {saving ? "Adding..." : "Add item"}
+            {saving ? t("adding") || "Adding..." : t("add_item_button") || "Add item"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -436,6 +457,7 @@ function StockInDialog({
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
+  const t = useAppT("app_inventory");
   const [quantity, setQuantity] = useState("");
   const [unitCost, setUnitCost] = useState("");
   const [note, setNote] = useState("");
@@ -452,14 +474,16 @@ function StockInDialog({
         p_note: note.trim() || undefined,
       });
       if (error) throw error;
-      toast.success("Stock added");
+      toast.success(t("toast_stock_added") || "Stock added");
       onSaved();
       setQuantity("");
       setUnitCost("");
       setNote("");
       onOpenChange(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not record stock"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_record_stock") || "Could not record stock"),
+      );
     } finally {
       setSaving(false);
     }
@@ -469,11 +493,14 @@ function StockInDialog({
     <Dialog open={!!item} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Stock in{item ? `: ${item.name}` : ""}</DialogTitle>
+          <DialogTitle>
+            {t("stock_in_label") || "Stock in"}
+            {item ? `: ${item.name}` : ""}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <div className="space-y-2">
-            <Label>Quantity received</Label>
+            <Label>{t("quantity_received_label") || "Quantity received"}</Label>
             <Input
               inputMode="decimal"
               value={quantity}
@@ -481,17 +508,20 @@ function StockInDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Cost per {item?.unit ?? "unit"} (optional)</Label>
+            <Label>
+              {t("cost_per_unit_received_label", { unit: item?.unit ?? "unit" }) ||
+                `Cost per ${item?.unit ?? "unit"} (optional)`}
+            </Label>
             <MoneyInput value={unitCost} onChange={setUnitCost} />
           </div>
           <div className="space-y-2">
-            <Label>Note (optional)</Label>
+            <Label>{t("note_optional_label") || "Note (optional)"}</Label>
             <Input value={note} onChange={(e) => setNote(e.target.value)} />
           </div>
         </div>
         <DialogFooter>
           <Button disabled={!Number(quantity) || saving} onClick={() => void save()}>
-            {saving ? "Saving..." : "Add stock"}
+            {saving ? t("saving") || "Saving..." : t("add_stock_button") || "Add stock"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -508,6 +538,7 @@ function AdjustDialog({
   onOpenChange: (open: boolean) => void;
   onSaved: () => void;
 }) {
+  const t = useAppT("app_inventory");
   const [newQuantity, setNewQuantity] = useState("");
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
@@ -522,13 +553,15 @@ function AdjustDialog({
         p_reason: reason.trim(),
       });
       if (error) throw error;
-      toast.success("Stock adjusted");
+      toast.success(t("toast_stock_adjusted") || "Stock adjusted");
       onSaved();
       setNewQuantity("");
       setReason("");
       onOpenChange(false);
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not adjust stock"));
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_adjust_stock") || "Could not adjust stock"),
+      );
     } finally {
       setSaving(false);
     }
@@ -538,14 +571,18 @@ function AdjustDialog({
     <Dialog open={!!item} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Adjust stock{item ? `: ${item.name}` : ""}</DialogTitle>
+          <DialogTitle>
+            {t("adjust_stock_label") || "Adjust stock"}
+            {item ? `: ${item.name}` : ""}
+          </DialogTitle>
         </DialogHeader>
         <div className="space-y-3">
           <p className="text-sm text-muted-foreground">
-            Current: {item ? formatQuantity(item.quantity, item.unit) : ""}
+            {t("current_prefix") || "Current:"}{" "}
+            {item ? formatQuantity(item.quantity, item.unit) : ""}
           </p>
           <div className="space-y-2">
-            <Label>Correct quantity to</Label>
+            <Label>{t("correct_quantity_label") || "Correct quantity to"}</Label>
             <Input
               inputMode="decimal"
               value={newQuantity}
@@ -553,7 +590,7 @@ function AdjustDialog({
             />
           </div>
           <div className="space-y-2">
-            <Label>Reason</Label>
+            <Label>{t("reason_label") || "Reason"}</Label>
             <Textarea value={reason} onChange={(e) => setReason(e.target.value)} rows={2} />
           </div>
         </div>
@@ -562,7 +599,7 @@ function AdjustDialog({
             disabled={newQuantity === "" || !reason.trim() || saving}
             onClick={() => void save()}
           >
-            {saving ? "Saving..." : "Save correction"}
+            {saving ? t("saving") || "Saving..." : t("save_correction_button") || "Save correction"}
           </Button>
         </DialogFooter>
       </DialogContent>
@@ -577,6 +614,7 @@ function HistoryDialog({
   item: InventoryItem | null;
   onOpenChange: (open: boolean) => void;
 }) {
+  const t = useAppT("app_inventory");
   const { data: movements } = useQuery({
     queryKey: ["inventory-movements", item?.id],
     enabled: !!item,
@@ -596,20 +634,25 @@ function HistoryDialog({
     <Dialog open={!!item} onOpenChange={onOpenChange}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>History{item ? `: ${item.name}` : ""}</DialogTitle>
+          <DialogTitle>
+            {t("history_button") || "History"}
+            {item ? `: ${item.name}` : ""}
+          </DialogTitle>
         </DialogHeader>
         {!movements || movements.length === 0 ? (
-          <p className="text-sm text-muted-foreground">No movements yet.</p>
+          <p className="text-sm text-muted-foreground">
+            {t("no_movements") || "No movements yet."}
+          </p>
         ) : (
           <div className="max-h-96 space-y-2 overflow-y-auto">
             {movements.map((m) => (
               <div key={m.id} className="flex items-center justify-between text-sm">
                 <div>
                   <p>
-                    {m.type === "in" && "Stock in"}
-                    {m.type === "used" && "Used"}
-                    {m.type === "adjust" && "Adjusted"}
-                    {m.type === "return" && "Returned"}
+                    {m.type === "in" && (t("movement_stock_in") || "Stock in")}
+                    {m.type === "used" && (t("movement_used") || "Used")}
+                    {m.type === "adjust" && (t("movement_adjusted") || "Adjusted")}
+                    {m.type === "return" && (t("movement_returned") || "Returned")}
                     {m.note ? ` — ${m.note}` : ""}
                   </p>
                   <p className="text-xs text-muted-foreground">

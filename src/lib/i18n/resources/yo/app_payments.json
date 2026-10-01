@@ -1,0 +1,23 @@
+{
+  "page_title": "Ìsanwó",
+  "more_link": "Síwájú sí i",
+  "unmatched_transfers": "Àwọn ìrànwọ́ tí kò bá a mu",
+  "export_csv": "Gbé CSV jáde",
+  "search_client_placeholder": "Wá oníbàárà",
+  "method_all": "Gbogbo ọ̀nà",
+  "method_cash": "Owó lọ́wọ́",
+  "method_transfer": "Ìrànwọ́",
+  "method_pos": "POS",
+  "method_paystack": "Paystack",
+  "summary_count": "Ìsanwó {{count}}",
+  "empty_title": "Kò sí ìsanwó síbẹ̀",
+  "empty_description": "Àwọn ìsanwó tí a kọ sílẹ̀ yóò farahàn níhìn-ín.",
+  "csv_header_date": "Ọjọ́",
+  "csv_header_client": "Oníbàárà",
+  "csv_header_order": "Oda",
+  "csv_header_garment": "Aṣọ",
+  "csv_header_method": "Ọ̀nà",
+  "csv_header_amount": "Iye owó",
+  "csv_header_reference": "Ìtọ́kasí",
+  "_meta_status": "machine-drafted-needs-review"
+}

@@ -1,0 +1,23 @@
+{
+  "page_title": "Ịkwụ ụgwọ",
+  "more_link": "Ọzọ",
+  "unmatched_transfers": "Mbufe na-adabaghị",
+  "export_csv": "Bupụta CSV",
+  "search_client_placeholder": "Chọọ onye ahịa",
+  "method_all": "Ụzọ niile",
+  "method_cash": "Ego aka",
+  "method_transfer": "Mbufe",
+  "method_pos": "POS",
+  "method_paystack": "Paystack",
+  "summary_count": "Ịkwụ ụgwọ {{count}}",
+  "empty_title": "Enwebeghị ịkwụ ụgwọ ugbu a",
+  "empty_description": "Ịkwụ ụgwọ edekọrọ ga-apụta n'ebe a.",
+  "csv_header_date": "Ụbọchị",
+  "csv_header_client": "Onye ahịa",
+  "csv_header_order": "Ọdọ",
+  "csv_header_garment": "Uwe",
+  "csv_header_method": "Ụzọ",
+  "csv_header_amount": "Ego",
+  "csv_header_reference": "Ntụaka",
+  "_meta_status": "machine-drafted-needs-review"
+}

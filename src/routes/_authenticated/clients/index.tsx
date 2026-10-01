@@ -15,6 +15,7 @@ import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
 import { formatPhoneNG } from "@/lib/phone";
 import type { Tables } from "@/integrations/supabase/types";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 type ClientRow = Tables<"clients">;
 
@@ -59,6 +60,7 @@ function initials(name: string) {
 }
 
 function Clients() {
+  const t = useAppT("app_clients");
   const { currentStore } = useStore();
   const storeId = currentStore?.id;
   const queryClient = useQueryClient();
@@ -124,10 +126,10 @@ function Clients() {
     <AppShell>
       <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl">Clients</h1>
+          <h1 className="text-3xl">{t("page_title") || "Clients"}</h1>
           <Button onClick={() => setFormOpen(true)}>
             <UserPlus className="size-4" />
-            New client
+            {t("new_client") || "New client"}
           </Button>
         </div>
 
@@ -143,14 +145,14 @@ function Clients() {
             <Input
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search name or phone"
+              placeholder={t("search_placeholder") || "Search name or phone"}
               className="pl-9"
             />
           </div>
           <Input
             value={tagFilter}
             onChange={(e) => setTagFilter(e.target.value)}
-            placeholder="Filter by tag"
+            placeholder={t("filter_tag_placeholder") || "Filter by tag"}
             className="w-36 sm:w-48"
           />
         </div>
@@ -164,14 +166,21 @@ function Clients() {
         ) : clients.length === 0 ? (
           <EmptyState
             className="mt-10"
-            title={hasFilter ? "No clients match" : "Your client book is empty"}
+            title={
+              hasFilter
+                ? t("empty_no_match_title") || "No clients match"
+                : t("empty_book_empty_title") || "Your client book is empty"
+            }
             description={
               hasFilter
-                ? "Try a different name, phone number or tag."
-                : "Add a client once, and their measurements stay ready for every future order."
+                ? t("empty_no_match_description") || "Try a different name, phone number or tag."
+                : t("empty_book_empty_description") ||
+                  "Add a client once, and their measurements stay ready for every future order."
             }
             action={
-              !hasFilter ? <Button onClick={() => setFormOpen(true)}>New client</Button> : undefined
+              !hasFilter ? (
+                <Button onClick={() => setFormOpen(true)}>{t("new_client") || "New client"}</Button>
+              ) : undefined
             }
           />
         ) : (
@@ -205,7 +214,9 @@ function Clients() {
             ))}
             <div ref={sentinelRef} className="h-1" />
             {isFetchingNextPage && (
-              <p className="p-4 text-center text-sm text-muted-foreground">Loading more...</p>
+              <p className="p-4 text-center text-sm text-muted-foreground">
+                {t("loading_more") || "Loading more..."}
+              </p>
             )}
           </div>
         )}

@@ -1,0 +1,23 @@
+{
+  "page_title": "Biyan kuɗi",
+  "more_link": "Ƙari",
+  "unmatched_transfers": "Canjin kuɗi marasa dacewa",
+  "export_csv": "Fitar da CSV",
+  "search_client_placeholder": "Nema abokin ciniki",
+  "method_all": "Dukkan hanyoyi",
+  "method_cash": "Kuɗi a hannu",
+  "method_transfer": "Canja kuɗi",
+  "method_pos": "POS",
+  "method_paystack": "Paystack",
+  "summary_count": "Biya {{count}}",
+  "empty_title": "Babu biyan kuɗi tukuna",
+  "empty_description": "Biyan kuɗin da aka rubuta za su bayyana nan.",
+  "csv_header_date": "Kwanan wata",
+  "csv_header_client": "Abokin ciniki",
+  "csv_header_order": "Oda",
+  "csv_header_garment": "Tufa",
+  "csv_header_method": "Hanya",
+  "csv_header_amount": "Adadin kuɗi",
+  "csv_header_reference": "Ƙididdiga",
+  "_meta_status": "machine-drafted-needs-review"
+}

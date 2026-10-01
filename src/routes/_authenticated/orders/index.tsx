@@ -14,6 +14,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useStore } from "@/lib/store-context";
 import { ORDER_STATUSES_DB } from "@/lib/jaylor";
 import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/orders/")({
   staticData: { sitemap: false },
@@ -37,12 +38,12 @@ export const Route = createFileRoute("/_authenticated/orders/")({
 
 type TabKey = "active" | "due_this_week" | "overdue" | "ready" | "collected";
 
-const TABS: { key: TabKey; label: string }[] = [
-  { key: "active", label: "Active" },
-  { key: "due_this_week", label: "Due this week" },
-  { key: "overdue", label: "Overdue" },
-  { key: "ready", label: "Ready" },
-  { key: "collected", label: "Collected" },
+const TAB_KEYS: { key: TabKey; i18nKey: string; fallback: string }[] = [
+  { key: "active", i18nKey: "tab_active", fallback: "Active" },
+  { key: "due_this_week", i18nKey: "tab_due_week", fallback: "Due this week" },
+  { key: "overdue", i18nKey: "tab_overdue", fallback: "Overdue" },
+  { key: "ready", i18nKey: "tab_ready", fallback: "Ready" },
+  { key: "collected", i18nKey: "tab_collected", fallback: "Collected" },
 ];
 
 function startOfToday() {
@@ -52,6 +53,7 @@ function startOfToday() {
 }
 
 function Orders() {
+  const t = useAppT("app_orders");
   const statusLabel = useOrderStatusLabel();
   const { currentStore, currentRole } = useStore();
   const storeId = currentStore?.id;
@@ -126,20 +128,20 @@ function Orders() {
     <AppShell>
       <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-center justify-between gap-3">
-          <h1 className="text-3xl">Orders</h1>
+          <h1 className="text-3xl">{t("orders_title") || "Orders"}</h1>
           {canCreate && (
             <Button onClick={() => setFormOpen(true)}>
               <Plus className="size-4" />
-              New order
+              {t("new_order") || "New order"}
             </Button>
           )}
         </div>
 
         <Tabs value={tab} onValueChange={(v) => setTab(v as TabKey)} className="mt-4">
           <TabsList className="w-full justify-start overflow-x-auto">
-            {TABS.map((t) => (
-              <TabsTrigger key={t.key} value={t.key}>
-                {t.label}
+            {TAB_KEYS.map((tabDef) => (
+              <TabsTrigger key={tabDef.key} value={tabDef.key}>
+                {t(tabDef.i18nKey) || tabDef.fallback}
               </TabsTrigger>
             ))}
           </TabsList>
@@ -154,10 +156,15 @@ function Orders() {
         ) : filtered.length === 0 ? (
           <EmptyState
             className="mt-10"
-            title="No orders here"
-            description="Create your first order and Jaylor will track it from cutting to collection."
+            title={t("empty_orders_title") || "No orders here"}
+            description={
+              t("empty_orders_description") ||
+              "Create your first order and Jaylor will track it from cutting to collection."
+            }
             action={
-              canCreate ? <Button onClick={() => setFormOpen(true)}>New order</Button> : undefined
+              canCreate ? (
+                <Button onClick={() => setFormOpen(true)}>{t("new_order") || "New order"}</Button>
+              ) : undefined
             }
           />
         ) : (
@@ -185,14 +192,14 @@ function Orders() {
                     <div className="flex shrink-0 items-center gap-2">
                       {order.priority === "rush" && (
                         <Badge variant="outline" className="border-owed text-owed">
-                          Rush
+                          {t("rush_badge") || "Rush"}
                         </Badge>
                       )}
                       <Badge
                         variant="outline"
                         className={overdue ? "border-owed text-owed" : "border-gold text-gold"}
                       >
-                        {due ? due.toLocaleDateString() : "No date"}
+                        {due ? due.toLocaleDateString() : t("no_date") || "No date"}
                       </Badge>
                     </div>
                   </div>

@@ -1,0 +1,22 @@
+{
+  "page_title": "Payments",
+  "more_link": "More",
+  "unmatched_transfers": "Unmatched transfers",
+  "export_csv": "Export CSV",
+  "search_client_placeholder": "Search client",
+  "method_all": "All methods",
+  "method_cash": "Cash",
+  "method_transfer": "Transfer",
+  "method_pos": "POS",
+  "method_paystack": "Paystack",
+  "summary_count": "{{count}} payment(s)",
+  "empty_title": "No payments yet",
+  "empty_description": "Recorded payments will show up here.",
+  "csv_header_date": "Date",
+  "csv_header_client": "Client",
+  "csv_header_order": "Order",
+  "csv_header_garment": "Garment",
+  "csv_header_method": "Method",
+  "csv_header_amount": "Amount",
+  "csv_header_reference": "Reference"
+}

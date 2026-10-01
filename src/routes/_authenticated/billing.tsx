@@ -33,6 +33,7 @@ import {
   createPlanPayment,
   verifyPlanPayment,
 } from "@/lib/plan-payments.functions";
+import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/billing")({
   staticData: { sitemap: false },
@@ -41,6 +42,7 @@ export const Route = createFileRoute("/_authenticated/billing")({
 });
 
 function Billing() {
+  const t = useAppT("app_settings");
   const { currentStore, currentRole } = useStore();
   const isOwnerOrManager = currentRole === "owner" || currentRole === "manager";
   const tier = effectiveTier(currentStore);
@@ -82,11 +84,11 @@ function Billing() {
         if (reference.startsWith("plan_")) {
           const result = await confirmPlanPayment({ data: { reference } });
           if (result.status === "success") {
-            toast.success("Your new plan is active. Thank you!");
+            toast.success(t("toast_plan_active") || "Your new plan is active. Thank you!");
             queryClient.invalidateQueries();
             window.dispatchEvent(new Event("jaylor:plan-changed"));
           } else {
-            toast.error("Payment wasn't confirmed");
+            toast.error(t("toast_payment_not_confirmed") || "Payment wasn't confirmed");
           }
           return;
         }
@@ -96,13 +98,21 @@ function Billing() {
         if (error) throw error;
         const status = (data as { status: string }).status;
         if (status === "success") {
-          toast.success("Top-up confirmed. 100 messages added to this month's allowance.");
+          toast.success(
+            t("toast_topup_confirmed") ||
+              "Top-up confirmed. 100 messages added to this month's allowance.",
+          );
           queryClient.invalidateQueries({ queryKey: ["message-topups", currentStore?.id] });
         } else {
-          toast.error("Payment wasn't confirmed");
+          toast.error(t("toast_payment_not_confirmed") || "Payment wasn't confirmed");
         }
       } catch (error) {
-        toast.error(await getFunctionErrorMessage(error, "Could not confirm this payment"));
+        toast.error(
+          await getFunctionErrorMessage(
+            error,
+            t("toast_could_not_confirm_payment") || "Could not confirm this payment",
+          ),
+        );
       }
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -114,7 +124,7 @@ function Billing() {
     try {
       if (planCode === "free") {
         await switchToFree({ data: { storeId: currentStore.id } });
-        toast.success("You're on the Free plan now.");
+        toast.success(t("toast_now_on_free") || "You're on the Free plan now.");
         queryClient.invalidateQueries();
         window.dispatchEvent(new Event("jaylor:plan-changed"));
         return;
@@ -122,7 +132,10 @@ function Billing() {
       if (planCode === "custom") {
         window.open(
           "https://wa.me/2349028101389?text=" +
-            encodeURIComponent("Hello Jaylor, I'd like to discuss the Custom plan for my shop."),
+            encodeURIComponent(
+              t("custom_plan_whatsapp_message") ||
+                "Hello Jaylor, I'd like to discuss the Custom plan for my shop.",
+            ),
           "_blank",
           "noreferrer",
         );
@@ -137,7 +150,12 @@ function Billing() {
       });
       window.location.href = result.authorizationUrl;
     } catch (error) {
-      toast.error(getErrorMessage(error, "Could not start this payment"));
+      toast.error(
+        getErrorMessage(
+          error,
+          t("toast_could_not_start_payment") || "Could not start this payment",
+        ),
+      );
       setPlanBusy(null);
     }
   }
@@ -145,7 +163,7 @@ function Billing() {
   return (
     <AppShell>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
-        <h1 className="text-3xl">Billing</h1>
+        <h1 className="text-3xl">{t("billing_title") || "Billing"}</h1>
         <StitchDivider className="my-6" />
 
         <Card className="rounded-2xl">
@@ -153,11 +171,15 @@ function Billing() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-xs uppercase tracking-[0.08em] text-muted-foreground">
-                  Current plan
+                  {t("current_plan_label") || "Current plan"}
                 </p>
                 <div className="mt-1 flex items-center gap-2">
                   <TierBadge tier={tier} />
-                  {inTrial && <span className="text-xs text-muted-foreground">(free trial)</span>}
+                  {inTrial && (
+                    <span className="text-xs text-muted-foreground">
+                      {t("free_trial_suffix") || "(free trial)"}
+                    </span>
+                  )}
                 </div>
               </div>
               <Button
@@ -170,22 +192,23 @@ function Billing() {
                   if (paidPlan) handleChoosePlan(paidPlan.code);
                 }}
               >
-                {planBusy ? "Please wait…" : "Upgrade"}
+                {planBusy ? t("please_wait") || "Please wait…" : t("upgrade_button") || "Upgrade"}
               </Button>
             </div>
 
             {inTrial && currentStore && (
               <p className="mt-3 text-sm text-muted-foreground">
-                Your Growth trial ends {new Date(currentStore.trial_ends_at).toLocaleDateString()}.
-                Afterwards you&apos;ll move to Free unless you subscribe. All your data stays
-                exactly as it is.
+                {t("trial_notice", {
+                  date: new Date(currentStore.trial_ends_at).toLocaleDateString(),
+                }) ||
+                  `Your Growth trial ends ${new Date(currentStore.trial_ends_at).toLocaleDateString()}. Afterwards you'll move to Free unless you subscribe. All your data stays exactly as it is.`}
               </p>
             )}
 
             <div className="mt-4 space-y-3 border-t border-border pt-4">
               {ordersFeature && (
                 <UsageMeter
-                  label="Orders this month"
+                  label={t("orders_this_month") || "Orders this month"}
                   used={ordersFeature.used}
                   limit={ordersFeature.limit}
                 />
@@ -193,7 +216,7 @@ function Billing() {
               {messagesFeature && (
                 <div>
                   <UsageMeter
-                    label="Automatic WhatsApp messages"
+                    label={t("auto_whatsapp_messages") || "Automatic WhatsApp messages"}
                     used={messagesFeature.used}
                     limit={messagesLimit ?? messagesFeature.limit}
                   />
@@ -206,14 +229,17 @@ function Billing() {
               )}
               {itemsFeature && (
                 <UsageMeter
-                  label={FEATURE_LABELS["storefront_items"] ?? "Storefront items"}
+                  label={
+                    FEATURE_LABELS["storefront_items"] ??
+                    (t("storefront_items_fallback") || "Storefront items")
+                  }
                   used={itemsFeature.used}
                   limit={itemsFeature.limit}
                 />
               )}
               {usersFeature && (
                 <UsageMeter
-                  label={FEATURE_LABELS["users"] ?? "Team members"}
+                  label={FEATURE_LABELS["users"] ?? (t("team_members_fallback") || "Team members")}
                   used={usersFeature.used}
                   limit={usersFeature.limit}
                 />
@@ -242,7 +268,7 @@ function Billing() {
           </div>
         )}
 
-        <h2 className="mt-8 text-xl">Plans</h2>
+        <h2 className="mt-8 text-xl">{t("plans_title") || "Plans"}</h2>
         {plansLoading ? (
           <div className="mt-3 space-y-3">
             {Array.from({ length: 4 }).map((_, i) => (
@@ -269,10 +295,12 @@ function Billing() {
                       </div>
                       <p className="mt-1 text-sm text-muted-foreground">
                         {plan.price_quarterly
-                          ? `₦${plan.price_quarterly.toLocaleString()} / quarter`
+                          ? t("price_per_quarter", {
+                              price: `₦${plan.price_quarterly.toLocaleString()}`,
+                            }) || `₦${plan.price_quarterly.toLocaleString()} / quarter`
                           : plan.code === "free"
-                            ? "Free"
-                            : "By quote"}
+                            ? t("free_label") || "Free"
+                            : t("by_quote_label") || "By quote"}
                       </p>
                     </div>
                     {!isCurrent && !isTrialPlan && (
@@ -282,7 +310,9 @@ function Billing() {
                         disabled={planBusy !== null}
                         onClick={() => handleChoosePlan(plan.code)}
                       >
-                        {planBusy === plan.code ? "Please wait…" : "Choose"}
+                        {planBusy === plan.code
+                          ? t("please_wait") || "Please wait…"
+                          : t("choose_button") || "Choose"}
                       </Button>
                     )}
                   </CardContent>
@@ -305,6 +335,7 @@ function UsageMeter({
   used: number;
   limit: number | boolean | null;
 }) {
+  const t = useAppT("app_settings");
   const numericLimit = typeof limit === "number" ? limit : null;
   const unlimited = numericLimit === null || numericLimit < 0;
   const percent = unlimited ? 0 : Math.min(100, (used / Math.max(numericLimit, 1)) * 100);
@@ -314,7 +345,9 @@ function UsageMeter({
       <div className="flex items-center justify-between text-sm">
         <span className="text-muted-foreground">{label}</span>
         <span className="figures">
-          {unlimited ? `${used} · unlimited` : `${used} / ${numericLimit}`}
+          {unlimited
+            ? `${used} · ${t("unlimited_label") || "unlimited"}`
+            : `${used} / ${numericLimit}`}
         </span>
       </div>
       {!unlimited && <Progress value={percent} className="mt-1.5" />}
