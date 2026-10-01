@@ -173,7 +173,7 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
     question: "What happens after 14 days?",
     answer:
-      "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted — anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
+      "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted: anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
   },
   {
     question: "What happens if I downgrade?",

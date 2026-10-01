@@ -11,12 +11,12 @@ export const Route = createFileRoute("/delete-account")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Delete your account — Jaylor" },
+      { title: "Delete your account: Jaylor" },
       {
         name: "description",
         content: "How to request deletion of your Jaylor account and data, and what is kept.",
       },
-      { property: "og:title", content: "Delete your account — Jaylor" },
+      { property: "og:title", content: "Delete your account: Jaylor" },
       {
         property: "og:description",
         content: "How to request deletion of your Jaylor account and data.",
@@ -44,7 +44,7 @@ function DeleteAccount() {
           <strong>Store owners, managers and staff</strong> with a Jaylor sign-in can request
           deletion of their own account and, if they own the store, the store&apos;s entire record.{" "}
           <strong>A tailor shop&apos;s own clients</strong> (people who never signed up for Jaylor
-          themselves) should ask the shop they dealt with to delete their record — the shop is the
+          themselves) should ask the shop they dealt with to delete their record. The shop is the
           data controller and can do this directly from a client&apos;s profile in Jaylor. If the
           shop is unreachable, contact us using the details below and we will help.
         </p>
@@ -95,7 +95,7 @@ function DeleteAccount() {
         <h2>How long it takes</h2>
         <p>
           We acknowledge deletion requests promptly and complete verified requests within the period
-          required by applicable law (the Nigeria Data Protection Act 2023) — in practice, within 30
+          required by applicable law (the Nigeria Data Protection Act 2023), in practice within 30
           days. Closing a store is permanent and cannot be undone once completed, so we confirm with
           you before anything is removed.
         </p>
