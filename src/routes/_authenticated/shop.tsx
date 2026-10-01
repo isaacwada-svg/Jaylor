@@ -1,4 +1,4 @@
-import { useState, type FormEvent } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -46,6 +46,9 @@ import { useAppT } from "@/lib/i18n/i18n-context";
 
 export const Route = createFileRoute("/_authenticated/shop")({
   staticData: { sitemap: false },
+  validateSearch: (search: Record<string, unknown>): { tab?: string } => ({
+    ...(typeof search["tab"] === "string" ? { tab: search["tab"] } : {}),
+  }),
   head: () => ({
     meta: [
       { title: "Shop — Jaylor" },
@@ -70,6 +73,7 @@ type ClientRow = Tables<"clients">;
 
 function Shop() {
   const t = useAppT("app_settings");
+  const { tab } = Route.useSearch();
   const { currentStore, currentRole, refetch: refetchStore } = useStore();
   const storeId = currentStore?.id;
   const canManage = currentRole === "owner" || currentRole === "manager";
@@ -81,6 +85,11 @@ function Shop() {
   const [orderFormOpen, setOrderFormOpen] = useState(false);
   const [deletingItemId, setDeletingItemId] = useState<string | null>(null);
   const [orderClient, setOrderClient] = useState<ClientRow | null>(null);
+
+  useEffect(() => {
+    if (tab !== "profile") return;
+    document.getElementById("directory-listing")?.scrollIntoView({ block: "start" });
+  }, [tab]);
 
   const { data: items, isLoading: itemsLoading } = useQuery({
     queryKey: ["storefront-items", storeId],
@@ -254,7 +263,7 @@ function Shop() {
         </div>
         <StitchDivider className="my-6" />
 
-        <Tabs defaultValue="items">
+        <Tabs defaultValue={tab === "profile" ? "profile" : "items"}>
           <TabsList>
             <TabsTrigger value="items">{t("tab_items") || "Items"}</TabsTrigger>
             <TabsTrigger value="requests">
@@ -450,7 +459,11 @@ function Shop() {
               />
             )}
             {currentStore && <ShopProfileForm storeId={currentStore.id} onSaved={refetchStore} />}
-            {currentStore && <TailorDirectorySettings store={currentStore} />}
+            {currentStore && (
+              <div id="directory-listing">
+                <TailorDirectorySettings store={currentStore} />
+              </div>
+            )}
             {currentStore && effectiveTier(currentStore) !== "Free" && (
               <>
                 <OnTimeBadgeSettings storeId={currentStore.id} />

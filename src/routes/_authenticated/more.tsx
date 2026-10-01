@@ -22,6 +22,8 @@ import {
   Calculator,
   Coins,
   Boxes,
+  BarChart3,
+  Radar,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
@@ -108,7 +110,18 @@ const ITEMS: {
     tier: "Business",
   },
   { label: "Expenses and reports", hint: "Costs and net profit", icon: Receipt, tier: "Business" },
+  {
+    label: "Business report",
+    hint: "A monthly summary you can share with a bank or partner",
+    icon: BarChart3,
+    tier: "Business",
+  },
   { label: "Payments and receipts", hint: "Balances and receipts", icon: Wallet },
+  {
+    label: "Tailor directory listing",
+    hint: "How clients find you in the Jaylor directory",
+    icon: Radar,
+  },
   { label: "Moments", hint: "Birthdays, festive greetings, check-ins", icon: Gift },
   {
     label: "AI tools",
@@ -262,6 +275,24 @@ function More() {
             if (label === "Expenses and reports") {
               return (
                 <Link key={label} to="/reports">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Business report") {
+              return (
+                <Link key={label} to="/business-report">
+                  <Card className="rounded-2xl transition-colors hover:bg-accent/40">
+                    {content}
+                  </Card>
+                </Link>
+              );
+            }
+            if (label === "Tailor directory listing") {
+              return (
+                <Link key={label} to="/shop" search={{ tab: "profile" }} hash="directory-listing">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

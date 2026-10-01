@@ -197,3 +197,8 @@ export const COMPANY_LINE =
 
 export const SUPPORT_EMAIL = "info@jaylor.com.ng";
 export const SUPPORT_PHONE = "+234 902 810 1389";
+
+/** Switch to true once the tailor directory has enough real listings to be
+ *  worth a top-nav link. Until then it is reachable from the footer and from
+ *  the Measurement Passport page, just not the main navigation. */
+export const SHOW_DIRECTORY_IN_NAV = false;
