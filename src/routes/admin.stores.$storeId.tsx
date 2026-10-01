@@ -445,7 +445,11 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
             <Skeleton className="h-40 rounded-2xl" />
           </div>
         ) : error || !data ? (
-          <p className="text-sm text-muted-foreground">Could not load this store.</p>
+          <p className="text-sm text-muted-foreground">
+            {error
+              ? getErrorMessage(error, "Could not load this store.")
+              : "Could not load this store."}
+          </p>
         ) : (
           <>
             <div className="flex flex-wrap items-start justify-between gap-3">
