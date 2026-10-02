@@ -473,13 +473,6 @@ export type Database = {
             foreignKeyName: "ai_style_previews_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "ai_style_previews_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1032,13 +1025,6 @@ export type Database = {
             foreignKeyName: "consultations_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "consultations_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1422,13 +1408,6 @@ export type Database = {
             foreignKeyName: "event_participants_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "event_participants_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1796,13 +1775,6 @@ export type Database = {
             foreignKeyName: "fitting_links_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "fitting_links_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1937,13 +1909,6 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "incoming_transfers_matched_order_id_fkey"
-            columns: ["matched_order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "incoming_transfers_matched_order_id_fkey"
             columns: ["matched_order_id"]
@@ -2088,13 +2053,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "inventory_items_for_tailor"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "inventory_movements_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "inventory_movements_order_id_fkey"
@@ -2623,13 +2581,6 @@ export type Database = {
             foreignKeyName: "messages_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "messages_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -2740,13 +2691,6 @@ export type Database = {
             foreignKeyName: "order_approvals_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_approvals_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -2832,13 +2776,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_attachments_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "order_attachments_order_id_fkey"
@@ -2947,13 +2884,6 @@ export type Database = {
             foreignKeyName: "order_materials_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_materials_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -3015,13 +2945,6 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "order_payment_links_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "order_payment_links_order_id_fkey"
             columns: ["order_id"]
@@ -3091,13 +3014,6 @@ export type Database = {
             foreignKeyName: "order_status_history_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_status_history_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -3118,7 +3034,9 @@ export type Database = {
           collected_at: string | null
           created_at: string
           created_by: string | null
+          currency: string
           delivery_date: string | null
+          fx_rate_to_ngn: number | null
           garment_type: string
           garment_type_code: string | null
           id: string
@@ -3145,7 +3063,9 @@ export type Database = {
           collected_at?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           delivery_date?: string | null
+          fx_rate_to_ngn?: number | null
           garment_type: string
           garment_type_code?: string | null
           id?: string
@@ -3172,7 +3092,9 @@ export type Database = {
           collected_at?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           delivery_date?: string | null
+          fx_rate_to_ngn?: number | null
           garment_type?: string
           garment_type_code?: string | null
           id?: string
@@ -3563,6 +3485,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          currency: string
           id: string
           method: string
           order_id: string
@@ -3577,6 +3500,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          currency: string
           id?: string
           method: string
           order_id: string
@@ -3591,6 +3515,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          currency?: string
           id?: string
           method?: string
           order_id?: string
@@ -3603,13 +3528,6 @@ export type Database = {
           voided?: boolean
         }
         Relationships: [
-          {
-            foreignKeyName: "payments_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "payments_order_id_fkey"
             columns: ["order_id"]
@@ -3986,7 +3904,9 @@ export type Database = {
           converted_order_id: string | null
           created_at: string
           created_by: string | null
+          currency: string
           discount_percent: number
+          fx_rate_to_ngn: number | null
           garment_type: string
           garment_type_code: string | null
           id: string
@@ -4005,7 +3925,9 @@ export type Database = {
           converted_order_id?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           discount_percent?: number
+          fx_rate_to_ngn?: number | null
           garment_type: string
           garment_type_code?: string | null
           id?: string
@@ -4024,7 +3946,9 @@ export type Database = {
           converted_order_id?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           discount_percent?: number
+          fx_rate_to_ngn?: number | null
           garment_type?: string
           garment_type_code?: string | null
           id?: string
@@ -4045,13 +3969,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quotes_converted_order_id_fkey"
-            columns: ["converted_order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "quotes_converted_order_id_fkey"
@@ -4313,13 +4230,6 @@ export type Database = {
             foreignKeyName: "sew_requests_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "sew_requests_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -4451,13 +4361,6 @@ export type Database = {
           void_reason?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "staff_earnings_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "staff_earnings_order_id_fkey"
             columns: ["order_id"]
@@ -5519,41 +5422,13 @@ export type Database = {
       order_balances: {
         Row: {
           balance: number | null
+          currency: string | null
           order_id: string | null
           paid: number | null
           store_id: string | null
           total: number | null
         }
-        Insert: {
-          balance?: never
-          order_id?: string | null
-          paid?: never
-          store_id?: string | null
-          total?: never
-        }
-        Update: {
-          balance?: never
-          order_id?: string | null
-          paid?: never
-          store_id?: string | null
-          total?: never
-        }
-        Relationships: [
-          {
-            foreignKeyName: "orders_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores_public"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       order_materials_for_tailor: {
         Row: {
@@ -5605,13 +5480,6 @@ export type Database = {
           yards?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "order_materials_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "order_materials_order_id_fkey"
             columns: ["order_id"]
@@ -5781,6 +5649,17 @@ export type Database = {
       }
     }
     Functions: {
+      _all_order_balances: {
+        Args: never
+        Returns: {
+          balance: number
+          currency: string
+          order_id: string
+          paid: number
+          store_id: string
+          total: number
+        }[]
+      }
       _can_manage_order_fitting: {
         Args: { p_assigned_to: string; p_store_id: string }
         Returns: boolean
@@ -5821,6 +5700,10 @@ export type Database = {
         Args: { p_store_id: string }
         Returns: undefined
       }
+      _require_quotations_feature: {
+        Args: { p_store_id: string }
+        Returns: undefined
+      }
       _store_has_feature: {
         Args: { p_feature: string; p_store_id: string }
         Returns: boolean
@@ -5835,6 +5718,17 @@ export type Database = {
           has_enough_data: boolean
           orders_counted: number
           rate: number
+        }[]
+      }
+      _store_order_balances: {
+        Args: { p_store_id: string }
+        Returns: {
+          balance: number
+          currency: string
+          order_id: string
+          paid: number
+          store_id: string
+          total: number
         }[]
       }
       _store_weekly_throughput: {
@@ -5900,6 +5794,11 @@ export type Database = {
         Args: { p_reason?: string; p_user_id: string }
         Returns: undefined
       }
+      admin_extend_trial: {
+        Args: { p_days: number; p_store_id: string }
+        Returns: undefined
+      }
+      admin_get_store_detail: { Args: { p_store_id: string }; Returns: Json }
       admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_directory_reports: { Args: never; Returns: Json }
@@ -5909,7 +5808,12 @@ export type Database = {
       admin_my_role: { Args: never; Returns: string }
       admin_platform_health: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
+      admin_platform_totals: { Args: never; Returns: Json }
       admin_recent_errors: { Args: { p_hours?: number }; Returns: Json }
+      admin_remove_staff_member: {
+        Args: { p_member_id: string }
+        Returns: undefined
+      }
       admin_remove_team_member: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -5937,8 +5841,16 @@ export type Database = {
         Args: { p_report_id: string; p_status: string }
         Returns: undefined
       }
+      admin_set_store_active: {
+        Args: { p_is_active: boolean; p_store_id: string }
+        Returns: undefined
+      }
       admin_set_store_ai_allowance: {
         Args: { p_credits: number; p_store_id: string }
+        Returns: undefined
+      }
+      admin_set_store_plan: {
+        Args: { p_plan_code: string; p_store_id: string }
         Returns: undefined
       }
       admin_store_ai_usage: { Args: { p_since?: string }; Returns: Json }
@@ -6386,7 +6298,13 @@ export type Database = {
         Args: { p_store_id: string }
         Returns: boolean
       }
+      has_contracts_access: { Args: { p_store_id: string }; Returns: boolean }
       has_health_report_access: {
+        Args: { p_store_id: string }
+        Returns: boolean
+      }
+      has_job_board_access: { Args: { p_store_id: string }; Returns: boolean }
+      has_multi_currency_access: {
         Args: { p_store_id: string }
         Returns: boolean
       }
@@ -6478,7 +6396,7 @@ export type Database = {
       }
       match_incoming_transfer: {
         Args: { p_transfer_id: string }
-        Returns: string
+        Returns: undefined
       }
       name_similarity: { Args: { a: string; b: string }; Returns: number }
       next_calendar_occurrence: {
