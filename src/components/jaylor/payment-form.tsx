@@ -70,6 +70,7 @@ export function PaymentForm({
         store_id: storeId,
         order_id: orderId,
         amount: amt,
+        currency,
         method,
         reference: reference.trim() || null,
         received_by: userData.user?.id ?? null,
