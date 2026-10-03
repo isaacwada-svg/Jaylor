@@ -1,18 +1,11 @@
 import * as React from 'react'
 import { render } from '@react-email/render'
-import { EmailAPIError, sendLovableEmail } from '@lovable.dev/email-js'
 import { TEMPLATES } from './registry'
 
-// Server-only: reads LOVABLE_API_KEY. Never import from client components.
+// Server-only: sends through the Resend connector gateway. Never import from client components.
 
-// Configuration baked in at scaffold time
-const SITE_NAME = "Jaylor"
-// SENDER_DOMAIN is the verified sender subdomain FQDN (e.g., "notify.example.com").
-// It MUST match the subdomain delegated to Lovable's nameservers. NEVER use the root domain.
-const SENDER_DOMAIN = "notify.jaylor.com.ng"
-// FROM_DOMAIN is the domain shown in the From: header (e.g., "example.com").
-// Can be the root domain when display_from_root is enabled — this is cosmetic only.
-const FROM_DOMAIN = "notify.jaylor.com.ng"
+const GATEWAY_URL = 'https://connector-gateway.lovable.dev/resend'
+const FROM = 'Jaylor <info@jaylor.com.ng>'
 
 export type SendTemplateEmailResult =
   | { sent: true }
@@ -20,27 +13,20 @@ export type SendTemplateEmailResult =
 
 export interface SendTemplateEmailOptions {
   templateData?: Record<string, any>
-  /** Dedupes retries of the same logical send; defaults to a random UUID (no dedupe). */
+  /** Dedupes retries of the same logical send. */
   idempotencyKey?: string
   replyTo?: string
 }
 
-/**
- * Renders a registered template and sends it through Lovable's managed email
- * API. Suppression, retries, and rate limits are enforced by Lovable
- * server-side. A suppressed recipient is an expected outcome
- * ({ sent: false }); any other failure throws — EmailAPIError exposes
- * .code and .status for branching.
- */
 export async function sendTemplateEmail(
   templateName: string,
   to: string,
   options: SendTemplateEmailOptions = {}
 ): Promise<SendTemplateEmailResult> {
-  const apiKey = process.env['LOVABLE_API_KEY']
-  if (!apiKey) {
-    throw new Error('LOVABLE_API_KEY is not configured')
-  }
+  const lovableKey = process.env['LOVABLE_API_KEY']
+  const resendKey = process.env['RESEND_API_KEY']
+  if (!lovableKey) throw new Error('LOVABLE_API_KEY is not configured')
+  if (!resendKey) throw new Error('RESEND_API_KEY is not configured')
 
   const template = TEMPLATES[templateName]
   if (!template) {
@@ -49,43 +35,38 @@ export async function sendTemplateEmail(
     )
   }
 
-  // Template-level `to` takes precedence — notification templates always
-  // send to their fixed address.
   const recipient = template.to || to
-  if (!recipient) {
-    throw new Error('Recipient is required (the template defines no fixed recipient)')
-  }
+  if (!recipient) throw new Error('Recipient is required')
 
   const templateData = options.templateData ?? {}
   const element = React.createElement(template.component, templateData)
   const html = await render(element)
   const text = await render(element, { plainText: true })
   const subject =
-    typeof template.subject === 'function'
-      ? template.subject(templateData)
-      : template.subject
+    typeof template.subject === 'function' ? template.subject(templateData) : template.subject
 
-  try {
-    await sendLovableEmail(
-      {
-        to: recipient,
-        from: `${SITE_NAME} <noreply@${FROM_DOMAIN}>`,
-        sender_domain: SENDER_DOMAIN,
-        subject,
-        html,
-        text,
-        purpose: 'transactional',
-        label: templateName,
-        idempotency_key: options.idempotencyKey || crypto.randomUUID(),
-        ...(options.replyTo ? { reply_to: options.replyTo } : {}),
-      },
-      { apiKey, sendUrl: process.env['LOVABLE_SEND_URL'] }
-    )
-  } catch (error) {
-    if (error instanceof EmailAPIError && error.code === 'recipient_suppressed') {
-      return { sent: false, reason: 'recipient_suppressed' }
-    }
-    throw error
+  const response = await fetch(`${GATEWAY_URL}/emails`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${lovableKey}`,
+      'X-Connection-Api-Key': resendKey,
+      ...(options.idempotencyKey ? { 'Idempotency-Key': options.idempotencyKey } : {}),
+    },
+    body: JSON.stringify({
+      from: FROM,
+      to: [recipient],
+      subject,
+      html,
+      text,
+      ...(options.replyTo ? { reply_to: options.replyTo } : {}),
+    }),
+  })
+
+  if (!response.ok) {
+    const body = await response.text()
+    console.error(`Resend send failed [${response.status}]: ${body}`)
+    throw new Error(`Resend send failed [${response.status}]: ${body}`)
   }
 
   return { sent: true }
