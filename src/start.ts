@@ -51,7 +51,7 @@ const securityHeadersMiddleware = createMiddleware().server(async ({ request, ne
           "font-src 'self' data: https://fonts.gstatic.com",
           "img-src 'self' data: blob: https:",
           "media-src 'self' blob: https:",
-          `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paystack.co https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://*.clarity.ms${dev}`,
+          `connect-src 'self' https://*.supabase.co wss://*.supabase.co https://api.paystack.co https://*.google-analytics.com https://*.analytics.google.com https://www.googletagmanager.com https://www.google.com https://*.clarity.ms${dev}`,
           "frame-src 'self' https://*.paystack.co https://checkout.paystack.com",
           "worker-src 'self' blob:",
           "form-action 'self' https://*.paystack.co",
