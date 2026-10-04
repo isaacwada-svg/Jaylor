@@ -78,7 +78,7 @@ export function TermsBody() {
             <strong>Platform fee.</strong> Each successful collection carries a platform fee, shown
             in-app and on our pricing page, that is set by your plan (currently 1.5% on Free, 1% on
             Growth and during your trial, 0.7% on Business, or a negotiated rate on a custom plan).
-            The fee is deducted automatically from the payment before settlement — you never receive
+            The fee is deducted automatically from the payment before settlement, so you never receive
             an invoice for it separately.
           </li>
           <li>
