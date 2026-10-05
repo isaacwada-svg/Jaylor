@@ -807,6 +807,72 @@ export type Database = {
           },
         ]
       }
+      client_fit_feedback: {
+        Row: {
+          area: string
+          client_id: string
+          created_at: string
+          id: string
+          order_id: string | null
+          result: string
+          store_id: string
+        }
+        Insert: {
+          area: string
+          client_id: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          result: string
+          store_id: string
+        }
+        Update: {
+          area?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          result?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_fit_feedback_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -818,6 +884,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           festive_opt_out: boolean
+          first_order_date: string | null
           full_name: string
           gender: string | null
           guardian_name: string | null
@@ -829,6 +896,8 @@ export type Database = {
           photo_url: string | null
           preferred_language: string | null
           store_id: string
+          style_book_revoked: boolean
+          style_book_token: string
           tags: string[]
           updated_at: string
           whatsapp_phone: string | null
@@ -843,6 +912,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           festive_opt_out?: boolean
+          first_order_date?: string | null
           full_name: string
           gender?: string | null
           guardian_name?: string | null
@@ -854,6 +924,8 @@ export type Database = {
           photo_url?: string | null
           preferred_language?: string | null
           store_id: string
+          style_book_revoked?: boolean
+          style_book_token?: string
           tags?: string[]
           updated_at?: string
           whatsapp_phone?: string | null
@@ -868,6 +940,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           festive_opt_out?: boolean
+          first_order_date?: string | null
           full_name?: string
           gender?: string | null
           guardian_name?: string | null
@@ -879,6 +952,8 @@ export type Database = {
           photo_url?: string | null
           preferred_language?: string | null
           store_id?: string
+          style_book_revoked?: boolean
+          style_book_token?: string
           tags?: string[]
           updated_at?: string
           whatsapp_phone?: string | null
@@ -2607,6 +2682,117 @@ export type Database = {
           },
         ]
       }
+      moment_settings: {
+        Row: {
+          enabled: boolean
+          store_id: string
+          type: string
+        }
+        Insert: {
+          enabled?: boolean
+          store_id: string
+          type: string
+        }
+        Update: {
+          enabled?: boolean
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moment_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moments: {
+        Row: {
+          client_id: string
+          created_at: string
+          due_date: string
+          id: string
+          message: string
+          order_id: string | null
+          photo_url: string | null
+          sent_at: string | null
+          status: string
+          store_id: string
+          type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          message: string
+          order_id?: string | null
+          photo_url?: string | null
+          sent_at?: string | null
+          status?: string
+          store_id: string
+          type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          message?: string
+          order_id?: string | null
+          photo_url?: string | null
+          sent_at?: string | null
+          status?: string
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -2809,6 +2995,7 @@ export type Database = {
       }
       order_materials: {
         Row: {
+          billed_to_client: boolean
           colour: string | null
           cost: number
           cost_per_yard: number | null
@@ -2828,6 +3015,7 @@ export type Database = {
           yards: number | null
         }
         Insert: {
+          billed_to_client?: boolean
           colour?: string | null
           cost?: number
           cost_per_yard?: number | null
@@ -2847,6 +3035,7 @@ export type Database = {
           yards?: number | null
         }
         Update: {
+          billed_to_client?: boolean
           colour?: string | null
           cost?: number
           cost_per_yard?: number | null
@@ -4624,6 +4813,48 @@ export type Database = {
           },
         ]
       }
+      store_milestones: {
+        Row: {
+          achieved_at: string
+          acknowledged: boolean
+          detail: Json | null
+          id: string
+          milestone_key: string
+          store_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          acknowledged?: boolean
+          detail?: Json | null
+          id?: string
+          milestone_key: string
+          store_id: string
+        }
+        Update: {
+          achieved_at?: string
+          acknowledged?: boolean
+          detail?: Json | null
+          id?: string
+          milestone_key?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_milestones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_milestones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_monthly_snapshots: {
         Row: {
           created_at: string
@@ -6060,6 +6291,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_moment: {
+        Args: {
+          p_client_id: string
+          p_due_date: string
+          p_message: string
+          p_order_id?: string
+          p_photo_url?: string
+          p_store_id: string
+          p_type: string
+        }
+        Returns: undefined
+      }
       create_notification: {
         Args: {
           p_link?: string
@@ -6174,10 +6417,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      generate_anniversary_moments: { Args: never; Returns: undefined }
+      generate_birthday_moments: { Args: never; Returns: undefined }
       generate_delivery_reminder_notifications: {
         Args: never
         Returns: undefined
       }
+      generate_festive_moments: { Args: never; Returns: undefined }
+      generate_fitcheck_moments: { Args: never; Returns: undefined }
       generate_overdue_balance_notifications: {
         Args: never
         Returns: undefined
@@ -6207,6 +6454,8 @@ export type Database = {
         }
       }
       generate_plan_limit_notifications: { Args: never; Returns: undefined }
+      generate_winback_moments: { Args: never; Returns: undefined }
+      generate_zero_balance_milestones: { Args: never; Returns: undefined }
       get_ai_wallet: { Args: { p_store_id: string }; Returns: Json }
       get_business_health_report: {
         Args: { p_period_month: string; p_store_id: string }
@@ -6293,6 +6542,7 @@ export type Database = {
           bank_name: string
         }[]
       }
+      get_style_book: { Args: { p_token: string }; Returns: Json }
       get_weekly_digest_data: { Args: { p_store_id: string }; Returns: Json }
       has_active_support_grant: {
         Args: { p_store_id: string }
@@ -6422,6 +6672,15 @@ export type Database = {
         Args: { p_phone_e164: string }
         Returns: string
       }
+      record_fit_feedback: {
+        Args: {
+          p_area: string
+          p_client_id: string
+          p_order_id: string
+          p_result: string
+        }
+        Returns: undefined
+      }
       record_passport_referral: {
         Args: { p_share_token: string; p_store_id: string }
         Returns: undefined
@@ -6546,6 +6805,35 @@ export type Database = {
         Returns: undefined
       }
       set_my_ui_language: { Args: { p_language: string }; Returns: undefined }
+      set_order_material_billed_to_client: {
+        Args: { p_billed_to_client: boolean; p_material_id: string }
+        Returns: {
+          billed_to_client: boolean
+          colour: string | null
+          cost: number
+          cost_per_yard: number | null
+          created_at: string
+          description: string | null
+          extras_received: string | null
+          id: string
+          inventory_item_id: string | null
+          order_id: string
+          photo_url: string | null
+          photo_urls: string[]
+          purchased_at: string
+          received_at: string | null
+          received_by: string | null
+          source: string
+          store_id: string
+          yards: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "order_materials"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_order_status_note: {
         Args: {
           p_note?: string
@@ -6587,6 +6875,10 @@ export type Database = {
           p_store_id: string
           p_year: number
         }
+        Returns: undefined
+      }
+      set_style_book_revoked: {
+        Args: { p_client_id: string; p_revoked: boolean }
         Returns: undefined
       }
       unmapped_garment_type_names: {
@@ -6670,6 +6962,7 @@ export type Database = {
           p_quantity: number
         }
         Returns: {
+          billed_to_client: boolean
           colour: string | null
           cost: number
           cost_per_yard: number | null
