@@ -22,7 +22,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useStore } from "@/lib/store-context";
 import { supabase } from "@/integrations/supabase/client";
-import { ORDER_STATUSES_DB } from "@/lib/jaylor";
+import { ORDER_STATUSES_DB, WHATSAPP_AUTO_TOPUP_ENABLED } from "@/lib/jaylor";
 import { useOrderStatusLabel } from "@/lib/i18n/app-labels";
 import { useAppT } from "@/lib/i18n/i18n-context";
 import { OnTimeScoreCard } from "@/components/jaylor/on-time-score-card";
@@ -450,9 +450,11 @@ function Home() {
               }) ||
                 `You've used ${messagesFeature?.used} of ${messagesLimit} automatic WhatsApp messages this month. Tap-to-send stays free and unlimited either way.`}
             </p>
-            <Button size="sm" variant="outline" asChild>
-              <Link to="/billing">{t("top_up_messages") || "Top up messages"}</Link>
-            </Button>
+            {WHATSAPP_AUTO_TOPUP_ENABLED && (
+              <Button size="sm" variant="outline" asChild>
+                <Link to="/billing">{t("top_up_messages") || "Top up messages"}</Link>
+              </Button>
+            )}
           </div>
         )}
 

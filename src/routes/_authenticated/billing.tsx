@@ -25,7 +25,7 @@ import { useStore } from "@/lib/store-context";
 import { useFeature } from "@/lib/use-feature";
 import { useFeatureLimit } from "@/lib/use-feature-limit";
 import { useMessageTopups } from "@/lib/use-message-topups";
-import { effectiveTier, planCodeToTier } from "@/lib/jaylor";
+import { effectiveTier, planCodeToTier, WHATSAPP_AUTO_TOPUP_ENABLED } from "@/lib/jaylor";
 import { getErrorMessage, getFunctionErrorMessage } from "@/lib/utils";
 import { FEATURE_LABELS } from "@/lib/feature-keys";
 import {
@@ -220,11 +220,13 @@ function Billing() {
                     used={messagesFeature.used}
                     limit={messagesLimit ?? messagesFeature.limit}
                   />
-                  {typeof messagesFeature.limit === "number" && currentStore && (
-                    <div className="mt-2">
-                      <MessageTopupButton storeId={currentStore.id} />
-                    </div>
-                  )}
+                  {WHATSAPP_AUTO_TOPUP_ENABLED &&
+                    typeof messagesFeature.limit === "number" &&
+                    currentStore && (
+                      <div className="mt-2">
+                        <MessageTopupButton storeId={currentStore.id} />
+                      </div>
+                    )}
                 </div>
               )}
               {itemsFeature && (

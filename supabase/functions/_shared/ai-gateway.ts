@@ -7,10 +7,19 @@ import { callAI, callAnthropic, type ChatMessage, type AiUsage } from "./ai.ts";
 
 type SupabaseClient = ReturnType<typeof createClient>;
 
-// Mirrors src/lib/fx.ts's APPROX_USD_NGN_RATE — edge functions run in a
-// separate Deno runtime and can't import from src/, so this is kept in sync
-// by hand, same as _shared/plan.ts mirrors src/lib/pricing-content.ts.
-const APPROX_USD_NGN_RATE = 1600;
+// Reads the same ai_config.fx_rate_ngn_per_usd row the System B credit
+// wallet (src/lib/ai-run.server.ts) and /admin-ai's generic settings editor
+// already use -- a single admin-editable rate instead of a separately
+// hardcoded one here. Falls back to 1600 if the row is ever missing.
+async function fxRateNgnPerUsd(supabase: SupabaseClient): Promise<number> {
+  const { data } = await supabase
+    .from("ai_config")
+    .select("value")
+    .eq("key", "fx_rate_ngn_per_usd")
+    .maybeSingle();
+  const rate = Number(data?.value ?? 1600);
+  return rate > 0 ? rate : 1600;
+}
 
 export type AiFeatureKey = "voice_entry" | "ai_replies" | "style_cards" | "advisor_messages";
 
@@ -246,13 +255,14 @@ async function logUsage(
     inputHash: string | null;
   },
 ) {
+  const fxRate = await fxRateNgnPerUsd(supabase);
   await supabase.from("usage_log").insert({
     store_id: entry.storeId,
     user_id: entry.userId,
     feature_key: entry.featureKey,
     quantity: 1,
     estimated_cost_usd: entry.costUsd,
-    estimated_cost_ngn: entry.costUsd * APPROX_USD_NGN_RATE,
+    estimated_cost_ngn: entry.costUsd * fxRate,
     model: entry.model,
     input_tokens: entry.inputTokens,
     output_tokens: entry.outputTokens,

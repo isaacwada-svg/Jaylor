@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StoreProvider, useStore } from "@/lib/store-context";
 import { AppI18nProvider } from "@/lib/i18n/i18n-context";
+import { AiCreditsProvider } from "@/lib/ai-credits";
 
 export const Route = createFileRoute("/_authenticated")({
   staticData: { sitemap: "exclude-subtree" },
@@ -17,7 +18,14 @@ export const Route = createFileRoute("/_authenticated")({
     <StoreProvider>
       <RequireStore>
         <AppLanguageGate>
-          <Outlet />
+          {/* Every authenticated page can use voice order entry, WhatsApp
+              reply drafts, and the Ask Jaylor advisor -- not just AI Studio
+              and Festive, which already wrap themselves in their own nested
+              provider (harmless, just redundant). One provider here means
+              every AI feature's credit sheet/toast UX works everywhere. */}
+          <AiCreditsProvider>
+            <Outlet />
+          </AiCreditsProvider>
         </AppLanguageGate>
       </RequireStore>
     </StoreProvider>

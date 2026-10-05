@@ -68,8 +68,8 @@ export function AdvisorPanel({
     try {
       const result = await send.mutateAsync({ threadId, message: text });
       setThreadId(result.threadId);
-    } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Could not reach the advisor");
+    } catch {
+      // useAiCredits().run() already showed the right toast or credit sheet.
       setInput(text);
     }
   }

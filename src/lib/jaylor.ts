@@ -202,3 +202,8 @@ export const SUPPORT_PHONE = "+234 902 810 1389";
  *  worth a top-nav link. Until then it is reachable from the footer and from
  *  the Measurement Passport page, just not the main navigation. */
 export const SHOW_DIRECTORY_IN_NAV = false;
+
+/** Switch to true once automatic WhatsApp sending itself is live. The
+ *  purchase option is hidden until then; the create/verify-message-topup
+ *  edge functions and any past purchases are untouched by this flag. */
+export const WHATSAPP_AUTO_TOPUP_ENABLED = false;
