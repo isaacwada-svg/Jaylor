@@ -1,6 +1,6 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
-import { getFunctionErrorMessage } from "@/lib/utils";
+import { useAiCredits } from "@/lib/ai-credits";
 
 export type AdvisorThread = { id: string; title: string; updated_at: string };
 export type AdvisorMessage = { id: string; role: "user" | "assistant"; content: string };
@@ -45,16 +45,20 @@ export function useAdvisorMessages(threadId: string | null) {
   });
 }
 
+/**
+ * AI-credit-gated like every other AI feature: `run()` already shows the
+ * right toast or opens the top-up/upgrade sheet on failure, so a rejected
+ * mutation here means that UX already happened -- the caller just needs to
+ * restore the typed message, not show its own error.
+ */
 export function useSendAdvisorMessage(storeId: string | undefined) {
   const queryClient = useQueryClient();
+  const { run } = useAiCredits();
   return useMutation({
     mutationFn: async ({ threadId, message }: { threadId: string | null; message: string }) => {
-      const { data, error } = await supabase.functions.invoke("advisor-chat", {
-        body: { storeId, threadId: threadId ?? undefined, message },
-      });
-      if (error)
-        throw new Error(await getFunctionErrorMessage(error, "Could not reach the advisor"));
-      return data as { threadId: string; reply: string };
+      const res = await run("advisor_chat", { threadId, message });
+      if (!res.ok) throw new Error("handled");
+      return res.result as { threadId: string; reply: string };
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["advisor-threads", storeId] });

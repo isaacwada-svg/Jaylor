@@ -14,7 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { COMPANY_LINE, formatMoney } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
-import { approximateUsd } from "@/lib/fx";
+import { approximateUsd, useFxRate } from "@/lib/fx";
 import { resizeImageFile } from "@/lib/image";
 import { uploadFabricPhoto } from "@/lib/design-photos.functions";
 import {
@@ -152,6 +152,8 @@ function GuestEventPage() {
     queryKey: ["job-extras", token],
     queryFn: () => getJobExtras({ data: { token } }),
   });
+
+  const { data: fxRate } = useFxRate();
 
   const { data: quote, isLoading: quoteLoading } = useQuery({
     queryKey: ["job-quote", token],
@@ -676,7 +678,7 @@ function GuestEventPage() {
             </div>
             {isAbroad && amountDue != null && (
               <p className="mt-0.5 text-right text-xs text-muted-foreground">
-                ≈ {approximateUsd(amountDue + (extras?.shippingFee ?? 0))}
+                ≈ {approximateUsd(amountDue + (extras?.shippingFee ?? 0), fxRate)}
               </p>
             )}
             {isAbroad && extras?.shippingFee && (
