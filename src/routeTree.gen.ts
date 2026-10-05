@@ -81,6 +81,7 @@ import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authen
 import { Route as AuthenticatedQuotationsIndexRouteImport } from './routes/_authenticated/quotations.index'
 import { Route as AuthenticatedQuotationsQuoteIdRouteImport } from './routes/_authenticated/quotations.$quoteId'
 import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
+import { Route as ApiCronAskJaylorCleanupRouteImport } from './routes/api/cron/ask-jaylor-cleanup'
 import { Route as ApiCronDigestRouteImport } from './routes/api/cron/digest'
 import { Route as ApiInternalTransferAlertRouteImport } from './routes/api/internal/transfer-alert'
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
@@ -459,6 +460,11 @@ const AdminStoresStoreIdRoute = AdminStoresStoreIdRouteImport.update({
   path: '/stores/$storeId',
   getParentRoute: () => AdminRoute,
 } as any)
+const ApiCronAskJaylorCleanupRoute = ApiCronAskJaylorCleanupRouteImport.update({
+  id: '/api/cron/ask-jaylor-cleanup',
+  path: '/api/cron/ask-jaylor-cleanup',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiCronDigestRoute = ApiCronDigestRouteImport.update({
   id: '/api/cron/digest',
   path: '/api/cron/digest',
@@ -561,6 +567,7 @@ export interface FileRoutesByFullPath {
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
@@ -636,6 +643,7 @@ export interface FileRoutesByTo {
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
@@ -717,6 +725,7 @@ export interface FileRoutesById {
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
@@ -798,6 +807,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
@@ -873,6 +883,7 @@ export interface FileRouteTypes {
     | '/orders/$orderId'
     | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
@@ -953,6 +964,7 @@ export interface FileRouteTypes {
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
@@ -1002,6 +1014,7 @@ export interface RootRouteChildren {
   RTokenRoute: typeof RTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
   TTokenRoute: typeof TTokenRoute
+  ApiCronAskJaylorCleanupRoute: typeof ApiCronAskJaylorCleanupRoute
   ApiCronDigestRoute: typeof ApiCronDigestRoute
   ApiInternalTransferAlertRoute: typeof ApiInternalTransferAlertRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
@@ -1515,6 +1528,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AdminStoresStoreIdRouteImport
       parentRoute: typeof AdminRoute
     }
+    '/api/cron/ask-jaylor-cleanup': {
+      id: '/api/cron/ask-jaylor-cleanup'
+      path: '/api/cron/ask-jaylor-cleanup'
+      fullPath: '/api/cron/ask-jaylor-cleanup'
+      preLoaderRoute: typeof ApiCronAskJaylorCleanupRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/cron/digest': {
       id: '/api/cron/digest'
       path: '/api/cron/digest'
@@ -1719,6 +1739,7 @@ const rootRouteChildren: RootRouteChildren = {
   RTokenRoute: RTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
   TTokenRoute: TTokenRoute,
+  ApiCronAskJaylorCleanupRoute: ApiCronAskJaylorCleanupRoute,
   ApiCronDigestRoute: ApiCronDigestRoute,
   ApiInternalTransferAlertRoute: ApiInternalTransferAlertRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,

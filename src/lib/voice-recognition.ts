@@ -80,3 +80,24 @@ export function startSpeechRecognition(handlers: {
     stop: () => recognition.stop(),
   };
 }
+
+/** Thin wrapper around the browser's speechSynthesis API (free, no AI cost). */
+
+export function isSpeechSynthesisSupported(): boolean {
+  if (typeof window === "undefined") return false;
+  return Boolean(window.speechSynthesis && window.SpeechSynthesisUtterance);
+}
+
+/** Reads text aloud. Stops whatever was playing first, so only one reply speaks at a time. */
+export function speakText(text: string, lang = "en-NG"): void {
+  if (!isSpeechSynthesisSupported() || !text) return;
+  window.speechSynthesis.cancel();
+  const utterance = new SpeechSynthesisUtterance(text);
+  utterance.lang = lang;
+  window.speechSynthesis.speak(utterance);
+}
+
+export function stopSpeaking(): void {
+  if (!isSpeechSynthesisSupported()) return;
+  window.speechSynthesis.cancel();
+}

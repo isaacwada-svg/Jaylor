@@ -379,7 +379,14 @@ export function AppShell({ children }: { children: ReactNode }) {
       )}
 
       {currentStore && canManageOrders && (
-        <AdvisorPanel storeId={currentStore.id} storeCreatedAt={currentStore.created_at} />
+        <AdvisorPanel
+          storeId={currentStore.id}
+          storeCreatedAt={currentStore.created_at}
+          onOrderDraft={(prefill) => {
+            setOrderPrefill(prefill);
+            setOrderFormOpen(true);
+          }}
+        />
       )}
 
       <FeatureTour />

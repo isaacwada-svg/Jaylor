@@ -2,8 +2,22 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAiCredits } from "@/lib/ai-credits";
 
+export type AdvisorAttachment = { path: string; mimeType: string; name: string };
+export type AdvisorDraftOrder = {
+  garment_type: string | null;
+  quantity: number;
+  style_notes: string;
+  price: number | null;
+  delivery_date: string | null;
+  rush: boolean;
+};
 export type AdvisorThread = { id: string; title: string; updated_at: string };
-export type AdvisorMessage = { id: string; role: "user" | "assistant"; content: string };
+export type AdvisorMessage = {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  attachments: AdvisorAttachment[] | null;
+};
 
 // advisor_threads/advisor_messages are new tables (see the migration that
 // added them) that generated Supabase types won't know about until the
@@ -36,7 +50,7 @@ export function useAdvisorMessages(threadId: string | null) {
     queryFn: async () => {
       const { data, error } = await db
         .from("advisor_messages")
-        .select("id, role, content")
+        .select("id, role, content, attachments")
         .eq("thread_id", threadId as string)
         .order("created_at", { ascending: true });
       if (error) throw error;
@@ -55,10 +69,23 @@ export function useSendAdvisorMessage(storeId: string | undefined) {
   const queryClient = useQueryClient();
   const { run } = useAiCredits();
   return useMutation({
-    mutationFn: async ({ threadId, message }: { threadId: string | null; message: string }) => {
-      const res = await run("advisor_chat", { threadId, message });
+    mutationFn: async ({
+      threadId,
+      message,
+      attachments,
+    }: {
+      threadId: string | null;
+      message: string;
+      attachments?: AdvisorAttachment[];
+    }) => {
+      const hasAttachments = !!attachments && attachments.length > 0;
+      const res = await run(hasAttachments ? "advisor_chat_vision" : "advisor_chat", {
+        threadId,
+        message,
+        ...(hasAttachments ? { attachments } : {}),
+      });
       if (!res.ok) throw new Error("handled");
-      return res.result as { threadId: string; reply: string };
+      return res.result as { threadId: string; reply: string; drafts?: AdvisorDraftOrder[] };
     },
     onSuccess: (_data, variables) => {
       queryClient.invalidateQueries({ queryKey: ["advisor-threads", storeId] });
