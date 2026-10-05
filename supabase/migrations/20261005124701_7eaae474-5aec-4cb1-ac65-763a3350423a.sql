@@ -66,12 +66,14 @@ INSERT INTO public.ai_feature_costs (feature_key, label, credits, model_key, min
 ON CONFLICT (feature_key) DO NOTHING;
 
 -- 4. Daily cleanup: deletes attachments (and clears the reference) for any
---    message older than 30 days that still has attachments recorded. Reuses
---    the exact jaylor_internal_api_secret Vault secret and X-Internal-Secret
---    header the daily/weekly digest cron already authenticates with -- see
---    that job's own migration for how to create the secret if it isn't set
---    up yet. Update the hardcoded https://jaylor.com.ng URL below if that is
---    not this project's production domain.
+--    message older than 30 days that still has attachments recorded.
+--    Scheduled here against the jaylor_internal_api_secret Vault secret,
+--    same as the daily/weekly digest cron originally was -- but that secret
+--    was never actually created in this database, so this job is rescheduled
+--    for real in the very next migration, which copies the live secret
+--    straight off the (now working) digest job instead. Update the
+--    hardcoded https://jaylor.com.ng URL below if that is not this
+--    project's production domain.
 DO $$
 BEGIN
   IF EXISTS (SELECT 1 FROM pg_extension WHERE extname = 'pg_cron')

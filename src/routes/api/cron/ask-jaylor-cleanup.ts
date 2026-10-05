@@ -4,9 +4,11 @@ import { createFileRoute } from "@tanstack/react-router";
 // advisor_messages.attachments). Deletes Ask Jaylor attachments older than
 // 30 days. Storage objects can only be removed through the Storage API, not
 // a raw SQL DELETE, so this -- like the daily/weekly digest -- lives here
-// rather than as a pure-SQL cron job. Reuses the exact same
-// jaylor_internal_api_secret / INTERNAL_API_SECRET pair the digest route
-// already authenticates with.
+// rather than as a pure-SQL cron job. Authenticated the same way the digest
+// route is: the X-Internal-Secret header must match INTERNAL_API_SECRET.
+// The cron job itself gets that value copied straight off the digest job's
+// own command (see the migration that (re)schedules ask-jaylor-cleanup-daily)
+// rather than from Supabase Vault.
 const RETENTION_DAYS = 30;
 
 export const Route = createFileRoute("/api/cron/ask-jaylor-cleanup")({
