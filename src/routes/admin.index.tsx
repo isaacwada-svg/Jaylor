@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/select";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { formatMoney, planCodeToTier } from "@/lib/jaylor";
+import { FEATURE_LABELS } from "@/lib/feature-keys";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { getErrorMessage } from "@/lib/utils";
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
@@ -329,22 +330,24 @@ function Admin() {
 
       <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
         <Tabs defaultValue="overview">
-          <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="search">Search</TabsTrigger>
-            <TabsTrigger value="health">Health</TabsTrigger>
-            <TabsTrigger value="analytics">Analytics</TabsTrigger>
-            <TabsTrigger value="plans">Plans</TabsTrigger>
-            <TabsTrigger value="billing">Billing</TabsTrigger>
-            <TabsTrigger value="messaging">Messaging</TabsTrigger>
-            <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
-            <TabsTrigger value="leads">Leads</TabsTrigger>
-            <TabsTrigger value="directory">Directory</TabsTrigger>
-            <TabsTrigger value="audit">Audit log</TabsTrigger>
-            <TabsTrigger value="errors">Errors</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
-            {isSuperAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
-          </TabsList>
+          <div className="-mx-4 overflow-x-auto px-4 pb-1 lg:-mx-8 lg:px-8">
+            <TabsList className="w-max">
+              <TabsTrigger value="overview">Overview</TabsTrigger>
+              <TabsTrigger value="search">Search</TabsTrigger>
+              <TabsTrigger value="health">Health</TabsTrigger>
+              <TabsTrigger value="analytics">Analytics</TabsTrigger>
+              <TabsTrigger value="plans">Plans</TabsTrigger>
+              <TabsTrigger value="billing">Billing</TabsTrigger>
+              <TabsTrigger value="messaging">Messaging</TabsTrigger>
+              <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
+              <TabsTrigger value="leads">Leads</TabsTrigger>
+              <TabsTrigger value="directory">Directory</TabsTrigger>
+              <TabsTrigger value="audit">Audit log</TabsTrigger>
+              <TabsTrigger value="errors">Errors</TabsTrigger>
+              <TabsTrigger value="security">Security</TabsTrigger>
+              {isSuperAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
+            </TabsList>
+          </div>
 
           <TabsContent value="overview" className="mt-6">
             <OverviewTab />
@@ -606,11 +609,7 @@ function LiveBoard({
       ) : (
         <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
           <Stat label="Active stores" value={String(board.active_stores)} icon={Store} />
-          <Stat
-            label="Sales, last 30 days"
-            value={formatMoney(board.sales_30d)}
-            icon={TrendingUp}
-          />
+          <Stat label="Sales, 30 days" value={formatMoney(board.sales_30d)} icon={TrendingUp} />
           <Stat
             label="Avg order value"
             value={formatMoney(board.avg_order_value_30d)}
@@ -966,7 +965,7 @@ function Stat({ label, value, icon: Icon }: { label: string; value: string; icon
           </span>
         )}
         <div className="min-w-0">
-          <p className="truncate text-xs uppercase tracking-[0.1em] text-muted-foreground">
+          <p className="line-clamp-2 text-xs uppercase leading-tight tracking-[0.1em] text-muted-foreground">
             {label}
           </p>
           <p className="figures mt-1 text-xl">{value}</p>
@@ -976,6 +975,60 @@ function Stat({ label, value, icon: Icon }: { label: string; value: string; icon
   );
 }
 
+// Boolean feature flags live in plans.limits (and, for a few older ones,
+// plans.features) alongside the numeric usage limits FEATURE_LABELS
+// already documents -- this extends that same label map rather than
+// duplicating it, so every key the Plans tab might ever see has a readable
+// label instead of a raw snake_case key.
+const PLAN_FEATURE_LABELS: Record<string, string> = {
+  quotations: "Quotations",
+  group_events: "Group events (aso-ebi)",
+  consultations: "Consultations",
+  digests: "Daily/weekly digests",
+  receipt_logo: "Receipt logo on receipts",
+  on_time_badge: "On-time badge",
+  capacity_planning: "Capacity planning",
+  job_board: "Staff job board",
+  contracts: "Contracts (single payer)",
+  payroll: "Staff payroll",
+  inventory: "Materials inventory",
+  health_report: "Business health report",
+  multi_currency: "Multiple currencies",
+};
+
+function humanizePlanKey(key: string) {
+  return key.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+}
+
+function planKeyLabel(key: string) {
+  return FEATURE_LABELS[key] ?? PLAN_FEATURE_LABELS[key] ?? humanizePlanKey(key);
+}
+
+// plans.limits/plans.features are each a flat jsonb object in practice, but
+// typed as the general Json union -- guard against null/array/primitive
+// before treating one as a record, so an unexpected shape renders as "no
+// keys" instead of throwing.
+function planJsonEntries(value: Json): [string, Json][] {
+  if (value && typeof value === "object" && !Array.isArray(value)) {
+    return Object.entries(value as Record<string, Json>);
+  }
+  return [];
+}
+
+function PlanKeyValue({ value }: { value: Json }) {
+  if (typeof value === "boolean") {
+    return (
+      <span className={value ? "text-paid" : "text-muted-foreground"}>
+        {value ? "Included" : "Not included"}
+      </span>
+    );
+  }
+  if (value === null) {
+    return <span>Unlimited</span>;
+  }
+  return <span>{String(value)}</span>;
+}
+
 function PlansTab({ readOnly }: { readOnly: boolean }) {
   const queryClient = useQueryClient();
   const [editingPlan, setEditingPlan] = useState<PlanRow | null>(null);
@@ -983,7 +1036,12 @@ function PlansTab({ readOnly }: { readOnly: boolean }) {
   const [priceQuarterly, setPriceQuarterly] = useState("");
   const [busy, setBusy] = useState(false);
 
-  const { data: plans, isLoading } = useQuery({
+  const {
+    data: plans,
+    isLoading,
+    isError,
+    error,
+  } = useQuery({
     queryKey: ["admin-plans"],
     queryFn: async () => {
       const { data, error } = await supabase.from("plans").select("*").order("sort_order");
@@ -1031,27 +1089,70 @@ function PlansTab({ readOnly }: { readOnly: boolean }) {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="rounded-xl border border-owed/40 bg-owed/5 p-4 text-sm">
+        <p className="font-medium text-owed">Could not load plans</p>
+        <p className="mt-1 text-muted-foreground">
+          {getErrorMessage(error, "Something went wrong loading plans.")}
+        </p>
+      </div>
+    );
+  }
+
   return (
-    <div className="space-y-2">
-      {(plans ?? []).map((plan) => (
-        <div
-          key={plan.code}
-          className="flex items-center justify-between gap-3 rounded-xl border border-border p-4"
-        >
-          <div>
-            <p className="font-medium">{plan.name}</p>
-            <p className="text-sm text-muted-foreground">
-              {plan.price_monthly ? `${formatMoney(plan.price_monthly)}/mo` : "—"}
-              {plan.price_quarterly ? ` · ${formatMoney(plan.price_quarterly)}/quarter` : ""}
-            </p>
-          </div>
-          {!readOnly && (
-            <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
-              Edit
-            </Button>
-          )}
-        </div>
-      ))}
+    <div className="space-y-3">
+      {(plans ?? []).length === 0 ? (
+        <p className="text-sm text-muted-foreground">No plans configured yet.</p>
+      ) : (
+        (plans ?? []).map((plan) => {
+          const entries = (() => {
+            const seen = new Map<string, Json>();
+            for (const [key, value] of [
+              ...planJsonEntries(plan.limits),
+              ...planJsonEntries(plan.features),
+            ]) {
+              if (!seen.has(key)) seen.set(key, value);
+            }
+            return Array.from(seen.entries());
+          })();
+
+          return (
+            <div key={plan.code} className="rounded-xl border border-border p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-medium">{plan.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {plan.price_monthly ? `${formatMoney(plan.price_monthly)}/mo` : "—"}
+                    {plan.price_quarterly ? ` · ${formatMoney(plan.price_quarterly)}/quarter` : ""}
+                  </p>
+                </div>
+                {!readOnly && (
+                  <Button size="sm" variant="outline" onClick={() => openEdit(plan)}>
+                    Edit
+                  </Button>
+                )}
+              </div>
+
+              {entries.length > 0 && (
+                <div className="mt-3 grid grid-cols-2 gap-2 border-t border-border/60 pt-3 sm:grid-cols-3 lg:grid-cols-4">
+                  {entries.map(([key, value]) => (
+                    <div
+                      key={key}
+                      className="rounded-lg border border-border/60 bg-muted/30 px-2.5 py-1.5 text-xs"
+                    >
+                      <p className="line-clamp-2 text-muted-foreground">{planKeyLabel(key)}</p>
+                      <p className="mt-0.5 font-medium">
+                        <PlanKeyValue value={value} />
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })
+      )}
 
       <Dialog open={!!editingPlan} onOpenChange={(open) => !open && setEditingPlan(null)}>
         <DialogContent>
