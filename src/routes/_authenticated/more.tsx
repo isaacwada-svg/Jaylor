@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
-import { AppShell } from "@/components/jaylor/app-shell";
+import { AppShell, useShellActions } from "@/components/jaylor/app-shell";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { DiscoveryCue } from "@/components/jaylor/discovery-cue";
@@ -24,10 +24,15 @@ import {
   Boxes,
   BarChart3,
   Radar,
+  Mic,
+  Moon,
+  Sun,
 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { getErrorMessage } from "@/lib/utils";
 import { useStore } from "@/lib/store-context";
+import { useTheme } from "@/lib/theme";
+import { useAppT } from "@/lib/i18n/i18n-context";
 import type { Tier } from "@/lib/jaylor";
 import type { DiscoveryFeature } from "@/lib/feature-discovery";
 
@@ -140,6 +145,44 @@ const ITEMS: {
 ];
 
 function More() {
+  return (
+    <AppShell>
+      <MoreContent />
+    </AppShell>
+  );
+}
+
+/** Voice order and the theme switch: on desktop they live in the sidebar
+ *  and profile menu; on a phone this screen is where they are. */
+function PhoneShortcuts() {
+  const t = useAppT("app_common");
+  const { openVoiceOrder, canManageOrders } = useShellActions();
+  const { resolved, setTheme } = useTheme();
+  return (
+    <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:hidden">
+      {canManageOrders && (
+        <Button variant="outline" className="justify-start gap-3" onClick={openVoiceOrder}>
+          <Mic className="size-5 text-gold" />
+          {t("voice_order") || "Voice order"}
+        </Button>
+      )}
+      <Button
+        variant="outline"
+        className="justify-start gap-3"
+        onClick={() => setTheme(resolved === "dark" ? "light" : "dark")}
+      >
+        {resolved === "dark" ? (
+          <Sun className="size-5 text-gold" />
+        ) : (
+          <Moon className="size-5 text-gold" />
+        )}
+        {resolved === "dark" ? t("theme_light") || "Light theme" : t("theme_dark") || "Dark theme"}
+      </Button>
+    </div>
+  );
+}
+
+function MoreContent() {
   const discovery = useFeatureDiscovery();
   const navigate = useNavigate();
   const { currentRole } = useStore();
@@ -159,7 +202,7 @@ function More() {
   );
 
   return (
-    <AppShell>
+    <>
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <h1 className="text-3xl">More</h1>
         <StitchDivider className="my-6" />
@@ -356,6 +399,8 @@ function More() {
           })}
         </div>
 
+        <PhoneShortcuts />
+
         <Button
           variant="outline"
           className="mt-6 w-full justify-center gap-2 text-destructive hover:text-destructive"
@@ -365,6 +410,6 @@ function More() {
           Sign out
         </Button>
       </div>
-    </AppShell>
+    </>
   );
 }

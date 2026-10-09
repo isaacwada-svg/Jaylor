@@ -407,6 +407,7 @@ export function AdvisorPanel({
       <Button
         onClick={() => setOpen(true)}
         aria-label="Ask Jaylor"
+        data-tour="ask-jaylor"
         className="fixed bottom-36 right-4 z-40 gap-2 rounded-none shadow-float lg:bottom-8 lg:right-8"
       >
         <Sparkles className="size-4" />

@@ -86,6 +86,49 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
 
+
+  /* Logged-in app (PR U): VetX layout system in Jaylor navy and gold. Named
+     tokens only -- values live under :root / .jaylor-app below. */
+  --color-navy: var(--navy);
+  --color-navy-raised: var(--navy-raised);
+  --color-on-navy: var(--on-navy);
+  --color-on-navy-muted: var(--on-navy-muted);
+  --color-nav-text: var(--nav-text);
+  --color-gold-bright: var(--gold-bright);
+  --color-gold-ink: var(--gold-ink);
+  --color-gold-dot: var(--gold-dot);
+  --color-divider: var(--divider);
+  --color-outline: var(--outline);
+  --color-tab-inactive: var(--tab-inactive);
+  --color-link: var(--link);
+  --color-link-hover: var(--link-hover);
+  --color-chip-up: var(--chip-up);
+  --color-chip-up-foreground: var(--chip-up-foreground);
+  --color-chip-warn: var(--chip-warn);
+  --color-chip-warn-foreground: var(--chip-warn-foreground);
+  --color-chip-down: var(--chip-down);
+  --color-chip-down-foreground: var(--chip-down-foreground);
+  --color-chip-info: var(--chip-info);
+  --color-chip-info-foreground: var(--chip-info-foreground);
+  --color-pay-transfer: var(--pay-transfer);
+  --color-pay-cash: var(--pay-cash);
+  --color-pay-jaylor: var(--pay-jaylor);
+  --color-pay-pos: var(--pay-pos);
+  --color-pay-other: var(--pay-other);
+  --color-bar: var(--bar);
+  --color-bar-latest: var(--bar-latest);
+  --color-highlight: var(--highlight);
+  --color-highlight-border: var(--highlight-border);
+  --color-subtle: var(--subtle);
+  --color-avatar: var(--avatar);
+  --color-avatar-foreground: var(--avatar-foreground);
+  --color-count-badge: var(--count-badge);
+  --color-count-badge-foreground: var(--count-badge-foreground);
+
+  --shadow-hero: var(--elevation-hero);
+  --shadow-raised: var(--elevation-raised);
+  --shadow-segment: var(--elevation-segment);
+
   --shadow-float: 0 10px 30px -12px oklch(0.22 0.06 285 / 0.28);
   --shadow-sheet: 0 -8px 40px -16px oklch(0.22 0.06 285 / 0.24);
 }
@@ -143,6 +186,80 @@
   --sidebar-accent-foreground: var(--ink);
   --sidebar-border: oklch(0.91 0.016 85);
   --sidebar-ring: var(--gold);
+
+  /* Shared-component shape tokens. These :root values reproduce the
+     components' previous look exactly, so public marketing and client pages
+     are unchanged; .jaylor-app (the logged-in app) swaps in the VetX system. */
+  --radius-control: calc(var(--radius) - 2px);
+  --radius-card: calc(var(--radius) + 4px);
+  --radius-dialog: var(--radius);
+  --radius-badge: calc(var(--radius) - 2px);
+  --radius-segment: var(--radius);
+  --radius-segment-item: calc(var(--radius) - 2px);
+  --control-h: 2.25rem;
+  --control-h-sm: 2rem;
+  --control-h-lg: 2.5rem;
+  --control-icon: 2.25rem;
+  --btn-weight: 500;
+  --btn-primary-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --btn-outline-border: color-mix(in oklab, var(--gold) 60%, transparent);
+  --btn-outline-border-hover: var(--gold);
+  --btn-outline-bg: color-mix(in oklab, var(--gold-soft) 25%, transparent);
+  --btn-outline-bg-hover: color-mix(in oklab, var(--gold-soft) 60%, transparent);
+  --btn-outline-fg: var(--foreground);
+  --btn-outline-weight: 600;
+  --card-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --segment-h: 2.25rem;
+  --segment-item-h: 0px;
+  --segment-weight: 500;
+  --segment-shadow: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --segment-active-bg: var(--background);
+  --overlay-surface: var(--background);
+  --table-head-weight: 500;
+  --table-head-size: 1em;
+  --table-head-tracking: normal;
+  --table-head-transform: none;
+  --money-weight: 500;
+
+  /* PR U palette (light). Only the logged-in app uses these names. */
+  --navy: #111f39;
+  --navy-raised: #1c2c4d;
+  --on-navy: #ffffff;
+  --on-navy-muted: #a9b3c7;
+  --nav-text: #cdd3df;
+  --gold-bright: #e9c76a;
+  --gold-ink: #8a6a1f;
+  --gold-dot: #e9b949;
+  --divider: #f0ece4;
+  --outline: #ddd6c8;
+  --tab-inactive: #6b7385;
+  --link: #111f39;
+  --link-hover: #8a6a1f;
+  --chip-up: #e6f6ea;
+  --chip-up-foreground: #17803a;
+  --chip-warn: #fdf1dc;
+  --chip-warn-foreground: #8a4b05;
+  --chip-down: #fde8e7;
+  --chip-down-foreground: #b42318;
+  --chip-info: #e8ebf2;
+  --chip-info-foreground: #111f39;
+  --pay-transfer: #111f39;
+  --pay-cash: #6b7a99;
+  --pay-jaylor: #c9a24b;
+  --pay-pos: #b9c3d6;
+  --pay-other: #ddd6c8;
+  --bar: #111f39;
+  --bar-latest: #c9a24b;
+  --highlight: #fbf5e6;
+  --highlight-border: #e6d3a3;
+  --subtle: #faf8f4;
+  --avatar: #f3ead3;
+  --avatar-foreground: #6e5418;
+  --count-badge: #d92d20;
+  --count-badge-foreground: #ffffff;
+  --elevation-hero: 0 8px 24px rgba(17, 31, 57, 0.14);
+  --elevation-raised: 0 6px 16px rgba(17, 31, 57, 0.35);
+  --elevation-segment: 0 1px 2px rgba(17, 31, 57, 0.14);
 }
 
 /* Public-facing identity — official navy and gold. */
@@ -170,6 +287,14 @@
   --border: oklch(0.48 0.04 261.8 / 0.55);
   --input: oklch(0.48 0.04 261.8 / 0.7);
   --ring: var(--gold);
+  /* Component tokens that read the colours above are re-declared here so
+     they resolve against this scope's own values, exactly as before. */
+  --btn-outline-border: color-mix(in oklab, var(--gold) 60%, transparent);
+  --btn-outline-bg: color-mix(in oklab, var(--gold-soft) 25%, transparent);
+  --btn-outline-bg-hover: color-mix(in oklab, var(--gold-soft) 60%, transparent);
+  --btn-outline-fg: var(--foreground);
+  --segment-active-bg: var(--background);
+  --overlay-surface: var(--background);
   background: var(--background);
   color: var(--foreground);
   font-family: var(--font-work);
@@ -272,6 +397,185 @@
   --viz-5: oklch(0.66 0.14 328);
 }
 
+
+/*
+ * PR U: the logged-in app. <html> carries .jaylor-app while any
+ * /_authenticated screen is mounted (see _authenticated/route.tsx), so
+ * dialogs, sheets, popovers and toasts portalled to <body> get the same
+ * tokens. Public marketing (/, /features, /pricing, /passport, /tailors) and
+ * client pages (/t, /a, /r) never get the class and keep their own look.
+ * VetX layout system, Jaylor navy and gold. Light is the default.
+ */
+.jaylor-app {
+  --radius: 0.5rem; /* rounded-lg 8, rounded-xl 12, rounded-2xl 16, rounded-3xl 20 */
+
+  --ink: #111f39;
+  --ivory: #f6f4ef;
+  --surface: #ffffff;
+  --gold: #c9a24b;
+  --gold-soft: #f3ead3;
+  --owed: #b42318;
+  --paid: #17803a;
+  --burgundy: #1c2c4d;
+
+  --background: #f6f4ef;
+  --foreground: #141b2d;
+  --card: #ffffff;
+  --card-foreground: #141b2d;
+  --popover: #ffffff;
+  --popover-foreground: #141b2d;
+  --primary: #111f39;
+  --primary-foreground: #ffffff;
+  --secondary: #f0ece4;
+  --secondary-foreground: #141b2d;
+  --muted: #f0ece4;
+  --muted-foreground: #5b6275;
+  --accent: #f0ece4;
+  --accent-foreground: #141b2d;
+  --destructive: #b42318;
+  --destructive-foreground: #ffffff;
+  --border: #e8e3d9;
+  --input: #ddd6c8;
+  --ring: #c9a24b;
+
+  --sidebar: #111f39;
+  --sidebar-foreground: #cdd3df;
+  --sidebar-primary: #c9a24b;
+  --sidebar-primary-foreground: #111f39;
+  --sidebar-accent: #1c2c4d;
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: #1c2c4d;
+  --sidebar-ring: #c9a24b;
+
+  --radius-control: 12px;
+  --radius-card: 16px;
+  --radius-dialog: 16px;
+  --radius-badge: 999px;
+  --radius-segment: 10px;
+  --radius-segment-item: 8px;
+  --control-h: 2.75rem;
+  --control-h-sm: 2.5rem;
+  --control-h-lg: 3rem;
+  --control-icon: 2.75rem;
+  --btn-weight: 700;
+  --btn-primary-shadow: inset 0 -2px 0 #c9a24b;
+  --btn-outline-border: #ddd6c8;
+  --btn-outline-border-hover: #c9a24b;
+  --btn-outline-bg: #ffffff;
+  --btn-outline-bg-hover: #faf8f4;
+  --btn-outline-fg: #111f39;
+  --btn-outline-weight: 700;
+  --card-shadow: 0 0 #0000;
+  --segment-h: auto;
+  --segment-item-h: 2.25rem;
+  --segment-weight: 700;
+  --segment-shadow: 0 1px 2px rgba(17, 31, 57, 0.14);
+  --segment-active-bg: var(--card);
+  --overlay-surface: var(--card);
+  --table-head-weight: 700;
+  --table-head-size: 11px;
+  --table-head-tracking: 0.5px;
+  --table-head-transform: uppercase;
+  --money-weight: 700;
+}
+
+/* Small buttons still meet the 44px touch target on touch screens. */
+@media (pointer: coarse) {
+  .jaylor-app {
+    --control-h-sm: 2.75rem;
+  }
+}
+
+/* Dark: derived from the same palette. Two classes, so it wins over both
+   .dark and .jaylor-app above. Chips and text checked at 4.5:1 or better on
+   the card colour (#152038). */
+.dark.jaylor-app {
+  --ink: #eef0f5;
+  --ivory: #0d1526;
+  --surface: #152038;
+  --gold-soft: #3a3020;
+  --owed: #ff8a80;
+  --paid: #6cd38f;
+  --burgundy: #1c2c4d;
+
+  --background: #0d1526;
+  --foreground: #eef0f5;
+  --card: #152038;
+  --card-foreground: #eef0f5;
+  --popover: #152038;
+  --popover-foreground: #eef0f5;
+  /* Navy on a navy page has no edge, so primary actions turn gold with navy
+     text in dark; the gold underline becomes deep gold to stay visible. */
+  --primary: #c9a24b;
+  --primary-foreground: #111f39;
+  --secondary: #1d2942;
+  --secondary-foreground: #eef0f5;
+  --muted: #1d2942;
+  --muted-foreground: #a9b3c7;
+  --accent: #1d2942;
+  --accent-foreground: #eef0f5;
+  --destructive: #ff8a80;
+  --destructive-foreground: #0d1526;
+  --border: #24304a;
+  --input: #33405c;
+  --ring: #c9a24b;
+
+  --sidebar: #111f39;
+  --sidebar-border: #24304a;
+
+  --btn-primary-shadow: inset 0 -2px 0 #8a6a1f;
+  --btn-outline-border: #33405c;
+  --btn-outline-bg: #152038;
+  --btn-outline-bg-hover: #1d2942;
+  --btn-outline-fg: #eef0f5;
+  --segment-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+
+  --navy-raised: #1c2c4d;
+  --gold-ink: #e9c76a;
+  --divider: #1d2942;
+  --outline: #33405c;
+  --tab-inactive: #a9b3c7;
+  --link: #e9c76a;
+  --link-hover: #f3da94;
+  --chip-up: #12301f;
+  --chip-up-foreground: #6cd38f;
+  --chip-warn: #3a2a0c;
+  --chip-warn-foreground: #f5b85a;
+  --chip-down: #3d1714;
+  --chip-down-foreground: #ff8a80;
+  --chip-info: #1f2c47;
+  --chip-info-foreground: #c7d2e8;
+  --pay-transfer: #c7d2e8;
+  --pay-cash: #7e8ba8;
+  --pay-jaylor: #c9a24b;
+  --pay-pos: #46577a;
+  --pay-other: #33405c;
+  --bar: #6f84b0;
+  --bar-latest: #c9a24b;
+  --highlight: #2a2416;
+  --highlight-border: #6e5418;
+  --subtle: #1a2640;
+  --avatar: #3a3020;
+  --avatar-foreground: #e9c76a;
+  --elevation-hero: 0 8px 24px rgba(0, 0, 0, 0.45);
+  --elevation-raised: 0 6px 16px rgba(0, 0, 0, 0.5);
+  --elevation-segment: 0 1px 2px rgba(0, 0, 0, 0.4);
+}
+
+.jaylor-app {
+  --figures-variant: tabular-nums lining-nums;
+}
+
+/* #C9A24B on cream or white is 2.3:1, too faint for text or icons, so
+   gold text in the app uses the deep gold (#8A6A1F, 5:1) on light surfaces
+   and the bright gold in dark mode. Bars, indicators and tiles keep the
+   true gold via bg-gold / border-gold. */
+@layer utilities {
+  .jaylor-app .text-gold {
+    color: var(--gold-ink);
+  }
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
@@ -293,6 +597,13 @@
     letter-spacing: -0.01em;
   }
 
+  /* PR U: Playfair Display 700 in the logged-in app (greeting, section
+     titles, wordmark); Montserrat everywhere else. */
+  .jaylor-app :is(h1, h2, h3, h4) {
+    font-weight: 700;
+    letter-spacing: 0;
+  }
+
   input,
   textarea,
   select {
@@ -300,9 +611,18 @@
   }
 }
 
+/* Tabular lining figures for money and numbers in the logged-in app. */
+@utility num {
+  font-variant-numeric: tabular-nums lining-nums;
+  font-feature-settings:
+    "tnum" 1,
+    "lnum" 1;
+  font-weight: 700;
+}
+
 /* Tabular figures for money and measurements */
 @utility figures {
-  font-variant-numeric: tabular-nums;
+  font-variant-numeric: var(--figures-variant, tabular-nums);
   font-feature-settings: "tnum" 1;
 }
 

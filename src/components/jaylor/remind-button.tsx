@@ -2,6 +2,7 @@ import { MessageCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { whatsappLink } from "@/lib/whatsapp";
+import { cn } from "@/lib/utils";
 
 export function RemindButton({
   storeId,
@@ -12,6 +13,8 @@ export function RemindButton({
   message,
   template,
   label = "Remind",
+  iconOnly = false,
+  className,
 }: {
   storeId: string;
   clientId: string;
@@ -21,6 +24,10 @@ export function RemindButton({
   message: string;
   template: string;
   label?: string;
+  /** 44px square icon button (Home's "Who owes you"); `label` becomes its
+   *  accessible name. */
+  iconOnly?: boolean;
+  className?: string;
 }) {
   async function handleClick() {
     window.open(whatsappLink(phone, message), "_blank", "noopener,noreferrer");
@@ -37,6 +44,22 @@ export function RemindButton({
     } catch {
       // Best-effort log; never block the tap-to-send action on it.
     }
+  }
+
+  if (iconOnly) {
+    return (
+      <Button
+        size="icon"
+        variant="outline"
+        className={cn("shrink-0", className)}
+        disabled={!consentWhatsapp}
+        onClick={consentWhatsapp ? handleClick : undefined}
+        aria-label={label}
+        title={consentWhatsapp ? label : "This client hasn't given WhatsApp consent"}
+      >
+        <MessageCircle className="size-[18px]" aria-hidden="true" />
+      </Button>
+    );
   }
 
   if (!consentWhatsapp) {

@@ -15,7 +15,7 @@ export function MoneyText({
   return (
     <span
       className={cn(
-        "figures font-medium",
+        "figures font-(--money-weight)",
         variant === "owed" && "text-owed",
         variant === "paid" && "text-paid",
         variant === "muted" && "text-muted-foreground",
