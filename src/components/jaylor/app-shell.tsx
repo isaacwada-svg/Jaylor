@@ -312,13 +312,13 @@ export function AppShell({
                   onClick={() => setVoiceOrderOpen(true)}
                   className="flex min-h-11 cursor-pointer items-center gap-3 rounded-[10px] px-3 text-left text-[13px] font-semibold text-nav-text transition-colors hover:bg-navy-raised hover:text-on-navy"
                 >
-                  <DiscoveryCue
-                    show={discovery.isUnseen("voice_order")}
-                    pulse={discovery.shouldPulse("voice_order")}
-                  >
-                    <Mic className="size-[18px]" aria-hidden="true" />
-                  </DiscoveryCue>
-                  {t("voice_order") || "Voice order"}
+                  <Mic className="size-[18px] shrink-0" aria-hidden="true" />
+                  <span className="min-w-0 flex-1 truncate">
+                    {t("voice_order") || "Voice order"}
+                  </span>
+                  {discovery.isUnseen("voice_order") && (
+                    <NewTag pulse={discovery.shouldPulse("voice_order")} />
+                  )}
                 </button>
               )}
             </div>
@@ -524,14 +524,9 @@ function SidebarLink({
           : "font-semibold text-nav-text hover:bg-navy-raised hover:text-on-navy",
       )}
     >
-      {cue ? (
-        <DiscoveryCue show={cue.show} pulse={cue.pulse}>
-          {icon}
-        </DiscoveryCue>
-      ) : (
-        icon
-      )}
+      {icon}
       <span className="min-w-0 flex-1 truncate">{label}</span>
+      {cue?.show && <NewTag pulse={cue.pulse} />}
       {locked ? (
         <Lock
           className="size-3.5 shrink-0 text-on-navy-muted"
@@ -543,6 +538,22 @@ function SidebarLink({
         </span>
       ) : null}
     </Link>
+  );
+}
+
+/** Sidebar version of the discovery cue: a small gold tag at the end of the
+ *  row, so it never sits on top of the icon like the card badge does. */
+function NewTag({ pulse }: { pulse: boolean }) {
+  const t = useAppT("app_common");
+  return (
+    <span
+      className={cn(
+        "shrink-0 rounded-full bg-gold px-1.5 py-px text-[10px] font-bold uppercase tracking-[0.4px] text-navy",
+        pulse && "animate-stitch-pulse",
+      )}
+    >
+      {t("new_tag") || "New"}
+    </span>
   );
 }
 
