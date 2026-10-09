@@ -1,10 +1,11 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect, useLayoutEffect } from "react";
+import { useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StoreProvider, useStore } from "@/lib/store-context";
 import { AppI18nProvider } from "@/lib/i18n/i18n-context";
 import { AiCreditsProvider } from "@/lib/ai-credits";
+import { APP_FONTS_HREF, AppThemeScope } from "@/components/jaylor/app-theme-scope";
 
 export const Route = createFileRoute("/_authenticated")({
   staticData: { sitemap: "exclude-subtree" },
@@ -16,7 +17,7 @@ export const Route = createFileRoute("/_authenticated")({
     links: [
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Playfair+Display:wght@700&display=swap",
+        href: APP_FONTS_HREF,
       },
     ],
   }),
@@ -44,17 +45,6 @@ export const Route = createFileRoute("/_authenticated")({
     </AppThemeScope>
   ),
 });
-
-/** Puts .jaylor-app on <html> while a logged-in screen is mounted, so the
- *  app's navy-and-gold tokens (styles.css) also reach dialogs, sheets and
- *  toasts portalled to <body>. Public and client pages never get it. */
-function AppThemeScope({ children }: { children: React.ReactNode }) {
-  useLayoutEffect(() => {
-    document.documentElement.classList.add("jaylor-app");
-    return () => document.documentElement.classList.remove("jaylor-app");
-  }, []);
-  return <>{children}</>;
-}
 
 function RequireStore({ children }: { children: React.ReactNode }) {
   const { memberships, isLoading } = useStore();

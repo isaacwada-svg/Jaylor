@@ -4,7 +4,12 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import type { Json } from "@/integrations/supabase/types";
-import { BrandLogo } from "@/components/jaylor/logo";
+import {
+  AdminShell,
+  AdminPageTitle,
+  isAdminTab,
+  type AdminTab,
+} from "@/components/jaylor/admin-shell";
 import { SectionHeader } from "@/components/jaylor/section-header";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -12,7 +17,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import {
   Dialog,
   DialogContent,
@@ -66,7 +71,9 @@ const VIZ_COLORS = [
 export const Route = createFileRoute("/admin/")({
   staticData: { sitemap: false },
   ssr: false,
-  head: () => ({ meta: [{ title: "Platform admin — Jaylor" }] }),
+  head: () => ({ meta: [{ title: "Platform admin · Jaylor" }] }),
+  validateSearch: (search: Record<string, unknown>): { tab?: AdminTab } =>
+    isAdminTab(search["tab"]) ? { tab: search["tab"] } : {},
   component: Admin,
 });
 
@@ -256,8 +263,26 @@ type AnalyticsData = {
   };
 };
 
+const TAB_TITLES: Record<AdminTab, string> = {
+  overview: "Overview",
+  search: "Stores and users",
+  health: "Health",
+  analytics: "Analytics",
+  plans: "Plans",
+  billing: "Billing",
+  messaging: "Messaging",
+  "ai-usage": "AI usage",
+  leads: "Leads",
+  directory: "Directory",
+  audit: "Audit log",
+  errors: "Errors",
+  security: "Security",
+  team: "Team",
+};
+
 function Admin() {
   const navigate = useNavigate();
+  const { tab: tabParam } = Route.useSearch();
   const [authChecked, setAuthChecked] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
 
@@ -312,91 +337,62 @@ function Admin() {
     );
   }
 
+  const tab: AdminTab =
+    tabParam === "team" && !isSuperAdmin ? "overview" : (tabParam ?? "overview");
+
   return (
-    <main className="linen min-h-screen bg-background">
-      <header className="border-b border-border/60 bg-background/80 backdrop-blur">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
-          <div className="flex items-center gap-3">
-            <BrandLogo markClassName="h-10 w-auto" />
-            <span className="border-l border-border pl-3 text-sm font-medium text-muted-foreground">
-              Platform admin
-            </span>
-          </div>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/dashboard">Exit admin</Link>
-          </Button>
-        </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
-        <Tabs defaultValue="overview">
-          <div className="-mx-4 overflow-x-auto px-4 pb-1 lg:-mx-8 lg:px-8">
-            <TabsList className="w-max">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="search">Search</TabsTrigger>
-              <TabsTrigger value="health">Health</TabsTrigger>
-              <TabsTrigger value="analytics">Analytics</TabsTrigger>
-              <TabsTrigger value="plans">Plans</TabsTrigger>
-              <TabsTrigger value="billing">Billing</TabsTrigger>
-              <TabsTrigger value="messaging">Messaging</TabsTrigger>
-              <TabsTrigger value="ai-usage">AI usage</TabsTrigger>
-              <TabsTrigger value="leads">Leads</TabsTrigger>
-              <TabsTrigger value="directory">Directory</TabsTrigger>
-              <TabsTrigger value="audit">Audit log</TabsTrigger>
-              <TabsTrigger value="errors">Errors</TabsTrigger>
-              <TabsTrigger value="security">Security</TabsTrigger>
-              {isSuperAdmin && <TabsTrigger value="team">Team</TabsTrigger>}
-            </TabsList>
-          </div>
-
-          <TabsContent value="overview" className="mt-6">
+    <AdminShell active={tab} isSuperAdmin={isSuperAdmin}>
+      <div className="mx-auto w-full max-w-6xl">
+        {tab !== "overview" && <AdminPageTitle>{TAB_TITLES[tab]}</AdminPageTitle>}
+        <Tabs value={tab}>
+          <TabsContent value="overview" className="mt-0">
             <OverviewTab />
           </TabsContent>
-          <TabsContent value="search" className="mt-6">
+          <TabsContent value="search" className="mt-0">
             <SearchTab />
           </TabsContent>
-          <TabsContent value="health" className="mt-6">
+          <TabsContent value="health" className="mt-0">
             <HealthTab />
           </TabsContent>
-          <TabsContent value="analytics" className="mt-6">
+          <TabsContent value="analytics" className="mt-0">
             <AnalyticsTab />
           </TabsContent>
-          <TabsContent value="plans" className="mt-6">
+          <TabsContent value="plans" className="mt-0">
             <PlansTab readOnly={isReadOnly} />
           </TabsContent>
-          <TabsContent value="billing" className="mt-6">
+          <TabsContent value="billing" className="mt-0">
             <BillingTab />
           </TabsContent>
-          <TabsContent value="messaging" className="mt-6">
+          <TabsContent value="messaging" className="mt-0">
             <MessagingTab />
           </TabsContent>
 
-          <TabsContent value="ai-usage" className="mt-6">
+          <TabsContent value="ai-usage" className="mt-0">
             <AiUsageTab readOnly={isReadOnly} />
           </TabsContent>
-          <TabsContent value="leads" className="mt-6">
+          <TabsContent value="leads" className="mt-0">
             <LeadsTab />
           </TabsContent>
-          <TabsContent value="directory" className="mt-6">
+          <TabsContent value="directory" className="mt-0">
             <DirectoryTab readOnly={isReadOnly} />
           </TabsContent>
-          <TabsContent value="audit" className="mt-6">
+          <TabsContent value="audit" className="mt-0">
             <AuditTab />
           </TabsContent>
-          <TabsContent value="errors" className="mt-6">
+          <TabsContent value="errors" className="mt-0">
             <ErrorsTab />
           </TabsContent>
-          <TabsContent value="security" className="mt-6">
+          <TabsContent value="security" className="mt-0">
             <SecurityTab />
           </TabsContent>
           {isSuperAdmin && (
-            <TabsContent value="team" className="mt-6">
+            <TabsContent value="team" className="mt-0">
               <TeamTab />
             </TabsContent>
           )}
         </Tabs>
       </div>
-    </main>
+    </AdminShell>
   );
 }
 
@@ -624,7 +620,7 @@ function LiveBoard({
         </div>
       )}
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+      <div className="mt-4 grid gap-3 lg:grid-cols-3 [&>*]:min-w-0">
         <Card className="rounded-2xl">
           <CardContent className="p-5">
             <p className="font-medium">Top stores, last 30 days</p>
@@ -705,7 +701,7 @@ function LiveBoard({
         </Card>
       </div>
 
-      <div className="mt-4 grid gap-3 lg:grid-cols-3">
+      <div className="mt-4 grid gap-3 lg:grid-cols-3 [&>*]:min-w-0">
         <Card className="rounded-2xl">
           <CardContent className="p-5">
             <p className="font-medium">Recent signups</p>
@@ -957,19 +953,19 @@ function OverviewTab() {
 
 function Stat({ label, value, icon: Icon }: { label: string; value: string; icon?: typeof Store }) {
   return (
-    <Card className="rounded-2xl">
-      <CardContent className="flex items-start gap-3 p-4">
-        {Icon && (
-          <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-accent text-gold">
-            <Icon className="size-4" />
-          </span>
-        )}
-        <div className="min-w-0">
-          <p className="line-clamp-2 text-xs uppercase leading-tight tracking-[0.1em] text-muted-foreground">
+    <Card className="rounded-[14px]">
+      <CardContent className="flex flex-col gap-2 px-[18px] py-4">
+        <div className="flex items-center justify-between gap-2">
+          <p className="line-clamp-2 text-[13px] font-semibold leading-tight text-muted-foreground">
             {label}
           </p>
-          <p className="figures mt-1 text-xl">{value}</p>
+          {Icon && (
+            <span className="flex size-8 shrink-0 items-center justify-center rounded-[10px] bg-avatar text-avatar-foreground">
+              <Icon className="size-4" aria-hidden="true" />
+            </span>
+          )}
         </div>
+        <p className="num text-[26px] leading-tight tracking-[-0.5px]">{value}</p>
       </CardContent>
     </Card>
   );

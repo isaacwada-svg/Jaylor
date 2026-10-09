@@ -4,7 +4,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { ArrowLeft } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
-import { BrandLogo } from "@/components/jaylor/logo";
+import { AdminShell } from "@/components/jaylor/admin-shell";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -420,25 +420,16 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
   }
 
   return (
-    <main className="linen min-h-screen bg-background">
-      <header className="border-b border-border">
-        <div className="mx-auto flex w-full max-w-5xl items-center justify-between px-4 py-4 lg:px-8">
-          <div className="flex items-center gap-3">
-            <BrandLogo markClassName="h-10 w-auto" />
-            <span className="border-l border-border pl-3 text-sm font-medium text-muted-foreground">
-              Platform admin
-            </span>
-          </div>
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/admin">
-              <ArrowLeft className="size-4" />
-              Back to admin
-            </Link>
-          </Button>
-        </div>
-      </header>
-
-      <div className="mx-auto w-full max-w-5xl px-4 py-6 lg:px-8 lg:py-10">
+    <AdminShell active="search" isSuperAdmin={isSuperAdmin}>
+      <div className="mx-auto w-full max-w-6xl">
+        <Link
+          to="/admin"
+          search={{ tab: "search" }}
+          className="mb-4 inline-flex min-h-11 items-center gap-1.5 text-[13px] font-bold text-link hover:text-link-hover"
+        >
+          <ArrowLeft className="size-4" />
+          Back to stores and users
+        </Link>
         {isLoading ? (
           <div className="space-y-3">
             <Skeleton className="h-24 rounded-2xl" />
@@ -856,16 +847,16 @@ function StoreDetailContent({ storeId, isSuperAdmin }: { storeId: string; isSupe
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </main>
+    </AdminShell>
   );
 }
 
 function Stat({ label, value }: { label: string; value: string }) {
   return (
-    <Card className="rounded-2xl">
+    <Card className="rounded-[14px]">
       <CardContent className="p-4">
-        <p className="text-xs uppercase tracking-[0.1em] text-muted-foreground">{label}</p>
-        <p className="figures mt-2 text-xl">{value}</p>
+        <p className="text-[13px] font-semibold text-muted-foreground">{label}</p>
+        <p className="num mt-2 text-[22px]">{value}</p>
       </CardContent>
     </Card>
   );
