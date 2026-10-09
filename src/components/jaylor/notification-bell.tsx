@@ -29,7 +29,15 @@ const ICON_BY_TYPE: Record<string, LucideIcon> = {
   plan_limit_approaching: Gauge,
 };
 
-export function NotificationBell({ storeId }: { storeId: string }) {
+export function NotificationBell({
+  storeId,
+  tone = "plain",
+}: {
+  storeId: string;
+  /** "plain": the original ghost icon button. "light"/"dark": the 44px
+   *  square from the Home header, on a light page or on the navy header. */
+  tone?: "plain" | "light" | "dark";
+}) {
   const navigate = useNavigate();
   const { data: notifications } = useNotifications(storeId);
   const markRead = useMarkNotificationRead(storeId);
@@ -45,14 +53,40 @@ export function NotificationBell({ storeId }: { storeId: string }) {
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
-          <Bell className="size-5" />
-          {unreadCount > 0 && (
-            <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-ink">
-              {unreadCount > 9 ? "9+" : unreadCount}
-            </span>
-          )}
-        </Button>
+        {tone === "plain" ? (
+          <Button variant="ghost" size="icon" className="relative" aria-label="Notifications">
+            <Bell className="size-5" />
+            {unreadCount > 0 && (
+              <span className="absolute -right-0.5 -top-0.5 flex size-4 items-center justify-center rounded-full bg-gold text-[10px] font-bold text-ink">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </Button>
+        ) : (
+          <button
+            type="button"
+            data-tour="notifications"
+            aria-label={unreadCount > 0 ? `Notifications, ${unreadCount} new` : "Notifications"}
+            className={cn(
+              "relative flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-xl transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+              tone === "dark"
+                ? "bg-navy-raised text-on-navy hover:bg-navy-raised/80"
+                : "border border-outline bg-card text-primary hover:bg-accent",
+            )}
+          >
+            <Bell className="size-5" aria-hidden="true" />
+            {unreadCount > 0 && (
+              <span
+                className={cn(
+                  "absolute right-[11px] top-[10px] size-2 rounded-full",
+                  tone === "dark"
+                    ? "bg-gold-dot ring-2 ring-navy-raised"
+                    : "bg-count-badge ring-2 ring-card",
+                )}
+              />
+            )}
+          </button>
+        )}
       </PopoverTrigger>
       <PopoverContent align="end" className="w-80 p-0">
         <div className="flex items-center justify-between border-b border-border px-4 py-2.5">

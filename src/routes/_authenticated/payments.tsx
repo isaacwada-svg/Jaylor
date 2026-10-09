@@ -118,9 +118,9 @@ function PaymentsScreen() {
           <ArrowLeft className="size-4" />
           {t("more_link") || "More"}
         </Link>
-        <div className="mt-3 flex items-center justify-between gap-3">
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
           <h1 className="text-3xl">{t("page_title") || "Payments"}</h1>
-          <div className="flex gap-2">
+          <div className="flex flex-wrap gap-2">
             <Button size="sm" variant="outline" asChild>
               <Link to="/unmatched-payments">
                 {t("unmatched_transfers") || "Unmatched transfers"}

@@ -1,5 +1,5 @@
 import { createFileRoute, Outlet, redirect, useNavigate } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { useEffect, useLayoutEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StoreProvider, useStore } from "@/lib/store-context";
@@ -9,28 +9,52 @@ import { AiCreditsProvider } from "@/lib/ai-credits";
 export const Route = createFileRoute("/_authenticated")({
   staticData: { sitemap: "exclude-subtree" },
   ssr: false,
+  // PR U: the app uses Montserrat 700/800 and Playfair Display 700, which the
+  // public pages don't load. Requested here so only logged-in screens pay
+  // for them.
+  head: () => ({
+    links: [
+      {
+        rel: "stylesheet",
+        href: "https://fonts.googleapis.com/css2?family=Montserrat:wght@700;800&family=Playfair+Display:wght@700&display=swap",
+      },
+    ],
+  }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
     return { user: data.user };
   },
   component: () => (
-    <StoreProvider>
-      <RequireStore>
-        <AppLanguageGate>
-          {/* Every authenticated page can use voice order entry, WhatsApp
+    <AppThemeScope>
+      <StoreProvider>
+        <RequireStore>
+          <AppLanguageGate>
+            {/* Every authenticated page can use voice order entry, WhatsApp
               reply drafts, and the Ask Jaylor advisor -- not just AI Studio
               and Festive, which already wrap themselves in their own nested
               provider (harmless, just redundant). One provider here means
               every AI feature's credit sheet/toast UX works everywhere. */}
-          <AiCreditsProvider>
-            <Outlet />
-          </AiCreditsProvider>
-        </AppLanguageGate>
-      </RequireStore>
-    </StoreProvider>
+            <AiCreditsProvider>
+              <Outlet />
+            </AiCreditsProvider>
+          </AppLanguageGate>
+        </RequireStore>
+      </StoreProvider>
+    </AppThemeScope>
   ),
 });
+
+/** Puts .jaylor-app on <html> while a logged-in screen is mounted, so the
+ *  app's navy-and-gold tokens (styles.css) also reach dialogs, sheets and
+ *  toasts portalled to <body>. Public and client pages never get it. */
+function AppThemeScope({ children }: { children: React.ReactNode }) {
+  useLayoutEffect(() => {
+    document.documentElement.classList.add("jaylor-app");
+    return () => document.documentElement.classList.remove("jaylor-app");
+  }, []);
+  return <>{children}</>;
+}
 
 function RequireStore({ children }: { children: React.ReactNode }) {
   const { memberships, isLoading } = useStore();

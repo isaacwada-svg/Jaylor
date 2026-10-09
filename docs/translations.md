@@ -243,3 +243,14 @@ only.
 - Anything a shop or client actually typed themselves (shop bios, client
   notes, custom garment names, style notes) is never translated — it's their
   own words.
+
+## PR U: Home dashboard and app shell
+
+New keys only, same framework: 35 in `app_common` (sidebar and bottom-bar
+labels, search, store switcher, profile menu, theme) and 97 in
+`app_dashboard` (the rebuilt Home: figure cards, collections, Needs
+attention, Recent payments, Fittings today, Who owes you, offline notice).
+Four keys use i18next plurals (`_one` / `_other`): `fig_collected_sub`,
+`fig_owed_sub`, `tag_overdue_days`, `owes_overdue_days`. The `pcm`, `ha`,
+`yo` and `ig` values are machine drafts like the rest of these files and
+need the same native-speaker review.
