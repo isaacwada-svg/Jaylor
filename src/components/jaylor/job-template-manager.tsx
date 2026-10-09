@@ -53,31 +53,54 @@ const TURNAROUND_MODES: { value: TurnaroundMode; label: string }[] = [
   { value: "rush", label: "Rush by default" },
 ];
 
-export function JobTemplateManagerButton({ storeId }: { storeId: string }) {
+export function JobTemplateManagerButton({
+  storeId,
+  contractMode = false,
+}: {
+  storeId: string;
+  /** From the Contracts page: lists contract job types only, and new ones
+   *  start as contracts (one payer, quote first). */
+  contractMode?: boolean;
+}) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <Button variant="outline" size="sm" onClick={() => setOpen(true)}>
         <Settings2 className="size-4" />
-        Manage job types
+        {contractMode ? "Manage contract types" : "Manage job types"}
       </Button>
-      <JobTemplateManager open={open} onOpenChange={setOpen} storeId={storeId} />
+      <JobTemplateManager
+        open={open}
+        onOpenChange={setOpen}
+        storeId={storeId}
+        contractMode={contractMode}
+      />
     </>
   );
 }
 
-function JobTemplateManager({
+export function JobTemplateManager({
   open,
   onOpenChange,
   storeId,
+  contractMode = false,
+  startWithNew = false,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   storeId: string;
+  contractMode?: boolean;
+  /** Opens straight on the "add" form (the picker's "Add your own" tile). */
+  startWithNew?: boolean;
 }) {
   const queryClient = useQueryClient();
-  const { data: templates } = useJobTemplates(open ? storeId : undefined);
+  const { data: allTemplates } = useJobTemplates(open ? storeId : undefined);
+  const templates = contractMode ? (allTemplates ?? []).filter((t) => t.isContract) : allTemplates;
   const [editing, setEditing] = useState<JobTemplateWithMeta | "new" | null>(null);
+
+  useEffect(() => {
+    if (open) setEditing(startWithNew ? "new" : null);
+  }, [open, startWithNew]);
   const [busyId, setBusyId] = useState<string | null>(null);
 
   function invalidate() {
@@ -121,10 +144,12 @@ function JobTemplateManager({
         onOpenChange={onOpenChange}
         storeId={storeId}
         template={editing === "new" ? null : editing}
-        onBack={() => setEditing(null)}
+        contractMode={contractMode}
+        onBack={() => (startWithNew ? onOpenChange(false) : setEditing(null))}
         onSaved={() => {
           invalidate();
-          setEditing(null);
+          if (startWithNew) onOpenChange(false);
+          else setEditing(null);
         }}
       />
     );
@@ -134,12 +159,15 @@ function JobTemplateManager({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
         <SheetHeader className="text-left">
-          <SheetTitle className="text-2xl">Manage job types</SheetTitle>
+          <SheetTitle className="text-2xl">
+            {contractMode ? "Manage contract types" : "Manage job types"}
+          </SheetTitle>
         </SheetHeader>
         <div className="mt-2 space-y-2 pb-4">
           <p className="text-sm text-muted-foreground">
-            Hide the built-in kinds you don&apos;t use, or add your own. Built-ins can&apos;t be
-            deleted since past jobs rely on them, but you can hide them from the picker.
+            {contractMode
+              ? "Add any kind of contract you take on (church choir robes, hospital scrubs, security staff, hotel uniforms...). Built-ins can be hidden but not deleted, since past jobs rely on them."
+              : "Hide the built-in kinds you don't use, or add your own. Built-ins can't be deleted since past jobs rely on them, but you can hide them from the picker."}
           </p>
           {(templates ?? []).map((t) => (
             <div
@@ -193,7 +221,7 @@ function JobTemplateManager({
             onClick={() => setEditing("new")}
           >
             <Plus className="size-4" />
-            Add a custom job type
+            {contractMode ? "Add a contract type" : "Add a custom job type"}
           </Button>
         </div>
       </SheetContent>
@@ -223,6 +251,7 @@ function JobTemplateForm({
   onOpenChange,
   storeId,
   template,
+  contractMode,
   onBack,
   onSaved,
 }: {
@@ -230,6 +259,7 @@ function JobTemplateForm({
   onOpenChange: (open: boolean) => void;
   storeId: string;
   template: JobTemplateWithMeta | null;
+  contractMode: boolean;
   onBack: () => void;
   onSaved: () => void;
 }) {
@@ -245,8 +275,11 @@ function JobTemplateForm({
   const [turnaroundMode, setTurnaroundMode] = useState<TurnaroundMode>(
     template?.turnaroundMode ?? "standard",
   );
-  const [isContract, setIsContract] = useState(template?.isContract ?? false);
+  const [isContract, setIsContract] = useState(template?.isContract ?? contractMode);
   const [busy, setBusy] = useState(false);
+  // A contract is always one payer (the school, company or organisation);
+  // the Contracts page lists single-payer jobs only.
+  const savedPayerMode: PayerMode = isContract ? "single_payer" : payerMode;
 
   useEffect(() => {
     if (!open) return;
@@ -257,7 +290,7 @@ function JobTemplateForm({
     setCollectionMode(template?.collectionMode ?? "measurements");
     setPricingMode(template?.pricingMode ?? "flat");
     setTurnaroundMode(template?.turnaroundMode ?? "standard");
-    setIsContract(template?.isContract ?? false);
+    setIsContract(template?.isContract ?? contractMode);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open, template?.id]);
 
@@ -277,7 +310,7 @@ function JobTemplateForm({
             label: label.trim(),
             description: description.trim(),
             name_placeholder: namePlaceholder.trim(),
-            payer_mode: payerMode,
+            payer_mode: savedPayerMode,
             collection_mode: collectionMode,
             pricing_mode: pricingMode,
             turnaround_mode: turnaroundMode,
@@ -295,7 +328,7 @@ function JobTemplateForm({
           label: label.trim(),
           description: description.trim(),
           name_placeholder: namePlaceholder.trim(),
-          payer_mode: payerMode,
+          payer_mode: savedPayerMode,
           collection_mode: collectionMode,
           pricing_mode: pricingMode,
           turnaround_mode: turnaroundMode,
@@ -318,7 +351,11 @@ function JobTemplateForm({
       <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
         <SheetHeader className="text-left">
           <SheetTitle className="text-2xl">
-            {isEdit ? `Edit ${template.label}` : "Add a custom job type"}
+            {isEdit
+              ? `Edit ${template.label}`
+              : contractMode
+                ? "Add a contract type"
+                : "Add a custom job type"}
           </SheetTitle>
         </SheetHeader>
         <form onSubmit={handleSubmit} className="mt-2 space-y-4 pb-4">
@@ -335,7 +372,9 @@ function JobTemplateForm({
               id="jt-label"
               value={label}
               onChange={(e) => setLabel(e.target.value)}
-              placeholder="e.g. Traditional wedding attire"
+              placeholder={
+                contractMode ? "e.g. Hospital scrubs" : "e.g. Traditional wedding attire"
+              }
               required
             />
           </div>
@@ -358,21 +397,23 @@ function JobTemplateForm({
               placeholder="Shown as a placeholder when naming a new order"
             />
           </div>
-          <div className="space-y-2">
-            <Label>Who pays?</Label>
-            <Select value={payerMode} onValueChange={(v) => setPayerMode(v as PayerMode)}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAYER_MODES.map((m) => (
-                  <SelectItem key={m.value} value={m.value}>
-                    {m.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+          {!isContract && (
+            <div className="space-y-2">
+              <Label>Who pays?</Label>
+              <Select value={payerMode} onValueChange={(v) => setPayerMode(v as PayerMode)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {PAYER_MODES.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>
+                      {m.label}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          )}
           <div className="space-y-2">
             <Label>What do you collect from each person?</Label>
             <Select
@@ -426,9 +467,10 @@ function JobTemplateForm({
           </div>
           <div className="flex items-center justify-between rounded-xl border border-border p-3">
             <div>
-              <p className="text-sm font-medium">Starts as a quote</p>
+              <p className="text-sm font-medium">Contract (starts as a quote)</p>
               <p className="text-xs text-muted-foreground">
-                For school/company-style jobs needing a formal quote and invoice before it's live.
+                A contract: one client pays, with a formal quote and invoice before it goes live. It
+                shows on the Contracts page.
               </p>
             </div>
             <Switch checked={isContract} onCheckedChange={setIsContract} />

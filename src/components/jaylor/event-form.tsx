@@ -8,7 +8,10 @@ import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { jobTemplate, type JobTemplate } from "@/lib/job-templates";
 import { useJobTemplates } from "@/lib/use-job-templates";
-import { JobTemplateManagerButton } from "@/components/jaylor/job-template-manager";
+import {
+  JobTemplateManager,
+  JobTemplateManagerButton,
+} from "@/components/jaylor/job-template-manager";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { Button } from "@/components/ui/button";
@@ -87,6 +90,8 @@ export function EventForm({
   const [shippingFee, setShippingFee] = useState("");
   const [busy, setBusy] = useState(false);
   const [quoteLink, setQuoteLink] = useState<string | null>(null);
+  const [addTypeOpen, setAddTypeOpen] = useState(false);
+  const contractMode = !!templateFilter;
 
   useEffect(() => {
     if (!open) return;
@@ -360,8 +365,30 @@ export function EventForm({
             <p className="mt-1 text-xs text-muted-foreground">{t.description}</p>
           </button>
         ))}
+        <button
+          type="button"
+          onClick={() => setAddTypeOpen(true)}
+          className="flex flex-col items-start justify-center rounded-xl border border-dashed border-outline p-3 text-left transition-colors hover:border-gold hover:bg-accent/40"
+        >
+          <span className="flex items-center gap-1.5 text-sm font-medium">
+            <Plus className="size-4" />
+            {contractMode ? "Another kind of contract" : "Another kind of job"}
+          </span>
+          <span className="mt-1 text-xs text-muted-foreground">
+            {contractMode
+              ? "Church robes, hospital scrubs, security staff... name it once, reuse it."
+              : "Name your own job type once and reuse it."}
+          </span>
+        </button>
       </div>
-      {!templateFilter && <JobTemplateManagerButton storeId={storeId} />}
+      <JobTemplateManagerButton storeId={storeId} contractMode={contractMode} />
+      <JobTemplateManager
+        open={addTypeOpen}
+        onOpenChange={setAddTypeOpen}
+        storeId={storeId}
+        contractMode={contractMode}
+        startWithNew
+      />
     </div>
   );
 
@@ -740,9 +767,11 @@ export function EventForm({
       ? `Edit ${event?.name ?? "group order"}`
       : template
         ? `New ${template.label.toLowerCase()} order`
-        : "What kind of job?";
+        : contractMode
+          ? "What kind of contract?"
+          : "What kind of job?";
 
-  const showPickerHelp = title === "What kind of job?";
+  const showPickerHelp = !isEdit && !template && !quoteLink;
   const titleHelp = (
     <HelpTooltip>
       One link collects measurements, style choices and each person's own payment — for aso-ebi,
