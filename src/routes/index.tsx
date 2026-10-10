@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Check, Package, Wallet, Ruler } from "lucide-react";
+import { ArrowRight, Camera, Check, Mic, Package, Wallet, Ruler } from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Button } from "@/components/ui/button";
@@ -11,7 +11,7 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV } from "@/lib/jaylor";
+import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV, SUPPORT_WHATSAPP_URL } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
 import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
@@ -30,7 +30,7 @@ export const Route = createFileRoute("/")({
       {
         name: "description",
         content:
-          "Jaylor helps Nigerian tailors manage orders, payments, measurements and staff, with client tracking and approval built in.",
+          "Jaylor is the AI-powered app for Nigerian tailors and fashion houses. Track orders, save measurements, collect every naira and get your own storefront. Free to start.",
       },
       {
         property: "og:title",
@@ -48,9 +48,39 @@ export const Route = createFileRoute("/")({
 });
 
 const WORKROOM_FEATURES = [
-  { number: "01", icon: Package, title: "Keep every order on track", body: "Keep fabric photos, garment details, deadlines and progress together. Share a tracking link so your client knows where their order stands." },
-  { number: "02", icon: Ruler, title: "Keep measurements close", body: "Save each client’s measurements with their history. Find the right record for a new garment instead of searching through old notebooks." },
-  { number: "03", icon: Wallet, title: "Know what is paid and owed", body: "Record deposits and payments against each order. See the balance still to collect, without adding it up by hand." },
+  {
+    number: "01",
+    icon: Package,
+    title: "Keep every order on track",
+    body: "Keep fabric photos, garment details, deadlines and progress together. Share a tracking link so your client knows where their order stands.",
+  },
+  {
+    number: "02",
+    icon: Ruler,
+    title: "Keep measurements close",
+    body: "Save each client’s measurements with their history. Find the right record for a new garment instead of searching through old notebooks.",
+  },
+  {
+    number: "03",
+    icon: Wallet,
+    title: "Know what is paid and owed",
+    body: "Record deposits and payments against each order. See the balance still to collect, without adding it up by hand.",
+  },
+];
+
+const AI_FEATURES = [
+  {
+    number: "01",
+    icon: Mic,
+    title: "Speak an order",
+    body: "Describe a new order out loud. Jaylor's AI turns what you said into a draft order for you to check before anything is saved.",
+  },
+  {
+    number: "02",
+    icon: Camera,
+    title: "Scan a notebook page",
+    body: "Photograph an old notebook page. Jaylor's AI reads it into draft orders, ready for you to review and confirm, never saved automatically.",
+  },
 ];
 
 const HOME_FAQ = [
@@ -155,7 +185,7 @@ function Home() {
         <div className="relative mx-auto flex w-full max-w-[1440px] items-center px-5 pb-10 pt-28 sm:px-8 sm:pb-12 lg:px-12 lg:pt-32">
           <div className="editorial-rise max-w-3xl">
             <p className="text-sm uppercase text-gold">
-              For tailors &amp; fashion houses · Nigeria
+              AI-powered · For tailors &amp; fashion houses · Nigeria
             </p>
             <h1 className="mt-6 text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
               Jaylor for your tailoring business.
@@ -214,7 +244,46 @@ function Home() {
                   <span className="text-xs text-gold">{number}</span>
                   <div>
                     <h3 className="text-3xl">{title}</h3>
-                    <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">{body}</p>
+                    <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
+                      {body}
+                    </p>
+                  </div>
+                  <Icon className="size-5 text-gold transition-transform duration-500 group-hover:translate-x-1" />
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        aria-label="Less typing, more making"
+        className="border-b border-border py-12 lg:py-16"
+      >
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div>
+              <p className="text-xs uppercase text-gold">Less typing, more making</p>
+              <h2 className="mt-5 max-w-md text-4xl leading-tight sm:text-5xl">
+                Talk to Jaylor, or show it a photo.
+              </h2>
+              <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
+                Jaylor's AI turns a quick voice note or a photo of an old notebook page into a draft
+                order for you to check. Nothing is ever saved until you confirm it.
+              </p>
+            </div>
+            <div className="border-t border-border">
+              {AI_FEATURES.map(({ number, icon: Icon, title, body }) => (
+                <article
+                  key={number}
+                  className="group grid gap-5 border-b border-border py-8 sm:grid-cols-[56px_1fr_auto] sm:items-start"
+                >
+                  <span className="text-xs text-gold">{number}</span>
+                  <div>
+                    <h3 className="text-3xl">{title}</h3>
+                    <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
+                      {body}
+                    </p>
                   </div>
                   <Icon className="size-5 text-gold transition-transform duration-500 group-hover:translate-x-1" />
                 </article>
@@ -229,13 +298,30 @@ function Home() {
           <div>
             <p className="text-sm uppercase text-gold">Inside Jaylor</p>
             <h2 className="mt-4 text-4xl leading-tight">Your workroom at a glance.</h2>
-            <p className="mt-5 text-base leading-7 text-muted-foreground">Orders due, fittings and outstanding balances, together in your workroom.</p>
-            <p className="mt-3 text-sm text-muted-foreground">Product screenshot with sample figures, not customer results.</p>
-            <Button asChild variant="outline" className="mt-6 rounded-none"><Link to="/features">Explore all features <ArrowRight /></Link></Button>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">
+              Orders due, fittings and outstanding balances, together in your workroom.
+            </p>
+            <p className="mt-3 text-sm text-muted-foreground">
+              Product screenshot with sample figures, not customer results.
+            </p>
+            <Button asChild variant="outline" className="mt-6 rounded-none">
+              <Link to="/features">
+                Explore all features <ArrowRight />
+              </Link>
+            </Button>
           </div>
-          <img src={dashboardProduct} alt="Jaylor workroom screenshot with sample orders, balances and fittings" width={1420} height={1976} loading="lazy" className="mx-auto h-auto w-full max-w-80" />
+          <img
+            src={dashboardProduct}
+            alt="Jaylor workroom screenshot with sample orders, balances and fittings"
+            width={1420}
+            height={1976}
+            loading="lazy"
+            className="mx-auto h-auto w-full max-w-80"
+          />
         </div>
       </section>
+
+      <UncollectedCalculator />
 
       <section className="grid border-b border-border lg:grid-cols-2">
         <div className="relative min-h-[260px] overflow-hidden lg:min-h-[400px]">
@@ -255,8 +341,9 @@ function Home() {
               A shareable record of your client’s measurements.
             </h2>
             <p className="mt-7 text-base leading-7 text-muted-foreground">
-              A Measurement Passport is a client’s saved measurement record. They choose when to share
-              it with another Jaylor tailor and can see their measurement history in one place.
+              A Measurement Passport is a client’s saved measurement record. They choose when to
+              share it with another Jaylor tailor and can see their measurement history in one
+              place.
             </p>
             <Button
               asChild
@@ -272,7 +359,30 @@ function Home() {
         </div>
       </section>
 
-      <UncollectedCalculator />
+      <section aria-label="A note from the team" className="py-14 lg:py-16">
+        <div className="mx-auto w-full max-w-2xl px-5 text-center sm:px-8 lg:px-10">
+          <div className="border border-gold/40 bg-secondary/40 px-6 py-10 sm:px-10">
+            <p className="text-xs uppercase text-gold">
+              Built in Abuja, for tailors across Nigeria
+            </p>
+            <p className="mt-6 text-lg leading-8 text-foreground/90">
+              "We built Jaylor after watching talented tailors lose money and sleep to lost
+              notebooks, unpaid balances and endless 'is my cloth ready?' calls. We are now
+              welcoming our first tailors, and I will personally help you set up your shop and add
+              your first customers."
+            </p>
+            <p className="mt-6 text-sm text-muted-foreground">Isaac, Jaylor team</p>
+            <a
+              href={SUPPORT_WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="mt-4 inline-block text-sm text-gold underline underline-offset-4 hover:text-foreground"
+            >
+              Chat with me on WhatsApp
+            </a>
+          </div>
+        </div>
+      </section>
 
       <section id="pricing" className="border-b border-border bg-card py-12 lg:py-16">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
@@ -284,8 +394,8 @@ function Home() {
               </h2>
             </div>
             <p className="max-w-lg text-base leading-7 text-muted-foreground lg:justify-self-end">
-              Every new store receives 14 days of Growth at no cost. If you return to Free, your
-              records remain yours.
+              Every new store gets 30 days of the full Growth plan free. No card required. If you
+              return to Free, your records remain yours.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4">
@@ -317,14 +427,17 @@ function Home() {
                     <Link to="/custom">Talk to us</Link>
                   ) : (
                     <Link to="/auth" search={{ mode: "signup" }}>
-                      {plan.tier === "Free" ? "Start free" : "Start trial"}
+                      {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}
                     </Link>
                   )}
                 </Button>
               </article>
             ))}
           </div>
-          <div className="border-t border-border pt-7 text-right">
+          <p className="mt-4 text-center text-xs text-muted-foreground">
+            On the way: automatic WhatsApp reminders for fittings and pickups.
+          </p>
+          <div className="mt-3 border-t border-border pt-7 text-right">
             <Link
               to="/pricing"
               className="inline-flex items-center gap-2 text-xs uppercase text-gold hover:text-foreground"
@@ -380,7 +493,9 @@ function Home() {
             Start free <ArrowRight />
           </Link>
         </Button>
-        <div className="mt-5"><SupportLink className="h-12 max-w-full rounded-none px-4" /></div>
+        <div className="mt-5">
+          <SupportLink className="h-12 max-w-full rounded-none px-4" />
+        </div>
       </section>
 
       <footer className="py-14">
@@ -414,7 +529,9 @@ function Home() {
             <div>
               <p className="text-xs uppercase text-muted-foreground">Company</p>
               <nav className="mt-3 flex flex-col gap-3 text-sm text-muted-foreground">
-                <Link to="/contact" className="hover:text-gold">Contact & support</Link>
+                <Link to="/contact" className="hover:text-gold">
+                  Contact & support
+                </Link>
                 <Link to="/about" className="hover:text-gold">
                   About
                 </Link>

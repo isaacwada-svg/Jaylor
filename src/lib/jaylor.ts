@@ -105,7 +105,7 @@ export function planCodeToTier(planCode: string | null | undefined): Tier {
 }
 
 /**
- * Every new store gets a 14-day Growth trial before it settles onto its
+ * Every new store gets a 30-day Growth trial before it settles onto its
  * real plan, so the displayed tier isn't just the raw plan_code column
  * while trial_ends_at is still in the future.
  */
@@ -197,6 +197,13 @@ export const COMPANY_LINE =
 
 export const SUPPORT_EMAIL = "info@jaylor.com.ng";
 export const SUPPORT_PHONE = "+234 902 810 1389";
+
+/** General "tell me more" WhatsApp link -- the floating button, the team-note
+ *  quote on the homepage, and anywhere else that isn't already asking a
+ *  specific support question (see SupportLink for that one). */
+export const SUPPORT_WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE.replace(/\D/g, "")}?text=${encodeURIComponent(
+  "Hello Jaylor, I would like to know more about the app",
+)}`;
 
 /**
  * Jaylor's own social profiles, given by the owner on 2026-10-10 and shown in

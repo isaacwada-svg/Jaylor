@@ -385,7 +385,7 @@ function AdminAiPage() {
         <section>
           <h2 className="text-xl">Plan credits</h2>
           <p className="text-xs text-muted-foreground">
-            Monthly credits · Free lifetime trial · 14-day trial credits
+            Monthly credits · Free lifetime trial · 30-day trial credits
           </p>
           <div className="mt-2 space-y-2">
             {(tables?.allowances ?? []).map(
