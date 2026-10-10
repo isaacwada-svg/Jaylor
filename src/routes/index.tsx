@@ -193,7 +193,7 @@ function Home() {
               </Link>
             )}
           </nav>
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
             {signedIn ? (
               <Button asChild variant="premium" className="rounded-none px-5 uppercase">
                 <Link to="/dashboard">Open Jaylor</Link>
@@ -202,11 +202,11 @@ function Home() {
               <>
                 <Link
                   to="/auth"
-                  className="hidden text-sm text-foreground/90 hover:text-foreground sm:block"
+                  className="py-2 text-sm text-foreground/90 hover:text-foreground"
                 >
                   Sign in
                 </Link>
-                <Button asChild variant="premium" className="rounded-none px-5 uppercase">
+                <Button asChild variant="premium" className="rounded-none px-4 uppercase sm:px-5">
                   <Link to="/auth" search={{ mode: "signup" }}>
                     Start free
                   </Link>
@@ -232,7 +232,7 @@ function Home() {
         <div className="relative mx-auto flex w-full max-w-[1440px] items-center px-5 pb-10 pt-28 sm:px-8 sm:pb-12 lg:px-12 lg:pt-32">
           <div className="editorial-rise max-w-3xl">
             <p className="text-sm uppercase text-gold">
-              AI-powered · For tailors &amp; fashion houses · Nigeria
+              For tailors &amp; fashion houses · Nigeria
             </p>
             <h1 className="mt-6 text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
               Run your tailoring business without the chaos.
@@ -254,7 +254,13 @@ function Home() {
               </Button>
               <SupportLink className="h-12 rounded-none px-5" />
             </div>
-            <p className="mt-5 text-xs text-muted-foreground">Free to start. No card required.</p>
+            <p className="mt-5 text-sm text-muted-foreground">
+              Free plan forever · paid plans from ₦6,000/month ·{" "}
+              <a href="#pricing" className="text-foreground underline underline-offset-4 hover:text-gold">
+                See prices
+              </a>
+              . No card required.
+            </p>
             <a
               href="#how-it-works"
               className="mt-3 inline-block py-2 text-sm text-foreground underline underline-offset-4 transition-colors hover:text-gold"
@@ -358,34 +364,6 @@ function Home() {
               ))}
             </div>
           </div>
-        </div>
-      </section>
-
-      <section aria-label="Inside Jaylor" className="border-b border-border bg-secondary/40 py-12">
-        <div className="mx-auto grid max-w-5xl items-center gap-8 px-5 sm:px-8 md:grid-cols-2">
-          <div>
-            <p className="text-sm uppercase text-gold">Inside Jaylor</p>
-            <h2 className="mt-4 text-4xl leading-tight">Your workroom at a glance.</h2>
-            <p className="mt-5 text-base leading-7 text-muted-foreground">
-              Orders due, fittings and outstanding balances, together in your workroom.
-            </p>
-            <p className="mt-3 text-sm text-muted-foreground">
-              Product screenshot with sample figures, not customer results.
-            </p>
-            <Button asChild variant="outline" className="mt-6 rounded-none">
-              <Link to="/features">
-                Explore all features <ArrowRight />
-              </Link>
-            </Button>
-          </div>
-          <img
-            src={dashboardProduct}
-            alt="Jaylor workroom screenshot with sample orders, balances and fittings"
-            width={1420}
-            height={1976}
-            loading="lazy"
-            className="mx-auto h-auto w-full max-w-80"
-          />
         </div>
       </section>
 

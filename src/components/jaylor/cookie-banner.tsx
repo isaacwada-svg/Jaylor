@@ -54,10 +54,13 @@ export function CookieBanner() {
       aria-label="Cookie choices"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-accent/40 bg-primary text-primary-foreground shadow-2xl"
     >
-      <div className="mx-auto flex max-w-5xl flex-col gap-3 px-4 py-4 sm:flex-row sm:items-center sm:gap-6">
-        <p className="flex-1 text-sm leading-relaxed text-primary-foreground/85">
-          Jaylor uses essential storage to keep you signed in. With your permission we also use
-          Google Analytics and Microsoft Clarity to improve the app and catch errors.{" "}
+      <div className="mx-auto flex max-w-5xl flex-col gap-2 px-4 py-3 sm:flex-row sm:items-center sm:gap-6 sm:py-4">
+        <p className="flex-1 text-xs leading-relaxed text-primary-foreground/85 sm:text-sm">
+          <span className="sm:hidden">We use cookies to keep you signed in and improve Jaylor. </span>
+          <span className="hidden sm:inline">
+            Jaylor uses essential storage to keep you signed in. With your permission we also use
+            Google Analytics and Microsoft Clarity to improve the app and catch errors.{" "}
+          </span>
           <Link to="/cookies" className="text-accent underline underline-offset-2">
             Learn more
           </Link>
