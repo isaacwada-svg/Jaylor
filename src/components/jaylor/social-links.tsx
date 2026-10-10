@@ -1,5 +1,5 @@
-import { Facebook, Instagram, Linkedin } from "lucide-react";
-import { SOCIAL_LINKS } from "@/lib/jaylor";
+import { Facebook, Instagram, Linkedin, Mail } from "lucide-react";
+import { SOCIAL_LINKS, SUPPORT_EMAIL } from "@/lib/jaylor";
 
 const SOCIAL_ICONS = {
   facebook: Facebook,
