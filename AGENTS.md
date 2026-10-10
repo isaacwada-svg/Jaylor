@@ -10,4 +10,4 @@
 <!-- LOVABLE:END -->
 
 - Public sample walkthroughs are isolated client-only state with no business-data writes or live tracking links, so visitors can explore without affecting real shops.
-- Reuse the shared support link and the existing verified support contact across public pages so contact details remain consistent.
+- Reuse the shared support link, support contact and social profiles from the shared constants across public pages so contact details remain consistent.
