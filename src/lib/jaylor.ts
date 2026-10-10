@@ -198,6 +198,36 @@ export const COMPANY_LINE =
 export const SUPPORT_EMAIL = "info@jaylor.com.ng";
 export const SUPPORT_PHONE = "+234 902 810 1389";
 
+/**
+ * Jaylor's own social profiles, given by the owner on 2026-10-10 and shown in
+ * public page footers and the contact screen. Instagram was confirmed live;
+ * Facebook and LinkedIn sit behind a sign-in wall so they could not be opened
+ * from here — if one of those links ever looks wrong, correct the address
+ * below and every page updates with it.
+ */
+export const SOCIAL_LINKS = [
+  {
+    key: "facebook",
+    label: "Facebook",
+    handle: "Jaylor",
+    url: "https://www.facebook.com/jaylorhq",
+  },
+  {
+    key: "instagram",
+    label: "Instagram",
+    handle: "@jaylorhq",
+    url: "https://www.instagram.com/jaylorhq/",
+  },
+  {
+    key: "linkedin",
+    label: "LinkedIn",
+    handle: "JaylorHQ",
+    url: "https://www.linkedin.com/company/jaylorhq/",
+  },
+] as const;
+
+export type SocialKey = (typeof SOCIAL_LINKS)[number]["key"];
+
 /** Switch to true once the tailor directory has enough real listings to be
  *  worth a top-nav link. Until then it is reachable from the footer and from
  *  the Measurement Passport page, just not the main navigation. */
