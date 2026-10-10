@@ -54,8 +54,23 @@ type Overview = {
 const n = (v: number, d = 0) =>
   Number(v ?? 0).toLocaleString("en-NG", { maximumFractionDigits: d });
 
+type FunnelFeature = {
+  feature_key: string;
+  label: string;
+  credits: number;
+  min_plan: string;
+  completed: number;
+  refunded: number;
+  in_progress: number;
+  insufficient_credits: number;
+  plan_blocked: number;
+  other_blocked: number;
+  attempts: number;
+};
+
 function AdminAiPage() {
   const qc = useQueryClient();
+  const [funnelDays, setFunnelDays] = useState(30);
   const { data: isAdmin, isLoading } = useQuery({
     queryKey: ["is-platform-admin"],
     queryFn: async () => (await supabase.rpc("is_platform_admin")).data === true,
@@ -64,6 +79,14 @@ function AdminAiPage() {
     queryKey: ["admin-ai-overview"],
     enabled: isAdmin === true,
     queryFn: async () => (await db.rpc("admin_ai_cost_overview")).data as Overview,
+  });
+  const { data: funnel } = useQuery({
+    queryKey: ["admin-ai-funnel", funnelDays],
+    enabled: isAdmin === true,
+    queryFn: async () =>
+      (await db.rpc("admin_ai_feature_funnel", { p_days: funnelDays })).data as {
+        features: FunnelFeature[];
+      },
   });
   const { data: myRole } = useQuery({
     queryKey: ["admin-my-role"],
@@ -253,6 +276,68 @@ function AdminAiPage() {
               ),
             )}
           </div>
+        </section>
+
+        <section>
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="text-xl">Feature funnel</h2>
+            <div className="flex gap-1">
+              {[7, 30, 90].map((d) => (
+                <Button
+                  key={d}
+                  size="sm"
+                  variant={funnelDays === d ? "default" : "outline"}
+                  onClick={() => setFunnelDays(d)}
+                >
+                  {d}d
+                </Button>
+              ))}
+            </div>
+          </div>
+          <p className="mt-1 text-xs text-muted-foreground">
+            How many attempts at each AI feature actually complete, versus get turned away by
+            running out of credits or hitting a plan wall — use this to tell whether a feature's
+            price is scaring people off. "Insufficient credits"/"Plan-blocked" only cover attempts
+            from after this was added; older turn-aways were never recorded.
+          </p>
+          <table className="mt-2 w-full text-sm">
+            <thead>
+              <tr className="text-left text-muted-foreground">
+                <th>Feature</th>
+                <th>Credits</th>
+                <th>Attempts</th>
+                <th>Completed</th>
+                <th>Refunded</th>
+                <th>Out of credits</th>
+                <th>Plan-blocked</th>
+                <th>Completion rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {(funnel?.features ?? []).map((f) => {
+                const rate = f.attempts > 0 ? f.completed / f.attempts : null;
+                const scary = rate !== null && f.attempts >= 5 && rate < 0.5;
+                return (
+                  <tr key={f.feature_key} className={scary ? "text-destructive" : ""}>
+                    <td className="py-1">
+                      {f.label}
+                      {scary ? " ⚠" : ""}
+                    </td>
+                    <td>{f.credits}</td>
+                    <td>{n(f.attempts)}</td>
+                    <td>{n(f.completed)}</td>
+                    <td>{n(f.refunded)}</td>
+                    <td>{n(f.insufficient_credits)}</td>
+                    <td>{n(f.plan_blocked)}</td>
+                    <td>{rate === null ? "—" : `${Math.round(rate * 100)}%`}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+          <p className="mt-1 text-xs text-muted-foreground">
+            ⚠ = under 50% completion rate with at least 5 attempts in this window.
+          </p>
         </section>
 
         <section>

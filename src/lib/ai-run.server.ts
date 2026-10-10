@@ -373,7 +373,61 @@ export async function getAiConfig(db: SupabaseClient): Promise<Record<string, Js
   return config;
 }
 
+/**
+ * Every AI feature attempt that never reaches `reserve_ai_credits` -- so
+ * never gets an ai_ledger row -- is logged here instead, for the admin
+ * feature-funnel view (see admin_ai_feature_funnel): how many attempts at
+ * each feature are turned away by a plan wall or by running out of
+ * credits, versus how many actually complete. Fire-and-forget, same as
+ * the budget alert below -- a logging failure should never affect the
+ * user-facing response.
+ */
+function logFeatureBlock(
+  db: SupabaseClient,
+  params: {
+    storeId: string;
+    userId: string;
+    feature: string;
+    reason: string;
+    needed?: number | undefined;
+    minPlan?: string | undefined;
+  },
+) {
+  void db
+    .from("ai_feature_blocks")
+    .insert({
+      store_id: params.storeId,
+      user_id: params.userId,
+      feature_key: params.feature,
+      reason: params.reason,
+      needed_credits: params.needed ?? null,
+      min_plan: params.minPlan ?? null,
+    })
+    .then(undefined, () => {});
+}
+
 export async function runAiFeature(opts: {
+  userId: string;
+  storeId: string;
+  feature: string;
+  input: Record<string, unknown>;
+}): Promise<AiRunResponse> {
+  const result = await runAiFeatureInner(opts);
+  if (!result.ok && !result.refunded) {
+    const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+    logFeatureBlock(supabaseAdmin as unknown as SupabaseClient, {
+      storeId: opts.storeId,
+      userId: opts.userId,
+      feature: opts.feature,
+      reason: result.code,
+      needed: result.needed,
+      minPlan: result.min_plan,
+    });
+  }
+  return result;
+}
+
+async function runAiFeatureInner(opts: {
   userId: string;
   storeId: string;
   feature: string;
