@@ -33,7 +33,6 @@ import { OrderWalkthrough } from "@/components/jaylor/order-walkthrough";
 import { SupportLink } from "@/components/jaylor/support-link";
 import { SocialLinks } from "@/components/jaylor/social-links";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
-import dashboardProduct from "@/assets/jaylor-dashboard-product.png";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 
 export const Route = createFileRoute("/")({
