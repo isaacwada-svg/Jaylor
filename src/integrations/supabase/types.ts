@@ -16,6 +16,7 @@ export type Database = {
     Tables: {
       advisor_messages: {
         Row: {
+          attachments: Json | null
           content: string
           created_at: string
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           thread_id: string
         }
         Insert: {
+          attachments?: Json | null
           content: string
           created_at?: string
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           thread_id: string
         }
         Update: {
+          attachments?: Json | null
           content?: string
           created_at?: string
           id?: string
@@ -6494,6 +6497,7 @@ export type Database = {
         Returns: Json
       }
       get_fitting_link_details: { Args: { p_token: string }; Returns: Json }
+      get_home_dashboard: { Args: { p_store_id: string }; Returns: Json }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_order_approval: { Args: { p_token: string }; Returns: Json }
       get_order_capacity_check: {
@@ -6515,6 +6519,7 @@ export type Database = {
         }
         Returns: Json
       }
+      get_public_fx_rate: { Args: never; Returns: number }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
       get_report_share: {
         Args: { p_token: string; p_user_agent?: string }
