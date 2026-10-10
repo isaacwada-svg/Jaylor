@@ -34,6 +34,7 @@ import { SupportLink } from "@/components/jaylor/support-link";
 import { SocialLinks } from "@/components/jaylor/social-links";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
+import tailorVideo from "@/assets/videos/jaylor-tailor.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -273,6 +274,25 @@ function Home() {
               </Link>
             </p>
           </div>
+        </div>
+      </section>
+
+      <section aria-label="Jaylor in the workroom" className="border-b border-border py-10 lg:py-14">
+        <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
+          <video
+            src={tailorVideo.url}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="metadata"
+            poster={atelierHero}
+            className="aspect-video w-full border border-border object-cover"
+            aria-label="A tailor logging an order on her phone and holding up a finished outfit"
+          />
+          <p className="mt-3 text-xs text-muted-foreground">
+            Illustration created for Jaylor, not a real customer.
+          </p>
         </div>
       </section>
 
