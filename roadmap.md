@@ -3,7 +3,7 @@
 ## Requested 2026-10-10: social media handles
 - [x] Store Jaylor's social profiles in the shared contact constants.
 - [x] Show them in the public footers, the contact screen and the About page, alongside the existing support email and WhatsApp link.
-- [ ] Confirm the Facebook and LinkedIn addresses with the owner — both sit behind a sign-in wall and could not be opened to check.
+- [x] Confirm the Facebook and LinkedIn addresses with the owner — owner provided the profile/company ID links on 2026-10-10 and they are now in the shared constants.
 
 ## Requested 2026-10-10: first-time visitor improvements
 - [x] Shorten the homepage around orders, measurements, and payments.
@@ -49,3 +49,7 @@
   - [x] Owner digests (daily/weekly) and the transfer alert switched from Resend to the managed sender; no RESEND_API_KEY needed.
   - [x] /lovable/* email routes excluded from app middleware (headers, error page, CSRF).
   - [ ] DNS records for notify.jaylor.com.ng must be added in Cloudflare (agent's Cloudflare token is read-only, and the write approval couldn't be granted): TXT `_lovable-email.jaylor.com.ng` = `lovable_email_verify=3762a9c61e0a7f0a53b22962b86a2e336656f5533e878d4b9fb7c482643beee9`, NS `notify.jaylor.com.ng` = `ns5.lovable.cloud`, NS `notify.jaylor.com.ng` = `ns6.lovable.cloud`. Then re-check domain status; emails only send after verification.
+
+## Requested 2026-10-10: email contact in social row
+- [x] Add the support email (info@jaylor.com.ng) alongside the social links wherever they appear.
+- [ ] Republish so the owner-confirmed Facebook/LinkedIn links go live too (live site was still serving old links).
