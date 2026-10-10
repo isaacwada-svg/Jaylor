@@ -31,7 +31,7 @@ import { SupportLink } from "@/components/jaylor/support-link";
 import { SocialLinks } from "@/components/jaylor/social-links";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
-import tailorVideo from "@/assets/videos/jaylor-tailor.mp4.asset.json";
+import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
@@ -266,7 +266,7 @@ function Home() {
             src={tailorVideo.url}
             autoPlay
             muted
-            loop
+            controls
             playsInline
             preload="metadata"
             poster={atelierHero}
@@ -274,7 +274,7 @@ function Home() {
             aria-label="A tailor logging an order on her phone and holding up a finished outfit"
           />
           <p className="mt-3 text-xs text-muted-foreground">
-            Illustration created for Jaylor, not a real customer.
+            How Jaylor works in 45 seconds. Illustration created with AI, not a real customer.
           </p>
         </div>
       </section>
