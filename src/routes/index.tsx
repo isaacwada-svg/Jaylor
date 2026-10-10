@@ -3,11 +3,9 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
   Building2,
-  Camera,
   Check,
   ClipboardCheck,
   Link2,
-  Mic,
   Package,
   Search,
   Store,
