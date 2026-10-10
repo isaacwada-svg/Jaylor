@@ -3,12 +3,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/jaylor/marketing-layout";
 import { SupportLink } from "@/components/jaylor/support-link";
+import { SocialLinks } from "@/components/jaylor/social-links";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { SUPPORT_EMAIL } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/contact")({
@@ -44,7 +46,22 @@ function Contact() {
           </p>
         </div>
 
-        <div className="mt-6 flex justify-center"><SupportLink className="h-12 max-w-full px-4" /></div>
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <SupportLink className="h-12 max-w-full px-4" />
+          <p className="text-sm text-muted-foreground">
+            Or email{" "}
+            <a
+              className="font-medium text-foreground hover:text-gold"
+              href={`mailto:${SUPPORT_EMAIL}`}
+            >
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
+          <SocialLinks
+            showHandles
+            className="flex flex-wrap items-center justify-center gap-6"
+          />
+        </div>
         <StitchDivider className="my-8" />
 
         <ContactForm />

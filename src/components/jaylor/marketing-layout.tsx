@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
 import { SupportLink } from "./support-link";
+import { SocialLinks } from "./social-links";
 import { BrandLogo } from "./logo";
 import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV } from "@/lib/jaylor";
 
@@ -104,6 +105,10 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
           <SupportLink className="h-12 max-w-full rounded-none px-4" />
+          <div className="flex flex-col items-center gap-3 text-center">
+            <p className="text-xs uppercase text-muted-foreground">Follow Jaylor</p>
+            <SocialLinks showHandles className="flex flex-wrap items-center justify-center gap-6" />
+          </div>
           <div className="flex flex-col items-center gap-4 text-center">
             <BrandLogo dark showTagline markClassName="h-11 w-auto" />
             <p className="text-sm text-muted-foreground">{COMPANY_LINE}</p>

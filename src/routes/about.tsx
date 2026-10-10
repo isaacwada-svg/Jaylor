@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { MarketingLayout } from "@/components/jaylor/marketing-layout";
+import { SocialLinks } from "@/components/jaylor/social-links";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { SUPPORT_EMAIL, SUPPORT_PHONE } from "@/lib/jaylor";
 
@@ -56,6 +57,10 @@ function About() {
           </a>
           .
         </p>
+        <SocialLinks
+          showHandles
+          className="mt-7 flex flex-wrap items-center justify-center gap-6"
+        />
       </section>
     </MarketingLayout>
   );

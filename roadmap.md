@@ -1,5 +1,10 @@
 # Roadmap
 
+## Requested 2026-10-10: social media handles
+- [x] Store Jaylor's social profiles in the shared contact constants.
+- [x] Show them in the public footers, the contact screen and the About page, alongside the existing support email and WhatsApp link.
+- [ ] Confirm the Facebook and LinkedIn addresses with the owner — both sit behind a sign-in wall and could not be opened to check.
+
 ## Requested 2026-10-10: first-time visitor improvements
 - [x] Shorten the homepage around orders, measurements, and payments.
 - [x] Add an honest sample order-to-deposit-to-tracking walkthrough; no invented testimonials.
