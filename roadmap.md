@@ -53,3 +53,4 @@
 ## Requested 2026-10-10: email contact in social row
 - [x] Add the support email (info@jaylor.com.ng) alongside the social links wherever they appear.
 - [x] Republished so the owner-confirmed Facebook/LinkedIn links and the email contact went live (verified on jaylor.com.ng: homepage, /contact, /about, /features, /pricing, /tailors all show the email link).
+- [ ] Footer contact row (Facebook, Instagram, LinkedIn, Email) sits behind the cookie banner until it is dismissed — raise the row or shorten the banner so it is visible on arrival.
