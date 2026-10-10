@@ -586,7 +586,10 @@
     color: var(--color-foreground);
     font-family: var(--font-sans);
     -webkit-font-smoothing: antialiased;
+    /* Space reserved for the cookie notice while it is open (see cookie-banner.tsx) */
+    padding-bottom: var(--jaylor-cookie-h, 0px);
   }
+
 
   h1,
   h2,
