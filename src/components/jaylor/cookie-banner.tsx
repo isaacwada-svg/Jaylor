@@ -1,15 +1,44 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link } from "@tanstack/react-router";
 import { readConsent, saveConsent, startOptionalTracking } from "@/lib/consent";
 
+/**
+ * The notice is fixed to the bottom of the screen, so it would otherwise sit on
+ * top of the footer's contact row (Follow Jaylor / Email / WhatsApp) until a
+ * visitor dismisses it. While it is open we publish its own height as a CSS
+ * variable; styles.css adds that much padding to <body>, so the page can always
+ * scroll far enough for the whole footer to clear the notice.
+ */
+const HEIGHT_VAR = "--jaylor-cookie-h";
+
 export function CookieBanner() {
   const [open, setOpen] = useState(false);
+  const bannerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const c = readConsent();
     if (c === "accepted") startOptionalTracking();
     if (c === null) setOpen(true);
   }, []);
+
+  useEffect(() => {
+    const el = bannerRef.current;
+    if (!open || !el) return;
+
+    const publish = () =>
+      document.documentElement.style.setProperty(HEIGHT_VAR, `${el.offsetHeight}px`);
+    publish();
+
+    const observer = new ResizeObserver(publish);
+    observer.observe(el);
+    window.addEventListener("resize", publish);
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("resize", publish);
+      document.documentElement.style.removeProperty(HEIGHT_VAR);
+    };
+  }, [open]);
 
   if (!open) return null;
 
@@ -20,6 +49,7 @@ export function CookieBanner() {
 
   return (
     <div
+      ref={bannerRef}
       role="region"
       aria-label="Cookie choices"
       className="fixed inset-x-0 bottom-0 z-50 border-t border-accent/40 bg-primary text-primary-foreground shadow-2xl"
