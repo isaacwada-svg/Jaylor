@@ -72,3 +72,5 @@
 - [x] Shorter homepage (removed duplicate "Inside Jaylor" section)
 - [ ] Real tailor testimonials — blocked: needs genuine quotes from the owner
 - [ ] Short demo video — blocked: needs real footage from the owner
+- [x] Moved voice/photo section + calculator to Features page (homepage shorter)
+- [x] 45s illustrated story video on homepage (AI, labelled)

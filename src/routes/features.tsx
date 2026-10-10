@@ -16,7 +16,9 @@ import {
   Wallet,
   WifiOff,
 } from "lucide-react";
+import { Mic } from "lucide-react";
 import { MarketingLayout } from "@/components/jaylor/marketing-layout";
+import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
 
@@ -228,7 +230,37 @@ function FeaturesPage() {
             </div>
           ))}
         </div>
+
+        <StitchDivider className="my-14" />
+
+        <div id="voice-and-photo" className="scroll-mt-24">
+          <p className="text-xs uppercase tracking-[0.1em] text-gold">Less typing, more making</p>
+          <h2 className="mt-4 font-heading text-3xl">Talk to Jaylor, or show it a photo.</h2>
+          <div className="mt-8 space-y-10">
+            {[
+              {
+                icon: Mic,
+                title: "Speak an order",
+                body: "Describe a new order out loud. Jaylor turns what you said into a draft order for you to check before anything is saved.",
+              },
+              {
+                icon: Camera,
+                title: "Scan a notebook page",
+                body: "Photograph an old notebook page. Jaylor reads it into draft orders, ready for you to review and confirm, never saved automatically.",
+              },
+            ].map(({ icon: Icon, title, body }) => (
+              <section key={title}>
+                <span className="flex size-12 items-center justify-center rounded-2xl bg-accent text-gold">
+                  <Icon className="size-6" />
+                </span>
+                <h3 className="mt-4 font-heading text-2xl">{title}</h3>
+                <p className="mt-2 text-muted-foreground">{body}</p>
+              </section>
+            ))}
+          </div>
+        </div>
       </section>
+      <UncollectedCalculator />
     </MarketingLayout>
   );
 }
