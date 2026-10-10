@@ -1,11 +1,11 @@
 # Roadmap
 
 ## Requested 2026-10-10: first-time visitor improvements
-- [ ] Shorten the homepage around orders, measurements, and payments.
-- [ ] Add an honest sample order-to-deposit-to-tracking walkthrough; no invented testimonials.
-- [ ] Improve public text readability, signup branding, and WhatsApp support visibility.
-- [ ] Clarify Measurement Passport, calculator assumptions, and empty directory messaging.
-- [ ] Verify the updated public pages and walkthrough in the preview; publishing remains separate.
+- [x] Shorten the homepage around orders, measurements, and payments.
+- [x] Add an honest sample order-to-deposit-to-tracking walkthrough; no invented testimonials.
+- [x] Improve public text readability, signup branding, and WhatsApp support visibility.
+- [x] Clarify Measurement Passport, calculator assumptions, and empty directory messaging.
+- [x] Verify the updated public pages and walkthrough in the preview; publishing remains separate.
 
 ## Done
 - [x] Premium public redesign: Midnight Atelier palette, editorial homepage, premium imagery, refined calculator, pricing, and shared marketing shell.
