@@ -4,6 +4,8 @@
 - [x] Store Jaylor's social profiles in the shared contact constants.
 - [x] Show them in the public footers, the contact screen and the About page, alongside the existing support email and WhatsApp link.
 - [x] Confirm the Facebook and LinkedIn addresses with the owner — owner provided the profile/company ID links on 2026-10-10 and they are now in the shared constants.
+- [x] Keep the footer contact row clear of the cookie notice: while the notice is open it reserves its own height of space under the page, so the row is readable on arrival and the space collapses once the visitor chooses. Verified on homepage, contact, about and pricing at desktop and phone widths.
+
 
 ## Requested 2026-10-10: first-time visitor improvements
 - [x] Shorten the homepage around orders, measurements, and payments.
