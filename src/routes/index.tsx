@@ -349,44 +349,19 @@ function Home() {
         </div>
       </section>
 
-      <section
-        aria-label="Less typing, more making"
-        className="border-b border-border py-12 lg:py-16"
-      >
-        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-            <div>
-              <p className="text-xs uppercase text-gold">Less typing, more making</p>
-              <h2 className="mt-5 max-w-md text-4xl leading-tight sm:text-5xl">
-                Talk to Jaylor, or show it a photo.
-              </h2>
-              <p className="mt-5 max-w-md text-base leading-7 text-muted-foreground">
-                Jaylor's AI turns a quick voice note or a photo of an old notebook page into a draft
-                order for you to check. Nothing is ever saved until you confirm it.
-              </p>
-            </div>
-            <div className="border-t border-border">
-              {AI_FEATURES.map(({ number, icon: Icon, title, body }) => (
-                <article
-                  key={number}
-                  className="group grid gap-5 border-b border-border py-8 sm:grid-cols-[56px_1fr_auto] sm:items-start"
-                >
-                  <span className="text-xs text-gold">{number}</span>
-                  <div>
-                    <h3 className="text-3xl">{title}</h3>
-                    <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
-                      {body}
-                    </p>
-                  </div>
-                  <Icon className="size-5 text-gold transition-transform duration-500 group-hover:translate-x-1" />
-                </article>
-              ))}
-            </div>
-          </div>
+      <section aria-label="More tools" className="border-b border-border py-8">
+        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
+          <p className="max-w-2xl text-base text-muted-foreground">
+            Speak an order or photograph a notebook page, then check the draft before anything is
+            saved. Plus a calculator for balances you may still be owed.
+          </p>
+          <Button asChild variant="outline" className="rounded-none">
+            <Link to="/features" hash="voice-and-photo">
+              See all features <ArrowRight />
+            </Link>
+          </Button>
         </div>
       </section>
-
-      <UncollectedCalculator />
 
       <section className="grid border-b border-border lg:grid-cols-2">
         <div className="relative min-h-[260px] overflow-hidden lg:min-h-[400px]">
