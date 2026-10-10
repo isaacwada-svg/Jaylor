@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PasswordInput } from "@/components/ui/password-input";
 import { Label } from "@/components/ui/label";
+import { SupportLink } from "@/components/jaylor/support-link";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import {
@@ -287,7 +288,7 @@ function AuthPage() {
           <LanguageSwitcher />
         </div>
         <Link to="/" className="flex items-center justify-center" aria-label="Jaylor home">
-          <BrandLogo showTagline markClassName="h-12 w-auto" />
+          <BrandLogo showTagline markClassName="h-24 w-auto" />
         </Link>
         <p className="mt-3 text-center text-sm text-muted-foreground">{t("tagline")}</p>
 
@@ -490,7 +491,8 @@ function AuthPage() {
           )}
         </div>
 
-        <p className="mt-8 text-center text-xs text-muted-foreground">{COMPANY_LINE}</p>
+        <div className="mt-6 flex justify-center"><SupportLink className="h-12 max-w-full px-3" /></div>
+        <p className="mt-6 text-center text-sm leading-6 text-muted-foreground">{COMPANY_LINE}</p>
       </div>
 
       <TermsGateDialog

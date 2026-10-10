@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { Link } from "@tanstack/react-router";
+import { SupportLink } from "./support-link";
 import { BrandLogo } from "./logo";
 import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV } from "@/lib/jaylor";
 
@@ -9,9 +10,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
       <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur-xl">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-5 py-5 lg:px-10">
           <Link to="/" aria-label="Jaylor home">
-            <BrandLogo dark showTagline markClassName="h-10 w-auto" />
+            <BrandLogo dark showTagline markClassName="h-14 w-auto" />
           </Link>
-          <nav className="flex items-center gap-6 text-xs uppercase text-muted-foreground">
+          <nav className="flex items-center gap-5 text-sm text-muted-foreground">
             <Link
               to="/features"
               className="hidden text-muted-foreground hover:text-foreground sm:inline"
@@ -102,9 +103,10 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
               </nav>
             </div>
           </div>
+          <SupportLink className="h-12 max-w-full rounded-none px-4" />
           <div className="flex flex-col items-center gap-4 text-center">
             <BrandLogo dark showTagline markClassName="h-11 w-auto" />
-            <p className="text-xs text-muted-foreground">{COMPANY_LINE}</p>
+            <p className="text-sm text-muted-foreground">{COMPANY_LINE}</p>
           </div>
         </div>
       </footer>
