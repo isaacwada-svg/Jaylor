@@ -238,7 +238,7 @@ function Onboarding() {
     try {
       await supabase.from("stores").update({ onboarding_completed: true }).eq("id", storeId);
       if (note) toast(note);
-      toast.success("Welcome to Jaylor. You're on Growth free for 14 days.");
+      toast.success("Welcome to Jaylor. You're on Growth free for 30 days.");
       navigate({ to: destination });
     } finally {
       setBusy(false);

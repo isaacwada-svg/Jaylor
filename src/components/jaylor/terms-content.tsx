@@ -49,7 +49,7 @@ export function TermsBody() {
         <h2>Subscription, billing and cancellation</h2>
         <p>
           Plans and prices are shown in the app and on our pricing page and are billed in the
-          currency shown for your country. New stores get a 14-day Growth trial; afterwards, stores
+          currency shown for your country. New stores get a 30-day Growth trial; afterwards, stores
           continue on Growth if they subscribe, or move to Free automatically. All existing data is
           kept either way. You can cancel or downgrade at any time from Billing; cancellation takes
           effect at the end of the current billing period. Except where law requires otherwise,
@@ -78,8 +78,8 @@ export function TermsBody() {
             <strong>Platform fee.</strong> Each successful collection carries a platform fee, shown
             in-app and on our pricing page, that is set by your plan (currently 1.5% on Free, 1% on
             Growth and during your trial, 0.7% on Business, or a negotiated rate on a custom plan).
-            The fee is deducted automatically from the payment before settlement, so you never receive
-            an invoice for it separately.
+            The fee is deducted automatically from the payment before settlement, so you never
+            receive an invoice for it separately.
           </li>
           <li>
             <strong>Getting paid.</strong> The amount collected, less the platform fee, settles

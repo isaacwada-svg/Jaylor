@@ -15,6 +15,7 @@ import { ThemeProvider } from "@/lib/theme";
 import { Toaster } from "@/components/ui/sonner";
 import { InstallPrompt } from "@/components/jaylor/install-prompt";
 import { CookieBanner } from "@/components/jaylor/cookie-banner";
+import { FloatingWhatsAppButton } from "@/components/jaylor/floating-whatsapp-button";
 
 function NotFoundComponent() {
   return (
@@ -186,6 +187,7 @@ function RootComponent() {
         <Toaster />
         <InstallPrompt />
         <CookieBanner />
+        <FloatingWhatsAppButton />
         {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
         <Outlet />
       </ThemeProvider>

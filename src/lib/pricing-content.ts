@@ -58,7 +58,6 @@ export const PRICE_TIERS: PriceTier[] = [
       "On-time badge and capacity planning",
       "Quotations, group events and consultations",
       "Daily and weekly business summaries",
-      "Automatic WhatsApp reminders (coming soon)",
     ],
   },
   {
@@ -255,12 +254,12 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 
 export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
-    question: "How does the 14-day trial work?",
+    question: "How does the 30-day trial work?",
     answer:
-      "Every new store starts on a 14-day Growth trial automatically, no card required. You can use every Growth feature during that time.",
+      "Every new store starts on a 30-day Growth trial automatically, no card required. You can use every Growth feature during that time.",
   },
   {
-    question: "What happens after 14 days?",
+    question: "What happens after 30 days?",
     answer:
       "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted: anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
   },

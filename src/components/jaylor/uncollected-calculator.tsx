@@ -20,8 +20,8 @@ export function UncollectedCalculator() {
             What could be left to collect?
           </h2>
           <p className="mt-6 max-w-md text-base leading-7 text-muted-foreground">
-            An illustration based on your figures, not money Jaylor promises to recover.
-            This example assumes half the order value remains unpaid on orders with a balance.
+            An illustration based on your figures, not money Jaylor promises to recover. This
+            example assumes half the order value remains unpaid on orders with a balance.
           </p>
           <p className="mt-12 border-t border-border pt-5 text-sm text-muted-foreground">
             Private by design · No card required
@@ -83,9 +83,7 @@ export function UncollectedCalculator() {
             </div>
 
             <div className="border-t border-gold/60 pt-8 text-center">
-              <p className="text-sm text-muted-foreground">
-                Estimated uncollected balance
-              </p>
+              <p className="text-sm text-muted-foreground">Estimated uncollected balance</p>
               <p className="figures mt-3 font-heading text-5xl text-gold transition-all sm:text-6xl">
                 {formatMoney(uncollected)}
               </p>
@@ -93,7 +91,11 @@ export function UncollectedCalculator() {
                 carried through the workroom each month
               </p>
               <p className="mt-4 text-sm text-muted-foreground">
-                Orders × average value × unpaid share × 50%. Actual balances and collections may differ.
+                Assumes about half of each unpaid order is still owed to you.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                {orders} orders × {formatMoney(avgValue)} × {unpaidShare}% unpaid × 50% still owed ={" "}
+                {formatMoney(uncollected)}
               </p>
             </div>
 

@@ -31,7 +31,7 @@ export const Route = createFileRoute("/pricing")({
       {
         name: "description",
         content:
-          "Monthly, quarterly or yearly plans for tailors and fashion houses in Nigeria. Every new store gets a 14-day Growth trial, no card required.",
+          "Monthly, quarterly or yearly plans for tailors and fashion houses in Nigeria. Every new store gets a 30-day Growth trial, no card required.",
       },
       { property: "og:title", content: "Pricing: Jaylor" },
       {
@@ -54,7 +54,7 @@ function Pricing() {
         <div className="text-center">
           <h1 className="font-heading text-4xl">Simple, honest pricing</h1>
           <p className="mt-3 text-muted-foreground">
-            Every new store gets 14 days of Growth free, no card required. Downgrading never deletes
+            Every new store gets 30 days of Growth free, no card required. Downgrading never deletes
             your data: over-limit items just become read-only.
           </p>
         </div>
@@ -142,7 +142,7 @@ function Pricing() {
                         variant={plan.mostPopular ? "premium" : "outline"}
                       >
                         <Link to="/auth" search={{ mode: "signup" }}>
-                          {plan.tier === "Free" ? "Start free" : "Start 14-day trial"}
+                          {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}
                         </Link>
                       </Button>
                     )}
@@ -152,6 +152,10 @@ function Pricing() {
             );
           })}
         </div>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          On the way: automatic WhatsApp reminders for fittings and pickups.
+        </p>
 
         <div className="mx-auto mt-10 max-w-3xl rounded-2xl border border-gold/40 bg-accent/30 p-6 text-center">
           <p className="font-heading text-lg">Our guarantee</p>
