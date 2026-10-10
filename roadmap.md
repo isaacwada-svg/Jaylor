@@ -74,3 +74,6 @@
 - [ ] Short demo video — blocked: needs real footage from the owner
 - [x] Moved voice/photo section + calculator to Features page (homepage shorter)
 - [x] 45s illustrated story video on homepage (AI, labelled)
+
+## Requested 2026-10-10: WhatsApp codes not arriving
+- [ ] Passport/portal codes not delivered — blocked: WhatsApp connection must be reconnected by owner
