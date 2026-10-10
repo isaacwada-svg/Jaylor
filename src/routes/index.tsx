@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Camera, Check, Mic, Package, Wallet, Ruler } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Camera,
+  Check,
+  ClipboardCheck,
+  Link2,
+  Mic,
+  Package,
+  Search,
+  Store,
+  Users,
+  Wallet,
+  Ruler,
+} from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Button } from "@/components/ui/button";
@@ -188,7 +202,7 @@ function Home() {
               AI-powered · For tailors &amp; fashion houses · Nigeria
             </p>
             <h1 className="mt-6 text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
-              Jaylor for your tailoring business.
+              Run your tailoring business without the chaos.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-foreground/90 sm:text-lg">
               Orders, measurements and payments in one place. Less notebook searching, fewer balance
