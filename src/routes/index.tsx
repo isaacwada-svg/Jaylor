@@ -17,6 +17,7 @@ import { PRICE_TIERS } from "@/lib/pricing-content";
 import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 import { OrderWalkthrough } from "@/components/jaylor/order-walkthrough";
 import { SupportLink } from "@/components/jaylor/support-link";
+import { SocialLinks } from "@/components/jaylor/social-links";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import dashboardProduct from "@/assets/jaylor-dashboard-product.png";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
@@ -432,6 +433,10 @@ function Home() {
           <div className="mt-10 border-t border-foreground/10 pt-8">
             <BrandLogo dark showTagline markClassName="h-12 w-auto" />
             <p className="mt-5 max-w-sm text-sm leading-6 text-muted-foreground">{COMPANY_LINE}</p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <p className="text-xs uppercase text-muted-foreground">Follow Jaylor</p>
+              <SocialLinks showHandles className="flex flex-wrap items-center gap-6" />
+            </div>
           </div>
         </div>
       </footer>
