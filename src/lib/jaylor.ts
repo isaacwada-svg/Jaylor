@@ -201,16 +201,16 @@ export const SUPPORT_PHONE = "+234 902 810 1389";
 /**
  * Jaylor's own social profiles, given by the owner on 2026-10-10 and shown in
  * public page footers and the contact screen. Instagram was confirmed live;
- * Facebook and LinkedIn sit behind a sign-in wall so they could not be opened
- * from here — if one of those links ever looks wrong, correct the address
- * below and every page updates with it.
+ * Facebook and LinkedIn addresses were provided by the owner directly (both
+ * sit behind a sign-in wall when opened from here). If one of those links
+ * ever looks wrong, correct the address below and every page updates with it.
  */
 export const SOCIAL_LINKS = [
   {
     key: "facebook",
     label: "Facebook",
     handle: "Jaylor",
-    url: "https://www.facebook.com/jaylorhq",
+    url: "https://www.facebook.com/profile.php?id=61594799047263",
   },
   {
     key: "instagram",
@@ -221,8 +221,8 @@ export const SOCIAL_LINKS = [
   {
     key: "linkedin",
     label: "LinkedIn",
-    handle: "JaylorHQ",
-    url: "https://www.linkedin.com/company/jaylorhq/",
+    handle: "Jaylor",
+    url: "https://www.linkedin.com/company/146621519/",
   },
 ] as const;
 
