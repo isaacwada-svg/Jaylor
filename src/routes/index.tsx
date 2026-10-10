@@ -112,7 +112,6 @@ const DIFFERENTIATORS = [
   },
 ];
 
-
 const HOME_FAQ = [
   {
     question: "Is my client data safe?",
@@ -142,7 +141,7 @@ const HOME_FAQ = [
 ];
 
 function Home() {
-  const [signedIn, setSignedIn] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     void trackEvent("landing_view");
@@ -177,16 +176,15 @@ function Home() {
             )}
           </nav>
           <div className="flex shrink-0 items-center gap-3 sm:gap-4">
-            {signedIn ? (
+            {signedIn === null ? (
+              <div className="h-10 w-28 sm:w-36" aria-hidden="true" />
+            ) : signedIn ? (
               <Button asChild variant="premium" className="rounded-none px-5 uppercase">
                 <Link to="/dashboard">Open Jaylor</Link>
               </Button>
             ) : (
               <>
-                <Link
-                  to="/auth"
-                  className="py-2 text-sm text-foreground/90 hover:text-foreground"
-                >
+                <Link to="/auth" className="py-2 text-sm text-foreground/90 hover:text-foreground">
                   Sign in
                 </Link>
                 <Button asChild variant="premium" className="rounded-none px-4 uppercase sm:px-5">
@@ -239,7 +237,10 @@ function Home() {
             </div>
             <p className="mt-5 text-sm text-muted-foreground">
               Free plan forever · paid plans from ₦6,000/month ·{" "}
-              <a href="#pricing" className="text-foreground underline underline-offset-4 hover:text-gold">
+              <a
+                href="#pricing"
+                className="text-foreground underline underline-offset-4 hover:text-gold"
+              >
                 See prices
               </a>
               . No card required.
@@ -260,7 +261,10 @@ function Home() {
         </div>
       </section>
 
-      <section aria-label="Jaylor in the workroom" className="border-b border-border py-10 lg:py-14">
+      <section
+        aria-label="Jaylor in the workroom"
+        className="border-b border-border py-10 lg:py-14"
+      >
         <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
           <video
             src={tailorVideo.url}

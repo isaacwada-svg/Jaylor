@@ -406,13 +406,14 @@ export function AdvisorPanel({
     <>
       <Button
         onClick={() => setOpen(true)}
-        aria-label="Ask Jaylor"
+        aria-label="Ask Jaylor — chat with your shop's AI advisor"
         data-tour="ask-jaylor"
-        className="fixed bottom-36 right-4 z-40 size-12 gap-2 rounded-full p-0 shadow-float lg:bottom-8 lg:right-8 lg:size-auto lg:rounded-none lg:px-4 lg:py-2"
+        variant="premium"
+        className="fixed bottom-36 right-4 z-40 gap-1.5 rounded-full px-3.5 py-2 text-xs shadow-float lg:bottom-8 lg:right-8 lg:rounded-none lg:px-4 lg:py-2 lg:text-sm"
       >
-        <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-primary/50 lg:hidden" />
-        <Sparkles className="size-5 lg:size-4" />
-        <span className="hidden lg:inline">Ask Jaylor</span>
+        <span className="absolute inset-0 -z-10 animate-ping rounded-full bg-gold/50 lg:hidden" />
+        <Sparkles className="size-4" />
+        Ask Jaylor
       </Button>
 
       <Sheet open={open} onOpenChange={setOpen}>
