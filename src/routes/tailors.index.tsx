@@ -42,6 +42,8 @@ export const Route = createFileRoute("/tailors/")({
         property: "og:description",
         content: "Browse Jaylor tailors near you and chat with them directly on WhatsApp.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: TailorsPage,
