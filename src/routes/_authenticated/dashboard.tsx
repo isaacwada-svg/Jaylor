@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronDown, Plus, Search } from "lucide-react";
@@ -305,7 +305,47 @@ function HomeNotices() {
   const ratio =
     messagesLimit && messagesLimit > 0 ? (messagesFeature?.used ?? 0) / messagesLimit : 0;
   const onTrial = !!currentStore && new Date(currentStore.trial_ends_at) > new Date();
-  if (!canSeeMoney || (!onTrial && ratio < 0.8)) return null;
+
+  const { data: directorySettings } = useQuery({
+    queryKey: ["directory-listed", storeId],
+    enabled: !!storeId && canSeeMoney,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("store_settings")
+        .select("directory_listed")
+        .eq("store_id", storeId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data;
+    },
+  });
+  const [directoryNudgeDismissed, setDirectoryNudgeDismissed] = useState(true);
+  useEffect(() => {
+    if (!storeId) return;
+    try {
+      setDirectoryNudgeDismissed(
+        window.localStorage.getItem(`jaylor:directory-nudge-dismissed:${storeId}`) === "1",
+      );
+    } catch {
+      setDirectoryNudgeDismissed(true);
+    }
+  }, [storeId]);
+  const showDirectoryNudge =
+    canSeeMoney &&
+    !!directorySettings &&
+    !directorySettings.directory_listed &&
+    !directoryNudgeDismissed;
+  function dismissDirectoryNudge() {
+    setDirectoryNudgeDismissed(true);
+    if (!storeId) return;
+    try {
+      window.localStorage.setItem(`jaylor:directory-nudge-dismissed:${storeId}`, "1");
+    } catch {
+      // ignore storage failures -- the banner just reappears next visit
+    }
+  }
+
+  if (!canSeeMoney || (!onTrial && ratio < 0.8 && !showDirectoryNudge)) return null;
   return (
     <div className="flex flex-col gap-3 px-4 pt-4 lg:px-0 lg:pt-0">
       {onTrial && currentStore && (
@@ -336,6 +376,23 @@ function HomeNotices() {
               <Link to="/billing">{t("top_up_messages") || "Top up messages"}</Link>
             </Button>
           )}
+        </div>
+      )}
+      {showDirectoryNudge && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-card px-4 py-3">
+          <p className="text-sm text-muted-foreground">
+            List your shop on{" "}
+            <span className="font-medium text-foreground">jaylor.com.ng/tailors</span> so new
+            clients searching for a tailor can find you.
+          </p>
+          <div className="flex shrink-0 items-center gap-2">
+            <Button size="sm" variant="ghost" onClick={dismissDirectoryNudge}>
+              Not now
+            </Button>
+            <Button size="sm" variant="outline" asChild>
+              <Link to="/shop">Turn it on</Link>
+            </Button>
+          </div>
         </div>
       )}
     </div>
