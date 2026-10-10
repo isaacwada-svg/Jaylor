@@ -28,7 +28,6 @@ import { supabase } from "@/integrations/supabase/client";
 import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV, SUPPORT_WHATSAPP_URL } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
 import { PRICE_TIERS } from "@/lib/pricing-content";
-import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
 import { OrderWalkthrough } from "@/components/jaylor/order-walkthrough";
 import { SupportLink } from "@/components/jaylor/support-link";
 import { SocialLinks } from "@/components/jaylor/social-links";
@@ -115,20 +114,6 @@ const DIFFERENTIATORS = [
   },
 ];
 
-const AI_FEATURES = [
-  {
-    number: "01",
-    icon: Mic,
-    title: "Speak an order",
-    body: "Describe a new order out loud. Jaylor's AI turns what you said into a draft order for you to check before anything is saved.",
-  },
-  {
-    number: "02",
-    icon: Camera,
-    title: "Scan a notebook page",
-    body: "Photograph an old notebook page. Jaylor's AI reads it into draft orders, ready for you to review and confirm, never saved automatically.",
-  },
-];
 
 const HOME_FAQ = [
   {
