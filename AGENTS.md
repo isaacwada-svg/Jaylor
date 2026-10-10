@@ -8,3 +8,6 @@
 > Commits you push to the connected branch sync back to Lovable and show up in
 > the editor, so keep the branch in a working state.
 <!-- LOVABLE:END -->
+
+- Public sample walkthroughs are isolated client-only state with no business-data writes or live tracking links, so visitors can explore without affecting real shops.
+- Reuse the shared support link and the existing verified support contact across public pages so contact details remain consistent.

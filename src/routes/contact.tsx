@@ -2,6 +2,7 @@ import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/jaylor/marketing-layout";
+import { SupportLink } from "@/components/jaylor/support-link";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,8 @@ export const Route = createFileRoute("/contact")({
         property: "og:description",
         content: "Questions, a bug to report, or help with your store, send us a message.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Contact,
@@ -41,6 +44,7 @@ function Contact() {
           </p>
         </div>
 
+        <div className="mt-6 flex justify-center"><SupportLink className="h-12 max-w-full px-4" /></div>
         <StitchDivider className="my-8" />
 
         <ContactForm />
