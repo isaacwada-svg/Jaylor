@@ -38,6 +38,15 @@ export function SocialLinks({
           </a>
         );
       })}
+      <a
+        href={`mailto:${SUPPORT_EMAIL}`}
+        aria-label={`Email: ${SUPPORT_EMAIL}`}
+        title={`Email: ${SUPPORT_EMAIL}`}
+        className="inline-flex items-center gap-2 text-sm text-muted-foreground transition-colors hover:text-gold"
+      >
+        <Mail aria-hidden="true" className="size-4 shrink-0" />
+        {showHandles && <span>Email</span>}
+      </a>
     </div>
   );
 }
