@@ -7,6 +7,13 @@
 - [x] Keep the footer contact row clear of the cookie notice: while the notice is open it reserves its own height of space under the page, so the row is readable on arrival and the space collapses once the visitor chooses. Verified on homepage, contact, about and pricing at desktop and phone widths.
 
 
+## Requested 2026-10-10: landing page copy and section
+- [x] Restore the hero headline to "Run your tailoring business without the chaos."
+- [x] Add a compact "What makes Jaylor different" section after the Orders. Measurements. Payments. section: six short cards, three per row on desktop, one column on phone.
+- [x] Drop the duplicated assumption sentence above the calculator inputs; keep the line under the result.
+- [x] Set the calculator's default orders per month to 20 so the working line reads 20 orders × ₦25,000 × 20% unpaid × 50% still owed = ₦50,000.
+- [x] Verified at 375px phone width (no clipped or overlapping text, no side scrolling) and three columns at 1280px; published.
+
 ## Requested 2026-10-10: first-time visitor improvements
 - [x] Shorten the homepage around orders, measurements, and payments.
 - [x] Add an honest sample order-to-deposit-to-tracking walkthrough; no invented testimonials.

@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { formatMoney } from "@/lib/jaylor";
 
 export function UncollectedCalculator() {
-  const [orders, setOrders] = useState(30);
+  const [orders, setOrders] = useState(20);
   const [avgValue, setAvgValue] = useState(25000);
   const [unpaidShare, setUnpaidShare] = useState(20);
 
@@ -20,8 +20,7 @@ export function UncollectedCalculator() {
             What could be left to collect?
           </h2>
           <p className="mt-6 max-w-md text-base leading-7 text-muted-foreground">
-            An illustration based on your figures, not money Jaylor promises to recover. This
-            example assumes half the order value remains unpaid on orders with a balance.
+            An illustration based on your figures, not money Jaylor promises to recover.
           </p>
           <p className="mt-12 border-t border-border pt-5 text-sm text-muted-foreground">
             Private by design · No card required

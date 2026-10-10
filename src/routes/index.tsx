@@ -1,6 +1,20 @@
 import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ArrowRight, Camera, Check, Mic, Package, Wallet, Ruler } from "lucide-react";
+import {
+  ArrowRight,
+  Building2,
+  Camera,
+  Check,
+  ClipboardCheck,
+  Link2,
+  Mic,
+  Package,
+  Search,
+  Store,
+  Users,
+  Wallet,
+  Ruler,
+} from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Button } from "@/components/ui/button";
@@ -65,6 +79,39 @@ const WORKROOM_FEATURES = [
     icon: Wallet,
     title: "Know what is paid and owed",
     body: "Record deposits and payments against each order. See the balance still to collect, without adding it up by hand.",
+  },
+];
+
+const DIFFERENTIATORS = [
+  {
+    icon: ClipboardCheck,
+    title: "Approval before cutting",
+    body: "Clients approve the style, fabric photos, measurements and price before you cut, so you have proof.",
+  },
+  {
+    icon: Link2,
+    title: "Customer tracking link",
+    body: "Each client follows their order from received to ready, so you get fewer “is my cloth ready?” calls.",
+  },
+  {
+    icon: Users,
+    title: "Group orders",
+    body: "Aso-ebi, weddings and family orders in one link, with each person's measurements and payments.",
+  },
+  {
+    icon: Store,
+    title: "Your own storefront",
+    body: "A shop page with your logo to share on WhatsApp and Instagram.",
+  },
+  {
+    icon: Search,
+    title: "Free directory listing",
+    body: "New clients can find you by city and style in the Jaylor tailor directory.",
+  },
+  {
+    icon: Building2,
+    title: "For fashion houses",
+    body: "Staff roles, piece-rate payroll, stock alerts and a monthly business report.",
   },
 ];
 
@@ -188,7 +235,7 @@ function Home() {
               AI-powered · For tailors &amp; fashion houses · Nigeria
             </p>
             <h1 className="mt-6 text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
-              Jaylor for your tailoring business.
+              Run your tailoring business without the chaos.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-foreground/90 sm:text-lg">
               Orders, measurements and payments in one place. Less notebook searching, fewer balance
@@ -252,6 +299,27 @@ function Home() {
                 </article>
               ))}
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        aria-label="What makes Jaylor different"
+        className="border-b border-border py-12 lg:py-16"
+      >
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">Why Jaylor</p>
+          <h2 className="mt-5 max-w-md text-4xl leading-tight sm:text-5xl">
+            What makes Jaylor different
+          </h2>
+          <div className="mt-10 grid gap-5 lg:grid-cols-3">
+            {DIFFERENTIATORS.map(({ icon: Icon, title, body }) => (
+              <article key={title} className="border border-border bg-card p-6">
+                <Icon className="size-5 shrink-0 text-gold" />
+                <h3 className="mt-4 text-xl">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{body}</p>
+              </article>
+            ))}
           </div>
         </div>
       </section>
