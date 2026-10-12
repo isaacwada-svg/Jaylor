@@ -49,8 +49,8 @@ or remove a key, only change the value.
 | app_clients    | 84   | PR M2 |
 | app_payments   | 20   | PR M2 |
 | app_payroll    | 68   | PR M2 |
-| app_inventory  | 49   | PR M2 |
-| **Total**      | **823** | |
+| app_inventory  | 74   | PR M2 (+25 category/unit names and item editing) |
+| **Total**      | **848** | |
 
 ## Translation status
 
