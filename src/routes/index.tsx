@@ -7,6 +7,7 @@ import {
   ClipboardCheck,
   Link2,
   Lock,
+  ShieldCheck,
   MessageCircle,
   Package,
   Search,
