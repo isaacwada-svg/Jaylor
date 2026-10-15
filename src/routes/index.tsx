@@ -238,6 +238,16 @@ function Home() {
               </Button>
               <SupportLink className="h-12 rounded-none px-5" />
             </div>
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground/90">
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="size-4 text-gold" aria-hidden="true" /> Secure payments by Paystack
+              </span>
+              <span>· Cancel anytime</span>
+              <span>· Your records stay yours</span>
+            </p>
+            <p className="mt-3 text-sm text-foreground/90">
+              Trusted by <span className="font-semibold text-gold">BeeZik Fashion Hub</span>
+            </p>
             <p className="mt-7 text-sm text-muted-foreground">
               Free plan forever · paid plans from ₦6,000/month ·{" "}
               <a
@@ -444,7 +454,7 @@ function Home() {
               your first customers."
             </p>
             <p className="mt-6 text-sm text-muted-foreground">Isaac, Jaylor team</p>
-            <Button asChild variant="outline" className="mt-4 rounded-none">
+            <Button asChild variant="premium" size="lg" className="mt-4 h-12 rounded-none px-6">
               <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle aria-hidden="true" /> Chat with me on WhatsApp
               </a>
@@ -526,7 +536,7 @@ function Home() {
       <section className="py-12 lg:py-16">
         <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:px-10">
           <div>
-            <p className="text-xs uppercase text-gold">Considered answers</p>
+            <p className="text-xs uppercase text-gold">Frequently asked questions</p>
             <h2 className="mt-5 text-5xl leading-none">Before you begin.</h2>
           </div>
           <Accordion type="single" collapsible className="border-t border-border">
