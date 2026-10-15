@@ -16,7 +16,7 @@ import {
   planCodeToTier,
 } from "@/lib/jaylor";
 import { useMultiCurrencyAccess } from "@/lib/use-multi-currency-access";
-import { isBridalRemeasureDue, pickDefaultTemplate } from "@/lib/measurements";
+import { isBridalRemeasureDue, isMeasurementStale, pickDefaultTemplate } from "@/lib/measurements";
 import { MeasurementForm } from "@/components/jaylor/measurements-tab";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
@@ -748,6 +748,21 @@ export function OrderForm({
                         {t("switch_to_latest") || "Switch to latest"}
                       </Button>
                     </div>
+                  );
+                })()}
+                {(() => {
+                  const chosenSet = measurementSets.find((s) => s.id === measurementSetId);
+                  if (!chosenSet || !isMeasurementStale(chosenSet.taken_at)) return null;
+                  // The bridal check below already covers this case against the wedding
+                  // date specifically, so skip the generic warning to avoid showing both.
+                  if (garmentType === "Bridal" && deliveryDate) return null;
+                  return (
+                    <p className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
+                      {t("measurements_stale_warning", {
+                        date: new Date(chosenSet.taken_at).toLocaleDateString(),
+                      }) ||
+                        `These measurements are from ${new Date(chosenSet.taken_at).toLocaleDateString()} — over 3 months ago. Bodies change — confirm with your client or take a fresh set before cutting.`}
+                    </p>
                   );
                 })()}
                 <button

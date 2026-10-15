@@ -60,6 +60,7 @@
   "price_label": "Price",
   "delivery_date_label": "Delivery date",
   "bridal_remeasure_warning": "These measurements were taken more than 3 months before the wedding date. A bride's measurements can change — take a fresh set or book another fitting before this order goes into production.",
+  "measurements_stale_warning": "These measurements are from {{date}} — over 3 months ago. Bodies change — confirm with your client or take a fresh set before cutting.",
   "checking": "Checking...",
   "suggest_price_button": "Suggest a price",
   "price_suggestions_offline": "Price suggestions need an internet connection.",
