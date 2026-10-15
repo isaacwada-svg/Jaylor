@@ -1,5 +1,9 @@
 # Roadmap
 
+## Requested 2026-10-15: more professional homepage buttons
+- [x] Refine the pill buttons with matte gold, lighter outlines, natural-case labels and restrained motion; retain generous plan-button spacing.
+- [x] Verified pricing buttons at 855px and 375px: matte fill, 48px height and spacing, no overflow or page errors; signup links work. Preview only, build OK.
+
 ## Requested 2026-10-15: homepage buttons still look unchanged
 - [x] Apply a homepage-only pill shape and polished gold/outlined finish through the shared button controls.
 - [x] Increase spacing above homepage plan buttons and make them taller.

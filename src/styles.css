@@ -302,30 +302,56 @@
 
 .jaylor-home {
   --radius-control: 999px;
-  --btn-outline-bg: color-mix(in oklab, var(--surface) 85%, transparent);
-  --btn-outline-bg-hover: color-mix(in oklab, var(--gold) 16%, var(--surface));
-  --home-button-fill: linear-gradient(135deg, var(--gold-soft), var(--gold));
-  --home-button-shadow: 0 6px 20px color-mix(in oklab, var(--gold) 18%, transparent), inset 0 1px 0 color-mix(in oklab, var(--ivory) 45%, transparent);
-  --home-outline-shadow: inset 0 1px 0 color-mix(in oklab, var(--ivory) 12%, transparent), 0 4px 12px color-mix(in oklab, var(--ink) 20%, transparent);
+  --btn-outline-bg: transparent;
+  --btn-outline-bg-hover: color-mix(in oklab, var(--gold) 8%, var(--surface));
+  --btn-outline-border: color-mix(in oklab, var(--gold) 55%, var(--surface));
+  --home-button-fill: var(--gold);
+  --home-button-fill-hover: color-mix(in oklab, var(--gold) 80%, var(--gold-soft));
+  --home-button-shadow: 0 2px 5px color-mix(in oklab, var(--ink) 18%, transparent);
+  --home-outline-shadow: none;
 }
 
 .jaylor-home [data-slot="button"] {
   border-radius: var(--radius-control);
-  transition: background 180ms ease, box-shadow 180ms ease, transform 180ms ease;
+  font-weight: 600;
+  letter-spacing: 0;
+  text-transform: none;
+  transition: background 180ms ease, border-color 180ms ease, box-shadow 180ms ease, transform 180ms ease;
 }
 
 .jaylor-home [data-slot="button"][data-variant="premium"] {
   background: var(--home-button-fill);
   box-shadow: var(--home-button-shadow);
+  color: var(--ink);
+  filter: none;
 }
 
 .jaylor-home [data-slot="button"][data-variant="outline"] {
+  border-width: 1px;
   box-shadow: var(--home-outline-shadow);
 }
 
 @media (hover: hover) and (prefers-reduced-motion: no-preference) {
-  .jaylor-home [data-slot="button"]:hover {
-    transform: translateY(-2px);
+  .jaylor-home [data-slot="button"][data-variant="premium"]:hover,
+  .jaylor-home [data-slot="button"][data-variant="outline"]:hover {
+    transform: translateY(-1px);
+  }
+}
+
+@media (hover: hover) {
+  .jaylor-home [data-slot="button"][data-variant="premium"]:hover {
+    background: var(--home-button-fill-hover);
+  }
+}
+
+.jaylor-home [data-slot="button"]:active {
+  transform: translateY(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .jaylor-home [data-slot="button"] {
+    transition: none;
+    transform: none;
   }
 }
 
