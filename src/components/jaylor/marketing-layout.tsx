@@ -56,7 +56,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
       {children}
 
       <footer className="border-t border-border py-14">
-        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-10 px-5 lg:px-10">
+        <div className="mx-auto flex w-full max-w-7xl flex-col items-center gap-8 px-5 lg:px-10">
           <div className="grid w-full gap-8 text-center sm:grid-cols-3 sm:text-left">
             <div>
               <p className="text-xs uppercase text-muted-foreground">For clients</p>
@@ -102,9 +102,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                   Security
                 </Link>
               </nav>
+              <SupportLink className="mt-4 h-10 rounded-none px-4" />
             </div>
           </div>
-          <SupportLink className="h-12 max-w-full rounded-none px-4" />
           <div className="flex flex-col items-center gap-3 text-center">
             <p className="text-xs uppercase text-muted-foreground">Follow Jaylor</p>
             <SocialLinks showHandles className="flex flex-wrap items-center justify-center gap-6" />
