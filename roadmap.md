@@ -1,5 +1,10 @@
 # Roadmap
 
+## Requested 2026-10-15: homepage buttons still look unchanged
+- [x] Apply a homepage-only pill shape and polished gold/outlined finish through the shared button controls.
+- [x] Increase spacing above homepage plan buttons and make them taller.
+- [x] Verified pill shape, gold finish, 48px plan-button spacing, and signup links at 855px and 375px; no page errors and build OK. Preview only.
+
 ## Requested 2026-10-10: social media handles
 - [x] Store Jaylor's social profiles in the shared contact constants.
 - [x] Show them in the public footers, the contact screen and the About page, alongside the existing support email and WhatsApp link.

@@ -157,7 +157,7 @@ function Home() {
   }, []);
 
   return (
-    <main className="premium-public min-h-screen overflow-hidden bg-background">
+    <main className="premium-public jaylor-home min-h-screen overflow-hidden bg-background">
       <header className="absolute inset-x-0 top-0 z-30 border-b border-foreground/10">
         <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
           <Link to="/" aria-label="Jaylor home">
@@ -516,11 +516,11 @@ function Home() {
                     </li>
                   ))}
                 </ul>
-                <div className="mt-auto pt-9">
+                <div className="mt-auto pt-12">
                   <Button
                     asChild
                     variant={plan.mostPopular ? "premium" : "outline"}
-                    className={cn("w-full rounded-full py-2.5", !plan.mostPopular && "border-2")}
+                    className={cn("min-h-12 w-full rounded-full px-4 py-3", !plan.mostPopular && "border-2")}
                   >
                     {plan.cta === "custom" ? (
                       <Link to="/custom">Talk to us</Link>
