@@ -183,7 +183,11 @@ function Home() {
             {signedIn === null ? (
               <div className="h-10 w-28 sm:w-36" aria-hidden="true" />
             ) : signedIn ? (
-              <Button asChild variant="premium" className="rounded-none px-5 uppercase">
+              <Button
+                asChild
+                variant="premium"
+                className="rounded-full px-6 uppercase tracking-[0.14em]"
+              >
                 <Link to="/dashboard">Open Jaylor</Link>
               </Button>
             ) : (
@@ -191,7 +195,11 @@ function Home() {
                 <Link to="/auth" className="py-2 text-sm text-foreground/90 hover:text-foreground">
                   Sign in
                 </Link>
-                <Button asChild variant="premium" className="rounded-none px-4 uppercase sm:px-5">
+                <Button
+                  asChild
+                  variant="premium"
+                  className="rounded-full px-5 uppercase tracking-[0.14em] sm:px-6"
+                >
                   <Link to="/auth" search={{ mode: "signup" }}>
                     Start free
                   </Link>
@@ -231,13 +239,13 @@ function Home() {
                 asChild
                 variant="premium"
                 size="lg"
-                className="h-12 rounded-none px-7 uppercase"
+                className="h-12 rounded-full px-9 uppercase tracking-[0.14em]"
               >
                 <Link to="/auth" search={{ mode: "signup" }}>
                   Start free <ArrowRight />
                 </Link>
               </Button>
-              <SupportLink className="h-12 rounded-none px-5" />
+              <SupportLink className="h-12 rounded-full px-7" />
             </div>
             <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground/90">
               <span className="inline-flex items-center gap-1.5">
@@ -398,7 +406,7 @@ function Home() {
             Speak an order or photograph a notebook page, then check the draft before anything is
             saved. Plus a calculator for balances you may still be owed.
           </p>
-          <Button asChild variant="outline" className="rounded-none">
+          <Button asChild variant="outline" className="rounded-full px-7">
             <Link to="/features" hash="voice-and-photo">
               See all features <ArrowRight />
             </Link>
@@ -432,7 +440,7 @@ function Home() {
               asChild
               variant="outline"
               size="lg"
-              className="mt-10 rounded-none border-gold text-foreground hover:bg-gold hover:text-accent-foreground"
+              className="mt-10 h-12 rounded-full border-gold px-8 text-foreground hover:bg-gold hover:text-accent-foreground"
             >
               <Link to="/passport">
                 Learn about the Passport <ArrowRight />
@@ -455,7 +463,12 @@ function Home() {
               your first customers."
             </p>
             <p className="mt-6 text-sm text-muted-foreground">Isaac, Jaylor team</p>
-            <Button asChild variant="premium" size="lg" className="mt-4 h-12 rounded-none px-6">
+            <Button
+              asChild
+              variant="premium"
+              size="lg"
+              className="mt-4 h-12 rounded-full px-8 tracking-wide"
+            >
               <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
                 <MessageCircle aria-hidden="true" /> Chat with me on WhatsApp
               </a>
@@ -503,19 +516,21 @@ function Home() {
                     </li>
                   ))}
                 </ul>
-                <Button
-                  asChild
-                  variant={plan.mostPopular ? "premium" : "outline"}
-                  className={cn("mt-auto rounded-none", !plan.mostPopular && "border-2")}
-                >
-                  {plan.cta === "custom" ? (
-                    <Link to="/custom">Talk to us</Link>
-                  ) : (
-                    <Link to="/auth" search={{ mode: "signup" }}>
-                      {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}
-                    </Link>
-                  )}
-                </Button>
+                <div className="mt-auto pt-9">
+                  <Button
+                    asChild
+                    variant={plan.mostPopular ? "premium" : "outline"}
+                    className={cn("w-full rounded-full py-2.5", !plan.mostPopular && "border-2")}
+                  >
+                    {plan.cta === "custom" ? (
+                      <Link to="/custom">Talk to us</Link>
+                    ) : (
+                      <Link to="/auth" search={{ mode: "signup" }}>
+                        {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}
+                      </Link>
+                    )}
+                  </Button>
+                </div>
               </article>
             ))}
           </div>
@@ -578,14 +593,14 @@ function Home() {
           asChild
           variant="premium"
           size="lg"
-          className="mt-9 h-12 rounded-none px-8 uppercase"
+          className="mt-9 h-12 rounded-full px-10 uppercase tracking-[0.14em]"
         >
           <Link to="/auth" search={{ mode: "signup" }}>
             Start free <ArrowRight />
           </Link>
         </Button>
         <div className="mt-5">
-          <SupportLink className="h-12 max-w-full rounded-none px-4" />
+          <SupportLink className="h-12 max-w-full rounded-full px-6" />
         </div>
       </section>
 
