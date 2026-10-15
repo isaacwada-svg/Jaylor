@@ -11,3 +11,4 @@
 
 - Public sample walkthroughs are isolated client-only state with no business-data writes or live tracking links, so visitors can explore without affecting real shops.
 - Reuse the shared support link, support contact and social profiles from the shared constants across public pages so contact details remain consistent.
+- Scope homepage button finishes through the jaylor-home theme and shared Button data attributes so other pages retain their existing styling.
