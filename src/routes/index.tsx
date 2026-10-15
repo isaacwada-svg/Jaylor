@@ -6,6 +6,8 @@ import {
   Check,
   ClipboardCheck,
   Link2,
+  Lock,
+  MessageCircle,
   Package,
   Search,
   Store,
@@ -25,7 +27,8 @@ import {
 import { supabase } from "@/integrations/supabase/client";
 import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV, SUPPORT_WHATSAPP_URL } from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
-import { PRICE_TIERS } from "@/lib/pricing-content";
+import { cn } from "@/lib/utils";
+import { PRICE_TIERS, PRICING_GUARANTEE } from "@/lib/pricing-content";
 import { OrderWalkthrough } from "@/components/jaylor/order-walkthrough";
 import { SupportLink } from "@/components/jaylor/support-link";
 import { SocialLinks } from "@/components/jaylor/social-links";
@@ -235,7 +238,7 @@ function Home() {
               </Button>
               <SupportLink className="h-12 rounded-none px-5" />
             </div>
-            <p className="mt-5 text-sm text-muted-foreground">
+            <p className="mt-7 text-sm text-muted-foreground">
               Free plan forever · paid plans from ₦6,000/month ·{" "}
               <a
                 href="#pricing"
@@ -245,9 +248,20 @@ function Home() {
               </a>
               . No card required.
             </p>
+            <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
+              <Lock className="size-3.5 shrink-0 text-gold" aria-hidden="true" />
+              Your records are encrypted and stay yours —{" "}
+              <Link
+                to="/security"
+                className="text-foreground underline underline-offset-4 hover:text-gold"
+              >
+                see how we protect your data
+              </Link>
+              .
+            </p>
             <a
               href="#how-it-works"
-              className="mt-3 inline-block py-2 text-sm text-foreground underline underline-offset-4 transition-colors hover:text-gold"
+              className="mt-4 inline-block py-2 text-sm text-foreground underline underline-offset-4 transition-colors hover:text-gold"
             >
               See how it works
             </a>
@@ -265,21 +279,52 @@ function Home() {
         aria-label="Jaylor in the workroom"
         className="border-b border-border py-10 lg:py-14"
       >
-        <div className="mx-auto w-full max-w-4xl px-5 sm:px-8">
-          <video
-            src={tailorVideo.url}
-            autoPlay
-            muted
-            controls
-            playsInline
-            preload="metadata"
-            poster={atelierHero}
-            className="aspect-video w-full border border-border object-cover"
-            aria-label="A tailor logging an order on her phone and holding up a finished outfit"
-          />
-          <p className="mt-3 text-xs text-muted-foreground">
-            How Jaylor works in 45 seconds. Illustration created with AI, not a real customer.
-          </p>
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-8 px-5 sm:px-8 lg:grid-cols-[1.1fr_0.9fr] lg:gap-12">
+          <div>
+            <video
+              src={tailorVideo.url}
+              autoPlay
+              muted
+              controls
+              playsInline
+              preload="metadata"
+              poster={atelierHero}
+              className="aspect-video w-full border border-border object-cover"
+              aria-label="A tailor logging an order on her phone and holding up a finished outfit"
+            />
+            <p className="mt-3 text-xs text-muted-foreground">
+              How Jaylor works in 45 seconds. Illustration created with AI, not a real customer.
+            </p>
+          </div>
+          <ul className="space-y-6">
+            <li className="flex gap-3">
+              <Package className="mt-0.5 size-5 shrink-0 text-gold" aria-hidden="true" />
+              <div>
+                <p className="font-medium">Every order in one place</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Fabric, style and deadline, tracked from first measurement to collection.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <Ruler className="mt-0.5 size-5 shrink-0 text-gold" aria-hidden="true" />
+              <div>
+                <p className="font-medium">Measurements you can find again</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Every client's history saved, so you're not searching old notebooks.
+                </p>
+              </div>
+            </li>
+            <li className="flex gap-3">
+              <Wallet className="mt-0.5 size-5 shrink-0 text-gold" aria-hidden="true" />
+              <div>
+                <p className="font-medium">Know what's still owed</p>
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">
+                  Deposits and balances recorded against the order, not added up by hand.
+                </p>
+              </div>
+            </li>
+          </ul>
         </div>
       </section>
 
@@ -392,21 +437,18 @@ function Home() {
             <p className="text-xs uppercase text-gold">
               Built in Abuja, for tailors across Nigeria
             </p>
-            <p className="mt-6 text-lg leading-8 text-foreground/90">
+            <p className="mx-auto mt-6 max-w-md text-lg leading-8 text-foreground/90">
               "We built Jaylor after watching talented tailors lose money and sleep to lost
               notebooks, unpaid balances and endless 'is my cloth ready?' calls. We are now
               welcoming our first tailors, and I will personally help you set up your shop and add
               your first customers."
             </p>
             <p className="mt-6 text-sm text-muted-foreground">Isaac, Jaylor team</p>
-            <a
-              href={SUPPORT_WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-4 inline-block text-sm text-gold underline underline-offset-4 hover:text-foreground"
-            >
-              Chat with me on WhatsApp
-            </a>
+            <Button asChild variant="outline" className="mt-4 rounded-none">
+              <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                <MessageCircle aria-hidden="true" /> Chat with me on WhatsApp
+              </a>
+            </Button>
           </div>
         </div>
       </section>
@@ -429,8 +471,13 @@ function Home() {
             {PRICE_TIERS.map((plan) => (
               <article
                 key={plan.tier}
-                className="flex min-h-[390px] flex-col border-b border-border px-1 py-8 sm:border-r sm:px-6 lg:border-b-0 lg:first:pl-0 lg:last:border-r-0"
+                className="relative flex min-h-[390px] flex-col border-b border-border px-1 py-8 sm:border-r sm:px-6 lg:border-b-0 lg:first:pl-0 lg:last:border-r-0"
               >
+                {plan.mostPopular && (
+                  <span className="absolute -top-3 left-1 rounded-full bg-gold px-3 py-1 text-xs font-medium text-primary-foreground">
+                    Most popular
+                  </span>
+                )}
                 <TierBadge tier={plan.tier} className="w-fit rounded-none" />
                 <p className="mt-7 font-heading text-3xl text-foreground">
                   {plan.prices.monthly ? plan.prices.monthly.perMonth : "By quote"}
@@ -448,7 +495,7 @@ function Home() {
                 <Button
                   asChild
                   variant={plan.mostPopular ? "premium" : "outline"}
-                  className="mt-auto rounded-none"
+                  className={cn("mt-auto rounded-none", !plan.mostPopular && "border-2")}
                 >
                   {plan.cta === "custom" ? (
                     <Link to="/custom">Talk to us</Link>
@@ -461,7 +508,8 @@ function Home() {
               </article>
             ))}
           </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">
+          <p className="mt-4 text-center text-xs text-muted-foreground">{PRICING_GUARANTEE}</p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
             On the way: automatic WhatsApp reminders for fittings and pickups.
           </p>
           <div className="mt-3 border-t border-border pt-7 text-right">
@@ -488,10 +536,15 @@ function Home() {
                 value={`home-faq-${index}`}
                 className="border-border"
               >
-                <AccordionTrigger className="py-6 text-left font-heading text-2xl font-normal hover:text-gold hover:no-underline">
-                  {item.question}
+                <AccordionTrigger className="py-7 text-left font-heading text-2xl font-normal hover:text-gold hover:no-underline">
+                  <span className="flex items-center gap-2.5">
+                    {item.question.includes("data safe") && (
+                      <Lock className="size-4 shrink-0 text-gold" aria-hidden="true" />
+                    )}
+                    {item.question}
+                  </span>
                 </AccordionTrigger>
-                <AccordionContent className="max-w-2xl pb-7 text-base leading-7 text-muted-foreground">
+                <AccordionContent className="max-w-2xl pb-8 text-base leading-7 text-muted-foreground">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>
