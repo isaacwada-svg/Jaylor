@@ -24,7 +24,7 @@ export function OrderWalkthrough() {
           <p className="mt-4 text-sm text-muted-foreground">
             Illustrative sample, not a real customer order. Nothing is saved or sent.
           </p>
-          <Button asChild variant="outline" className="mt-6 rounded-none">
+          <Button asChild variant="premium" className="mt-6 rounded-full px-7 uppercase tracking-[0.14em]">
             <Link to="/auth" search={{ mode: "signup" }}>
               Start free <ArrowRight className="size-4" />
             </Link>
