@@ -71,14 +71,14 @@ export function CookieBanner() {
           <button
             type="button"
             onClick={() => choose("rejected")}
-            className="min-h-11 flex-1 border border-primary-foreground/40 px-4 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:flex-none"
+            className="min-h-11 flex-1 rounded-full border border-primary-foreground/40 px-5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary-foreground/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:flex-none"
           >
             Reject All
           </button>
           <button
             type="button"
             onClick={() => choose("accepted")}
-            className="min-h-11 flex-1 bg-accent px-4 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:flex-none"
+            className="min-h-11 flex-1 rounded-full bg-accent px-5 text-sm font-semibold text-accent-foreground transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-primary sm:flex-none"
           >
             Accept All
           </button>
