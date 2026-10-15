@@ -57,12 +57,12 @@
   - [x] Domain added in Lovable; managed email API scaffolded (send helper + preview route), packages installed.
   - [x] Owner digests (daily/weekly) and the transfer alert switched from Resend to the managed sender; no RESEND_API_KEY needed.
   - [x] /lovable/* email routes excluded from app middleware (headers, error page, CSRF).
-  - [ ] DNS records for notify.jaylor.com.ng must be added in Cloudflare (agent's Cloudflare token is read-only, and the write approval couldn't be granted): TXT `_lovable-email.jaylor.com.ng` = `lovable_email_verify=3762a9c61e0a7f0a53b22962b86a2e336656f5533e878d4b9fb7c482643beee9`, NS `notify.jaylor.com.ng` = `ns5.lovable.cloud`, NS `notify.jaylor.com.ng` = `ns6.lovable.cloud`. Then re-check domain status; emails only send after verification.
+  - [x] DNS records for notify.jaylor.com.ng added by the owner in Cloudflare on 2026-10-15 and confirmed online and correct (TXT `_lovable-email`, NS `notify` -> ns5/ns6.lovable.cloud). Service is still confirming them; owner emails send once confirmation completes.
 
 ## Requested 2026-10-10: email contact in social row
 - [x] Add the support email (info@jaylor.com.ng) alongside the social links wherever they appear.
 - [x] Republished so the owner-confirmed Facebook/LinkedIn links and the email contact went live (verified on jaylor.com.ng: homepage, /contact, /about, /features, /pricing, /tailors all show the email link).
-- [ ] Footer contact row (Facebook, Instagram, LinkedIn, Email) sits behind the cookie banner until it is dismissed — raise the row or shorten the banner so it is visible on arrival.
+- [x] Footer contact row (Facebook, Instagram, LinkedIn, Email) now sits clear of the cookie banner — the banner reserves its own height while open, verified on phone and desktop, and shipped live.
 
 ## Requested 2026-10-10: first-visitor fixes
 - [x] Sign in visible on phones
@@ -76,4 +76,13 @@
 - [x] 45s illustrated story video on homepage (AI, labelled)
 
 ## Requested 2026-10-10: WhatsApp codes not arriving
-- [ ] Passport/portal codes not delivered — blocked: WhatsApp connection must be reconnected by owner
+- [x] Passport/portal codes now delivered — WhatsApp connection reconnected and pointed at this project, and the claim page fault that wrongly reported "session has expired" was fixed; the fix went live without a publish.
+
+## Requested 2026-10-15: design review fixes
+- [x] "Trusted by BeeZik Fashion Hub" line under the main buttons — owner-confirmed name, no invented customers or fake security seals.
+- [x] Sample walkthrough and numbering fixes, text contrast raised, WhatsApp support button restyled to gold.
+- [x] No "99.9% uptime" promise added — Lovable gives no written uptime guarantee, so the claim could not be kept.
+- [x] Homepage trimmed: voice/photo section and the calculator live on the Features page, with a teaser and "See all features" jump on the homepage.
+- [x] 45s illustrated story video on the homepage, labelled as AI-made, not a real customer.
+- [x] Published to jaylor.com.ng on 2026-10-15 (publish requested; deployment timing is an estimate).
+- [ ] Real tailor quotes and a real tailor video — blocked: needs genuine input from the owner, nothing invented.
