@@ -4,13 +4,13 @@ import { toast } from "sonner";
 import { ArrowDown, ArrowUp, History, Info, Share2, X } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import type { Tables } from "@/integrations/supabase/types";
-import { computeAgeGroup, computeTemplateSex, isMinor, type AgeGroup } from "@/lib/jaylor";
+import { computeAgeGroup, computeTemplateSex, isMinor } from "@/lib/jaylor";
 import {
   changeThreshold,
   measurementRatioWarnings,
   pickDefaultTemplate,
   templateFields,
-  RE_MEASURE_MS,
+  isMeasurementStale,
   type TemplateField,
 } from "@/lib/measurements";
 import {
@@ -44,11 +44,6 @@ import {
 type ClientRow = Tables<"clients">;
 type TemplateRow = Tables<"measurement_templates">;
 type MeasurementSetRow = Tables<"measurement_sets">;
-
-function isReMeasureDue(set: MeasurementSetRow, ageGroup: AgeGroup) {
-  if (ageGroup === "adult") return false;
-  return Date.now() - new Date(set.taken_at).getTime() > RE_MEASURE_MS;
-}
 
 export function MeasurementsTab({ client }: { client: ClientRow }) {
   const queryClient = useQueryClient();
@@ -115,9 +110,11 @@ export function MeasurementsTab({ client }: { client: ClientRow }) {
 
   return (
     <div className="space-y-4">
-      {latest && isReMeasureDue(latest, ageGroup) && (
+      {latest && isMeasurementStale(latest.taken_at) && (
         <div className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
-          Children grow fast, re-measure?
+          {ageGroup === "adult"
+            ? `Last measured over 3 months ago (${new Date(latest.taken_at).toLocaleDateString()}). Bodies change — confirm or retake before the next order.`
+            : "Children grow fast — it's been over 3 months since the last measurement. Re-measure before the next order."}
         </div>
       )}
 
