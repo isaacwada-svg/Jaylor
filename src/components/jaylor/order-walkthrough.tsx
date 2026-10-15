@@ -40,7 +40,7 @@ export function OrderWalkthrough() {
                 <TabsTrigger
                   key={label}
                   value={String(index)}
-                  className="min-h-14 whitespace-normal rounded-none px-2 text-sm"
+                  className="min-h-14 cursor-pointer whitespace-normal rounded-none border-b-2 border-transparent px-2 text-sm underline-offset-4 hover:bg-secondary/60 hover:underline data-[state=active]:border-gold"
                 >
                   {index + 1}. {label}
                 </TabsTrigger>
@@ -111,13 +111,14 @@ export function OrderWalkthrough() {
           <div className="mt-4 flex items-center justify-between gap-3">
             <Button
               variant="outline"
+              className="rounded-full border-2"
               onClick={() => setStep(Math.max(0, step - 1))}
               disabled={step === 0}
             >
               <ArrowLeft /> Back
             </Button>
-            <span className="text-sm font-semibold text-foreground">{step + 1} of 3</span>
-            <Button variant="outline" onClick={() => setStep(step === 2 ? 0 : step + 1)}>
+            <span className="text-base font-bold text-foreground">Step {step + 1} of 3</span>
+            <Button variant="outline" className="rounded-full border-2" onClick={() => setStep(step === 2 ? 0 : step + 1)}>
               {step === 2 ? "Start again" : "Next"}
               <ArrowRight />
             </Button>
