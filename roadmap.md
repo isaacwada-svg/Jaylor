@@ -95,3 +95,5 @@
 - [x] 45s illustrated story video on the homepage, labelled as AI-made, not a real customer.
 - [x] Published to jaylor.com.ng on 2026-10-15 (publish requested; deployment timing is an estimate).
 - [ ] Real tailor quotes and a real tailor video — blocked: needs genuine input from the owner, nothing invented.
+
+- [ ] Place reworked people clips (real screens) in their matching homepage sections: hero/snap-track, Notebook vs Jaylor, Same talent (money)
