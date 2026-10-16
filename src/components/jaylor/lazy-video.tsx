@@ -9,7 +9,7 @@ export function LazyVideo({ src, poster, label, className }: { src: string; post
     const reduce = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     const io = new IntersectionObserver(
       ([e]) => {
-        if (e.isIntersecting) {
+        if (e?.isIntersecting) {
           if (!v.src) v.src = src;
           if (!reduce) v.play().catch(() => {});
         } else v.pause();
