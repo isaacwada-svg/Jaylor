@@ -55,6 +55,8 @@
   --color-ivory: var(--ivory);
   --color-surface: var(--surface);
   --color-gold: var(--gold);
+  --color-whatsapp: oklch(0.62 0.15 150);
+  --color-whatsapp-foreground: oklch(0.99 0 0);
   --color-gold-soft: var(--gold-soft);
   --color-owed: var(--owed);
   --color-paid: var(--paid);

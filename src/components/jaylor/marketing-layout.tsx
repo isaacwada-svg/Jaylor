@@ -3,6 +3,7 @@ import { Link } from "@tanstack/react-router";
 import { SupportLink } from "./support-link";
 import { SocialLinks } from "./social-links";
 import { BrandLogo } from "./logo";
+import { WhatsAppConcierge } from "./whatsapp-concierge";
 import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV } from "@/lib/jaylor";
 
 export function MarketingLayout({ children }: { children: ReactNode }) {
@@ -115,6 +116,7 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
           </div>
         </div>
       </footer>
+      <WhatsAppConcierge />
     </main>
   );
 }
