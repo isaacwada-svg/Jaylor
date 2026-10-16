@@ -267,7 +267,7 @@ function Home() {
               For tailors &amp; fashion houses · Nigeria
             </p>
             <h1 className="mt-6 text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
-              Run your tailoring business without the chaos.
+              Every order tracked. Every measurement kept. Every naira accounted for.
             </h1>
             <p className="mt-6 max-w-lg text-base leading-7 text-foreground/90 sm:text-lg">
               Orders, measurements and payments in one place. Less notebook searching, fewer balance
@@ -288,7 +288,8 @@ function Home() {
             </div>
             <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground/90">
               <span className="inline-flex items-center gap-1.5">
-                <ShieldCheck className="size-4 text-gold" aria-hidden="true" /> Secure payments by Paystack
+                <ShieldCheck className="size-4 text-gold" aria-hidden="true" /> Secure payments by
+                Paystack
               </span>
               <span>· Cancel anytime</span>
               <span>· Your records stay yours</span>
@@ -719,7 +720,7 @@ function Home() {
           The next garment deserves a clear beginning
         </p>
         <h2 className="mx-auto mt-6 max-w-4xl text-5xl leading-none sm:text-7xl">
-          Every order tracked. Every measurement kept. Every naira accounted for.
+          Your next order deserves a system, not a notebook.
         </h2>
         <p className="mx-auto mt-6 max-w-xl text-sm leading-6 text-foreground/90">
           Start with the Free plan. No card required.
