@@ -97,3 +97,5 @@
 - [ ] Real tailor quotes and a real tailor video — blocked: needs genuine input from the owner, nothing invented.
 
 - [x] Place reworked people clips (real screens) in their matching homepage sections: hero/snap-track, Notebook vs Jaylor, Same talent (money)
+
+- [x] Homepage tidy: removed duplicate clip row, video covers + play-on-scroll, aligned watch links, trimmed opening lines
