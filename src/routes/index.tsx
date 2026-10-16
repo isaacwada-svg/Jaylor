@@ -40,6 +40,15 @@ import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
 import clipNotebook from "@/assets/videos/jaylor-clip-notebook.mp4.asset.json";
 import clipSpeakSnap from "@/assets/videos/jaylor-clip-speak-snap.mp4.asset.json";
 import clipTracking from "@/assets/videos/jaylor-clip-tracking.mp4.asset.json";
+import aiHero from "@/assets/videos/hero-demo.mp4.asset.json";
+import aiPain from "@/assets/videos/pain-point-naira.mp4.asset.json";
+import aiNotebook from "@/assets/videos/notebook-vs-jaylor.mp4.asset.json";
+
+const AI_CLIPS = [
+  { title: "Still counting cash by hand?", url: aiPain.url, label: "A tailor counts naira notes and checks a paper notebook" },
+  { title: "Notebook vs Jaylor", url: aiNotebook.url, label: "A tailor moves from a paper notebook to Jaylor" },
+  { title: "Snap it, track it", url: aiHero.url, label: "A tailor snaps fabric into Jaylor and her customer checks the order" },
+];
 
 const CLIPS = [
   { title: "Notebook vs Jaylor", url: clipNotebook.url, label: "Paper notebook problems next to the Jaylor dashboard showing money owed in naira" },
@@ -407,6 +416,20 @@ function Home() {
                 <figcaption className="mt-3 text-center">
                   <span className="block font-heading text-lg">{c.title}</span>
                   <span className="text-xs text-muted-foreground">Real Jaylor screens, sample order</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+          <p className="mt-12 text-center text-xs uppercase text-gold">A day in the workshop</p>
+          <div className="mt-6 grid gap-8 sm:grid-cols-3">
+            {AI_CLIPS.map((c) => (
+              <figure key={c.title} className="mx-auto w-full max-w-[16rem]">
+                <video src={c.url} autoPlay muted loop controls playsInline preload="metadata"
+                  className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+                  aria-label={c.label} />
+                <figcaption className="mt-3 text-center">
+                  <span className="block font-heading text-lg">{c.title}</span>
+                  <span className="text-xs text-muted-foreground">Created with AI, not real footage</span>
                 </figcaption>
               </figure>
             ))}
