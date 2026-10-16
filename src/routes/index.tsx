@@ -36,9 +36,7 @@ import { SocialLinks } from "@/components/jaylor/social-links";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
-import heroDemo from "@/assets/videos/hero-demo.mp4.asset.json";
-import painVideo from "@/assets/videos/pain-point.mp4.asset.json";
-import compareVideo from "@/assets/videos/notebook-vs-jaylor.mp4.asset.json";
+import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
 import { WhatsAppConcierge } from "@/components/jaylor/whatsapp-concierge";
 import { X } from "lucide-react";
 
@@ -348,13 +346,14 @@ function Home() {
               autoPlay
               muted
               loop
+              controls
               playsInline
               preload="metadata"
               className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
               aria-label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
             />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-              See how Jaylor works. Created with AI, not a real customer.
+              See how Jaylor works, using real Jaylor screens.
             </figcaption>
           </figure>
           <div>
@@ -380,7 +379,7 @@ function Home() {
       </section>
 
       <section aria-label="Same talent, different business" className="border-b border-border py-10 lg:py-14">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 md:grid-cols-[1fr_0.7fr]">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 ">
           <div>
             <h2 className="text-4xl leading-tight sm:text-5xl">Same talent. Different business.</h2>
             <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">
@@ -391,19 +390,6 @@ function Home() {
               30 days of Growth free. No card.
             </p>
           </div>
-          <figure className="mx-auto w-full max-w-[16rem]">
-            <video
-              src={painVideo.url}
-              autoPlay
-              muted
-              loop
-              playsInline
-              preload="metadata"
-              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover"
-              aria-label="A tailor goes from messy notebooks to a calm, organised workroom"
-            />
-            <figcaption className="mt-2 text-center text-xs text-muted-foreground">Created with AI.</figcaption>
-          </figure>
         </div>
       </section>
 
@@ -443,20 +429,7 @@ function Home() {
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10">
           <p className="text-xs uppercase text-gold">Same talent. Different business.</p>
           <h2 className="mt-5 max-w-xl text-4xl leading-tight sm:text-5xl">Notebook vs Jaylor</h2>
-          <div className="mt-10 grid gap-8 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
-            <figure>
-              <video
-                src={compareVideo.url}
-                autoPlay
-                muted
-                loop
-                playsInline
-                preload="metadata"
-                className="aspect-video w-full rounded-2xl border border-gold/20 object-cover"
-                aria-label="A messy notebook desk beside a tidy desk with the Jaylor app"
-              />
-              <figcaption className="mt-2 text-xs text-muted-foreground">Created with AI.</figcaption>
-            </figure>
+          <div className="mt-10 grid gap-8 ">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
               <div>
                 <p className="text-sm font-semibold text-destructive">Notebook</p>
