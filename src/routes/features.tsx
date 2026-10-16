@@ -214,7 +214,7 @@ function FeaturesPage() {
               <div className="mt-8 space-y-10">
                 {group.items.map(({ id, icon: Icon, title, body, linkTo, linkLabel }) => (
                   <section key={id} id={id} className="scroll-mt-24">
-                    <span className="flex size-12 items-center justify-center rounded-2xl bg-accent text-gold">
+                    <span className="flex size-12 items-center justify-center rounded-2xl border border-gold/40 text-gold">
                       <Icon className="size-6" />
                     </span>
                     <h2 className="mt-4 font-heading text-2xl">{title}</h2>
@@ -250,7 +250,7 @@ function FeaturesPage() {
               },
             ].map(({ icon: Icon, title, body }) => (
               <section key={title}>
-                <span className="flex size-12 items-center justify-center rounded-2xl bg-accent text-gold">
+                <span className="flex size-12 items-center justify-center rounded-2xl border border-gold/40 text-gold">
                   <Icon className="size-6" />
                 </span>
                 <h3 className="mt-4 font-heading text-2xl">{title}</h3>
