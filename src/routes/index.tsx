@@ -37,6 +37,15 @@ import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
 import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
+import clipNotebook from "@/assets/videos/jaylor-clip-notebook.mp4.asset.json";
+import clipSpeakSnap from "@/assets/videos/jaylor-clip-speak-snap.mp4.asset.json";
+import clipTracking from "@/assets/videos/jaylor-clip-tracking.mp4.asset.json";
+
+const CLIPS = [
+  { title: "Notebook vs Jaylor", url: clipNotebook.url, label: "Paper notebook problems next to the Jaylor dashboard showing money owed in naira" },
+  { title: "Speak or snap an order", url: clipSpeakSnap.url, label: "Creating a Jaylor order by voice note or fabric photo" },
+  { title: "Customer tracking link", url: clipTracking.url, label: "A client opens a Jaylor tracking link and sees order progress and balance" },
+];
 import { WhatsAppConcierge } from "@/components/jaylor/whatsapp-concierge";
 import { X } from "lucide-react";
 
@@ -377,6 +386,34 @@ function Home() {
           </div>
         </div>
       </section>
+
+      <section aria-label="Jaylor in three short clips" className="border-b border-border py-10 lg:py-14">
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
+          <p className="text-center text-xs uppercase text-gold">Watch each feature</p>
+          <div className="mt-6 grid gap-8 sm:grid-cols-3">
+            {CLIPS.map((c) => (
+              <figure key={c.title} className="mx-auto w-full max-w-[16rem]">
+                <video
+                  src={c.url}
+                  autoPlay
+                  muted
+                  loop
+                  controls
+                  playsInline
+                  preload="metadata"
+                  className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+                  aria-label={c.label}
+                />
+                <figcaption className="mt-3 text-center">
+                  <span className="block font-heading text-lg">{c.title}</span>
+                  <span className="text-xs text-muted-foreground">Real Jaylor screens, sample order</span>
+                </figcaption>
+              </figure>
+            ))}
+          </div>
+        </div>
+      </section>
+
 
       <section aria-label="Same talent, different business" className="border-b border-border py-10 lg:py-14">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 ">
