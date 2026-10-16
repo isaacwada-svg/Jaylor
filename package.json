@@ -4,10 +4,10 @@
   "sideEffects": false,
   "type": "module",
   "scripts": {
-    "dev": "npx vite dev",
-    "build": "npx vite build",
-    "build:dev": "npx vite build --mode development",
-    "preview": "npx vite preview",
+    "dev": "node ./node_modules/vite/bin/vite.js dev --host 0.0.0.0",
+    "build": "node ./node_modules/vite/bin/vite.js build",
+    "build:dev": "node ./node_modules/vite/bin/vite.js build --mode development",
+    "preview": "node ./node_modules/vite/bin/vite.js preview",
     "lint": "eslint .",
     "lint:i18n": "node scripts/check-hardcoded-strings.mjs",
     "format": "prettier --write ."
