@@ -40,15 +40,9 @@ import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
 import clipNotebook from "@/assets/videos/jaylor-clip-notebook.mp4.asset.json";
 import clipSpeakSnap from "@/assets/videos/jaylor-clip-speak-snap.mp4.asset.json";
 import clipTracking from "@/assets/videos/jaylor-clip-tracking.mp4.asset.json";
-import aiHero from "@/assets/videos/hero-demo.mp4.asset.json";
-import aiPain from "@/assets/videos/pain-point-naira.mp4.asset.json";
-import aiNotebook from "@/assets/videos/notebook-vs-jaylor.mp4.asset.json";
-
-const AI_CLIPS = [
-  { title: "Still counting cash by hand?", url: aiPain.url, label: "A tailor counts naira notes and checks a paper notebook" },
-  { title: "Notebook vs Jaylor", url: aiNotebook.url, label: "A tailor moves from a paper notebook to Jaylor" },
-  { title: "Snap it, track it", url: aiHero.url, label: "A tailor snaps fabric into Jaylor and her customer checks the order" },
-];
+import peopleMoney from "@/assets/videos/jaylor-people-money.mp4.asset.json";
+import peopleNotebook from "@/assets/videos/jaylor-people-notebook.mp4.asset.json";
+import peopleSnap from "@/assets/videos/jaylor-people-snap-track.mp4.asset.json";
 
 const CLIPS = [
   { title: "Notebook vs Jaylor", url: clipNotebook.url, label: "Paper notebook problems next to the Jaylor dashboard showing money owed in naira" },
@@ -360,7 +354,7 @@ function Home() {
               EST. 2026
             </span>
             <video
-              src={heroDemo.url}
+              src={peopleSnap.url}
               autoPlay
               muted
               loop
@@ -371,7 +365,7 @@ function Home() {
               aria-label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
             />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-              See how Jaylor works, using real Jaylor screens.
+              Created with AI · real Jaylor screens.
             </figcaption>
           </figure>
           <div>
@@ -391,6 +385,9 @@ function Home() {
             </ul>
             <a href={tailorVideo.url} target="_blank" rel="noopener noreferrer" className="mt-7 inline-block text-sm underline underline-offset-4 hover:text-gold">
               Watch the 45-second story
+            </a>
+            <a href={heroDemo.url} target="_blank" rel="noopener noreferrer" className="ml-6 mt-7 inline-block text-sm underline underline-offset-4 hover:text-gold">
+              Watch the 29-second tour
             </a>
           </div>
         </div>
@@ -420,26 +417,18 @@ function Home() {
               </figure>
             ))}
           </div>
-          <p className="mt-12 text-center text-xs uppercase text-gold">A day in the workshop</p>
-          <div className="mt-6 grid gap-8 sm:grid-cols-3">
-            {AI_CLIPS.map((c) => (
-              <figure key={c.title} className="mx-auto w-full max-w-[16rem]">
-                <video src={c.url} autoPlay muted loop controls playsInline preload="metadata"
-                  className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
-                  aria-label={c.label} />
-                <figcaption className="mt-3 text-center">
-                  <span className="block font-heading text-lg">{c.title}</span>
-                  <span className="text-xs text-muted-foreground">Created with AI, not real footage</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
         </div>
       </section>
 
 
       <section aria-label="Same talent, different business" className="border-b border-border py-10 lg:py-14">
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 ">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
+          <figure className="mx-auto w-full max-w-xs">
+            <video src={peopleMoney.url} autoPlay muted loop controls playsInline preload="metadata"
+              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+              aria-label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard" />
+            <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
+          </figure>
           <div>
             <h2 className="text-4xl leading-tight sm:text-5xl">Same talent. Different business.</h2>
             <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">
@@ -489,7 +478,7 @@ function Home() {
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10">
           <p className="text-xs uppercase text-gold">Same talent. Different business.</p>
           <h2 className="mt-5 max-w-xl text-4xl leading-tight sm:text-5xl">Notebook vs Jaylor</h2>
-          <div className="mt-10 grid gap-8 ">
+          <div className="mt-10 grid items-center gap-8 lg:grid-cols-[1fr_0.8fr]">
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
               <div>
                 <p className="text-sm font-semibold text-destructive">Notebook</p>
@@ -507,6 +496,12 @@ function Home() {
                   ))}
                 </ul>
               </div>
+            <figure className="mx-auto w-full max-w-xs">
+            <video src={peopleNotebook.url} autoPlay muted loop controls playsInline preload="metadata"
+              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+              aria-label="A tailor moves from a messy notebook to a real Jaylor sample order" />
+            <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
+          </figure>
             </div>
           </div>
         </div>
