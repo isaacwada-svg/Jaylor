@@ -37,18 +37,14 @@ import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
 import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
-import clipNotebook from "@/assets/videos/jaylor-clip-notebook.mp4.asset.json";
-import clipSpeakSnap from "@/assets/videos/jaylor-clip-speak-snap.mp4.asset.json";
-import clipTracking from "@/assets/videos/jaylor-clip-tracking.mp4.asset.json";
 import peopleMoney from "@/assets/videos/jaylor-people-money.mp4.asset.json";
 import peopleNotebook from "@/assets/videos/jaylor-people-notebook.mp4.asset.json";
 import peopleSnap from "@/assets/videos/jaylor-people-snap-track.mp4.asset.json";
+import posterMoney from "@/assets/videos/jaylor-people-money-poster.jpg.asset.json";
+import posterNotebook from "@/assets/videos/jaylor-people-notebook-poster.jpg.asset.json";
+import posterSnap from "@/assets/videos/jaylor-people-snap-track-poster.jpg.asset.json";
+import { LazyVideo } from "@/components/jaylor/lazy-video";
 
-const CLIPS = [
-  { title: "Notebook vs Jaylor", url: clipNotebook.url, label: "Paper notebook problems next to the Jaylor dashboard showing money owed in naira" },
-  { title: "Speak or snap an order", url: clipSpeakSnap.url, label: "Creating a Jaylor order by voice note or fabric photo" },
-  { title: "Customer tracking link", url: clipTracking.url, label: "A client opens a Jaylor tracking link and sees order progress and balance" },
-];
 import { WhatsAppConcierge } from "@/components/jaylor/whatsapp-concierge";
 import { X } from "lucide-react";
 
@@ -320,24 +316,7 @@ function Home() {
                 <span className="underline underline-offset-4">See prices</span>
               </span>
             </a>
-            <p className="mt-3 flex items-center gap-1.5 text-sm text-muted-foreground">
-              <Lock className="size-3.5 shrink-0 text-gold" aria-hidden="true" />
-              Your records are encrypted and stay yours —{" "}
-              <Link
-                to="/security"
-                className="text-foreground underline underline-offset-4 hover:text-gold"
-              >
-                see how we protect your data
-              </Link>
-              .
-            </p>
-            <a
-              href="#how-it-works"
-              className="mt-4 inline-block py-2 text-sm text-foreground underline underline-offset-4 transition-colors hover:text-gold"
-            >
-              See how it works
-            </a>
-            <p className="mt-2 text-sm text-muted-foreground">
+            <p className="mt-4 text-sm text-muted-foreground">
               Are you a client?{" "}
               <Link to="/passport" className="underline underline-offset-2 hover:text-gold">
                 Your shareable measurement record
@@ -353,17 +332,7 @@ function Home() {
             <span className="absolute -right-3 -top-3 z-10 rounded-full bg-gold px-4 py-1 text-xs font-semibold text-primary-foreground">
               EST. 2026
             </span>
-            <video
-              src={peopleSnap.url}
-              autoPlay
-              muted
-              loop
-              controls
-              playsInline
-              preload="metadata"
-              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
-              aria-label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
-            />
+            <LazyVideo src={peopleSnap.url} poster={posterSnap.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone" />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
               Created with AI · real Jaylor screens.
             </figcaption>
@@ -383,50 +352,22 @@ function Home() {
                 </li>
               ))}
             </ul>
-            <a href={tailorVideo.url} target="_blank" rel="noopener noreferrer" className="mt-7 inline-block text-sm underline underline-offset-4 hover:text-gold">
+            <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-6">
+            <a href={tailorVideo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
               Watch the 45-second story
             </a>
-            <a href={heroDemo.url} target="_blank" rel="noopener noreferrer" className="ml-6 mt-7 inline-block text-sm underline underline-offset-4 hover:text-gold">
+            <a href={heroDemo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
               Watch the 29-second tour
             </a>
+            </div>
           </div>
         </div>
       </section>
-
-      <section aria-label="Jaylor in three short clips" className="border-b border-border py-10 lg:py-14">
-        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8">
-          <p className="text-center text-xs uppercase text-gold">Watch each feature</p>
-          <div className="mt-6 grid gap-8 sm:grid-cols-3">
-            {CLIPS.map((c) => (
-              <figure key={c.title} className="mx-auto w-full max-w-[16rem]">
-                <video
-                  src={c.url}
-                  autoPlay
-                  muted
-                  loop
-                  controls
-                  playsInline
-                  preload="metadata"
-                  className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
-                  aria-label={c.label}
-                />
-                <figcaption className="mt-3 text-center">
-                  <span className="block font-heading text-lg">{c.title}</span>
-                  <span className="text-xs text-muted-foreground">Real Jaylor screens, sample order</span>
-                </figcaption>
-              </figure>
-            ))}
-          </div>
-        </div>
-      </section>
-
 
       <section aria-label="Same talent, different business" className="border-b border-border py-10 lg:py-14">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
           <figure className="mx-auto w-full max-w-xs">
-            <video src={peopleMoney.url} autoPlay muted loop controls playsInline preload="metadata"
-              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
-              aria-label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard" />
+            <LazyVideo src={peopleMoney.url} poster={posterMoney.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard" />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
           </figure>
           <div>
@@ -497,9 +438,7 @@ function Home() {
                 </ul>
               </div>
             <figure className="mx-auto w-full max-w-xs">
-            <video src={peopleNotebook.url} autoPlay muted loop controls playsInline preload="metadata"
-              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
-              aria-label="A tailor moves from a messy notebook to a real Jaylor sample order" />
+            <LazyVideo src={peopleNotebook.url} poster={posterNotebook.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor moves from a messy notebook to a real Jaylor sample order" />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
           </figure>
             </div>
