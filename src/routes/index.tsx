@@ -355,7 +355,7 @@ function Home() {
             </ul>
             <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-6">
             <a href={tailorVideo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
-              Watch the 45-second story
+              Watch the 45-second story (AI illustration)
             </a>
             <a href={heroDemo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
               Watch the 29-second tour
