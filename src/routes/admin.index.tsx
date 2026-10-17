@@ -253,6 +253,12 @@ type AnalyticsData = {
   whatsapp_cost_ngn: number;
   whatsapp_cost_per_paying_shop: number | null;
   monthly_money_collected: { month: string; amount: number }[];
+  source_breakdown: {
+    source: string;
+    visitors: number;
+    signups: number;
+    conversion_rate: number | null;
+  }[];
   rate_assumptions: {
     reviewed_on: string;
     usd_ngn: number;
@@ -521,6 +527,40 @@ function AnalyticsTab() {
           </CardContent>
         </Card>
       </div>
+
+      {data.source_breakdown.length > 0 && (
+        <div className="mt-8 border-t border-border pt-6">
+          <h3 className="text-lg">Traffic by source</h3>
+          <p className="mt-1 text-sm text-muted-foreground">
+            From each visit's ?utm_source= link. "Direct" covers visits with no tag — bookmarks,
+            typed URLs, or links you haven't tagged yet.
+          </p>
+          <div className="mt-4 overflow-x-auto">
+            <table className="w-full min-w-[480px] text-sm">
+              <thead>
+                <tr className="border-b border-border text-left text-xs uppercase tracking-[0.06em] text-muted-foreground">
+                  <th className="pb-2 pr-4 font-medium">Source</th>
+                  <th className="pb-2 pr-4 font-medium">Visitors</th>
+                  <th className="pb-2 pr-4 font-medium">Sign-ups</th>
+                  <th className="pb-2 font-medium">Conversion</th>
+                </tr>
+              </thead>
+              <tbody>
+                {data.source_breakdown.map((row) => (
+                  <tr key={row.source} className="border-b border-border/60 last:border-0">
+                    <td className="py-2 pr-4 font-medium capitalize">{row.source}</td>
+                    <td className="py-2 pr-4 figures">{row.visitors}</td>
+                    <td className="py-2 pr-4 figures">{row.signups}</td>
+                    <td className="py-2 figures">
+                      {row.conversion_rate === null ? "—" : `${row.conversion_rate}%`}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       <div className="mt-8 border-t border-border pt-6">
         <h3 className="text-lg">WhatsApp rate guardrail</h3>
