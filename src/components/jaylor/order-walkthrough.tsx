@@ -22,7 +22,7 @@ export function OrderWalkthrough() {
             Keep the garment details, payment record and client updates together.
           </p>
           <p className="mt-4 text-sm text-muted-foreground">
-            Illustrative sample, not a real customer order. Nothing is saved or sent.
+            Sample data • Nothing is saved or sent
           </p>
           <Button asChild variant="premium" className="mt-6 rounded-full px-7 uppercase tracking-[0.14em]">
             <Link to="/auth" search={{ mode: "signup" }}>
