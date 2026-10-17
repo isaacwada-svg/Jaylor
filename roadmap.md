@@ -106,3 +106,8 @@
 - [x] Place reworked people clips (real screens) in their matching homepage sections: hero/snap-track, Notebook vs Jaylor, Same talent (money)
 
 - [x] Homepage tidy: removed duplicate clip row, video covers + play-on-scroll, aligned watch links, trimmed opening lines
+
+## Requested 2026-10-17: zero AI labels on homepage
+- [x] Removed "AI clip" lines, "(AI illustration)" text and every "Created with AI" caption from the homepage; captions now read "EST. 2026 • Built in Abuja for Nigerian tailors" and "Demo with sample data • Real Jaylor screens".
+- [x] Re-cut the three people clips (label burned into the pixels was cropped out) and regenerated cover images; cleaned files live in public/videos and the shareable copies in Files were replaced too.
+- [x] Publish requested for jaylor.com.ng (deployment timing is an estimate).

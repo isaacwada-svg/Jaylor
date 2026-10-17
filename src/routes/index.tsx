@@ -37,12 +37,14 @@ import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
 import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
-import peopleMoney from "@/assets/videos/jaylor-people-money.mp4.asset.json";
-import peopleNotebook from "@/assets/videos/jaylor-people-notebook.mp4.asset.json";
-import peopleSnap from "@/assets/videos/jaylor-people-snap-track.mp4.asset.json";
-import posterMoney from "@/assets/videos/jaylor-people-money-poster.jpg.asset.json";
-import posterNotebook from "@/assets/videos/jaylor-people-notebook-poster.jpg.asset.json";
-import posterSnap from "@/assets/videos/jaylor-people-snap-track-poster.jpg.asset.json";
+// Cleaned clips (burned-in label removed) live in public/videos and keep the
+// "Demo with sample data • Real Jaylor screens" captions in the page markup.
+const peopleMoney = { url: "/videos/jaylor-people-money.mp4" };
+const peopleNotebook = { url: "/videos/jaylor-people-notebook.mp4" };
+const peopleSnap = { url: "/videos/jaylor-people-snap-track.mp4" };
+const posterMoney = { url: "/videos/jaylor-people-money-poster.jpg" };
+const posterNotebook = { url: "/videos/jaylor-people-notebook-poster.jpg" };
+const posterSnap = { url: "/videos/jaylor-people-snap-track-poster.jpg" };
 import { LazyVideo } from "@/components/jaylor/lazy-video";
 
 import { WhatsAppConcierge } from "@/components/jaylor/whatsapp-concierge";
@@ -340,9 +342,6 @@ function Home() {
             />
             <figcaption className="mt-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               EST. 2026 • Built in Abuja for Nigerian tailors
-              <span className="mt-1 block text-[10px] normal-case tracking-normal text-muted-foreground/70">
-                AI clip
-              </span>
             </figcaption>
           </figure>
           <div>
@@ -367,7 +366,7 @@ function Home() {
                 rel="noopener noreferrer"
                 className="text-sm underline underline-offset-4 hover:text-gold"
               >
-                Watch the 45-second story (AI illustration)
+                Watch the 45-second story
               </a>
               <a
                 href={heroDemo.url}
@@ -396,7 +395,6 @@ function Home() {
             />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
               Demo with sample data • Real Jaylor screens
-              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
             </figcaption>
           </figure>
           <div>
@@ -490,7 +488,6 @@ function Home() {
                 />
                 <figcaption className="mt-3 text-center text-xs text-muted-foreground">
                   Demo with sample data • Real Jaylor screens
-                  <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
                 </figcaption>
               </figure>
             </div>
