@@ -1,0 +1,1 @@
+ALTER TABLE public.analytics_events ADD COLUMN IF NOT EXISTS utm_source TEXT;
