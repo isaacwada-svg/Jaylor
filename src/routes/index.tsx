@@ -332,18 +332,17 @@ function Home() {
       <section aria-label="See Jaylor work" className="border-b border-border py-10 lg:py-14">
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
           <figure id="hero-demo-video" className="relative mx-auto w-full max-w-xs">
-            <span className="absolute -right-3 -top-3 z-10 rounded-full bg-gold px-4 py-1 text-xs font-semibold text-primary-foreground">
-              EST. 2026
-            </span>
             <LazyVideo
               src={peopleSnap.url}
               poster={posterSnap.url}
               className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
               label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
             />
-            <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+            <figcaption className="mt-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
               EST. 2026 • Built in Abuja for Nigerian tailors
-              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
+              <span className="mt-1 block text-[10px] normal-case tracking-normal text-muted-foreground/70">
+                AI clip
+              </span>
             </figcaption>
           </figure>
           <div>
