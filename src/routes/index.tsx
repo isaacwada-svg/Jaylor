@@ -37,12 +37,14 @@ import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
 import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
 import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
-import peopleMoney from "@/assets/videos/jaylor-people-money.mp4.asset.json";
-import peopleNotebook from "@/assets/videos/jaylor-people-notebook.mp4.asset.json";
-import peopleSnap from "@/assets/videos/jaylor-people-snap-track.mp4.asset.json";
-import posterMoney from "@/assets/videos/jaylor-people-money-poster.jpg.asset.json";
-import posterNotebook from "@/assets/videos/jaylor-people-notebook-poster.jpg.asset.json";
-import posterSnap from "@/assets/videos/jaylor-people-snap-track-poster.jpg.asset.json";
+// Cleaned clips (burned-in label removed) live in public/videos and keep the
+// "Demo with sample data • Real Jaylor screens" captions in the page markup.
+const peopleMoney = { url: "/videos/jaylor-people-money.mp4" };
+const peopleNotebook = { url: "/videos/jaylor-people-notebook.mp4" };
+const peopleSnap = { url: "/videos/jaylor-people-snap-track.mp4" };
+const posterMoney = { url: "/videos/jaylor-people-money-poster.jpg" };
+const posterNotebook = { url: "/videos/jaylor-people-notebook-poster.jpg" };
+const posterSnap = { url: "/videos/jaylor-people-snap-track-poster.jpg" };
 import { LazyVideo } from "@/components/jaylor/lazy-video";
 
 import { WhatsAppConcierge } from "@/components/jaylor/whatsapp-concierge";
