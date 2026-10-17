@@ -1,5 +1,12 @@
 # Roadmap
 
+## Requested 2026-10-17: replace repeated "Created with AI" captions with trust copy
+- [x] Homepage captions now read "EST. 2026 • Built in Abuja for Nigerian tailors" (opening clip), "Demo with sample data • Real Jaylor screens" (money and notebook clips), and "Sample data • Nothing is saved or sent" (sample order walkthrough).
+- [x] Each AI-generated clip keeps a short "AI clip" mark, and the 45-second story link says "(AI illustration)", so the AI origin stays disclosed without repeating a disclaimer three times.
+- [x] Verified at 1280px and 375px: all three captions present, no old wording in page text, no overflow, no page errors; build OK. Preview only, not published.
+- [ ] Owner decision: the words "Created with AI · real Jaylor screens" and the old sample-order sentence are burned into the clip footage itself, so removing them needs the clips re-cut.
+
+
 ## Requested 2026-10-15: more professional homepage buttons
 - [x] Refine the pill buttons with matte gold, lighter outlines, natural-case labels and restrained motion; retain generous plan-button spacing.
 - [x] Verified pricing buttons at 855px and 375px: matte fill, 48px height and spacing, no overflow or page errors; signup links work. Preview only, build OK.

@@ -342,7 +342,8 @@ function Home() {
               label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
             />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-              Created with AI · real Jaylor screens.
+              EST. 2026 • Built in Abuja for Nigerian tailors
+              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
             </figcaption>
           </figure>
           <div>
@@ -367,7 +368,7 @@ function Home() {
                 rel="noopener noreferrer"
                 className="text-sm underline underline-offset-4 hover:text-gold"
               >
-                Watch the 45-second story
+                Watch the 45-second story (AI illustration)
               </a>
               <a
                 href={heroDemo.url}
@@ -395,7 +396,8 @@ function Home() {
               label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard"
             />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-              Created with AI · real Jaylor screens
+              Demo with sample data • Real Jaylor screens
+              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
             </figcaption>
           </figure>
           <div>
@@ -488,7 +490,8 @@ function Home() {
                   label="A tailor moves from a messy notebook to a real Jaylor sample order"
                 />
                 <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-                  Created with AI · real Jaylor screens
+                  Demo with sample data • Real Jaylor screens
+                  <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
                 </figcaption>
               </figure>
             </div>
