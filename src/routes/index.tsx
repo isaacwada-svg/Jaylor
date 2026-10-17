@@ -334,7 +334,8 @@ function Home() {
             </span>
             <LazyVideo src={peopleSnap.url} poster={posterSnap.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone" />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-              Created with AI · real Jaylor screens.
+              EST. 2026 • Built in Abuja for Nigerian tailors
+              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
             </figcaption>
           </figure>
           <div>
@@ -354,7 +355,7 @@ function Home() {
             </ul>
             <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-6">
             <a href={tailorVideo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
-              Watch the 45-second story
+              Watch the 45-second story (AI illustration)
             </a>
             <a href={heroDemo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
               Watch the 29-second tour
@@ -368,7 +369,10 @@ function Home() {
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
           <figure className="mx-auto w-full max-w-xs">
             <LazyVideo src={peopleMoney.url} poster={posterMoney.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard" />
-            <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
+            <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+              Demo with sample data • Real Jaylor screens
+              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
+            </figcaption>
           </figure>
           <div>
             <h2 className="text-4xl leading-tight sm:text-5xl">Same talent. Different business.</h2>
@@ -439,7 +443,10 @@ function Home() {
               </div>
             <figure className="mx-auto w-full max-w-xs">
             <LazyVideo src={peopleNotebook.url} poster={posterNotebook.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor moves from a messy notebook to a real Jaylor sample order" />
-            <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
+            <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+              Demo with sample data • Real Jaylor screens
+              <span className="mt-1 block text-[10px] text-muted-foreground/70">AI clip</span>
+            </figcaption>
           </figure>
             </div>
           </div>

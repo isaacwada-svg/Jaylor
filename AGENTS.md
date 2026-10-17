@@ -14,3 +14,4 @@
 - Scope homepage button finishes through the jaylor-home theme and shared Button data attributes so other pages retain their existing styling.
 
 - Keep `.env` tracked in git (never list it in .gitignore): published builds read the public backend URL and publishable key from it, and the live site crashes without them.
+- AI-generated media keeps a short visible AI mark (e.g. "AI clip"): captions lead with product or trust copy rather than repeating an AI disclaimer, so visitors read the product as real while the AI origin stays disclosed.

@@ -8,6 +8,13 @@
       "when": 1791599410548,
       "tag": "0000_passport_view_volatile",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1792248969277,
+      "tag": "0001_add_utm_source_to_analytics_events",
+      "breakpoints": true
     }
   ]
 }
