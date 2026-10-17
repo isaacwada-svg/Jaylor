@@ -8,6 +8,8 @@ import {
   AlertTriangle,
   Users2,
   Gauge,
+  CheckCircle2,
+  MessageSquareWarning,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -27,6 +29,8 @@ const ICON_BY_TYPE: Record<string, LucideIcon> = {
   balance_overdue: AlertTriangle,
   staff_joined: Users2,
   plan_limit_approaching: Gauge,
+  order_approved: CheckCircle2,
+  order_changes_requested: MessageSquareWarning,
 };
 
 export function NotificationBell({
