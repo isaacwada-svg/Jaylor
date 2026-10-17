@@ -176,16 +176,18 @@ export function ConsultationForm({
               </div>
             )}
             {clientSearch.trim() && clientResults?.length === 0 && (
-              <p className="text-sm text-muted-foreground">No clients match.</p>
+              <div className="space-y-2">
+                <p className="text-sm text-muted-foreground">No clients match.</p>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="w-full"
+                  onClick={() => setClientFormOpen(true)}
+                >
+                  Add new client
+                </Button>
+              </div>
             )}
-            <Button
-              type="button"
-              variant="outline"
-              className="w-full"
-              onClick={() => setClientFormOpen(true)}
-            >
-              + Add new client
-            </Button>
           </>
         )}
       </div>

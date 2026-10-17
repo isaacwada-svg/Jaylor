@@ -636,18 +636,20 @@ export function OrderForm({
                 </div>
               )}
               {clientSearch.trim() && clientResults?.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {t("no_clients_match") || "No clients match."}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {t("no_clients_match") || "No clients match."}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setClientFormOpen(true)}
+                  >
+                    {t("add_new_client_button") || "Add new client"}
+                  </Button>
+                </div>
               )}
-              <Button
-                type="button"
-                variant="outline"
-                className="w-full"
-                onClick={() => setClientFormOpen(true)}
-              >
-                {t("add_new_client_button") || "+ Add new client"}
-              </Button>
             </>
           )}
         </div>
