@@ -214,7 +214,7 @@ export const PINNABLE_NAV: AppNavItem[] = [
     key: "support",
     labelKey: "nav_support",
     fallback: "Contact and support",
-    to: "/contact",
+    to: "/support",
     icon: LifeBuoy,
   },
 ];

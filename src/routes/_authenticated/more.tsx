@@ -384,7 +384,7 @@ function MoreContent() {
             }
             if (label === "Contact and support") {
               return (
-                <Link key={label} to="/contact">
+                <Link key={label} to="/support">
                   <Card className="rounded-2xl transition-colors hover:bg-accent/40">
                     {content}
                   </Card>

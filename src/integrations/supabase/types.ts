@@ -2253,6 +2253,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          attachment_paths: string[]
           created_at: string
           email: string | null
           id: string
@@ -2260,8 +2261,10 @@ export type Database = {
           name: string
           phone: string | null
           source: string
+          store_id: string | null
         }
         Insert: {
+          attachment_paths?: string[]
           created_at?: string
           email?: string | null
           id?: string
@@ -2269,8 +2272,10 @@ export type Database = {
           name: string
           phone?: string | null
           source?: string
+          store_id?: string | null
         }
         Update: {
+          attachment_paths?: string[]
           created_at?: string
           email?: string | null
           id?: string
@@ -2278,8 +2283,24 @@ export type Database = {
           name?: string
           phone?: string | null
           source?: string
+          store_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       measurement_passport_shares: {
         Row: {

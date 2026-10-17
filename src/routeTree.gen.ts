@@ -53,6 +53,7 @@ import { Route as AuthenticatedQuotationsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
+import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
 import { Route as AuthenticatedUnmatchedPaymentsRouteImport } from './routes/_authenticated/unmatched-payments'
 import { Route as ATokenRouteImport } from './routes/a.$token'
 import { Route as AdminIndexRouteImport } from './routes/admin.index'
@@ -311,6 +312,11 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedUnmatchedPaymentsRoute =
   AuthenticatedUnmatchedPaymentsRouteImport.update({
     id: '/unmatched-payments',
@@ -543,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/support': typeof AuthenticatedSupportRoute
   '/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
   '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
@@ -619,6 +626,7 @@ export interface FileRoutesByTo {
   '/reports': typeof AuthenticatedReportsRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/support': typeof AuthenticatedSupportRoute
   '/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
   '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
@@ -701,6 +709,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
+  '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
   '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
@@ -783,6 +792,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/shop'
     | '/staff'
+    | '/support'
     | '/unmatched-payments'
     | '/a/$token'
     | '/book/$handle'
@@ -859,6 +869,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/shop'
     | '/staff'
+    | '/support'
     | '/unmatched-payments'
     | '/a/$token'
     | '/book/$handle'
@@ -940,6 +951,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
+    | '/_authenticated/support'
     | '/_authenticated/unmatched-payments'
     | '/a/$token'
     | '/book/$handle'
@@ -1332,6 +1344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/support': {
+      id: '/_authenticated/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AuthenticatedSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/unmatched-payments': {
       id: '/_authenticated/unmatched-payments'
       path: '/unmatched-payments'
@@ -1616,6 +1635,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
+  AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedUnmatchedPaymentsRoute: typeof AuthenticatedUnmatchedPaymentsRoute
   AuthenticatedClientsClientIdRoute: typeof AuthenticatedClientsClientIdRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
@@ -1645,6 +1665,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
+  AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedUnmatchedPaymentsRoute: AuthenticatedUnmatchedPaymentsRoute,
   AuthenticatedClientsClientIdRoute: AuthenticatedClientsClientIdRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,

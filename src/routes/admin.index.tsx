@@ -1481,6 +1481,24 @@ function LeadsTab() {
     },
   });
 
+  const allPaths = (leads ?? []).flatMap((l) => l.attachment_paths ?? []);
+  const { data: signedUrls } = useQuery({
+    queryKey: ["admin-lead-attachments", allPaths],
+    enabled: allPaths.length > 0,
+    queryFn: async () => {
+      const { data, error } = await supabase.storage
+        .from("attachments")
+        .createSignedUrls(allPaths, 3600);
+      if (error) throw error;
+      const map = new Map<string, string>();
+      data?.forEach((d, i) => {
+        const path = allPaths[i];
+        if (d.signedUrl && path) map.set(path, d.signedUrl);
+      });
+      return map;
+    },
+  });
+
   if (isLoading) {
     return (
       <div className="space-y-2">
@@ -1514,6 +1532,40 @@ function LeadsTab() {
             {[lead.phone, lead.email].filter(Boolean).join(" · ") || "No contact given"}
           </p>
           {lead.message && <p className="mt-2 text-sm">{lead.message}</p>}
+          {lead.attachment_paths && lead.attachment_paths.length > 0 && (
+            <div className="mt-2 flex flex-wrap gap-2">
+              {lead.attachment_paths.map((path) => {
+                const url = signedUrls?.get(path);
+                const isImage = /\.(jpe?g|png|webp|gif)$/i.test(path);
+                if (!url) {
+                  return (
+                    <span key={path} className="text-xs text-muted-foreground">
+                      Loading attachment…
+                    </span>
+                  );
+                }
+                return isImage ? (
+                  <a key={path} href={url} target="_blank" rel="noreferrer">
+                    <img
+                      src={url}
+                      alt="Attachment"
+                      className="h-16 w-16 rounded-lg border border-border object-cover"
+                    />
+                  </a>
+                ) : (
+                  <a
+                    key={path}
+                    href={url}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="flex h-16 w-16 items-center justify-center rounded-lg border border-border text-xs underline-offset-2 hover:underline"
+                  >
+                    File
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
       ))}
     </div>
