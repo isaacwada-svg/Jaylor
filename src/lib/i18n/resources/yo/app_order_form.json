@@ -87,5 +87,14 @@
   "take_new_measurements": "Ṣe ìwọ̀n tuntun",
   "new_order_title": "Oda tuntun",
   "help_tooltip_body": "Yan oníbàárà àti aṣọ, lẹ́yìn náà fi ìwọ̀n àti owó kún. Gbèsè àti ọjọ́ ìfilọ́lẹ̀ máa ń ṣàtúnṣe fúnra wọn bí o ṣe ń kọ ìsanwó sílẹ̀.",
+  "currency_label": "Owó",
+  "fx_rate_label": "Oṣuwọn (1 {{currency}} = ? Naira)",
+  "fx_rate_hint": "Oṣuwọn wo ni o fi gbà pẹ̀lú oníbàárà rẹ? A ó lò ó fún ìròyìn rẹ nìkan.",
+  "toast_enter_fx_rate": "Tẹ oṣuwọn pàṣípàrọ̀ tí o fi gbà pẹ̀lú oníbàárà rẹ sí",
+  "continue_draft_title": "Tẹ̀síwájú láti ibi tí o dúró sí?",
+  "continue_draft_body": "O ní òrdà tí kò tíì parí. Tẹ̀síwájú láti ibi tí o dúró sí, tàbí bẹ̀rẹ̀ òrdà tuntun.",
+  "continue_draft_body_client": "O ní òrdà tí kò tíì parí fún {{name}}. Tẹ̀síwájú láti ibi tí o dúró sí, tàbí bẹ̀rẹ̀ òrdà tuntun.",
+  "continue_draft_button": "Tẹ̀síwájú láti ibi tí mo dúró sí",
+  "start_new_order_button": "Bẹ̀rẹ̀ òrdà tuntun",
   "_meta_status": "machine-drafted-needs-review"
 }

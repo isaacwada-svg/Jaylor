@@ -87,5 +87,14 @@
   "take_new_measurements": "Were nha ọhụrụ",
   "new_order_title": "Ọdọ ọhụrụ",
   "help_tooltip_body": "Họrọ onye ahịa na uwe, mgbe ahụ tinye nha na ọnụahịa. Ego fọdụrụ na ụbọchị nnyefe ga-emelite onwe ha ka ị na-edekọ ịkwụ ụgwọ.",
+  "currency_label": "Ego",
+  "fx_rate_label": "Ọnụego (1 {{currency}} = ? Naira)",
+  "fx_rate_hint": "Kedu ọnụ ahịa ị kwekọrịtara na onye ahịa gị? A na-eji ya naanị maka akụkọ gị.",
+  "toast_enter_fx_rate": "Tinye ọnụego mgbanwe ị kwekọrịtara na onye ahịa gị",
+  "continue_draft_title": "Gaa n'ihu na oda gị gara aga?",
+  "continue_draft_body": "Ị nwere oda na-ezughị ezu. Gaa n'ihu site n'ebe ị kwụsịrị, ma ọ bụ malite ọhụrụ.",
+  "continue_draft_body_client": "Ị nwere oda na-ezughị ezu maka {{name}}. Gaa n'ihu site n'ebe ị kwụsịrị, ma ọ bụ malite ọhụrụ.",
+  "continue_draft_button": "Gaa n'ihu site n'ebe m kwụsịrị",
+  "start_new_order_button": "Malite oda ọhụrụ",
   "_meta_status": "machine-drafted-needs-review"
 }

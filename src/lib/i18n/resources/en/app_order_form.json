@@ -87,5 +87,14 @@
   "use_existing_measurements": "Use existing measurements",
   "take_new_measurements": "Take new measurements",
   "new_order_title": "New order",
-  "help_tooltip_body": "Pick a client and garment, then add measurements and a price. Balances and due dates update automatically as you record payments."
+  "help_tooltip_body": "Pick a client and garment, then add measurements and a price. Balances and due dates update automatically as you record payments.",
+  "currency_label": "Currency",
+  "fx_rate_label": "Rate (1 {{currency}} = ? NGN)",
+  "fx_rate_hint": "What rate did you agree with your client? Used only for your reports.",
+  "toast_enter_fx_rate": "Enter the exchange rate you agreed with your client",
+  "continue_draft_title": "Continue your last order?",
+  "continue_draft_body": "You have an unfinished order. Pick up where you left off, or start a new one.",
+  "continue_draft_body_client": "You have an unfinished order for {{name}}. Pick up where you left off, or start a new one.",
+  "continue_draft_button": "Continue where I left off",
+  "start_new_order_button": "Start a new order"
 }

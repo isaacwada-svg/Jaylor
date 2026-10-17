@@ -87,5 +87,14 @@
   "take_new_measurements": "Take new measurements",
   "new_order_title": "New order",
   "help_tooltip_body": "Pick client and garment, den add measurements and price. Balance and due date go update automatic as you record payments.",
+  "currency_label": "Currency",
+  "fx_rate_label": "Rate (1 {{currency}} = ? NGN)",
+  "fx_rate_hint": "Wetin rate you agree with your client? Na only for your report dem dey use am.",
+  "toast_enter_fx_rate": "Enter di exchange rate wey you agree with your client",
+  "continue_draft_title": "Continue your last order?",
+  "continue_draft_body": "You get order wey never finish. Continue from where you stop, or start new one.",
+  "continue_draft_body_client": "You get order wey never finish for {{name}}. Continue from where you stop, or start new one.",
+  "continue_draft_button": "Continue from where I stop",
+  "start_new_order_button": "Start new order",
   "_meta_status": "machine-drafted-needs-review"
 }

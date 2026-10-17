@@ -87,5 +87,14 @@
   "take_new_measurements": "Ɗauki sabon awo",
   "new_order_title": "Sabuwar oda",
   "help_tooltip_body": "Zaɓi abokin ciniki da tufa, sannan ƙara awo da farashi. Bashi da ranar isarwa za su sabunta kai tsaye yayin da ka rubuta biyan kuɗi.",
+  "currency_label": "Kuɗi",
+  "fx_rate_label": "Farashi (1 {{currency}} = ? Naira)",
+  "fx_rate_hint": "Wane farashi ka yarda da abokin cinikinka? Ana amfani da shi kawai don rahotanninka.",
+  "toast_enter_fx_rate": "Shigar da farashin canjin da ka yarda da abokin cinikinka",
+  "continue_draft_title": "Ci gaba da odar da ka bari?",
+  "continue_draft_body": "Kana da oda da ba a kammala ba. Ci gaba daga inda ka tsaya, ko fara sabuwa.",
+  "continue_draft_body_client": "Kana da oda da ba a kammala ba wa {{name}}. Ci gaba daga inda ka tsaya, ko fara sabuwa.",
+  "continue_draft_button": "Ci gaba daga inda na tsaya",
+  "start_new_order_button": "Fara sabuwar oda",
   "_meta_status": "machine-drafted-needs-review"
 }
