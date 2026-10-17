@@ -4906,6 +4906,42 @@ export type Database = {
           },
         ]
       }
+      store_nav_pins: {
+        Row: {
+          created_at: string
+          pinned_keys: string[]
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          pinned_keys?: string[]
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          pinned_keys?: string[]
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_nav_pins_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_nav_pins_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_occasions: {
         Row: {
           created_at: string

@@ -1,37 +1,48 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useStore } from "@/lib/store-context";
 
-const STORAGE_KEY = "jaylor-pinned-nav";
-
-function readPinned(): string[] {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as string[]) : [];
-  } catch {
-    return [];
-  }
-}
-
-/** Which optional sidebar items a user has pinned, on this device. Starts
- *  empty on the server/first paint and hydrates from localStorage after
- *  mount, same pattern as useTheme. */
+/** Which optional sidebar items a store has pinned — synced to the account
+ *  via Supabase, so it follows the store across devices (same pattern as
+ *  useFeatureDiscovery). */
 export function usePinnedNav() {
-  const [pinned, setPinned] = useState<string[]>([]);
+  const { currentStore } = useStore();
+  const queryClient = useQueryClient();
+  const storeId = currentStore?.id;
 
-  useEffect(() => {
-    setPinned(readPinned());
-  }, []);
+  const query = useQuery({
+    queryKey: ["nav-pins", storeId],
+    enabled: !!storeId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("store_nav_pins")
+        .select("pinned_keys")
+        .eq("store_id", storeId as string)
+        .maybeSingle();
+      if (error) throw error;
+      return data?.pinned_keys ?? [];
+    },
+  });
 
-  const toggle = useCallback((key: string) => {
-    setPinned((prev) => {
-      const next = prev.includes(key) ? prev.filter((k) => k !== key) : [...prev, key];
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      } catch {
-        // ignore storage failures
+  const pinned = query.data ?? [];
+
+  const toggle = useCallback(
+    async (key: string) => {
+      if (!storeId) return;
+      const next = pinned.includes(key) ? pinned.filter((k) => k !== key) : [...pinned, key];
+      queryClient.setQueryData<string[]>(["nav-pins", storeId], next);
+      const { error } = await supabase
+        .from("store_nav_pins")
+        .upsert({ store_id: storeId, pinned_keys: next }, { onConflict: "store_id" });
+      if (error) {
+        queryClient.setQueryData<string[]>(["nav-pins", storeId], pinned);
+        return;
       }
-      return next;
-    });
-  }, []);
+      queryClient.invalidateQueries({ queryKey: ["nav-pins", storeId] });
+    },
+    [pinned, queryClient, storeId],
+  );
 
   return {
     pinned,
