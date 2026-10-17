@@ -141,7 +141,8 @@ export async function sendDailyDigest(
   }
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.rpc("get_daily_digest_data", { p_store_id: storeId });
+  const { data, error } = await supabaseAdmin.rpc("get_daily_digest_data", { p_store_id: storeId });
+  if (error || !data) throw new Error(error?.message ?? "Could not load the daily digest data");
   const digest = data as unknown as DailyDigestData;
   const text = buildDailyTextI18n(recipients.language, recipients.storeName, digest);
 
@@ -189,7 +190,10 @@ export async function sendWeeklyDigest(
   }
 
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const { data } = await supabaseAdmin.rpc("get_weekly_digest_data", { p_store_id: storeId });
+  const { data, error } = await supabaseAdmin.rpc("get_weekly_digest_data", {
+    p_store_id: storeId,
+  });
+  if (error || !data) throw new Error(error?.message ?? "Could not load the weekly digest data");
   const digest = data as unknown as WeeklyDigestData;
   const text = buildWeeklyTextI18n(recipients.language, recipients.storeName, digest);
 
