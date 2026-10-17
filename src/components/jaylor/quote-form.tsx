@@ -7,6 +7,7 @@ import { GARMENT_TYPES, GARMENT_TYPE_CODE_BY_NAME, ORDER_CURRENCIES } from "@/li
 import type { OrderCurrency } from "@/lib/jaylor";
 import { useMultiCurrencyAccess } from "@/lib/use-multi-currency-access";
 import { getErrorMessage } from "@/lib/utils";
+import { ClientForm } from "@/components/jaylor/client-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -46,6 +47,7 @@ export function QuoteForm({
   const queryClient = useQueryClient();
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
+  const [clientFormOpen, setClientFormOpen] = useState(false);
   const [garmentType, setGarmentType] = useState("");
   const [quantity, setQuantity] = useState("1");
   const [unitPrice, setUnitPrice] = useState("");
@@ -188,175 +190,199 @@ export function QuoteForm({
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>{quote ? "Edit quote" : "New quote"}</DialogTitle>
-        </DialogHeader>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>{quote ? "Edit quote" : "New quote"}</DialogTitle>
+          </DialogHeader>
 
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label>Client</Label>
-            {activeClient ? (
-              <div className="flex items-center justify-between rounded-xl border border-border p-3">
-                <div>
-                  <p className="font-medium">{activeClient.full_name}</p>
-                  <p className="text-sm text-muted-foreground">{activeClient.phone}</p>
-                </div>
-                {!quote && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => {
-                      setSelectedClient(null);
-                      setClientSearch("");
-                    }}
-                  >
-                    Change
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <>
-                <Input
-                  value={clientSearch}
-                  onChange={(e) => setClientSearch(e.target.value)}
-                  placeholder="Search by name or phone"
-                />
-                {(clientResults ?? []).length > 0 && (
-                  <div className="space-y-1 rounded-xl border border-border p-1">
-                    {clientResults!.map((c) => (
-                      <button
-                        key={c.id}
-                        type="button"
-                        className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent/60"
-                        onClick={() => setSelectedClient(c)}
-                      >
-                        <span>{c.full_name}</span>
-                        <span className="text-muted-foreground">{c.phone}</span>
-                      </button>
-                    ))}
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Client</Label>
+              {activeClient ? (
+                <div className="flex items-center justify-between rounded-xl border border-border p-3">
+                  <div>
+                    <p className="font-medium">{activeClient.full_name}</p>
+                    <p className="text-sm text-muted-foreground">{activeClient.phone}</p>
                   </div>
-                )}
-              </>
-            )}
-          </div>
-
-          <div className="space-y-2">
-            <Label>What's this for?</Label>
-            <Select value={garmentType} onValueChange={setGarmentType}>
-              <SelectTrigger>
-                <SelectValue placeholder="Choose a garment type" />
-              </SelectTrigger>
-              <SelectContent>
-                {GARMENT_TYPES.map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="quote-quantity">Quantity</Label>
-              <Input
-                id="quote-quantity"
-                type="number"
-                min={1}
-                inputMode="numeric"
-                value={quantity}
-                onChange={(e) => setQuantity(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="quote-price">Price per piece (₦)</Label>
-              <MoneyInput id="quote-price" value={unitPrice} onChange={setUnitPrice} />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="space-y-2">
-              <Label htmlFor="quote-discount">Discount (%)</Label>
-              <Input
-                id="quote-discount"
-                type="number"
-                min={0}
-                max={100}
-                inputMode="numeric"
-                value={discountPercent}
-                onChange={(e) => setDiscountPercent(e.target.value)}
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="quote-valid-days">Valid for (days)</Label>
-              <Input
-                id="quote-valid-days"
-                type="number"
-                min={1}
-                inputMode="numeric"
-                value={validDays}
-                onChange={(e) => setValidDays(e.target.value)}
-              />
-            </div>
-          </div>
-
-          {multiCurrencyAccess && (
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-2">
-                <Label>Currency</Label>
-                <Select value={currency} onValueChange={(v) => setCurrency(v as OrderCurrency)}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ORDER_CURRENCIES.map((c) => (
-                      <SelectItem key={c} value={c}>
-                        {c}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              {currency !== "NGN" && (
-                <div className="space-y-2">
-                  <Label htmlFor="quote-fx-rate">Rate (1 {currency} = ? NGN)</Label>
-                  <Input
-                    id="quote-fx-rate"
-                    type="number"
-                    min={0}
-                    step="any"
-                    inputMode="decimal"
-                    value={fxRate}
-                    onChange={(e) => setFxRate(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    What rate did you agree with your client? Used only for your reports.
-                  </p>
+                  {!quote && (
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={() => {
+                        setSelectedClient(null);
+                        setClientSearch("");
+                      }}
+                    >
+                      Change
+                    </Button>
+                  )}
                 </div>
+              ) : (
+                <>
+                  <Input
+                    value={clientSearch}
+                    onChange={(e) => setClientSearch(e.target.value)}
+                    placeholder="Search by name or phone"
+                  />
+                  {(clientResults ?? []).length > 0 && (
+                    <div className="space-y-1 rounded-xl border border-border p-1">
+                      {clientResults!.map((c) => (
+                        <button
+                          key={c.id}
+                          type="button"
+                          className="flex w-full items-center justify-between rounded-lg px-2 py-1.5 text-left text-sm hover:bg-accent/60"
+                          onClick={() => setSelectedClient(c)}
+                        >
+                          <span>{c.full_name}</span>
+                          <span className="text-muted-foreground">{c.phone}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {clientSearch.trim().length >= 2 && (clientResults ?? []).length === 0 && (
+                    <p className="text-sm text-muted-foreground">No clients match.</p>
+                  )}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setClientFormOpen(true)}
+                  >
+                    + Add new client
+                  </Button>
+                </>
               )}
             </div>
-          )}
 
-          <div className="space-y-2">
-            <Label htmlFor="quote-notes">Notes (optional)</Label>
-            <Textarea
-              id="quote-notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Fabric, style details, anything the client should see"
-              rows={3}
-            />
+            <div className="space-y-2">
+              <Label>What's this for?</Label>
+              <Select value={garmentType} onValueChange={setGarmentType}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Choose a garment type" />
+                </SelectTrigger>
+                <SelectContent>
+                  {GARMENT_TYPES.map((t) => (
+                    <SelectItem key={t} value={t}>
+                      {t}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="quote-quantity">Quantity</Label>
+                <Input
+                  id="quote-quantity"
+                  type="number"
+                  min={1}
+                  inputMode="numeric"
+                  value={quantity}
+                  onChange={(e) => setQuantity(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quote-price">Price per piece (₦)</Label>
+                <MoneyInput id="quote-price" value={unitPrice} onChange={setUnitPrice} />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <div className="space-y-2">
+                <Label htmlFor="quote-discount">Discount (%)</Label>
+                <Input
+                  id="quote-discount"
+                  type="number"
+                  min={0}
+                  max={100}
+                  inputMode="numeric"
+                  value={discountPercent}
+                  onChange={(e) => setDiscountPercent(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="quote-valid-days">Valid for (days)</Label>
+                <Input
+                  id="quote-valid-days"
+                  type="number"
+                  min={1}
+                  inputMode="numeric"
+                  value={validDays}
+                  onChange={(e) => setValidDays(e.target.value)}
+                />
+              </div>
+            </div>
+
+            {multiCurrencyAccess && (
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-2">
+                  <Label>Currency</Label>
+                  <Select value={currency} onValueChange={(v) => setCurrency(v as OrderCurrency)}>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ORDER_CURRENCIES.map((c) => (
+                        <SelectItem key={c} value={c}>
+                          {c}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                {currency !== "NGN" && (
+                  <div className="space-y-2">
+                    <Label htmlFor="quote-fx-rate">Rate (1 {currency} = ? NGN)</Label>
+                    <Input
+                      id="quote-fx-rate"
+                      type="number"
+                      min={0}
+                      step="any"
+                      inputMode="decimal"
+                      value={fxRate}
+                      onChange={(e) => setFxRate(e.target.value)}
+                    />
+                    <p className="text-xs text-muted-foreground">
+                      What rate did you agree with your client? Used only for your reports.
+                    </p>
+                  </div>
+                )}
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label htmlFor="quote-notes">Notes (optional)</Label>
+              <Textarea
+                id="quote-notes"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Fabric, style details, anything the client should see"
+                rows={3}
+              />
+            </div>
           </div>
-        </div>
 
-        <DialogFooter>
-          <Button onClick={submit} disabled={busy} className="w-full">
-            {busy ? "Saving..." : quote ? "Save changes" : "Create quote"}
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
+          <DialogFooter>
+            <Button onClick={submit} disabled={busy} className="w-full">
+              {busy ? "Saving..." : quote ? "Save changes" : "Create quote"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <ClientForm
+        open={clientFormOpen}
+        onOpenChange={setClientFormOpen}
+        storeId={storeId}
+        onSaved={(client) => {
+          setSelectedClient(client);
+          setClientFormOpen(false);
+          queryClient.invalidateQueries({ queryKey: ["quote-client-search", storeId] });
+          queryClient.invalidateQueries({ queryKey: ["clients", storeId] });
+        }}
+      />
+    </>
   );
 }

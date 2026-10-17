@@ -1,5 +1,5 @@
 import { useEffect, useState, type FormEvent } from "react";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { Search } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
@@ -9,6 +9,7 @@ import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
+import { ClientForm } from "@/components/jaylor/client-form";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -54,8 +55,10 @@ export function ConsultationForm({
 }) {
   const isMobile = useIsMobile();
   const online = useOnlineStatus();
+  const queryClient = useQueryClient();
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
+  const [clientFormOpen, setClientFormOpen] = useState(false);
   const [type, setType] = useState<ConsultationType>("measurement");
   const [startsAt, setStartsAt] = useState(() => toLocalDatetimeValue(new Date()));
   const [duration, setDuration] = useState<(typeof DURATIONS)[number]>(30);
@@ -172,6 +175,17 @@ export function ConsultationForm({
                 ))}
               </div>
             )}
+            {clientSearch.trim() && clientResults?.length === 0 && (
+              <p className="text-sm text-muted-foreground">No clients match.</p>
+            )}
+            <Button
+              type="button"
+              variant="outline"
+              className="w-full"
+              onClick={() => setClientFormOpen(true)}
+            >
+              + Add new client
+            </Button>
           </>
         )}
       </div>
@@ -252,27 +266,47 @@ export function ConsultationForm({
     </form>
   );
 
+  const clientForm = (
+    <ClientForm
+      open={clientFormOpen}
+      onOpenChange={setClientFormOpen}
+      storeId={storeId}
+      onSaved={(client) => {
+        setSelectedClient(client);
+        setClientFormOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["consultation-form-clients", storeId] });
+        queryClient.invalidateQueries({ queryKey: ["clients", storeId] });
+      }}
+    />
+  );
+
   if (isMobile) {
     return (
-      <Sheet open={open} onOpenChange={onOpenChange}>
-        <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
-          <SheetHeader className="text-left">
-            <SheetTitle className="text-2xl">New consultation</SheetTitle>
-          </SheetHeader>
-          <div className="mt-2 pb-4">{body}</div>
-        </SheetContent>
-      </Sheet>
+      <>
+        <Sheet open={open} onOpenChange={onOpenChange}>
+          <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-2xl">
+            <SheetHeader className="text-left">
+              <SheetTitle className="text-2xl">New consultation</SheetTitle>
+            </SheetHeader>
+            <div className="mt-2 pb-4">{body}</div>
+          </SheetContent>
+        </Sheet>
+        {clientForm}
+      </>
     );
   }
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
-        <DialogHeader>
-          <DialogTitle>New consultation</DialogTitle>
-        </DialogHeader>
-        {body}
-      </DialogContent>
-    </Dialog>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-lg">
+          <DialogHeader>
+            <DialogTitle>New consultation</DialogTitle>
+          </DialogHeader>
+          {body}
+        </DialogContent>
+      </Dialog>
+      {clientForm}
+    </>
   );
 }

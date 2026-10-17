@@ -31,6 +31,7 @@ import { PriceGuidancePanel } from "@/components/jaylor/price-guidance-panel";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { MaterialPhotoManager } from "@/components/jaylor/material-photo-manager";
+import { ClientForm } from "@/components/jaylor/client-form";
 import { materialPhotoPathPrefix } from "@/lib/material-photos";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -105,6 +106,7 @@ export function OrderForm({
 
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
+  const [clientFormOpen, setClientFormOpen] = useState(false);
 
   const [garmentType, setGarmentType] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -635,10 +637,17 @@ export function OrderForm({
               )}
               {clientSearch.trim() && clientResults?.length === 0 && (
                 <p className="text-sm text-muted-foreground">
-                  {t("no_clients_match") ||
-                    "No clients match. Add them from the Clients page first."}
+                  {t("no_clients_match") || "No clients match."}
                 </p>
               )}
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full"
+                onClick={() => setClientFormOpen(true)}
+              >
+                {t("add_new_client_button") || "+ Add new client"}
+              </Button>
             </>
           )}
         </div>
@@ -1179,6 +1188,21 @@ export function OrderForm({
     );
   }
 
+  const clientForm = (
+    <ClientForm
+      open={clientFormOpen}
+      onOpenChange={setClientFormOpen}
+      storeId={storeId}
+      onSaved={(client) => {
+        setSelectedClient(client);
+        setMeasurementSetId("");
+        setClientFormOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["order-form-clients", storeId] });
+        queryClient.invalidateQueries({ queryKey: ["clients", storeId] });
+      }}
+    />
+  );
+
   const measurementPrompt = (
     <Dialog open={measurementPromptOpen} onOpenChange={setMeasurementPromptOpen}>
       <DialogContent>
@@ -1227,6 +1251,7 @@ export function OrderForm({
           </SheetContent>
         </Sheet>
         {measurementPrompt}
+        {clientForm}
       </>
     );
   }
@@ -1248,6 +1273,7 @@ export function OrderForm({
         </DialogContent>
       </Dialog>
       {measurementPrompt}
+      {clientForm}
     </>
   );
 }
