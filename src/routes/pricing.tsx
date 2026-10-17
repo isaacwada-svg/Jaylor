@@ -130,16 +130,23 @@ function Pricing() {
                       Jaylor Pay at {plan.jaylorPayFee}
                     </li>
                   </ul>
-                  <div className="mt-6 pt-2">
+                  <div className="mt-12">
                     {plan.cta === "custom" ? (
-                      <Button asChild className="w-full" variant="outline">
+                      <Button
+                        asChild
+                        className="w-full rounded-full border border-[#C5A059]/40 bg-transparent px-6 py-3.5 text-[14px] font-semibold text-white shadow-none hover:bg-white/5"
+                      >
                         <Link to="/custom">Talk to us</Link>
                       </Button>
                     ) : (
                       <Button
                         asChild
-                        className="w-full"
-                        variant={plan.mostPopular ? "premium" : "outline"}
+                        className={cn(
+                          "w-full rounded-full px-6 py-3.5 text-[14px] font-semibold",
+                          plan.mostPopular
+                            ? "border-none bg-[#C5A059] text-[#0A192F] shadow-md hover:bg-[#C5A059]"
+                            : "border border-[#C5A059]/40 bg-transparent text-white shadow-none hover:bg-white/5",
+                        )}
                       >
                         <Link to="/auth" search={{ mode: "signup" }}>
                           {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}

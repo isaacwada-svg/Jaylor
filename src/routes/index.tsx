@@ -155,15 +155,18 @@ const HOME_FAQ = [
   },
   {
     question: "What if I lose my phone?",
-    answer: "Your records are safe online. Sign in on any phone or computer and everything is there.",
+    answer:
+      "Your records are safe online. Sign in on any phone or computer and everything is there.",
   },
   {
     question: "Can my apprentice steal my customers?",
-    answer: "You control what each staff member sees. Tailors can work on orders without seeing prices or payments.",
+    answer:
+      "You control what each staff member sees. Tailors can work on orders without seeing prices or payments.",
   },
   {
     question: "I have measurements in a notebook. Can I bring them in?",
-    answer: "Yes. Snap a photo of the notebook page, and Jaylor drafts it for you to check before saving.",
+    answer:
+      "Yes. Snap a photo of the notebook page, and Jaylor drafts it for you to check before saving.",
   },
   {
     question: "Does it work for aso-ebi?",
@@ -332,7 +335,12 @@ function Home() {
             <span className="absolute -right-3 -top-3 z-10 rounded-full bg-gold px-4 py-1 text-xs font-semibold text-primary-foreground">
               EST. 2026
             </span>
-            <LazyVideo src={peopleSnap.url} poster={posterSnap.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone" />
+            <LazyVideo
+              src={peopleSnap.url}
+              poster={posterSnap.url}
+              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+              label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
+            />
             <figcaption className="mt-3 text-center text-xs text-muted-foreground">
               Created with AI · real Jaylor screens.
             </figcaption>
@@ -353,22 +361,42 @@ function Home() {
               ))}
             </ul>
             <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-6">
-            <a href={tailorVideo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
-              Watch the 45-second story
-            </a>
-            <a href={heroDemo.url} target="_blank" rel="noopener noreferrer" className="text-sm underline underline-offset-4 hover:text-gold">
-              Watch the 29-second tour
-            </a>
+              <a
+                href={tailorVideo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline underline-offset-4 hover:text-gold"
+              >
+                Watch the 45-second story
+              </a>
+              <a
+                href={heroDemo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline underline-offset-4 hover:text-gold"
+              >
+                Watch the 29-second tour
+              </a>
             </div>
           </div>
         </div>
       </section>
 
-      <section aria-label="Same talent, different business" className="border-b border-border py-10 lg:py-14">
+      <section
+        aria-label="Same talent, different business"
+        className="border-b border-border py-10 lg:py-14"
+      >
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
           <figure className="mx-auto w-full max-w-xs">
-            <LazyVideo src={peopleMoney.url} poster={posterMoney.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard" />
-            <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
+            <LazyVideo
+              src={peopleMoney.url}
+              poster={posterMoney.url}
+              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+              label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard"
+            />
+            <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+              Created with AI · real Jaylor screens
+            </figcaption>
           </figure>
           <div>
             <h2 className="text-4xl leading-tight sm:text-5xl">Same talent. Different business.</h2>
@@ -415,7 +443,10 @@ function Home() {
         </div>
       </section>
 
-      <section aria-label="Notebook versus Jaylor" className="border-b border-border py-12 lg:py-16">
+      <section
+        aria-label="Notebook versus Jaylor"
+        className="border-b border-border py-12 lg:py-16"
+      >
         <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10">
           <p className="text-xs uppercase text-gold">Same talent. Different business.</p>
           <h2 className="mt-5 max-w-xl text-4xl leading-tight sm:text-5xl">Notebook vs Jaylor</h2>
@@ -424,23 +455,42 @@ function Home() {
               <div>
                 <p className="text-sm font-semibold text-destructive">Notebook</p>
                 <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
-                  {["Orders get lost", "Payments forgotten", "No proof of what was agreed"].map((t) => (
-                    <li key={t} className="flex gap-2"><X className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />{t}</li>
-                  ))}
+                  {["Orders get lost", "Payments forgotten", "No proof of what was agreed"].map(
+                    (t) => (
+                      <li key={t} className="flex gap-2">
+                        <X className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+                        {t}
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
               <div>
                 <p className="text-sm font-semibold text-gold">Jaylor</p>
                 <ul className="mt-3 space-y-2 text-sm text-foreground/90">
-                  {["Every order tracked", "Every naira accounted for", "A tracking link for each customer"].map((t) => (
-                    <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />{t}</li>
+                  {[
+                    "Every order tracked",
+                    "Every naira accounted for",
+                    "A tracking link for each customer",
+                  ].map((t) => (
+                    <li key={t} className="flex gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                      {t}
+                    </li>
                   ))}
                 </ul>
               </div>
-            <figure className="mx-auto w-full max-w-xs">
-            <LazyVideo src={peopleNotebook.url} poster={posterNotebook.url} className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl" label="A tailor moves from a messy notebook to a real Jaylor sample order" />
-            <figcaption className="mt-3 text-center text-xs text-muted-foreground">Created with AI · real Jaylor screens</figcaption>
-          </figure>
+              <figure className="mx-auto w-full max-w-xs">
+                <LazyVideo
+                  src={peopleNotebook.url}
+                  poster={posterNotebook.url}
+                  className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+                  label="A tailor moves from a messy notebook to a real Jaylor sample order"
+                />
+                <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+                  Created with AI · real Jaylor screens
+                </figcaption>
+              </figure>
             </div>
           </div>
         </div>
@@ -452,8 +502,16 @@ function Home() {
             <p className="text-xs uppercase text-gold">For solo tailors</p>
             <h3 className="mt-3 text-2xl">Know who owes you. Stop searching notebooks.</h3>
             <ul className="mt-5 space-y-2 text-sm text-foreground/90">
-              {["Save every customer's measurements", "See who has paid and who owes", "Send customers a link to check their cloth", "Free forever for one shop"].map((t) => (
-                <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />{t}</li>
+              {[
+                "Save every customer's measurements",
+                "See who has paid and who owes",
+                "Send customers a link to check their cloth",
+                "Free forever for one shop",
+              ].map((t) => (
+                <li key={t} className="flex gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                  {t}
+                </li>
               ))}
             </ul>
           </article>
@@ -461,15 +519,26 @@ function Home() {
             <p className="text-xs uppercase text-gold">For fashion houses</p>
             <h3 className="mt-3 text-2xl">Run your team, stock and money in one place.</h3>
             <ul className="mt-5 space-y-2 text-sm text-foreground/90">
-              {["Staff roles: tailors don't see money", "Pay staff per piece they sew", "Alerts before fabric runs out", "A monthly business report"].map((t) => (
-                <li key={t} className="flex gap-2"><Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />{t}</li>
+              {[
+                "Staff roles: tailors don't see money",
+                "Pay staff per piece they sew",
+                "Alerts before fabric runs out",
+                "A monthly business report",
+              ].map((t) => (
+                <li key={t} className="flex gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                  {t}
+                </li>
               ))}
             </ul>
           </article>
         </div>
       </section>
 
-      <section aria-label="Storefront and directory" className="border-b border-border bg-card py-12 lg:py-16">
+      <section
+        aria-label="Storefront and directory"
+        className="border-b border-border bg-card py-12 lg:py-16"
+      >
         <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:px-10">
           <div>
             <p className="text-xs uppercase text-gold">Get found by new clients</p>
@@ -481,7 +550,9 @@ function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-4">
               <Button asChild variant="premium" className="h-12 rounded-full px-8">
-                <Link to="/auth" search={{ mode: "signup" }}>Create my shop page</Link>
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  Create my shop page
+                </Link>
               </Button>
               <Button asChild variant="outline" className="h-12 rounded-full px-8">
                 <Link to="/tailors">See the directory</Link>
@@ -492,12 +563,16 @@ function Home() {
             <div className="rounded-2xl border border-border bg-background p-6">
               <Store className="size-6 text-gold" aria-hidden="true" />
               <p className="mt-3 font-medium">Storefront</p>
-              <p className="mt-1 text-sm text-muted-foreground">One link with your logo, styles and prices.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                One link with your logo, styles and prices.
+              </p>
             </div>
             <div className="rounded-2xl border border-border bg-background p-6">
               <Search className="size-6 text-gold" aria-hidden="true" />
               <p className="mt-3 font-medium">Tailor directory</p>
-              <p className="mt-1 text-sm text-muted-foreground">Clients search by city and style.</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Clients search by city and style.
+              </p>
             </div>
           </div>
         </div>
@@ -622,8 +697,12 @@ function Home() {
                 <div className="mt-auto pt-12">
                   <Button
                     asChild
-                    variant={plan.mostPopular ? "premium" : "outline"}
-                    className={cn("min-h-12 w-full rounded-full px-4 py-3", !plan.mostPopular && "border-2")}
+                    className={cn(
+                      "w-full rounded-full px-6 py-3.5 text-[14px] font-semibold",
+                      plan.mostPopular
+                        ? "border-none bg-[#C5A059] text-[#0A192F] shadow-md hover:bg-[#C5A059]"
+                        : "border border-[#C5A059]/40 bg-transparent text-white shadow-none hover:bg-white/5",
+                    )}
                   >
                     {plan.cta === "custom" ? (
                       <Link to="/custom">Talk to us</Link>
@@ -637,7 +716,7 @@ function Home() {
               </article>
             ))}
           </div>
-          <p className="mt-4 text-center text-xs text-muted-foreground">{PRICING_GUARANTEE}</p>
+          <p className="mt-10 text-center text-xs text-muted-foreground">{PRICING_GUARANTEE}</p>
           <p className="mt-2 text-center text-xs text-muted-foreground">
             On the way: automatic WhatsApp reminders for fittings and pickups.
           </p>
