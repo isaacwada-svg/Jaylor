@@ -42,8 +42,8 @@ import { AdvisorPanel } from "./advisor-panel";
 import { NotificationBell } from "./notification-bell";
 import { SearchPanel } from "./global-search";
 import {
-  MAIN_NAV,
-  MORE_NAV,
+  CORE_NAV,
+  PINNABLE_NAV,
   isActive,
   isLocked,
   visibleFor,
@@ -53,6 +53,7 @@ import {
 import { COMPANY_LINE, effectiveTier } from "@/lib/jaylor";
 import { useStore, type StoreMembership } from "@/lib/store-context";
 import { useFeatureDiscovery, type DiscoveryFeature } from "@/lib/feature-discovery";
+import { usePinnedNav } from "@/lib/pinned-nav";
 import { useHomeDashboard } from "@/lib/home-dashboard";
 import { useTheme } from "@/lib/theme";
 import { cn, getErrorMessage, initialsOf } from "@/lib/utils";
@@ -165,6 +166,8 @@ export function AppShell({
   const discovery = useFeatureDiscovery();
   const { session: supportSession, end: endSupportSession } = useImpersonationSession();
   const { data: dashboard } = useHomeDashboard(currentStore?.id);
+  const { isPinned } = usePinnedNav();
+  const pinnedExtras = visibleFor(PINNABLE_NAV, currentRole).filter((item) => isPinned(item.key));
 
   useEffect(() => initOutboxSync(), []);
 
@@ -273,7 +276,7 @@ export function AppShell({
             />
 
             <nav className="flex flex-col gap-1">
-              {visibleFor(MAIN_NAV, currentRole).map((item) => (
+              {visibleFor(CORE_NAV, currentRole).map((item) => (
                 <SidebarLink
                   key={item.key}
                   item={item}
@@ -285,16 +288,18 @@ export function AppShell({
             </nav>
 
             <div className="flex flex-col gap-1">
-              <p className="px-3 pt-1 text-[11px] font-bold uppercase tracking-[0.6px] text-on-navy-muted">
-                {t("nav_more") || "More"}
-              </p>
-              {visibleFor(MORE_NAV, currentRole).map((item) => (
+              {pinnedExtras.length > 0 && (
+                <p className="px-3 pt-1 text-[11px] font-bold uppercase tracking-[0.6px] text-on-navy-muted">
+                  {t("nav_pinned") || "Pinned"}
+                </p>
+              )}
+              {pinnedExtras.map((item) => (
                 <SidebarLink
                   key={item.key}
                   item={item}
                   path={path}
                   locked={isLocked(item, tier)}
-                  badge={0}
+                  badge={item.badge ? badges[item.badge] : 0}
                   compact
                   cue={
                     item.feature

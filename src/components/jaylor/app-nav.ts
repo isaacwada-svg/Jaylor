@@ -44,8 +44,9 @@ export type AppNavItem = {
   match?: string[];
 };
 
-/** Main sidebar items, in the order of the approved mockup. */
-export const MAIN_NAV: AppNavItem[] = [
+/** The essentials, always pinned to the sidebar — everything else lives in
+ *  Settings > Customize your menu, where a store can pin what it uses. */
+export const CORE_NAV: AppNavItem[] = [
   { key: "home", labelKey: "nav_home", fallback: "Home", to: "/dashboard", icon: Home },
   {
     key: "orders",
@@ -65,6 +66,39 @@ export const MAIN_NAV: AppNavItem[] = [
     match: ["/unmatched-payments"],
   },
   {
+    key: "settings",
+    labelKey: "nav_settings",
+    fallback: "Settings",
+    to: "/billing",
+    icon: Settings,
+  },
+];
+
+/** A short line shown next to each item in the Customize your menu list. */
+export const PINNABLE_NAV_HINTS: Record<string, string> = {
+  fittings: "Bookings and video consultations",
+  shop: "Your online storefront for clients",
+  payroll: "Piece-rate pay, advances and payroll runs",
+  "my-earnings": "What you've earned per garment and stage",
+  inventory: "Stock of linings, zips, thread and other materials",
+  reports: "Costs and net profit",
+  events: "Aso-ebi and family sets",
+  quotations: "Quote a customer, then convert to a sale",
+  contracts: "School and company uniform jobs",
+  staff: "Assign work, see workload",
+  "business-report": "A monthly summary you can share with a bank or partner",
+  moments: "Birthdays, festive greetings, check-ins",
+  ai: "Customer style requests from your shop",
+  directory: "How clients find you in the Jaylor directory",
+  privacy: "Consent, exports, support access",
+  support: "Questions, bugs, or help with your store",
+};
+
+/** Everything else: hidden from the sidebar until a store pins it from
+ *  Settings > Customize your menu (see pinned-nav.ts). Grouped only for
+ *  display in that settings list — group order is PINNABLE_NAV_GROUPS. */
+export const PINNABLE_NAV: AppNavItem[] = [
+  {
     key: "fittings",
     labelKey: "nav_fittings",
     fallback: "Fittings",
@@ -74,51 +108,6 @@ export const MAIN_NAV: AppNavItem[] = [
     badge: "fittings",
   },
   { key: "shop", labelKey: "nav_shop", fallback: "Shop", to: "/shop", icon: Store },
-  {
-    key: "payroll",
-    labelKey: "nav_payroll",
-    fallback: "Payroll",
-    to: "/payroll",
-    icon: Coins,
-    tier: "Business",
-    roles: ["owner", "manager"],
-  },
-  {
-    key: "my-earnings",
-    labelKey: "nav_my_earnings",
-    fallback: "My earnings",
-    to: "/my-earnings",
-    icon: Coins,
-    roles: ["tailor"],
-  },
-  {
-    key: "inventory",
-    labelKey: "nav_inventory",
-    fallback: "Inventory",
-    to: "/inventory",
-    icon: Boxes,
-    tier: "Business",
-    badge: "low_stock",
-  },
-  {
-    key: "reports",
-    labelKey: "nav_reports",
-    fallback: "Reports",
-    to: "/reports",
-    icon: BarChart3,
-    tier: "Business",
-  },
-  {
-    key: "settings",
-    labelKey: "nav_settings",
-    fallback: "Settings",
-    to: "/billing",
-    icon: Settings,
-  },
-];
-
-/** The rest of the More screen's items, grouped under "More" on desktop. */
-export const MORE_NAV: AppNavItem[] = [
   {
     key: "events",
     labelKey: "nav_events",
@@ -145,6 +134,23 @@ export const MORE_NAV: AppNavItem[] = [
     tier: "Business",
   },
   {
+    key: "payroll",
+    labelKey: "nav_payroll",
+    fallback: "Payroll",
+    to: "/payroll",
+    icon: Coins,
+    tier: "Business",
+    roles: ["owner", "manager"],
+  },
+  {
+    key: "my-earnings",
+    labelKey: "nav_my_earnings",
+    fallback: "My earnings",
+    to: "/my-earnings",
+    icon: Coins,
+    roles: ["tailor"],
+  },
+  {
     key: "staff",
     labelKey: "nav_staff",
     fallback: "Staff and job board",
@@ -157,6 +163,23 @@ export const MORE_NAV: AppNavItem[] = [
     labelKey: "nav_business_report",
     fallback: "Business report",
     to: "/business-report",
+    icon: BarChart3,
+    tier: "Business",
+  },
+  {
+    key: "inventory",
+    labelKey: "nav_inventory",
+    fallback: "Inventory",
+    to: "/inventory",
+    icon: Boxes,
+    tier: "Business",
+    badge: "low_stock",
+  },
+  {
+    key: "reports",
+    labelKey: "nav_reports",
+    fallback: "Reports",
+    to: "/reports",
     icon: BarChart3,
     tier: "Business",
   },
@@ -194,6 +217,15 @@ export const MORE_NAV: AppNavItem[] = [
     to: "/contact",
     icon: LifeBuoy,
   },
+];
+
+/** PINNABLE_NAV items grouped for the Customize your menu card. */
+export const PINNABLE_NAV_GROUPS: { title: string; keys: string[] }[] = [
+  { title: "Scheduling & sales", keys: ["fittings", "shop", "events", "quotations", "contracts"] },
+  { title: "Team & money", keys: ["payroll", "my-earnings", "staff", "business-report"] },
+  { title: "Stock & reports", keys: ["inventory", "reports"] },
+  { title: "Marketing & tools", keys: ["moments", "ai", "directory"] },
+  { title: "Account", keys: ["privacy", "support"] },
 ];
 
 const TIER_RANK: Record<Tier, number> = { Free: 0, Growth: 1, Business: 2, Custom: 3 };
