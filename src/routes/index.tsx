@@ -26,23 +26,25 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY_LINE, SHOW_DIRECTORY_IN_NAV, SUPPORT_WHATSAPP_URL } from "@/lib/jaylor";
+import {
+  COMPANY_LINE,
+  SHOW_DIRECTORY_IN_NAV,
+  SHOW_TESTIMONIALS,
+  SUPPORT_WHATSAPP_URL,
+} from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
 import { cn } from "@/lib/utils";
 import { PRICE_TIERS, PRICING_GUARANTEE } from "@/lib/pricing-content";
-import { OrderWalkthrough } from "@/components/jaylor/order-walkthrough";
 import { SupportLink } from "@/components/jaylor/support-link";
 import { SocialLinks } from "@/components/jaylor/social-links";
+import { TestimonialBlock } from "@/components/jaylor/testimonial-block";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
-import tailorVideo from "@/assets/videos/jaylor-story.mp4.asset.json";
 import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
 // Cleaned clips (burned-in label removed) live in public/videos and keep the
 // "Demo with sample data • Real Jaylor screens" captions in the page markup.
-const peopleMoney = { url: "/videos/jaylor-people-money.mp4" };
 const peopleNotebook = { url: "/videos/jaylor-people-notebook.mp4" };
 const peopleSnap = { url: "/videos/jaylor-people-snap-track.mp4" };
-const posterMoney = { url: "/videos/jaylor-people-money-poster.jpg" };
 const posterNotebook = { url: "/videos/jaylor-people-notebook-poster.jpg" };
 const posterSnap = { url: "/videos/jaylor-people-snap-track-poster.jpg" };
 import { LazyVideo } from "@/components/jaylor/lazy-video";
@@ -153,7 +155,7 @@ const HOME_FAQ = [
   {
     question: "Does it work offline?",
     answer:
-      "Yes. You can keep taking orders and recording payments without a connection, and Jaylor syncs everything the next time you're online.",
+      "Yes. You can keep taking orders and recording payments without a connection, and Jaylor syncs everything the next time you're online. Full offline mode is on paid plans. On Free, you can view your records offline.",
   },
   {
     question: "What if I lose my phone?",
@@ -242,7 +244,10 @@ function Home() {
               </Button>
             ) : (
               <>
-                <Link to="/auth" className="py-2 text-sm text-foreground/90 hover:text-foreground">
+                <Link
+                  to="/auth"
+                  className="border-b border-gold pb-1 text-sm text-foreground/90 hover:text-gold"
+                >
                   Sign in
                 </Link>
                 <Button
@@ -361,14 +366,6 @@ function Home() {
             </ul>
             <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-6">
               <a
-                href={tailorVideo.url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm underline underline-offset-4 hover:text-gold"
-              >
-                Watch the 45-second story
-              </a>
-              <a
                 href={heroDemo.url}
                 target="_blank"
                 rel="noopener noreferrer"
@@ -381,37 +378,6 @@ function Home() {
         </div>
       </section>
 
-      <section
-        aria-label="Same talent, different business"
-        className="border-b border-border py-10 lg:py-14"
-      >
-        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr]">
-          <figure className="mx-auto w-full max-w-xs">
-            <LazyVideo
-              src={peopleMoney.url}
-              poster={posterMoney.url}
-              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
-              label="A tailor counts naira notes, then sees money owed on the real Jaylor dashboard"
-            />
-            <figcaption className="mt-3 text-center text-xs text-muted-foreground">
-              Demo with sample data • Real Jaylor screens
-            </figcaption>
-          </figure>
-          <div>
-            <h2 className="text-4xl leading-tight sm:text-5xl">Same talent. Different business.</h2>
-            <p className="mt-5 max-w-lg text-base leading-7 text-muted-foreground">
-              No more searching notebooks, “I didn't ask for this style” or “who has not paid?”.
-              Every order tracked, every naira safe, and approval before you cut.
-            </p>
-            <p className="mt-5 inline-block rounded-full bg-gold px-5 py-2 text-sm font-semibold text-primary-foreground">
-              30 days of Growth free. No card.
-            </p>
-          </div>
-        </div>
-      </section>
-
-      <OrderWalkthrough />
-
       <section id="workroom" className="border-b border-border py-12 lg:py-16">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
@@ -420,6 +386,15 @@ function Home() {
               <h2 className="mt-5 max-w-md text-4xl leading-tight sm:text-5xl">
                 Orders. Measurements. Payments.
               </h2>
+              <Button
+                asChild
+                variant="premium"
+                className="mt-7 h-12 rounded-full px-8 uppercase tracking-[0.14em]"
+              >
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  Start free <ArrowRight />
+                </Link>
+              </Button>
             </div>
             <div className="border-t border-border">
               {WORKROOM_FEATURES.map(({ number, icon: Icon, title, body }) => (
@@ -439,6 +414,26 @@ function Home() {
               ))}
             </div>
           </div>
+        </div>
+      </section>
+
+      <section
+        aria-label="Get paid by link"
+        className="border-b border-border bg-card py-12 lg:py-16"
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5 px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">Jaylor Pay</p>
+          <h2 className="max-w-xl text-4xl leading-tight sm:text-5xl">Get paid by link</h2>
+          <p className="max-w-xl text-base leading-7 text-muted-foreground">
+            Send your client a secure payment link for card, transfer or USSD. The money goes
+            straight to your own bank account. Jaylor never holds it.
+          </p>
+          <Link
+            to="/pricing"
+            className="inline-flex items-center gap-2 text-sm text-gold underline underline-offset-4 hover:text-foreground"
+          >
+            See Jaylor Pay fees <ArrowRight className="size-4" />
+          </Link>
         </div>
       </section>
 
@@ -468,8 +463,8 @@ function Home() {
                 <p className="text-sm font-semibold text-gold">Jaylor</p>
                 <ul className="mt-3 space-y-2 text-sm text-foreground/90">
                   {[
-                    "Every order tracked",
-                    "Every naira accounted for",
+                    "Nothing falls through the cracks",
+                    "Every payment on record",
                     "A tracking link for each customer",
                   ].map((t) => (
                     <li key={t} className="flex gap-2">
@@ -577,17 +572,25 @@ function Home() {
         </div>
       </section>
 
-      <section aria-label="More tools" className="border-b border-border py-8">
-        <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-between gap-4 px-5 sm:px-8 lg:px-10">
-          <p className="max-w-2xl text-base text-muted-foreground">
-            Speak an order or photograph a notebook page, then check the draft before anything is
-            saved. Plus a calculator for balances you may still be owed.
-          </p>
-          <Button asChild variant="outline" className="rounded-full px-7">
-            <Link to="/features" hash="voice-and-photo">
-              See all features <ArrowRight />
-            </Link>
-          </Button>
+      <section aria-label="Faster than writing" className="border-b border-border py-10 lg:py-14">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">Faster than writing</p>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl leading-tight sm:text-4xl">
+                Speak an order. Snap your notebook.
+              </h2>
+              <p className="mt-3 text-base text-muted-foreground">
+                Speak an order or photograph a notebook page, then check the draft before anything
+                is saved. Plus a calculator for balances you may still be owed.
+              </p>
+            </div>
+            <Button asChild variant="outline" className="rounded-full px-7">
+              <Link to="/features" hash="voice-and-photo">
+                See how it works <ArrowRight />
+              </Link>
+            </Button>
+          </div>
         </div>
       </section>
 
@@ -654,6 +657,8 @@ function Home() {
         </div>
       </section>
 
+      {SHOW_TESTIMONIALS && <TestimonialBlock quote="" name="" shopName="" city="" />}
+
       <section id="pricing" className="border-b border-border bg-card py-12 lg:py-16">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-8 border-b border-border pb-12 lg:grid-cols-2 lg:items-end">
@@ -692,6 +697,10 @@ function Home() {
                       <Check className="mt-0.5 size-3.5 shrink-0 text-gold" /> {feature}
                     </li>
                   ))}
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-gold" /> Jaylor Pay at{" "}
+                    {plan.jaylorPayFee}
+                  </li>
                 </ul>
                 <div className="mt-auto pt-12">
                   <Button

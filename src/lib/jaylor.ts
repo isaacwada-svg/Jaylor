@@ -240,6 +240,10 @@ export type SocialKey = (typeof SOCIAL_LINKS)[number]["key"];
  *  the Measurement Passport page, just not the main navigation. */
 export const SHOW_DIRECTORY_IN_NAV = false;
 
+/** Switch to true once real testimonial content (quote, name, shop, city,
+ *  photo) is provided. TestimonialBlock never ships with invented quotes. */
+export const SHOW_TESTIMONIALS = false;
+
 /** Switch to true once automatic WhatsApp sending itself is live. The
  *  purchase option is hidden until then; the create/verify-message-topup
  *  edge functions and any past purchases are untouched by this flag. */

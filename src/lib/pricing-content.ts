@@ -285,4 +285,4 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
 ];
 
 export const PRICING_GUARANTEE =
-  "If Jaylor does not help you collect at least ten times your subscription in your first 90 days, we refund the subscription.";
+  "Our promise: if Jaylor is not right for your shop, ask for a refund within 30 days of your first payment and we will refund it in full.";
