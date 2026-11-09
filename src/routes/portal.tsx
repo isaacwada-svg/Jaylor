@@ -22,13 +22,13 @@ export const Route = createFileRoute("/portal")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "My orders — Jaylor customer portal" },
+      { title: "My orders: Jaylor customer portal" },
       {
         name: "description",
         content:
           "Sign in with a WhatsApp code to see your tailoring orders, what you have paid, your measurement requests and your tailor's details.",
       },
-      { property: "og:title", content: "Track your tailoring orders — Jaylor" },
+      { property: "og:title", content: "Track your tailoring orders: Jaylor" },
       {
         property: "og:description",
         content:
@@ -130,8 +130,8 @@ function PortalPage() {
           <div className="mx-auto max-w-md">
             <h1 className="font-heading text-3xl sm:text-4xl">Your orders</h1>
             <p className="mt-3 text-muted-foreground">
-              See what your tailor is making for you, what you have paid and what is left — no app
-              to install. We send a one-time code to your WhatsApp.
+              See what your tailor is making for you, what you have paid and what is left, no app to
+              install. We send a one-time code to your WhatsApp.
             </p>
 
             {step === "phone" && (
@@ -161,7 +161,7 @@ function PortalPage() {
               <div className="mt-8 space-y-4 rounded-2xl border border-border p-5">
                 <p className="text-sm text-muted-foreground">
                   To protect your details, WhatsApp asks you to message us first. Tap the button
-                  below — it opens WhatsApp with the word <strong>{PORTAL_KEYWORD}</strong> ready to
+                  below to open WhatsApp with the word <strong>{PORTAL_KEYWORD}</strong> ready to
                   send. Your code arrives in the same chat within seconds.
                 </p>
                 <Button variant="premium" className="w-full" asChild>
@@ -245,7 +245,10 @@ function PortalPage() {
                       <p className="mt-3 text-sm">
                         Paid {formatMoney(order.paid)} of {formatMoney(order.price)}
                         {order.balance > 0 ? (
-                          <span className="font-medium"> · balance {formatMoney(order.balance)}</span>
+                          <span className="font-medium">
+                            {" "}
+                            · balance {formatMoney(order.balance)}
+                          </span>
                         ) : (
                           <span className="font-medium"> · fully paid</span>
                         )}

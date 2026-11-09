@@ -5,7 +5,7 @@ import { Link } from "@tanstack/react-router";
 import { supabase } from "@/integrations/supabase/client";
 import { getFunctionErrorMessage } from "@/lib/utils";
 import { whatsappLink } from "@/lib/whatsapp";
-import { approximateUsd } from "@/lib/fx";
+import { approximateUsd, useFxRate } from "@/lib/fx";
 import { Button } from "@/components/ui/button";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Label } from "@/components/ui/label";
@@ -27,6 +27,7 @@ export function RequestPaymentButton({
   const [busy, setBusy] = useState(false);
   const [link, setLink] = useState<string | null>(null);
   const [notConnected, setNotConnected] = useState(false);
+  const { data: fxRate } = useFxRate();
 
   async function generate() {
     const amt = Number(amount);
@@ -140,7 +141,8 @@ export function RequestPaymentButton({
                 <MoneyInput id="request-amount" value={amount} onChange={setAmount} />
                 {Number(amount) > 0 && (
                   <p className="text-xs text-muted-foreground">
-                    ≈ {approximateUsd(Number(amount))} for a client paying by card from abroad
+                    ≈ {approximateUsd(Number(amount), fxRate)} for a client paying by card from
+                    abroad
                   </p>
                 )}
               </div>

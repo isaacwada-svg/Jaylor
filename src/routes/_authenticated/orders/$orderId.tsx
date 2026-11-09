@@ -421,6 +421,26 @@ function OrderDetail() {
     },
   });
 
+  // The client responding on /a/$token happens in a different browser
+  // entirely, so without this the "Awaiting approval"/"Approved" badge
+  // would only ever update if the staff member reloaded the page.
+  useEffect(() => {
+    const channel = supabase
+      .channel(`order-approvals:${orderId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "order_approvals",
+          filter: `order_id=eq.${orderId}`,
+        },
+        () => queryClient.invalidateQueries({ queryKey: ["order-approval-latest", orderId] }),
+      )
+      .subscribe();
+    return () => void supabase.removeChannel(channel);
+  }, [orderId, queryClient]);
+
   async function requestApproval() {
     if (!client || !currentStore || !order) return;
     setRequestingApproval(true);

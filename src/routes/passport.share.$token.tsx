@@ -22,7 +22,7 @@ import { getErrorMessage } from "@/lib/utils";
 export const Route = createFileRoute("/passport/share/$token")({
   staticData: { sitemap: false },
   head: () => ({
-    meta: [{ title: "Import a Passport — Jaylor" }],
+    meta: [{ title: "Import a Passport: Jaylor" }],
   }),
   component: PassportSharePage,
 });

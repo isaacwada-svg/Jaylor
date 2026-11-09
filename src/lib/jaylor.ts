@@ -105,7 +105,7 @@ export function planCodeToTier(planCode: string | null | undefined): Tier {
 }
 
 /**
- * Every new store gets a 14-day Growth trial before it settles onto its
+ * Every new store gets a 30-day Growth trial before it settles onto its
  * real plan, so the displayed tier isn't just the raw plan_code column
  * while trial_ends_at is still in the future.
  */
@@ -197,3 +197,54 @@ export const COMPANY_LINE =
 
 export const SUPPORT_EMAIL = "info@jaylor.com.ng";
 export const SUPPORT_PHONE = "+234 902 810 1389";
+
+/** General "tell me more" WhatsApp link -- the floating button, the team-note
+ *  quote on the homepage, and anywhere else that isn't already asking a
+ *  specific support question (see SupportLink for that one). */
+export const SUPPORT_WHATSAPP_URL = `https://wa.me/${SUPPORT_PHONE.replace(/\D/g, "")}?text=${encodeURIComponent(
+  "Hello Jaylor, I would like to know more about the app",
+)}`;
+
+/**
+ * Jaylor's own social profiles, given by the owner on 2026-10-10 and shown in
+ * public page footers and the contact screen. Instagram was confirmed live;
+ * Facebook and LinkedIn addresses were provided by the owner directly (both
+ * sit behind a sign-in wall when opened from here). If one of those links
+ * ever looks wrong, correct the address below and every page updates with it.
+ */
+export const SOCIAL_LINKS = [
+  {
+    key: "facebook",
+    label: "Facebook",
+    handle: "Jaylor",
+    url: "https://www.facebook.com/profile.php?id=61594799047263",
+  },
+  {
+    key: "instagram",
+    label: "Instagram",
+    handle: "@jaylorhq",
+    url: "https://www.instagram.com/jaylorhq/",
+  },
+  {
+    key: "linkedin",
+    label: "LinkedIn",
+    handle: "Jaylor",
+    url: "https://www.linkedin.com/company/146621519/",
+  },
+] as const;
+
+export type SocialKey = (typeof SOCIAL_LINKS)[number]["key"];
+
+/** Switch to true once the tailor directory has enough real listings to be
+ *  worth a top-nav link. Until then it is reachable from the footer and from
+ *  the Measurement Passport page, just not the main navigation. */
+export const SHOW_DIRECTORY_IN_NAV = false;
+
+/** Switch to true once real testimonial content (quote, name, shop, city,
+ *  photo) is provided. TestimonialBlock never ships with invented quotes. */
+export const SHOW_TESTIMONIALS = false;
+
+/** Switch to true once automatic WhatsApp sending itself is live. The
+ *  purchase option is hidden until then; the create/verify-message-topup
+ *  edge functions and any past purchases are untouched by this flag. */
+export const WHATSAPP_AUTO_TOPUP_ENABLED = false;

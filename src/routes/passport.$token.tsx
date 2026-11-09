@@ -20,6 +20,7 @@ import {
 import { COMPANY_LINE } from "@/lib/jaylor";
 import { whatsappLink } from "@/lib/whatsapp";
 import { getErrorMessage } from "@/lib/utils";
+import { isMeasurementStale } from "@/lib/measurements";
 import {
   getPassportByToken,
   requestPassportUpdate,
@@ -31,12 +32,12 @@ export const Route = createFileRoute("/passport/$token")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "Measurement card — Jaylor" },
+      { title: "Measurement card: Jaylor" },
       {
         name: "description",
         content: "A client's private measurement card, issued by their tailor on Jaylor.",
       },
-      { property: "og:title", content: "Measurement card — Jaylor" },
+      { property: "og:title", content: "Measurement card: Jaylor" },
       {
         property: "og:description",
         content: "A client's private measurement card, issued by their tailor on Jaylor.",
@@ -167,6 +168,24 @@ function PassportPage() {
                 )}
               </div>
 
+              {passport.takenAt && isMeasurementStale(passport.takenAt) && (
+                <div className="rounded-2xl border border-owed/40 bg-owed/10 p-4 text-sm">
+                  <p>
+                    These measurements are over 3 months old. If your body has changed, ask your
+                    tailor for a fresh measurement before your next order.
+                  </p>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="mt-3"
+                    onClick={handleRequestUpdate}
+                  >
+                    <MessageCircle className="size-4" />
+                    Request an update
+                  </Button>
+                </div>
+              )}
+
               {qrDataUrl && (
                 <div className="rounded-2xl border bg-card p-6 text-center">
                   <p className="text-sm text-muted-foreground">Show this to a new tailor to scan</p>
@@ -278,7 +297,11 @@ function ShareDialog({
             </p>
           </div>
           <DialogFooter>
-            <Button type="submit" disabled={busy || !slug.trim() || !phone.trim()} className="w-full">
+            <Button
+              type="submit"
+              disabled={busy || !slug.trim() || !phone.trim()}
+              className="w-full"
+            >
               <Share2 className="size-4" />
               {busy ? "Sending..." : "Send request"}
             </Button>

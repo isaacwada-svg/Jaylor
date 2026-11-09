@@ -53,14 +53,17 @@ import { Route as AuthenticatedQuotationsRouteImport } from './routes/_authentic
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedShopRouteImport } from './routes/_authenticated/shop'
 import { Route as AuthenticatedStaffRouteImport } from './routes/_authenticated/staff'
+import { Route as AuthenticatedSupportRouteImport } from './routes/_authenticated/support'
 import { Route as AuthenticatedUnmatchedPaymentsRouteImport } from './routes/_authenticated/unmatched-payments'
 import { Route as ATokenRouteImport } from './routes/a.$token'
+import { Route as AdminIndexRouteImport } from './routes/admin.index'
 import { Route as BookHandleRouteImport } from './routes/book.$handle'
 import { Route as DesignTokenRouteImport } from './routes/design.$token'
 import { Route as ETokenRouteImport } from './routes/e.$token'
 import { Route as FTokenRouteImport } from './routes/f.$token'
 import { Route as JobsSlugRouteImport } from './routes/jobs.$slug'
 import { Route as JoinTokenRouteImport } from './routes/join.$token'
+import { Route as PassportIndexRouteImport } from './routes/passport.index'
 import { Route as PassportTokenRouteImport } from './routes/passport.$token'
 import { Route as PassportClaimRouteImport } from './routes/passport.claim'
 import { Route as PassportMeRouteImport } from './routes/passport.me'
@@ -68,6 +71,7 @@ import { Route as QTokenRouteImport } from './routes/q.$token'
 import { Route as RTokenRouteImport } from './routes/r.$token'
 import { Route as StyleTokenRouteImport } from './routes/style.$token'
 import { Route as TTokenRouteImport } from './routes/t.$token'
+import { Route as TailorsIndexRouteImport } from './routes/tailors.index'
 import { Route as TailorsCitySlugRouteImport } from './routes/tailors.$citySlug'
 import { Route as AuthenticatedClientsIndexRouteImport } from './routes/_authenticated/clients/index'
 import { Route as AuthenticatedClientsClientIdRouteImport } from './routes/_authenticated/clients/$clientId'
@@ -75,13 +79,16 @@ import { Route as AuthenticatedEventsIndexRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEventsEventIdRouteImport } from './routes/_authenticated/events/$eventId'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedOrdersOrderIdRouteImport } from './routes/_authenticated/orders/$orderId'
+import { Route as AuthenticatedQuotationsIndexRouteImport } from './routes/_authenticated/quotations.index'
 import { Route as AuthenticatedQuotationsQuoteIdRouteImport } from './routes/_authenticated/quotations.$quoteId'
 import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
+import { Route as ApiCronAskJaylorCleanupRouteImport } from './routes/api/cron/ask-jaylor-cleanup'
 import { Route as ApiCronDigestRouteImport } from './routes/api/cron/digest'
 import { Route as ApiInternalTransferAlertRouteImport } from './routes/api/internal/transfer-alert'
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
 import { Route as PassportShareTokenRouteImport } from './routes/passport.share.$token'
 import { Route as ApiPublicWhatsappWebhookRouteImport } from './routes/api/public/whatsapp/webhook'
+import { Route as LovableEmailTransactionalPreviewRouteImport } from './routes/lovable/email/transactional/preview'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -305,6 +312,11 @@ const AuthenticatedStaffRoute = AuthenticatedStaffRouteImport.update({
   path: '/staff',
   getParentRoute: () => AuthenticatedRouteRoute,
 } as any)
+const AuthenticatedSupportRoute = AuthenticatedSupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AuthenticatedUnmatchedPaymentsRoute =
   AuthenticatedUnmatchedPaymentsRouteImport.update({
     id: '/unmatched-payments',
@@ -315,6 +327,11 @@ const ATokenRoute = ATokenRouteImport.update({
   id: '/a/$token',
   path: '/a/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const AdminIndexRoute = AdminIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AdminRoute,
 } as any)
 const BookHandleRoute = BookHandleRouteImport.update({
   id: '/book/$handle',
@@ -345,6 +362,11 @@ const JoinTokenRoute = JoinTokenRouteImport.update({
   id: '/join/$token',
   path: '/join/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const PassportIndexRoute = PassportIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => PassportRoute,
 } as any)
 const PassportTokenRoute = PassportTokenRouteImport.update({
   id: '/$token',
@@ -380,6 +402,11 @@ const TTokenRoute = TTokenRouteImport.update({
   id: '/t/$token',
   path: '/t/$token',
   getParentRoute: () => rootRouteImport,
+} as any)
+const TailorsIndexRoute = TailorsIndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => TailorsRoute,
 } as any)
 const TailorsCitySlugRoute = TailorsCitySlugRouteImport.update({
   id: '/$citySlug',
@@ -422,6 +449,12 @@ const AuthenticatedOrdersOrderIdRoute =
     path: '/orders/$orderId',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedQuotationsIndexRoute =
+  AuthenticatedQuotationsIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedQuotationsRoute,
+  } as any)
 const AuthenticatedQuotationsQuoteIdRoute =
   AuthenticatedQuotationsQuoteIdRouteImport.update({
     id: '/$quoteId',
@@ -432,6 +465,11 @@ const AdminStoresStoreIdRoute = AdminStoresStoreIdRouteImport.update({
   id: '/stores/$storeId',
   path: '/stores/$storeId',
   getParentRoute: () => AdminRoute,
+} as any)
+const ApiCronAskJaylorCleanupRoute = ApiCronAskJaylorCleanupRouteImport.update({
+  id: '/api/cron/ask-jaylor-cleanup',
+  path: '/api/cron/ask-jaylor-cleanup',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ApiCronDigestRoute = ApiCronDigestRouteImport.update({
   id: '/api/cron/digest',
@@ -458,6 +496,12 @@ const ApiPublicWhatsappWebhookRoute =
   ApiPublicWhatsappWebhookRouteImport.update({
     id: '/api/public/whatsapp/webhook',
     path: '/api/public/whatsapp/webhook',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const LovableEmailTransactionalPreviewRoute =
+  LovableEmailTransactionalPreviewRouteImport.update({
+    id: '/lovable/email/transactional/preview',
+    path: '/lovable/email/transactional/preview',
     getParentRoute: () => rootRouteImport,
   } as any)
 
@@ -505,6 +549,7 @@ export interface FileRoutesByFullPath {
   '/reports': typeof AuthenticatedReportsRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/support': typeof AuthenticatedSupportRoute
   '/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
   '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
@@ -521,11 +566,15 @@ export interface FileRoutesByFullPath {
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
+  '/admin/': typeof AdminIndexRoute
+  '/passport/': typeof PassportIndexRoute
+  '/tailors/': typeof TailorsIndexRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
@@ -533,13 +582,14 @@ export interface FileRoutesByFullPath {
   '/clients/': typeof AuthenticatedClientsIndexRoute
   '/events/': typeof AuthenticatedEventsIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/quotations/': typeof AuthenticatedQuotationsIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
-  '/admin': typeof AdminRouteWithChildren
   '/admin-ai': typeof AdminAiRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
@@ -551,13 +601,11 @@ export interface FileRoutesByTo {
   '/measure-guide': typeof MeasureGuideRoute
   '/measurement-passport': typeof MeasurementPassportRoute
   '/onboarding': typeof OnboardingRoute
-  '/passport': typeof PassportRouteWithChildren
   '/portal': typeof PortalRoute
   '/pricing': typeof PricingRoute
   '/privacy-policy': typeof PrivacyPolicyRoute
   '/security': typeof SecurityRoute
   '/sitemap.xml': typeof SitemapDotxmlRoute
-  '/tailors': typeof TailorsRouteWithChildren
   '/terms': typeof TermsRoute
   '/.well-known/assetlinks.json': typeof DotwellKnownAssetlinksDotjsonRoute
   '/ai-designs': typeof AuthenticatedAiDesignsRoute
@@ -575,10 +623,10 @@ export interface FileRoutesByTo {
   '/payments': typeof AuthenticatedPaymentsRoute
   '/payroll': typeof AuthenticatedPayrollRoute
   '/privacy': typeof AuthenticatedPrivacyRoute
-  '/quotations': typeof AuthenticatedQuotationsRouteWithChildren
   '/reports': typeof AuthenticatedReportsRoute
   '/shop': typeof AuthenticatedShopRoute
   '/staff': typeof AuthenticatedStaffRoute
+  '/support': typeof AuthenticatedSupportRoute
   '/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
   '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
@@ -595,11 +643,15 @@ export interface FileRoutesByTo {
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
+  '/admin': typeof AdminIndexRoute
+  '/passport': typeof PassportIndexRoute
+  '/tailors': typeof TailorsIndexRoute
   '/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
@@ -607,7 +659,9 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsIndexRoute
   '/events': typeof AuthenticatedEventsIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
+  '/quotations': typeof AuthenticatedQuotationsIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -655,6 +709,7 @@ export interface FileRoutesById {
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/shop': typeof AuthenticatedShopRoute
   '/_authenticated/staff': typeof AuthenticatedStaffRoute
+  '/_authenticated/support': typeof AuthenticatedSupportRoute
   '/_authenticated/unmatched-payments': typeof AuthenticatedUnmatchedPaymentsRoute
   '/a/$token': typeof ATokenRoute
   '/book/$handle': typeof BookHandleRoute
@@ -671,11 +726,15 @@ export interface FileRoutesById {
   '/style/$token': typeof StyleTokenRoute
   '/t/$token': typeof TTokenRoute
   '/tailors/$citySlug': typeof TailorsCitySlugRoute
+  '/admin/': typeof AdminIndexRoute
+  '/passport/': typeof PassportIndexRoute
+  '/tailors/': typeof TailorsIndexRoute
   '/_authenticated/clients/$clientId': typeof AuthenticatedClientsClientIdRoute
   '/_authenticated/events/$eventId': typeof AuthenticatedEventsEventIdRoute
   '/_authenticated/orders/$orderId': typeof AuthenticatedOrdersOrderIdRoute
   '/_authenticated/quotations/$quoteId': typeof AuthenticatedQuotationsQuoteIdRoute
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
+  '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
@@ -683,7 +742,9 @@ export interface FileRoutesById {
   '/_authenticated/clients/': typeof AuthenticatedClientsIndexRoute
   '/_authenticated/events/': typeof AuthenticatedEventsIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/_authenticated/quotations/': typeof AuthenticatedQuotationsIndexRoute
   '/api/public/whatsapp/webhook': typeof ApiPublicWhatsappWebhookRoute
+  '/lovable/email/transactional/preview': typeof LovableEmailTransactionalPreviewRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -731,6 +792,7 @@ export interface FileRouteTypes {
     | '/reports'
     | '/shop'
     | '/staff'
+    | '/support'
     | '/unmatched-payments'
     | '/a/$token'
     | '/book/$handle'
@@ -747,11 +809,15 @@ export interface FileRouteTypes {
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
+    | '/admin/'
+    | '/passport/'
+    | '/tailors/'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
     | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
@@ -759,13 +825,14 @@ export interface FileRouteTypes {
     | '/clients/'
     | '/events/'
     | '/orders/'
+    | '/quotations/'
     | '/api/public/whatsapp/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/$handle'
     | '/about'
-    | '/admin'
     | '/admin-ai'
     | '/auth'
     | '/contact'
@@ -777,13 +844,11 @@ export interface FileRouteTypes {
     | '/measure-guide'
     | '/measurement-passport'
     | '/onboarding'
-    | '/passport'
     | '/portal'
     | '/pricing'
     | '/privacy-policy'
     | '/security'
     | '/sitemap.xml'
-    | '/tailors'
     | '/terms'
     | '/.well-known/assetlinks.json'
     | '/ai-designs'
@@ -801,10 +866,10 @@ export interface FileRouteTypes {
     | '/payments'
     | '/payroll'
     | '/privacy'
-    | '/quotations'
     | '/reports'
     | '/shop'
     | '/staff'
+    | '/support'
     | '/unmatched-payments'
     | '/a/$token'
     | '/book/$handle'
@@ -821,11 +886,15 @@ export interface FileRouteTypes {
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
+    | '/admin'
+    | '/passport'
+    | '/tailors'
     | '/clients/$clientId'
     | '/events/$eventId'
     | '/orders/$orderId'
     | '/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
@@ -833,7 +902,9 @@ export interface FileRouteTypes {
     | '/clients'
     | '/events'
     | '/orders'
+    | '/quotations'
     | '/api/public/whatsapp/webhook'
+    | '/lovable/email/transactional/preview'
   id:
     | '__root__'
     | '/'
@@ -880,6 +951,7 @@ export interface FileRouteTypes {
     | '/_authenticated/reports'
     | '/_authenticated/shop'
     | '/_authenticated/staff'
+    | '/_authenticated/support'
     | '/_authenticated/unmatched-payments'
     | '/a/$token'
     | '/book/$handle'
@@ -896,11 +968,15 @@ export interface FileRouteTypes {
     | '/style/$token'
     | '/t/$token'
     | '/tailors/$citySlug'
+    | '/admin/'
+    | '/passport/'
+    | '/tailors/'
     | '/_authenticated/clients/$clientId'
     | '/_authenticated/events/$eventId'
     | '/_authenticated/orders/$orderId'
     | '/_authenticated/quotations/$quoteId'
     | '/admin/stores/$storeId'
+    | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
@@ -908,7 +984,9 @@ export interface FileRouteTypes {
     | '/_authenticated/clients/'
     | '/_authenticated/events/'
     | '/_authenticated/orders/'
+    | '/_authenticated/quotations/'
     | '/api/public/whatsapp/webhook'
+    | '/lovable/email/transactional/preview'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -948,10 +1026,12 @@ export interface RootRouteChildren {
   RTokenRoute: typeof RTokenRoute
   StyleTokenRoute: typeof StyleTokenRoute
   TTokenRoute: typeof TTokenRoute
+  ApiCronAskJaylorCleanupRoute: typeof ApiCronAskJaylorCleanupRoute
   ApiCronDigestRoute: typeof ApiCronDigestRoute
   ApiInternalTransferAlertRoute: typeof ApiInternalTransferAlertRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
+  LovableEmailTransactionalPreviewRoute: typeof LovableEmailTransactionalPreviewRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1264,6 +1344,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedStaffRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/support': {
+      id: '/_authenticated/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof AuthenticatedSupportRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/unmatched-payments': {
       id: '/_authenticated/unmatched-payments'
       path: '/unmatched-payments'
@@ -1277,6 +1364,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/a/$token'
       preLoaderRoute: typeof ATokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/admin/': {
+      id: '/admin/'
+      path: '/'
+      fullPath: '/admin/'
+      preLoaderRoute: typeof AdminIndexRouteImport
+      parentRoute: typeof AdminRoute
     }
     '/book/$handle': {
       id: '/book/$handle'
@@ -1319,6 +1413,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/join/$token'
       preLoaderRoute: typeof JoinTokenRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/passport/': {
+      id: '/passport/'
+      path: '/'
+      fullPath: '/passport/'
+      preLoaderRoute: typeof PassportIndexRouteImport
+      parentRoute: typeof PassportRoute
     }
     '/passport/$token': {
       id: '/passport/$token'
@@ -1369,6 +1470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof TTokenRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/tailors/': {
+      id: '/tailors/'
+      path: '/'
+      fullPath: '/tailors/'
+      preLoaderRoute: typeof TailorsIndexRouteImport
+      parentRoute: typeof TailorsRoute
+    }
     '/tailors/$citySlug': {
       id: '/tailors/$citySlug'
       path: '/$citySlug'
@@ -1418,6 +1526,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedOrdersOrderIdRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/quotations/': {
+      id: '/_authenticated/quotations/'
+      path: '/'
+      fullPath: '/quotations/'
+      preLoaderRoute: typeof AuthenticatedQuotationsIndexRouteImport
+      parentRoute: typeof AuthenticatedQuotationsRoute
+    }
     '/_authenticated/quotations/$quoteId': {
       id: '/_authenticated/quotations/$quoteId'
       path: '/$quoteId'
@@ -1431,6 +1546,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin/stores/$storeId'
       preLoaderRoute: typeof AdminStoresStoreIdRouteImport
       parentRoute: typeof AdminRoute
+    }
+    '/api/cron/ask-jaylor-cleanup': {
+      id: '/api/cron/ask-jaylor-cleanup'
+      path: '/api/cron/ask-jaylor-cleanup'
+      fullPath: '/api/cron/ask-jaylor-cleanup'
+      preLoaderRoute: typeof ApiCronAskJaylorCleanupRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/api/cron/digest': {
       id: '/api/cron/digest'
@@ -1467,16 +1589,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicWhatsappWebhookRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/lovable/email/transactional/preview': {
+      id: '/lovable/email/transactional/preview'
+      path: '/lovable/email/transactional/preview'
+      fullPath: '/lovable/email/transactional/preview'
+      preLoaderRoute: typeof LovableEmailTransactionalPreviewRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 interface AuthenticatedQuotationsRouteChildren {
   AuthenticatedQuotationsQuoteIdRoute: typeof AuthenticatedQuotationsQuoteIdRoute
+  AuthenticatedQuotationsIndexRoute: typeof AuthenticatedQuotationsIndexRoute
 }
 
 const AuthenticatedQuotationsRouteChildren: AuthenticatedQuotationsRouteChildren =
   {
     AuthenticatedQuotationsQuoteIdRoute: AuthenticatedQuotationsQuoteIdRoute,
+    AuthenticatedQuotationsIndexRoute: AuthenticatedQuotationsIndexRoute,
   }
 
 const AuthenticatedQuotationsRouteWithChildren =
@@ -1504,6 +1635,7 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedShopRoute: typeof AuthenticatedShopRoute
   AuthenticatedStaffRoute: typeof AuthenticatedStaffRoute
+  AuthenticatedSupportRoute: typeof AuthenticatedSupportRoute
   AuthenticatedUnmatchedPaymentsRoute: typeof AuthenticatedUnmatchedPaymentsRoute
   AuthenticatedClientsClientIdRoute: typeof AuthenticatedClientsClientIdRoute
   AuthenticatedEventsEventIdRoute: typeof AuthenticatedEventsEventIdRoute
@@ -1533,6 +1665,7 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedShopRoute: AuthenticatedShopRoute,
   AuthenticatedStaffRoute: AuthenticatedStaffRoute,
+  AuthenticatedSupportRoute: AuthenticatedSupportRoute,
   AuthenticatedUnmatchedPaymentsRoute: AuthenticatedUnmatchedPaymentsRoute,
   AuthenticatedClientsClientIdRoute: AuthenticatedClientsClientIdRoute,
   AuthenticatedEventsEventIdRoute: AuthenticatedEventsEventIdRoute,
@@ -1546,10 +1679,12 @@ const AuthenticatedRouteRouteWithChildren =
   AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
 
 interface AdminRouteChildren {
+  AdminIndexRoute: typeof AdminIndexRoute
   AdminStoresStoreIdRoute: typeof AdminStoresStoreIdRoute
 }
 
 const AdminRouteChildren: AdminRouteChildren = {
+  AdminIndexRoute: AdminIndexRoute,
   AdminStoresStoreIdRoute: AdminStoresStoreIdRoute,
 }
 
@@ -1559,6 +1694,7 @@ interface PassportRouteChildren {
   PassportTokenRoute: typeof PassportTokenRoute
   PassportClaimRoute: typeof PassportClaimRoute
   PassportMeRoute: typeof PassportMeRoute
+  PassportIndexRoute: typeof PassportIndexRoute
   PassportShareTokenRoute: typeof PassportShareTokenRoute
 }
 
@@ -1566,6 +1702,7 @@ const PassportRouteChildren: PassportRouteChildren = {
   PassportTokenRoute: PassportTokenRoute,
   PassportClaimRoute: PassportClaimRoute,
   PassportMeRoute: PassportMeRoute,
+  PassportIndexRoute: PassportIndexRoute,
   PassportShareTokenRoute: PassportShareTokenRoute,
 }
 
@@ -1575,10 +1712,12 @@ const PassportRouteWithChildren = PassportRoute._addFileChildren(
 
 interface TailorsRouteChildren {
   TailorsCitySlugRoute: typeof TailorsCitySlugRoute
+  TailorsIndexRoute: typeof TailorsIndexRoute
 }
 
 const TailorsRouteChildren: TailorsRouteChildren = {
   TailorsCitySlugRoute: TailorsCitySlugRoute,
+  TailorsIndexRoute: TailorsIndexRoute,
 }
 
 const TailorsRouteWithChildren =
@@ -1621,10 +1760,12 @@ const rootRouteChildren: RootRouteChildren = {
   RTokenRoute: RTokenRoute,
   StyleTokenRoute: StyleTokenRoute,
   TTokenRoute: TTokenRoute,
+  ApiCronAskJaylorCleanupRoute: ApiCronAskJaylorCleanupRoute,
   ApiCronDigestRoute: ApiCronDigestRoute,
   ApiInternalTransferAlertRoute: ApiInternalTransferAlertRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
+  LovableEmailTransactionalPreviewRoute: LovableEmailTransactionalPreviewRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

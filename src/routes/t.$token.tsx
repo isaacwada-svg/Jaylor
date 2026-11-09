@@ -37,7 +37,7 @@ export const Route = createFileRoute("/t/$token")({
   },
   head: () => ({
     meta: [
-      { title: "Track your order — Jaylor" },
+      { title: "Track your order: Jaylor" },
       {
         name: "description",
         content: "Follow your order's progress and pay any balance owed.",
@@ -268,7 +268,9 @@ function OrderTrackingPage() {
             </div>
             <div className="mt-1 flex items-center justify-between text-sm">
               <span className="text-muted-foreground">{t("balance")}</span>
-              <span className="figures text-owed">{formatMoney(order.balance, order.currency)}</span>
+              <span className="figures text-owed">
+                {formatMoney(order.balance, order.currency)}
+              </span>
             </div>
 
             {order.balance > 0 && (

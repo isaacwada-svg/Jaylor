@@ -1,8 +1,13 @@
 import type { AgeGroup, TemplateSex } from "@/lib/jaylor";
 import type { Tables } from "@/integrations/supabase/types";
 
-/** Also used for the growing-child re-measure warning in measurements-tab.tsx. */
+/** Also used for the re-measure warning in measurements-tab.tsx and order-form.tsx. */
 export const RE_MEASURE_MS = 1000 * 60 * 60 * 24 * 90; // 90 days
+
+/** True once a measurement set is more than 90 days old, for any client regardless of age. */
+export function isMeasurementStale(takenAt: string): boolean {
+  return Date.now() - new Date(takenAt).getTime() > RE_MEASURE_MS;
+}
 
 /**
  * Bridal measurements can go stale relative to the wedding date itself, not

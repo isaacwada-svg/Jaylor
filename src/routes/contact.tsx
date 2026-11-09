@@ -2,28 +2,33 @@ import { useState, type FormEvent } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { MarketingLayout } from "@/components/jaylor/marketing-layout";
+import { SupportLink } from "@/components/jaylor/support-link";
+import { SocialLinks } from "@/components/jaylor/social-links";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
+import { SUPPORT_EMAIL } from "@/lib/jaylor";
 import { getErrorMessage } from "@/lib/utils";
 
 export const Route = createFileRoute("/contact")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Contact & support — Jaylor" },
+      { title: "Contact & support: Jaylor" },
       {
         name: "description",
-        content: "Questions, a bug to report, or help with your store — send us a message.",
+        content: "Questions, a bug to report, or help with your store, send us a message.",
       },
-      { property: "og:title", content: "Contact & support — Jaylor" },
+      { property: "og:title", content: "Contact & support: Jaylor" },
       {
         property: "og:description",
-        content: "Questions, a bug to report, or help with your store — send us a message.",
+        content: "Questions, a bug to report, or help with your store, send us a message.",
       },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Contact,
@@ -36,11 +41,27 @@ function Contact() {
         <div className="text-center">
           <h1 className="font-heading text-4xl">Contact & support</h1>
           <p className="mt-4 text-muted-foreground">
-            A question, a bug to report, or help with your store — send us a message and we&apos;ll
+            A question, a bug to report, or help with your store, send us a message and we&apos;ll
             get back to you.
           </p>
         </div>
 
+        <div className="mt-6 flex flex-col items-center gap-4">
+          <SupportLink className="h-12 max-w-full px-4" />
+          <p className="text-sm text-muted-foreground">
+            Or email{" "}
+            <a
+              className="font-medium text-foreground hover:text-gold"
+              href={`mailto:${SUPPORT_EMAIL}`}
+            >
+              {SUPPORT_EMAIL}
+            </a>
+          </p>
+          <SocialLinks
+            showHandles
+            className="flex flex-wrap items-center justify-center gap-6"
+          />
+        </div>
         <StitchDivider className="my-8" />
 
         <ContactForm />

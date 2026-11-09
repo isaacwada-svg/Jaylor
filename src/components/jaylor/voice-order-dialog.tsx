@@ -1,8 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { Mic, Square } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
-import { getFunctionErrorMessage } from "@/lib/utils";
+import { useAiCredits } from "@/lib/ai-credits";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { isSpeechRecognitionSupported, startSpeechRecognition } from "@/lib/voice-recognition";
 import { GARMENT_TYPES } from "@/lib/jaylor";
@@ -49,6 +48,7 @@ export function VoiceOrderDialog({
   canRecordAudio: boolean;
 }) {
   const online = useOnlineStatus();
+  const { run } = useAiCredits();
   const supported = isSpeechRecognitionSupported();
   const audioSupported = canRecordAudio && isMediaRecorderSupported();
   const [listening, setListening] = useState(false);
@@ -152,27 +152,17 @@ export function VoiceOrderDialog({
 
   async function parseAudio(blob: Blob, mimeType: string) {
     setParsing(true);
-    try {
-      const audioBase64 = await blobToBase64(blob);
-      const format = mimeType.includes("mp4") ? "mp4" : "webm";
-      const { data, error } = await supabase.functions.invoke("voice-order", {
-        body: {
-          storeId,
-          audioBase64,
-          audioFormat: format,
-          audioDurationSeconds: recordSeconds || 1,
-          garmentTypes: GARMENT_TYPES,
-          today: new Date().toISOString().slice(0, 10),
-          triggeredByUserAction: true,
-        },
-      });
-      if (error) throw error;
-      handleParsed((data as { result: ParsedOrderResult }).result);
-    } catch (error) {
-      toast.error(await getFunctionErrorMessage(error, "Could not understand this recording"));
-    } finally {
-      setParsing(false);
-    }
+    const audioBase64 = await blobToBase64(blob);
+    const format = mimeType.includes("mp4") ? "mp4" : "webm";
+    const res = await run("voice_order", {
+      audioBase64,
+      audioFormat: format,
+      audioDurationSeconds: recordSeconds || 1,
+      garmentTypes: GARMENT_TYPES,
+      today: new Date().toISOString().slice(0, 10),
+    });
+    setParsing(false);
+    if (res.ok) handleParsed(res.result as ParsedOrderResult);
   }
 
   async function parse() {
@@ -181,23 +171,13 @@ export function VoiceOrderDialog({
       return;
     }
     setParsing(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("voice-order", {
-        body: {
-          storeId,
-          transcript: transcript.trim(),
-          garmentTypes: GARMENT_TYPES,
-          today: new Date().toISOString().slice(0, 10),
-          triggeredByUserAction: true,
-        },
-      });
-      if (error) throw error;
-      handleParsed((data as { result: ParsedOrderResult }).result);
-    } catch (error) {
-      toast.error(await getFunctionErrorMessage(error, "Could not understand this order"));
-    } finally {
-      setParsing(false);
-    }
+    const res = await run("voice_order", {
+      transcript: transcript.trim(),
+      garmentTypes: GARMENT_TYPES,
+      today: new Date().toISOString().slice(0, 10),
+    });
+    setParsing(false);
+    if (res.ok) handleParsed(res.result as ParsedOrderResult);
   }
 
   return (

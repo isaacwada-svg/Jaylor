@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { Download, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -52,14 +52,19 @@ export function ShareCardDialog({
   fileName: string;
   showConfetti?: boolean;
 }) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+  // A plain useRef doesn't work here: the canvas lives inside Radix's
+  // DialogContent, which Portal mounts into the DOM one render after the
+  // dialog first opens (a useLayoutEffect flips it in). This effect's own
+  // deps (open, spec) don't change on that follow-up render, so a ref that
+  // was still null on the first pass would stay undrawn forever. A
+  // state-backed callback ref re-renders exactly when the node attaches.
+  const [canvas, setCanvas] = useState<HTMLCanvasElement | null>(null);
 
   useEffect(() => {
-    if (open && canvasRef.current) renderShareCard(canvasRef.current, spec);
-  }, [open, spec]);
+    if (open && canvas) renderShareCard(canvas, spec);
+  }, [open, spec, canvas]);
 
   async function handleDownload() {
-    const canvas = canvasRef.current;
     if (!canvas) return;
     const blob = await canvasToPngBlob(canvas);
     if (!blob) return;
@@ -72,7 +77,6 @@ export function ShareCardDialog({
   }
 
   async function handleShare() {
-    const canvas = canvasRef.current;
     if (!canvas) return;
     const blob = await canvasToPngBlob(canvas);
     if (!blob) return;
@@ -102,7 +106,7 @@ export function ShareCardDialog({
             <DialogTitle>Share this moment</DialogTitle>
           </DialogHeader>
           <canvas
-            ref={canvasRef}
+            ref={setCanvas}
             className="w-full rounded-xl border border-border"
             style={{ aspectRatio: "1080 / 1920" }}
           />

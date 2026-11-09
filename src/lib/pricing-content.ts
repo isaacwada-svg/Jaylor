@@ -34,14 +34,14 @@ export const PRICE_TIERS: PriceTier[] = [
       "20 orders / month",
       "Unlimited clients",
       "Unlimited tap-to-send WhatsApp",
-      "10 storefront items",
-      "Receipts with a Jaylor footer",
-      "View your orders offline",
+      "Client tracking links and approvals",
+      "Fabric photos and Measurement Passport",
+      "Listing in the tailor directory",
     ],
   },
   {
     tier: "Growth",
-    blurb: "For a growing shop that wants automatic reminders and its own storefront.",
+    blurb: "For a growing shop that wants to look professional and plan ahead.",
     jaylorPayFee: "1%",
     mostPopular: true,
     cta: "trial",
@@ -51,19 +51,18 @@ export const PRICE_TIERS: PriceTier[] = [
       yearly: { total: "₦54,000", perMonth: "₦4,500 / month" },
     },
     features: [
+      "Everything in Free",
       "3 users",
       "Unlimited orders",
-      "Automatic WhatsApp reminders (coming soon)",
-      "Own logo on receipts",
-      "Unlimited storefront items",
-      "Public booking page",
-      "1 active group event",
-      "Full offline",
+      "Your own storefront and logo on receipts",
+      "On-time badge and capacity planning",
+      "Quotations, group events and consultations",
+      "Daily and weekly business summaries",
     ],
   },
   {
     tier: "Business",
-    blurb: "For a fashion house with staff, branches and reports to manage.",
+    blurb: "For a fashion house with staff, stock and reports to manage.",
     jaylorPayFee: "0.7%",
     cta: "trial",
     prices: {
@@ -72,12 +71,13 @@ export const PRICE_TIERS: PriceTier[] = [
       yearly: { total: "₦144,000", perMonth: "₦12,000 / month" },
     },
     features: [
+      "Everything in Growth",
       "10 users with roles",
-      "Automatic WhatsApp reminders (coming soon)",
-      "Staff job board",
-      "Expenses and net profit reports",
-      "Unlimited group events",
-      "Priority support",
+      "Staff job board and piece-rate payroll",
+      "Inventory with low-stock alerts",
+      "Expenses, net profit and monthly business report",
+      "Prices in pounds, dollars and cedis",
+      "School and company uniform contracts",
     ],
   },
   {
@@ -93,9 +93,7 @@ export const PRICE_TIERS: PriceTier[] = [
 export type AddOn = { name: string; price: string; href?: string };
 
 export const ADD_ONS: AddOn[] = [
-  { name: "100 automatic WhatsApp messages", price: "₦2,000" },
   { name: "Extra user", price: "₦1,500 / month" },
-  { name: "Extra branch", price: "₦4,000 / month" },
   {
     name: "Notebook import service (we type in your old records)",
     price: "₦10,000 one-off",
@@ -124,8 +122,31 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: { Free: "Unlimited", Growth: "Unlimited", Business: "Unlimited", Custom: "Unlimited" },
   },
   {
-    label: "Automatic WhatsApp / month",
-    values: { Free: "—", Growth: "Coming soon", Business: "Coming soon", Custom: "Agreed volume" },
+    label: "Client tracking links and approvals",
+    values: {
+      Free: "Included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Fabric photos and Measurement Passport",
+    values: {
+      Free: "Included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Listing in the tailor directory",
+    values: {
+      Free: "Included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
   },
   {
     label: "Storefront items",
@@ -134,16 +155,83 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
   {
     label: "Receipts",
     values: {
-      Free: "Jaylor footer",
+      Free: "Made with Jaylor",
       Growth: "Own logo",
       Business: "Own logo",
       Custom: "Own branding",
     },
   },
-  { label: "Branches", values: { Free: "1", Growth: "1", Business: "1", Custom: "Unlimited" } },
   {
-    label: "Group and aso-ebi events",
-    values: { Free: "—", Growth: "1 active", Business: "Unlimited", Custom: "Unlimited" },
+    label: "On-time badge and capacity planning",
+    values: {
+      Free: "Not included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Quotations, group events and consultations",
+    values: {
+      Free: "Not included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Daily and weekly business summaries",
+    values: {
+      Free: "Not included",
+      Growth: "Included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Automatic WhatsApp / month",
+    values: {
+      Free: "Not included",
+      Growth: "Coming soon",
+      Business: "Coming soon",
+      Custom: "Agreed volume",
+    },
+  },
+  {
+    label: "Staff job board and piece-rate payroll",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Inventory with low-stock alerts",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "Prices in pounds, dollars and cedis",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
+  },
+  {
+    label: "School and company uniform contracts",
+    values: {
+      Free: "Not included",
+      Growth: "Not included",
+      Business: "Included",
+      Custom: "Included",
+    },
   },
   {
     label: "Jaylor Pay fee",
@@ -154,7 +242,7 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
     values: {
       Free: "Basic",
       Growth: "Money owed and collected",
-      Business: "Expenses, net profit, staff",
+      Business: "Expenses, net profit and business report",
       Custom: "Custom reports",
     },
   },
@@ -166,14 +254,14 @@ export const COMPARISON_ROWS: ComparisonRow[] = [
 
 export const PRICING_FAQ: { question: string; answer: string }[] = [
   {
-    question: "How does the 14-day trial work?",
+    question: "How does the 30-day trial work?",
     answer:
-      "Every new store starts on a 14-day Growth trial automatically, no card required. You can use every Growth feature during that time.",
+      "Every new store starts on a 30-day Growth trial automatically, no card required. You can use every Growth feature during that time.",
   },
   {
-    question: "What happens after 14 days?",
+    question: "What happens after 30 days?",
     answer:
-      "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted — anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
+      "If you haven't chosen a paid plan, your store moves to Free. Nothing is ever deleted: anything over the Free plan's limits just becomes read-only until you upgrade or remove it.",
   },
   {
     question: "What happens if I downgrade?",
@@ -181,9 +269,9 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
       "Your data stays exactly as it is. Items over your new plan's limits become read-only rather than hidden or deleted, so you can always see everything and upgrade again later.",
   },
   {
-    question: "How do automatic WhatsApp messages and top-ups work?",
+    question: "How do automatic WhatsApp reminders work?",
     answer:
-      "Tap-to-send messages (sent from your own phone) are always free and unlimited on every plan. Automatic messages (sent by Jaylor on your behalf) count against your plan's monthly allowance. If you run out, you can buy a top-up of 100 messages for ₦2,000 instead of losing automatic reminders.",
+      "Tap-to-send messages (sent from your own phone) are always free and unlimited on every plan. Automatic messages (sent by Jaylor on your behalf) are coming soon, for Growth and Business plans.",
   },
   {
     question: "How can I pay?",
@@ -197,4 +285,4 @@ export const PRICING_FAQ: { question: string; answer: string }[] = [
 ];
 
 export const PRICING_GUARANTEE =
-  "If Jaylor does not help you collect at least ten times your subscription in your first 90 days, we refund the subscription.";
+  "Our promise: if Jaylor is not right for your shop, ask for a refund within 30 days of your first payment and we will refund it in full.";

@@ -6,12 +6,12 @@ export const Route = createFileRoute("/security")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Security — Jaylor" },
+      { title: "Security: Jaylor" },
       {
         name: "description",
         content: "How Jaylor protects tailoring-business and customer information.",
       },
-      { property: "og:title", content: "Security — Jaylor" },
+      { property: "og:title", content: "Security: Jaylor" },
       {
         property: "og:description",
         content: "The safeguards Jaylor uses to protect business and customer information.",

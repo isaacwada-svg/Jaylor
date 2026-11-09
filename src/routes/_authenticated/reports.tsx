@@ -548,7 +548,12 @@ function Reports() {
         </div>
 
         <div className="mt-3">
-          <Button asChild variant="outline" size="sm">
+          <Button
+            asChild
+            variant="outline"
+            size="sm"
+            className="h-auto min-h-(--control-h-sm) whitespace-normal py-2 text-left"
+          >
             <Link to="/business-report">
               <FileText className="size-4" />
               Business report (money, profit, work, clients -- shareable with a lender)

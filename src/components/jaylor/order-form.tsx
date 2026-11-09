@@ -16,7 +16,7 @@ import {
   planCodeToTier,
 } from "@/lib/jaylor";
 import { useMultiCurrencyAccess } from "@/lib/use-multi-currency-access";
-import { isBridalRemeasureDue, pickDefaultTemplate } from "@/lib/measurements";
+import { isBridalRemeasureDue, isMeasurementStale, pickDefaultTemplate } from "@/lib/measurements";
 import { MeasurementForm } from "@/components/jaylor/measurements-tab";
 import { estimateFabricYards, FABRIC_PATTERNS, type FabricPattern } from "@/lib/fabric-formulas";
 import { formatPhoneNG } from "@/lib/phone";
@@ -31,7 +31,9 @@ import { PriceGuidancePanel } from "@/components/jaylor/price-guidance-panel";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
 import { HelpTooltip } from "@/components/jaylor/help-tooltip";
 import { MaterialPhotoManager } from "@/components/jaylor/material-photo-manager";
+import { ClientForm } from "@/components/jaylor/client-form";
 import { materialPhotoPathPrefix } from "@/lib/material-photos";
+import { saveDraft, loadDraft, clearDraft } from "@/lib/form-draft";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MoneyInput } from "@/components/ui/money-input";
@@ -49,6 +51,16 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   Select,
   SelectContent,
   SelectItem,
@@ -62,6 +74,37 @@ import { useAppT } from "@/lib/i18n/i18n-context";
 
 type ClientRow = Tables<"clients">;
 type OrderRow = Tables<"orders">;
+
+type OrderDraft = {
+  step: number;
+  selectedClient: ClientRow | null;
+  garmentType: string;
+  quantity: string;
+  styleNotes: string;
+  measurementSetId: string;
+  measurementMode: "reuse" | "new";
+  promptedForClientId: string | null;
+  materialSource: "customer" | "tailor";
+  materialDescription: string;
+  materialColour: string;
+  materialYards: string;
+  materialCost: string;
+  fabricWidth: string;
+  fabricPattern: FabricPattern;
+  fabricNote: string | null;
+  styleRefPaths: string[];
+  pendingOrderId: string;
+  pendingMaterialId: string;
+  materialPhotoPaths: string[];
+  materialExtras: string;
+  receivedAtInput: string;
+  price: string;
+  currency: OrderCurrency;
+  fxRate: string;
+  deliveryDate: string;
+  rush: boolean;
+  suggestion: string | null;
+};
 
 const STEP_KEYS = [
   { key: "step_client", fallback: "Client" },
@@ -105,6 +148,7 @@ export function OrderForm({
 
   const [clientSearch, setClientSearch] = useState("");
   const [selectedClient, setSelectedClient] = useState<ClientRow | null>(null);
+  const [clientFormOpen, setClientFormOpen] = useState(false);
 
   const [garmentType, setGarmentType] = useState("");
   const [quantity, setQuantity] = useState("1");
@@ -149,8 +193,11 @@ export function OrderForm({
   const [suggesting, setSuggesting] = useState(false);
   const [suggestion, setSuggestion] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!open) return;
+  const draftKey = `jaylor_order_draft_${storeId}`;
+  const [draftPromptOpen, setDraftPromptOpen] = useState(false);
+  const [pendingDraft, setPendingDraft] = useState<(OrderDraft & { savedAt: number }) | null>(null);
+
+  function resetForm() {
     setStep(initialClient ? 1 : 0);
     setClientSearch("");
     setSelectedClient(initialClient ?? null);
@@ -178,8 +225,150 @@ export function OrderForm({
     setFxRate("");
     setDeliveryDate(prefill?.delivery_date ?? "");
     setRush(prefill?.rush ?? false);
+    setSuggestion(null);
+    setFabricNote(null);
+  }
+
+  function applyDraft(draft: OrderDraft) {
+    setStep(draft.step);
+    setClientSearch("");
+    setSelectedClient(draft.selectedClient);
+    setGarmentType(draft.garmentType);
+    setQuantity(draft.quantity);
+    setStyleNotes(draft.styleNotes);
+    setMeasurementSetId(draft.measurementSetId);
+    setMeasurementMode(draft.measurementMode);
+    setPromptedForClientId(draft.promptedForClientId);
+    setMeasurementPromptOpen(false);
+    setMaterialSource(draft.materialSource);
+    setMaterialDescription(draft.materialDescription);
+    setMaterialColour(draft.materialColour);
+    setMaterialYards(draft.materialYards);
+    setMaterialCost(draft.materialCost);
+    setFabricWidth(draft.fabricWidth);
+    setFabricPattern(draft.fabricPattern);
+    setFabricNote(draft.fabricNote);
+    setStyleRefPaths(draft.styleRefPaths);
+    setStyleRefPreviews([]);
+    setPendingOrderId(draft.pendingOrderId as ReturnType<typeof crypto.randomUUID>);
+    setPendingMaterialId(draft.pendingMaterialId as ReturnType<typeof crypto.randomUUID>);
+    setMaterialPhotoPaths(draft.materialPhotoPaths);
+    setMaterialExtras(draft.materialExtras);
+    setReceivedAtInput(draft.receivedAtInput);
+    setPrice(draft.price);
+    setCurrency(draft.currency);
+    setFxRate(draft.fxRate);
+    setDeliveryDate(draft.deliveryDate);
+    setRush(draft.rush);
+    setSuggestion(draft.suggestion);
+    setDraftPromptOpen(false);
+    if (draft.styleRefPaths.length) {
+      supabase.storage
+        .from("order-style-photos")
+        .createSignedUrls(draft.styleRefPaths, 3600)
+        .then(({ data }) => {
+          if (data) {
+            setStyleRefPreviews(
+              data.map((item) => item.signedUrl).filter((url): url is string => !!url),
+            );
+          }
+        });
+    }
+  }
+
+  function discardDraftAndStartFresh() {
+    clearDraft(draftKey);
+    setPendingDraft(null);
+    setDraftPromptOpen(false);
+    resetForm();
+  }
+
+  useEffect(() => {
+    if (!open) return;
+    if (!initialClient && !prefill) {
+      const draft = loadDraft<OrderDraft>(draftKey);
+      if (draft && (draft.selectedClient || draft.garmentType)) {
+        setPendingDraft(draft);
+        setDraftPromptOpen(true);
+        return;
+      }
+    }
+    resetForm();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  // Autosave the in-progress order so closing this dialog for any reason --
+  // the back button, a crashed tab, switching to another task -- offers to
+  // pick up where the user left off instead of starting over.
+  useEffect(() => {
+    if (!open || draftPromptOpen) return;
+    if (!selectedClient && !garmentType) return;
+    const handle = setTimeout(() => {
+      saveDraft<OrderDraft>(draftKey, {
+        step,
+        selectedClient,
+        garmentType,
+        quantity,
+        styleNotes,
+        measurementSetId,
+        measurementMode,
+        promptedForClientId,
+        materialSource,
+        materialDescription,
+        materialColour,
+        materialYards,
+        materialCost,
+        fabricWidth,
+        fabricPattern,
+        fabricNote,
+        styleRefPaths,
+        pendingOrderId,
+        pendingMaterialId,
+        materialPhotoPaths,
+        materialExtras,
+        receivedAtInput,
+        price,
+        currency,
+        fxRate,
+        deliveryDate,
+        rush,
+        suggestion,
+      });
+    }, 400);
+    return () => clearTimeout(handle);
+  }, [
+    open,
+    draftPromptOpen,
+    draftKey,
+    step,
+    selectedClient,
+    garmentType,
+    quantity,
+    styleNotes,
+    measurementSetId,
+    measurementMode,
+    promptedForClientId,
+    materialSource,
+    materialDescription,
+    materialColour,
+    materialYards,
+    materialCost,
+    fabricWidth,
+    fabricPattern,
+    fabricNote,
+    styleRefPaths,
+    pendingOrderId,
+    pendingMaterialId,
+    materialPhotoPaths,
+    materialExtras,
+    receivedAtInput,
+    price,
+    currency,
+    fxRate,
+    deliveryDate,
+    rush,
+    suggestion,
+  ]);
 
   const { data: clientResults } = useQuery({
     queryKey: ["order-form-clients", storeId, clientSearch],
@@ -518,6 +707,7 @@ export function OrderForm({
         toast.success(
           t("toast_saved_offline") || "Saved offline — will sync when you're back online",
         );
+        clearDraft(draftKey);
         onOpenChange(false);
         return;
       }
@@ -551,6 +741,7 @@ export function OrderForm({
           t("toast_saved_offline") || "Saved offline — will sync when you're back online",
         );
       }
+      clearDraft(draftKey);
       onOpenChange(false);
     } catch (error) {
       toast.error(
@@ -634,10 +825,19 @@ export function OrderForm({
                 </div>
               )}
               {clientSearch.trim() && clientResults?.length === 0 && (
-                <p className="text-sm text-muted-foreground">
-                  {t("no_clients_match") ||
-                    "No clients match. Add them from the Clients page first."}
-                </p>
+                <div className="space-y-2">
+                  <p className="text-sm text-muted-foreground">
+                    {t("no_clients_match") || "No clients match."}
+                  </p>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    onClick={() => setClientFormOpen(true)}
+                  >
+                    {t("add_new_client_button") || "Add new client"}
+                  </Button>
+                </div>
               )}
             </>
           )}
@@ -748,6 +948,21 @@ export function OrderForm({
                         {t("switch_to_latest") || "Switch to latest"}
                       </Button>
                     </div>
+                  );
+                })()}
+                {(() => {
+                  const chosenSet = measurementSets.find((s) => s.id === measurementSetId);
+                  if (!chosenSet || !isMeasurementStale(chosenSet.taken_at)) return null;
+                  // The bridal check below already covers this case against the wedding
+                  // date specifically, so skip the generic warning to avoid showing both.
+                  if (garmentType === "Bridal" && deliveryDate) return null;
+                  return (
+                    <p className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm">
+                      {t("measurements_stale_warning", {
+                        date: new Date(chosenSet.taken_at).toLocaleDateString(),
+                      }) ||
+                        `These measurements are from ${new Date(chosenSet.taken_at).toLocaleDateString()} — over 3 months ago. Bodies change — confirm with your client or take a fresh set before cutting.`}
+                    </p>
                   );
                 })()}
                 <button
@@ -1164,6 +1379,21 @@ export function OrderForm({
     );
   }
 
+  const clientForm = (
+    <ClientForm
+      open={clientFormOpen}
+      onOpenChange={setClientFormOpen}
+      storeId={storeId}
+      onSaved={(client) => {
+        setSelectedClient(client);
+        setMeasurementSetId("");
+        setClientFormOpen(false);
+        queryClient.invalidateQueries({ queryKey: ["order-form-clients", storeId] });
+        queryClient.invalidateQueries({ queryKey: ["clients", storeId] });
+      }}
+    />
+  );
+
   const measurementPrompt = (
     <Dialog open={measurementPromptOpen} onOpenChange={setMeasurementPromptOpen}>
       <DialogContent>
@@ -1194,6 +1424,36 @@ export function OrderForm({
     </Dialog>
   );
 
+  const draftPrompt = (
+    <AlertDialog open={draftPromptOpen}>
+      <AlertDialogContent>
+        <AlertDialogHeader>
+          <AlertDialogTitle>
+            {t("continue_draft_title") || "Continue your last order?"}
+          </AlertDialogTitle>
+          <AlertDialogDescription>
+            {pendingDraft?.selectedClient
+              ? t("continue_draft_body_client", { name: pendingDraft.selectedClient.full_name }) ||
+                `You have an unfinished order for ${pendingDraft.selectedClient.full_name}. Pick up where you left off, or start a new one.`
+              : t("continue_draft_body") ||
+                "You have an unfinished order. Pick up where you left off, or start a new one."}
+          </AlertDialogDescription>
+        </AlertDialogHeader>
+        <AlertDialogFooter className="flex-col gap-2 sm:flex-col">
+          <AlertDialogAction
+            className="w-full"
+            onClick={() => pendingDraft && applyDraft(pendingDraft)}
+          >
+            {t("continue_draft_button") || "Continue where I left off"}
+          </AlertDialogAction>
+          <AlertDialogCancel className="w-full" onClick={discardDraftAndStartFresh}>
+            {t("start_new_order_button") || "Start a new order"}
+          </AlertDialogCancel>
+        </AlertDialogFooter>
+      </AlertDialogContent>
+    </AlertDialog>
+  );
+
   if (isMobile) {
     return (
       <>
@@ -1212,6 +1472,8 @@ export function OrderForm({
           </SheetContent>
         </Sheet>
         {measurementPrompt}
+        {clientForm}
+        {draftPrompt}
       </>
     );
   }
@@ -1233,6 +1495,8 @@ export function OrderForm({
         </DialogContent>
       </Dialog>
       {measurementPrompt}
+      {clientForm}
+      {draftPrompt}
     </>
   );
 }

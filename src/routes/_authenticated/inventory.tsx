@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { History, Plus } from "lucide-react";
+import { History, Pencil, Plus } from "lucide-react";
 import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { OfflineNotice } from "@/components/jaylor/offline-notice";
@@ -15,6 +15,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MoneyInput } from "@/components/ui/money-input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import {
   Dialog,
@@ -42,6 +43,7 @@ import {
   UNIT_LABELS,
   formatQuantity,
   isLowStock,
+  parseQuantity,
   type InventoryCategory,
   type InventoryUnit,
 } from "@/lib/inventory";
@@ -70,6 +72,16 @@ type InventoryItem = {
   is_active: boolean;
 };
 
+type InventoryT = ReturnType<typeof useAppT>;
+
+function categoryLabel(t: InventoryT, category: string): string {
+  return t(`category_${category}`) || CATEGORY_LABELS[category as InventoryCategory] || category;
+}
+
+function unitLabel(t: InventoryT, unit: string): string {
+  return t(`unit_${unit}`) || UNIT_LABELS[unit as InventoryUnit] || unit;
+}
+
 function InventoryPage() {
   const t = useAppT("app_inventory");
   const { currentStore, currentRole } = useStore();
@@ -85,6 +97,7 @@ function InventoryPage() {
   const [stockInItem, setStockInItem] = useState<InventoryItem | null>(null);
   const [adjustItem, setAdjustItem] = useState<InventoryItem | null>(null);
   const [historyItem, setHistoryItem] = useState<InventoryItem | null>(null);
+  const [editItem, setEditItem] = useState<InventoryItem | null>(null);
 
   const { data: items, isLoading } = useQuery({
     queryKey: ["inventory-items", storeId, canManage],
@@ -111,6 +124,7 @@ function InventoryPage() {
 
   function invalidateItems() {
     queryClient.invalidateQueries({ queryKey: ["inventory-items", storeId] });
+    queryClient.invalidateQueries({ queryKey: ["inventory-movements"] });
   }
 
   const filtered = useMemo(() => {
@@ -200,7 +214,7 @@ function InventoryPage() {
               <SelectItem value="all">{t("all_categories") || "All categories"}</SelectItem>
               {INVENTORY_CATEGORIES.map((c) => (
                 <SelectItem key={c} value={c}>
-                  {CATEGORY_LABELS[c]}
+                  {categoryLabel(t, c)}
                 </SelectItem>
               ))}
             </SelectContent>
@@ -213,6 +227,11 @@ function InventoryPage() {
               <Skeleton className="h-20 rounded-2xl" />
               <Skeleton className="h-20 rounded-2xl" />
             </div>
+          ) : filtered.length === 0 && (items?.length ?? 0) > 0 ? (
+            <EmptyState
+              title={t("no_matches_title") || "No matching items"}
+              description={t("no_matches_description") || "Try a different search or category."}
+            />
           ) : filtered.length === 0 ? (
             <EmptyState
               title={t("empty_items_title") || "No items yet"}
@@ -239,7 +258,7 @@ function InventoryPage() {
                         )}
                       </div>
                       <p className="text-xs text-muted-foreground">
-                        {CATEGORY_LABELS[item.category as InventoryCategory] ?? item.category}
+                        {categoryLabel(t, item.category)}
                       </p>
                     </div>
                     <div className="text-right">
@@ -248,13 +267,13 @@ function InventoryPage() {
                       </p>
                       {canManage && item.cost_per_unit != null && (
                         <p className="text-xs text-muted-foreground">
-                          <MoneyText amount={item.cost_per_unit} /> / {item.unit}
+                          <MoneyText amount={item.cost_per_unit} /> / {unitLabel(t, item.unit)}
                         </p>
                       )}
                     </div>
                   </div>
                   {canManage && (
-                    <div className="mt-2 flex gap-2">
+                    <div className="mt-2 flex flex-wrap gap-2">
                       <Button
                         size="sm"
                         variant="outline"
@@ -279,6 +298,15 @@ function InventoryPage() {
                       >
                         <History className="size-4" />
                         {t("history_button") || "History"}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        disabled={!online}
+                        onClick={() => setEditItem(item)}
+                      >
+                        <Pencil className="size-4" />
+                        {t("edit_button") || "Edit"}
                       </Button>
                     </div>
                   )}
@@ -308,6 +336,11 @@ function InventoryPage() {
         onSaved={invalidateItems}
       />
       <HistoryDialog item={historyItem} onOpenChange={() => setHistoryItem(null)} />
+      <EditItemDialog
+        item={editItem}
+        onOpenChange={() => setEditItem(null)}
+        onSaved={invalidateItems}
+      />
     </AppShell>
   );
 }
@@ -341,8 +374,12 @@ function NewItemDialog({
     setCostPerUnit("");
   }
 
+  const parsedInitial = parseQuantity(initialQuantity, 0);
+  const parsedReorder = parseQuantity(reorderLevel, 0);
+  const invalid = parsedInitial === null || parsedReorder === null;
+
   async function save() {
-    if (!name.trim()) return;
+    if (!name.trim() || parsedInitial === null || parsedReorder === null) return;
     setSaving(true);
     try {
       const { error } = await supabase.rpc("create_inventory_item", {
@@ -350,8 +387,8 @@ function NewItemDialog({
         p_name: name.trim(),
         p_category: category,
         p_unit: unit,
-        p_reorder_level: Number(reorderLevel) || 0,
-        p_initial_quantity: Number(initialQuantity) || 0,
+        p_reorder_level: parsedReorder,
+        p_initial_quantity: parsedInitial,
         ...(costPerUnit ? { p_cost_per_unit: Number(costPerUnit) } : {}),
       });
       if (error) throw error;
@@ -393,7 +430,7 @@ function NewItemDialog({
                 <SelectContent>
                   {INVENTORY_CATEGORIES.map((c) => (
                     <SelectItem key={c} value={c}>
-                      {CATEGORY_LABELS[c]}
+                      {categoryLabel(t, c)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -408,7 +445,7 @@ function NewItemDialog({
                 <SelectContent>
                   {INVENTORY_UNITS.map((u) => (
                     <SelectItem key={u} value={u}>
-                      {UNIT_LABELS[u]}
+                      {unitLabel(t, u)}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -433,13 +470,14 @@ function NewItemDialog({
               />
             </div>
           </div>
+          {invalid && <InvalidNumberNotice />}
           <div className="space-y-2">
             <Label>{t("cost_per_unit_label") || "Cost per unit (optional)"}</Label>
             <MoneyInput value={costPerUnit} onChange={setCostPerUnit} />
           </div>
         </div>
         <DialogFooter>
-          <Button disabled={!name.trim() || saving} onClick={() => void save()}>
+          <Button disabled={!name.trim() || invalid || saving} onClick={() => void save()}>
             {saving ? t("adding") || "Adding..." : t("add_item_button") || "Add item"}
           </Button>
         </DialogFooter>
@@ -463,13 +501,16 @@ function StockInDialog({
   const [note, setNote] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const parsedQuantity = parseQuantity(quantity);
+  const invalid = quantity.trim() !== "" && !parsedQuantity;
+
   async function save() {
-    if (!item || !Number(quantity)) return;
+    if (!item || !parsedQuantity) return;
     setSaving(true);
     try {
       const { error } = await supabase.rpc("record_stock_in", {
         p_item_id: item.id,
-        p_quantity: Number(quantity),
+        p_quantity: parsedQuantity,
         ...(unitCost ? { p_unit_cost: Number(unitCost) } : {}),
         ...(note.trim() ? { p_note: note.trim() } : {}),
       });
@@ -506,11 +547,13 @@ function StockInDialog({
               value={quantity}
               onChange={(e) => setQuantity(e.target.value)}
             />
+            {invalid && <InvalidNumberNotice />}
           </div>
           <div className="space-y-2">
             <Label>
-              {t("cost_per_unit_received_label", { unit: item?.unit ?? "unit" }) ||
-                `Cost per ${item?.unit ?? "unit"} (optional)`}
+              {t("cost_per_unit_received_label", {
+                unit: item ? unitLabel(t, item.unit).toLowerCase() : "unit",
+              }) || `Cost per ${item?.unit ?? "unit"} (optional)`}
             </Label>
             <MoneyInput value={unitCost} onChange={setUnitCost} />
           </div>
@@ -520,7 +563,7 @@ function StockInDialog({
           </div>
         </div>
         <DialogFooter>
-          <Button disabled={!Number(quantity) || saving} onClick={() => void save()}>
+          <Button disabled={!parsedQuantity || saving} onClick={() => void save()}>
             {saving ? t("saving") || "Saving..." : t("add_stock_button") || "Add stock"}
           </Button>
         </DialogFooter>
@@ -543,13 +586,16 @@ function AdjustDialog({
   const [reason, setReason] = useState("");
   const [saving, setSaving] = useState(false);
 
+  const parsedQuantity = parseQuantity(newQuantity);
+  const invalid = newQuantity.trim() !== "" && parsedQuantity === null;
+
   async function save() {
-    if (!item || newQuantity === "" || !reason.trim()) return;
+    if (!item || parsedQuantity === null || !reason.trim()) return;
     setSaving(true);
     try {
       const { error } = await supabase.rpc("adjust_stock", {
         p_item_id: item.id,
-        p_new_quantity: Number(newQuantity),
+        p_new_quantity: parsedQuantity,
         p_reason: reason.trim(),
       });
       if (error) throw error;
@@ -588,6 +634,7 @@ function AdjustDialog({
               value={newQuantity}
               onChange={(e) => setNewQuantity(e.target.value)}
             />
+            {invalid && <InvalidNumberNotice />}
           </div>
           <div className="space-y-2">
             <Label>{t("reason_label") || "Reason"}</Label>
@@ -596,7 +643,7 @@ function AdjustDialog({
         </div>
         <DialogFooter>
           <Button
-            disabled={newQuantity === "" || !reason.trim() || saving}
+            disabled={parsedQuantity === null || !reason.trim() || saving}
             onClick={() => void save()}
           >
             {saving ? t("saving") || "Saving..." : t("save_correction_button") || "Save correction"}
@@ -661,12 +708,154 @@ function HistoryDialog({
                 </div>
                 <p className="figures">
                   {m.type === "adjust" && m.quantity > 0 ? "+" : ""}
-                  {m.quantity} {item?.unit}
+                  {m.quantity} {item ? unitLabel(t, item.unit).toLowerCase() : ""}
                 </p>
               </div>
             ))}
           </div>
         )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+function InvalidNumberNotice() {
+  const t = useAppT("app_inventory");
+  return (
+    <p className="text-xs text-destructive">{t("invalid_number") || "Enter a valid number"}</p>
+  );
+}
+
+function EditItemDialog({
+  item,
+  onOpenChange,
+  onSaved,
+}: {
+  item: InventoryItem | null;
+  onOpenChange: (open: boolean) => void;
+  onSaved: () => void;
+}) {
+  const t = useAppT("app_inventory");
+  const [loadedId, setLoadedId] = useState<string | null>(null);
+  const [name, setName] = useState("");
+  const [category, setCategory] = useState<string>("lining");
+  const [unit, setUnit] = useState<string>("yard");
+  const [reorderLevel, setReorderLevel] = useState("");
+  const [isActive, setIsActive] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  // Load the item's current values each time a different item is opened.
+  if (item && item.id !== loadedId) {
+    setLoadedId(item.id);
+    setName(item.name);
+    setCategory(item.category);
+    setUnit(item.unit);
+    setReorderLevel(String(item.reorder_level));
+    setIsActive(item.is_active);
+  }
+
+  const parsedReorder = parseQuantity(reorderLevel, 0);
+  const invalid = parsedReorder === null;
+
+  async function save() {
+    if (!item || !name.trim() || parsedReorder === null) return;
+    setSaving(true);
+    try {
+      const { error } = await supabase.rpc("update_inventory_item", {
+        p_item_id: item.id,
+        p_name: name.trim(),
+        p_category: category,
+        p_unit: unit,
+        p_reorder_level: parsedReorder,
+        p_is_active: isActive,
+      });
+      if (error) throw error;
+      toast.success(t("toast_item_updated") || "Item updated");
+      onSaved();
+      setLoadedId(null);
+      onOpenChange(false);
+    } catch (error) {
+      toast.error(
+        getErrorMessage(error, t("toast_could_not_update_item") || "Could not update this item"),
+      );
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return (
+    <Dialog
+      open={!!item}
+      onOpenChange={(open) => {
+        if (!open) setLoadedId(null);
+        onOpenChange(open);
+      }}
+    >
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{t("edit_item_title") || "Edit item"}</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-2">
+            <Label>{t("name_label") || "Name"}</Label>
+            <Input value={name} onChange={(e) => setName(e.target.value)} />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-2">
+              <Label>{t("category_label") || "Category"}</Label>
+              <Select value={category} onValueChange={setCategory}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {INVENTORY_CATEGORIES.map((c) => (
+                    <SelectItem key={c} value={c}>
+                      {categoryLabel(t, c)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label>{t("unit_label") || "Unit"}</Label>
+              <Select value={unit} onValueChange={setUnit}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {INVENTORY_UNITS.map((u) => (
+                    <SelectItem key={u} value={u}>
+                      {unitLabel(t, u)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <div className="space-y-2">
+            <Label>{t("reorder_level_label") || "Reorder level"}</Label>
+            <Input
+              inputMode="decimal"
+              value={reorderLevel}
+              onChange={(e) => setReorderLevel(e.target.value)}
+            />
+            {invalid && <InvalidNumberNotice />}
+          </div>
+          <div className="flex items-start justify-between gap-3 rounded-xl border border-border p-3">
+            <div>
+              <Label htmlFor="inventory-item-active">{t("active_label") || "Active"}</Label>
+              <p className="text-xs text-muted-foreground">
+                {t("active_hint") || "Inactive items can't be used on orders."}
+              </p>
+            </div>
+            <Switch id="inventory-item-active" checked={isActive} onCheckedChange={setIsActive} />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button disabled={!name.trim() || invalid || saving} onClick={() => void save()}>
+            {saving ? t("saving") || "Saving..." : t("save_changes_button") || "Save changes"}
+          </Button>
+        </DialogFooter>
       </DialogContent>
     </Dialog>
   );

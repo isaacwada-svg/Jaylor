@@ -27,21 +27,16 @@ export const Route = createFileRoute("/pricing")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Pricing — Jaylor" },
+      { title: "Pricing: Jaylor" },
       {
         name: "description",
         content:
-          "Monthly, quarterly or yearly plans for tailors and fashion houses in Nigeria. Every new store gets a 14-day Growth trial, no card required.",
+          "Monthly, quarterly or yearly plans for tailors and fashion houses in Nigeria. Every new store gets a 30-day Growth trial, no card required.",
       },
-      { property: "og:title", content: "Pricing — Jaylor" },
+      { property: "og:title", content: "Pricing: Jaylor" },
       {
         property: "og:description",
         content: "Simple, honest pricing for tailors and fashion houses in Nigeria.",
-      },
-      { property: "og:title", content: "Pricing — Jaylor" },
-      {
-        property: "og:description",
-        content: "Simple pricing for Nigerian tailors and fashion houses, free to start.",
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -59,7 +54,7 @@ function Pricing() {
         <div className="text-center">
           <h1 className="font-heading text-4xl">Simple, honest pricing</h1>
           <p className="mt-3 text-muted-foreground">
-            Every new store gets 14 days of Growth free, no card required. Downgrading never deletes
+            Every new store gets 30 days of Growth free, no card required. Downgrading never deletes
             your data: over-limit items just become read-only.
           </p>
         </div>
@@ -135,19 +130,26 @@ function Pricing() {
                       Jaylor Pay at {plan.jaylorPayFee}
                     </li>
                   </ul>
-                  <div className="mt-6 pt-2">
+                  <div className="mt-12">
                     {plan.cta === "custom" ? (
-                      <Button asChild className="w-full" variant="outline">
+                      <Button
+                        asChild
+                        className="w-full rounded-full border border-[#C5A059]/40 bg-transparent px-6 py-3.5 text-[14px] font-semibold text-white shadow-none hover:bg-white/5"
+                      >
                         <Link to="/custom">Talk to us</Link>
                       </Button>
                     ) : (
                       <Button
                         asChild
-                        className="w-full"
-                        variant={plan.mostPopular ? "premium" : "outline"}
+                        className={cn(
+                          "w-full rounded-full px-6 py-3.5 text-[14px] font-semibold",
+                          plan.mostPopular
+                            ? "border-none bg-[#C5A059] text-[#0A192F] shadow-md hover:bg-[#C5A059]"
+                            : "border border-[#C5A059]/40 bg-transparent text-white shadow-none hover:bg-white/5",
+                        )}
                       >
                         <Link to="/auth" search={{ mode: "signup" }}>
-                          {plan.tier === "Free" ? "Start free" : "Start 14-day trial"}
+                          {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}
                         </Link>
                       </Button>
                     )}
@@ -157,6 +159,10 @@ function Pricing() {
             );
           })}
         </div>
+
+        <p className="mt-4 text-center text-xs text-muted-foreground">
+          On the way: automatic WhatsApp reminders for fittings and pickups.
+        </p>
 
         <div className="mx-auto mt-10 max-w-3xl rounded-2xl border border-gold/40 bg-accent/30 p-6 text-center">
           <p className="font-heading text-lg">Our guarantee</p>
@@ -171,8 +177,7 @@ function Pricing() {
             Optional, and only ever charged when you choose them.
           </p>
           <p className="mt-3 text-center text-xs text-muted-foreground">
-            Included automatic WhatsApp messages are transactional utility messages, not marketing
-            campaigns. Provider rules and fair-use limits apply.
+            Automatic WhatsApp reminders are coming soon, for Growth and Business plans.
           </p>
           <div className="mt-6 overflow-x-auto rounded-2xl border border-border">
             <table className="w-full min-w-[420px] text-sm">

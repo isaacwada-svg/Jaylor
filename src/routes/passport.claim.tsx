@@ -37,7 +37,7 @@ export const Route = createFileRoute("/passport/claim")({
   },
   head: () => ({
     meta: [
-      { title: "Claim your Passport — Jaylor" },
+      { title: "Claim your Passport: Jaylor" },
       { name: "description", content: "Verify your phone number to see your measurements." },
     ],
   }),

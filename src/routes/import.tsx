@@ -17,13 +17,13 @@ export const Route = createFileRoute("/import")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Notebook import service — Jaylor" },
+      { title: "Notebook import service: Jaylor" },
       {
         name: "description",
         content:
           "Send us photos of your paper notebook and we'll type in your clients, measurements and past orders for you.",
       },
-      { property: "og:title", content: "Notebook import service — Jaylor" },
+      { property: "og:title", content: "Notebook import service: Jaylor" },
       {
         property: "og:description",
         content: "We'll type in your notebook for you, from photos sent on WhatsApp.",

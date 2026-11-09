@@ -155,13 +155,11 @@ export function TailorDirectorySettings({ store }: { store: Store }) {
 
         {listed && eligibility && !eligibility.appears && (
           <p className="rounded-xl border border-owed/40 bg-owed/10 p-3 text-sm text-owed">
-            {!eligibility.has_recent_order
-              ? "You won't appear yet — the directory only shows shops with an order in the last 60 days."
-              : eligibility.hidden_by_admin
-                ? "Your listing has been hidden by Jaylor. Contact support if you think this is a mistake."
-                : !eligibility.is_active || !eligibility.onboarding_completed
-                  ? "Finish setting up your store to appear in the directory."
-                  : "You won't appear in the directory yet."}
+            {eligibility.hidden_by_admin
+              ? "Your listing has been hidden by Jaylor. Contact support if you think this is a mistake."
+              : !eligibility.is_active || !eligibility.onboarding_completed
+                ? "Finish setting up your store to appear in the directory."
+                : "You won't appear in the directory yet."}
           </p>
         )}
 

@@ -1,5 +1,42 @@
 # Roadmap
 
+## Requested 2026-10-17: replace repeated "Created with AI" captions with trust copy
+- [x] Homepage captions now read "EST. 2026 • Built in Abuja for Nigerian tailors" (opening clip), "Demo with sample data • Real Jaylor screens" (money and notebook clips), and "Sample data • Nothing is saved or sent" (sample order walkthrough).
+- [x] Each AI-generated clip keeps a short "AI clip" mark, and the 45-second story link says "(AI illustration)", so the AI origin stays disclosed without repeating a disclaimer three times.
+- [x] Verified at 1280px and 375px: all three captions present, no old wording in page text, no overflow, no page errors; build OK. Preview only, not published.
+- [ ] Owner decision: the words "Created with AI · real Jaylor screens" and the old sample-order sentence are burned into the clip footage itself, so removing them needs the clips re-cut.
+
+
+## Requested 2026-10-15: more professional homepage buttons
+- [x] Refine the pill buttons with matte gold, lighter outlines, natural-case labels and restrained motion; retain generous plan-button spacing.
+- [x] Verified pricing buttons at 855px and 375px: matte fill, 48px height and spacing, no overflow or page errors; signup links work. Preview only, build OK.
+
+## Requested 2026-10-15: homepage buttons still look unchanged
+- [x] Apply a homepage-only pill shape and polished gold/outlined finish through the shared button controls.
+- [x] Increase spacing above homepage plan buttons and make them taller.
+- [x] Verified pill shape, gold finish, 48px plan-button spacing, and signup links at 855px and 375px; no page errors and build OK. Preview only.
+
+## Requested 2026-10-10: social media handles
+- [x] Store Jaylor's social profiles in the shared contact constants.
+- [x] Show them in the public footers, the contact screen and the About page, alongside the existing support email and WhatsApp link.
+- [x] Confirm the Facebook and LinkedIn addresses with the owner — owner provided the profile/company ID links on 2026-10-10 and they are now in the shared constants.
+- [x] Keep the footer contact row clear of the cookie notice: while the notice is open it reserves its own height of space under the page, so the row is readable on arrival and the space collapses once the visitor chooses. Verified on homepage, contact, about and pricing at desktop and phone widths.
+
+
+## Requested 2026-10-10: landing page copy and section
+- [x] Restore the hero headline to "Run your tailoring business without the chaos."
+- [x] Add a compact "What makes Jaylor different" section after the Orders. Measurements. Payments. section: six short cards, three per row on desktop, one column on phone.
+- [x] Drop the duplicated assumption sentence above the calculator inputs; keep the line under the result.
+- [x] Set the calculator's default orders per month to 20 so the working line reads 20 orders × ₦25,000 × 20% unpaid × 50% still owed = ₦50,000.
+- [x] Verified at 375px phone width (no clipped or overlapping text, no side scrolling) and three columns at 1280px; published.
+
+## Requested 2026-10-10: first-time visitor improvements
+- [x] Shorten the homepage around orders, measurements, and payments.
+- [x] Add an honest sample order-to-deposit-to-tracking walkthrough; no invented testimonials.
+- [x] Improve public text readability, signup branding, and WhatsApp support visibility.
+- [x] Clarify Measurement Passport, calculator assumptions, and empty directory messaging.
+- [x] Verify the updated public pages and walkthrough in the preview; publishing remains separate.
+
 ## Done
 - [x] Premium public redesign: Midnight Atelier palette, editorial homepage, premium imagery, refined calculator, pricing, and shared marketing shell.
 - [x] Launch-readiness update: legal copy, verified contact details, truthful proof section, safer WhatsApp allowances, first-party tracking, and private admin analytics.
@@ -29,3 +66,48 @@
 - [x] Sitemap + robots already submitted to Search Console; no manual action outstanding ("No issues detected").
 - [ ] Add database-backed first-use discovery cues and a one-time owner tour for AI Design, Voice Order, measurement passports, and group-order links.
 - [ ] Add the owner/manager-only Ask Jaylor advisor with separate store-scoped conversations, persisted history, real business context, and plan limits.
+
+## Requested 2026-10-01
+- [x] Updated Gemini key tested against Google: accepted — Pidgin and Yoruba translation returned correctly. Voice notes, style previews and festive AI messages are live again (still needs a real-phone test by the owner).
+- [x] Email infrastructure for notify.jaylor.com.ng:
+  - [x] Domain added in Lovable; managed email API scaffolded (send helper + preview route), packages installed.
+  - [x] Owner digests (daily/weekly) and the transfer alert switched from Resend to the managed sender; no RESEND_API_KEY needed.
+  - [x] /lovable/* email routes excluded from app middleware (headers, error page, CSRF).
+  - [x] DNS records for notify.jaylor.com.ng added by the owner in Cloudflare on 2026-10-15 and confirmed online and correct (TXT `_lovable-email`, NS `notify` -> ns5/ns6.lovable.cloud). Service is still confirming them; owner emails send once confirmation completes.
+
+## Requested 2026-10-10: email contact in social row
+- [x] Add the support email (info@jaylor.com.ng) alongside the social links wherever they appear.
+- [x] Republished so the owner-confirmed Facebook/LinkedIn links and the email contact went live (verified on jaylor.com.ng: homepage, /contact, /about, /features, /pricing, /tailors all show the email link).
+- [x] Footer contact row (Facebook, Instagram, LinkedIn, Email) now sits clear of the cookie banner — the banner reserves its own height while open, verified on phone and desktop, and shipped live.
+
+## Requested 2026-10-10: first-visitor fixes
+- [x] Sign in visible on phones
+- [x] Compact cookie notice on phones
+- [x] Remove "AI-powered" from hero eyebrow
+- [x] Price hint near top
+- [x] Shorter homepage (removed duplicate "Inside Jaylor" section)
+- [ ] Real tailor testimonials — blocked: needs genuine quotes from the owner
+- [ ] Short demo video — blocked: needs real footage from the owner
+- [x] Moved voice/photo section + calculator to Features page (homepage shorter)
+- [x] 45s illustrated story video on homepage (AI, labelled)
+
+## Requested 2026-10-10: WhatsApp codes not arriving
+- [x] Passport/portal codes now delivered — WhatsApp connection reconnected and pointed at this project, and the claim page fault that wrongly reported "session has expired" was fixed; the fix went live without a publish.
+
+## Requested 2026-10-15: design review fixes
+- [x] "Trusted by BeeZik Fashion Hub" line under the main buttons — owner-confirmed name, no invented customers or fake security seals.
+- [x] Sample walkthrough and numbering fixes, text contrast raised, WhatsApp support button restyled to gold.
+- [x] No "99.9% uptime" promise added — Lovable gives no written uptime guarantee, so the claim could not be kept.
+- [x] Homepage trimmed: voice/photo section and the calculator live on the Features page, with a teaser and "See all features" jump on the homepage.
+- [x] 45s illustrated story video on the homepage, labelled as AI-made, not a real customer.
+- [x] Published to jaylor.com.ng on 2026-10-15 (publish requested; deployment timing is an estimate).
+- [ ] Real tailor quotes and a real tailor video — blocked: needs genuine input from the owner, nothing invented.
+
+- [x] Place reworked people clips (real screens) in their matching homepage sections: hero/snap-track, Notebook vs Jaylor, Same talent (money)
+
+- [x] Homepage tidy: removed duplicate clip row, video covers + play-on-scroll, aligned watch links, trimmed opening lines
+
+## Requested 2026-10-17: zero AI labels on homepage
+- [x] Removed "AI clip" lines, "(AI illustration)" text and every "Created with AI" caption from the homepage; captions now read "EST. 2026 • Built in Abuja for Nigerian tailors" and "Demo with sample data • Real Jaylor screens".
+- [x] Re-cut the three people clips (label burned into the pixels was cropped out) and regenerated cover images; cleaned files live in public/videos and the shareable copies in Files were replaced too.
+- [x] Publish requested for jaylor.com.ng (deployment timing is an estimate).

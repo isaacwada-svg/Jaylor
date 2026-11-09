@@ -11,6 +11,7 @@ import {
   startAiDesignVerification,
   checkAiDesignVerification,
 } from "@/lib/ai-design-verification.functions";
+import { generateGuestDesign } from "@/lib/ai-design-generate.functions";
 import {
   clearDesignDraft,
   loadDesignDraft,
@@ -201,15 +202,19 @@ export function AiDesignGenerator({
   async function runGenerate(input: GenerateInput) {
     setStep("generating");
     try {
-      const { data, error } = await supabase.functions.invoke("generate-design", { body: input });
-      if (error) throw error;
-      const body = data as {
-        payment_required?: boolean;
-        verification_required?: boolean;
-        amount?: number;
-        result?: { id: string; image_url: string; share_token: string };
-      };
-      if (body.verification_required) {
+      const body = await generateGuestDesign({
+        data: {
+          storeId: input.storeId,
+          clientName: input.clientName,
+          phone: input.phone,
+          description: input.description,
+          measurements: input.measurements,
+          selfiePath: input.selfiePath,
+          styleReferencePaths: input.styleReferencePaths,
+          paymentReference: input.paymentReference ?? null,
+        },
+      });
+      if ("verification_required" in body) {
         setPendingGenerateInput(input);
         try {
           const { whatsappLink } = await startAiDesignVerification({
@@ -222,19 +227,17 @@ export function AiDesignGenerator({
         setStep("verify");
         return;
       }
-      if (body.payment_required) {
+      if ("payment_required" in body) {
         setPaymentAmount(body.amount ?? 0);
         setStep("payment");
         return;
       }
-      if (body.result) {
-        setResultImage(body.result.image_url);
-        setResultToken(body.result.share_token);
-        setResultDesignId(body.result.id);
-        setStep("result");
-      }
+      setResultImage(body.result.image_url);
+      setResultToken(body.result.share_token);
+      setResultDesignId(body.result.id);
+      setStep("result");
     } catch (error) {
-      toast.error(await getFunctionErrorMessage(error, "Could not generate your design"));
+      toast.error(getErrorMessage(error, "Could not generate your design"));
       setStep("form");
     }
   }

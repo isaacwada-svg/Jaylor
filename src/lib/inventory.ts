@@ -43,6 +43,22 @@ export function formatQuantity(quantity: number, unit: string): string {
   return `${quantity} ${quantity === 1 ? label.toLowerCase() : label.toLowerCase() + "s"}`;
 }
 
-export function isLowStock(item: { quantity: number; reorder_level: number }): boolean {
-  return item.reorder_level > 0 && item.quantity <= item.reorder_level;
+/** Inactive items are never "low" -- same rule as the dashboard and digest. */
+export function isLowStock(item: {
+  quantity: number;
+  reorder_level: number;
+  is_active?: boolean;
+}): boolean {
+  return item.is_active !== false && item.reorder_level > 0 && item.quantity <= item.reorder_level;
+}
+
+/**
+ * Parses a typed quantity. Blank -> `blank` (so optional fields can default
+ * to 0); anything that isn't a finite, non-negative number -> null.
+ */
+export function parseQuantity(value: string, blank: number | null = null): number | null {
+  const trimmed = value.trim();
+  if (trimmed === "") return blank;
+  const n = Number(trimmed);
+  return Number.isFinite(n) && n >= 0 ? n : null;
 }

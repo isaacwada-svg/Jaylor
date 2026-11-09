@@ -44,12 +44,12 @@ export const Route = createFileRoute("/$handle")({
   },
   head: () => ({
     meta: [
-      { title: "Shop — Jaylor" },
+      { title: "Shop: Jaylor" },
       {
         name: "description",
         content: "Browse styles and get in touch on WhatsApp, powered by Jaylor.",
       },
-      { property: "og:title", content: "Shop — Jaylor" },
+      { property: "og:title", content: "Shop: Jaylor" },
       {
         property: "og:description",
         content: "Browse styles and get in touch on WhatsApp, powered by Jaylor.",

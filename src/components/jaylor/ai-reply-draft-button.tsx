@@ -1,9 +1,7 @@
 import { useState } from "react";
-import { toast } from "sonner";
 import { MessageCircle, Sparkles } from "lucide-react";
-import { supabase } from "@/integrations/supabase/client";
 import { whatsappLink } from "@/lib/whatsapp";
-import { getFunctionErrorMessage } from "@/lib/utils";
+import { useAiCredits } from "@/lib/ai-credits";
 import { useOnlineStatus } from "@/lib/use-online-status";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -30,6 +28,7 @@ export function AiReplyDraftButton({
   deliveryDate: string | null;
 }) {
   const online = useOnlineStatus();
+  const { run } = useAiCredits();
   const [open, setOpen] = useState(false);
   const [incoming, setIncoming] = useState("");
   const [draft, setDraft] = useState("");
@@ -37,26 +36,16 @@ export function AiReplyDraftButton({
 
   async function generate() {
     setBusy(true);
-    try {
-      const { data, error } = await supabase.functions.invoke("whatsapp-reply-draft", {
-        body: {
-          storeId,
-          clientName,
-          garmentType,
-          orderStatus,
-          balance,
-          deliveryDate,
-          incomingMessage: incoming.trim() || null,
-          triggeredByUserAction: true,
-        },
-      });
-      if (error) throw error;
-      setDraft((data as { result: string }).result);
-    } catch (error) {
-      toast.error(await getFunctionErrorMessage(error, "Could not draft a reply"));
-    } finally {
-      setBusy(false);
-    }
+    const res = await run("whatsapp_reply", {
+      clientName,
+      garmentType,
+      orderStatus,
+      balance,
+      deliveryDate,
+      incomingMessage: incoming.trim() || null,
+    });
+    setBusy(false);
+    if (res.ok) setDraft((res.result as { message: string }).message);
   }
 
   function send() {

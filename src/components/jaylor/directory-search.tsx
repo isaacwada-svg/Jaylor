@@ -75,6 +75,7 @@ export function DirectoryResults({
         <div className="relative sm:col-span-2">
           <Search className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            aria-label="Search shop name"
             value={search}
             onChange={(e) => {
               setSearch(e.target.value);
@@ -151,12 +152,12 @@ export function DirectoryResults({
       {view.results.length === 0 ? (
         <EmptyState
           className="mt-8"
-          title="No Jaylor tailors listed yet"
-          description={emptyLabel}
+          title={search || state !== ALL || city !== ALL || specialty !== ALL ? "No tailors match this search" : "Shop listings will appear here"}
+          description={search || state !== ALL || city !== ALL || specialty !== ALL ? emptyLabel : "There are no public shop listings yet. Jaylor’s order, payment and measurement tools are available independently of the directory."}
           action={
             <Button asChild>
               <Link to="/auth" search={{ mode: "signup" }}>
-                Invite them to Jaylor
+                Create your shop
               </Link>
             </Button>
           }

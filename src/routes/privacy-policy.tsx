@@ -6,13 +6,13 @@ export const Route = createFileRoute("/privacy-policy")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Privacy Policy — Jaylor" },
+      { title: "Privacy Policy: Jaylor" },
       {
         name: "description",
         content:
           "How Jaylor collects, uses, protects and shares personal data under Nigeria's data-protection law.",
       },
-      { property: "og:title", content: "Privacy Policy — Jaylor" },
+      { property: "og:title", content: "Privacy Policy: Jaylor" },
       {
         property: "og:description",
         content: "How Jaylor protects personal data and supports your privacy rights.",

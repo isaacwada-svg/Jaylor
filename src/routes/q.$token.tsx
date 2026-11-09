@@ -33,7 +33,7 @@ export const Route = createFileRoute("/q/$token")({
     const resources = await loadNamespaces(language, ["common", "quotes"]);
     return { quote, language, resources };
   },
-  head: () => ({ meta: [{ title: "Your quote — Jaylor" }] }),
+  head: () => ({ meta: [{ title: "Your quote: Jaylor" }] }),
   component: PublicQuoteRoute,
 });
 

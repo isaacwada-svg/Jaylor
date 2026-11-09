@@ -10,12 +10,13 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.17"
   }
   public: {
     Tables: {
       advisor_messages: {
         Row: {
+          attachments: Json | null
           content: string
           created_at: string
           id: string
@@ -23,6 +24,7 @@ export type Database = {
           thread_id: string
         }
         Insert: {
+          attachments?: Json | null
           content: string
           created_at?: string
           id?: string
@@ -30,6 +32,7 @@ export type Database = {
           thread_id: string
         }
         Update: {
+          attachments?: Json | null
           content?: string
           created_at?: string
           id?: string
@@ -473,13 +476,6 @@ export type Database = {
             foreignKeyName: "ai_style_previews_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "ai_style_previews_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -627,6 +623,7 @@ export type Database = {
           id: string
           occurred_at: string
           user_id: string | null
+          utm_source: string | null
           visitor_id: string
         }
         Insert: {
@@ -634,6 +631,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           user_id?: string | null
+          utm_source?: string | null
           visitor_id: string
         }
         Update: {
@@ -641,6 +639,7 @@ export type Database = {
           id?: string
           occurred_at?: string
           user_id?: string | null
+          utm_source?: string | null
           visitor_id?: string
         }
         Relationships: []
@@ -814,6 +813,72 @@ export type Database = {
           },
         ]
       }
+      client_fit_feedback: {
+        Row: {
+          area: string
+          client_id: string
+          created_at: string
+          id: string
+          order_id: string | null
+          result: string
+          store_id: string
+        }
+        Insert: {
+          area: string
+          client_id: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          result: string
+          store_id: string
+        }
+        Update: {
+          area?: string
+          client_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string | null
+          result?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "client_fit_feedback_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "client_fit_feedback_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       clients: {
         Row: {
           address: string | null
@@ -825,6 +890,7 @@ export type Database = {
           created_at: string
           created_by: string | null
           festive_opt_out: boolean
+          first_order_date: string | null
           full_name: string
           gender: string | null
           guardian_name: string | null
@@ -836,6 +902,8 @@ export type Database = {
           photo_url: string | null
           preferred_language: string | null
           store_id: string
+          style_book_revoked: boolean
+          style_book_token: string
           tags: string[]
           updated_at: string
           whatsapp_phone: string | null
@@ -850,6 +918,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           festive_opt_out?: boolean
+          first_order_date?: string | null
           full_name: string
           gender?: string | null
           guardian_name?: string | null
@@ -861,6 +930,8 @@ export type Database = {
           photo_url?: string | null
           preferred_language?: string | null
           store_id: string
+          style_book_revoked?: boolean
+          style_book_token?: string
           tags?: string[]
           updated_at?: string
           whatsapp_phone?: string | null
@@ -875,6 +946,7 @@ export type Database = {
           created_at?: string
           created_by?: string | null
           festive_opt_out?: boolean
+          first_order_date?: string | null
           full_name?: string
           gender?: string | null
           guardian_name?: string | null
@@ -886,6 +958,8 @@ export type Database = {
           photo_url?: string | null
           preferred_language?: string | null
           store_id?: string
+          style_book_revoked?: boolean
+          style_book_token?: string
           tags?: string[]
           updated_at?: string
           whatsapp_phone?: string | null
@@ -1027,13 +1101,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "consultations_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "consultations_order_id_fkey"
@@ -1422,13 +1489,6 @@ export type Database = {
             foreignKeyName: "event_participants_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "event_participants_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1796,13 +1856,6 @@ export type Database = {
             foreignKeyName: "fitting_links_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "fitting_links_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -1937,13 +1990,6 @@ export type Database = {
           store_id?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "incoming_transfers_matched_order_id_fkey"
-            columns: ["matched_order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "incoming_transfers_matched_order_id_fkey"
             columns: ["matched_order_id"]
@@ -2093,13 +2139,6 @@ export type Database = {
             foreignKeyName: "inventory_movements_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "inventory_movements_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -2217,6 +2256,7 @@ export type Database = {
       }
       leads: {
         Row: {
+          attachment_paths: string[]
           created_at: string
           email: string | null
           id: string
@@ -2224,8 +2264,10 @@ export type Database = {
           name: string
           phone: string | null
           source: string
+          store_id: string | null
         }
         Insert: {
+          attachment_paths?: string[]
           created_at?: string
           email?: string | null
           id?: string
@@ -2233,8 +2275,10 @@ export type Database = {
           name: string
           phone?: string | null
           source?: string
+          store_id?: string | null
         }
         Update: {
+          attachment_paths?: string[]
           created_at?: string
           email?: string | null
           id?: string
@@ -2242,8 +2286,24 @@ export type Database = {
           name?: string
           phone?: string | null
           source?: string
+          store_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "leads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "leads_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       measurement_passport_shares: {
         Row: {
@@ -2623,13 +2683,6 @@ export type Database = {
             foreignKeyName: "messages_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "messages_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -2649,6 +2702,117 @@ export type Database = {
           },
           {
             foreignKeyName: "messages_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moment_settings: {
+        Row: {
+          enabled: boolean
+          store_id: string
+          type: string
+        }
+        Insert: {
+          enabled?: boolean
+          store_id: string
+          type: string
+        }
+        Update: {
+          enabled?: boolean
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moment_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moment_settings_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      moments: {
+        Row: {
+          client_id: string
+          created_at: string
+          due_date: string
+          id: string
+          message: string
+          order_id: string | null
+          photo_url: string | null
+          sent_at: string | null
+          status: string
+          store_id: string
+          type: string
+        }
+        Insert: {
+          client_id: string
+          created_at?: string
+          due_date: string
+          id?: string
+          message: string
+          order_id?: string | null
+          photo_url?: string | null
+          sent_at?: string | null
+          status?: string
+          store_id: string
+          type: string
+        }
+        Update: {
+          client_id?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          message?: string
+          order_id?: string | null
+          photo_url?: string | null
+          sent_at?: string | null
+          status?: string
+          store_id?: string
+          type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "moments_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders_for_tailor"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "moments_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
             referencedRelation: "stores_public"
@@ -2736,13 +2900,6 @@ export type Database = {
           token?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "order_approvals_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "order_approvals_order_id_fkey"
             columns: ["order_id"]
@@ -2837,13 +2994,6 @@ export type Database = {
             foreignKeyName: "order_attachments_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_attachments_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -2872,6 +3022,7 @@ export type Database = {
       }
       order_materials: {
         Row: {
+          billed_to_client: boolean
           colour: string | null
           cost: number
           cost_per_yard: number | null
@@ -2891,6 +3042,7 @@ export type Database = {
           yards: number | null
         }
         Insert: {
+          billed_to_client?: boolean
           colour?: string | null
           cost?: number
           cost_per_yard?: number | null
@@ -2910,6 +3062,7 @@ export type Database = {
           yards?: number | null
         }
         Update: {
+          billed_to_client?: boolean
           colour?: string | null
           cost?: number
           cost_per_yard?: number | null
@@ -2942,13 +3095,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "inventory_items_for_tailor"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "order_materials_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "order_materials_order_id_fkey"
@@ -3019,13 +3165,6 @@ export type Database = {
             foreignKeyName: "order_payment_links_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_payment_links_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -3091,13 +3230,6 @@ export type Database = {
             foreignKeyName: "order_status_history_order_id_fkey"
             columns: ["order_id"]
             isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
-          {
-            foreignKeyName: "order_status_history_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
             referencedRelation: "orders"
             referencedColumns: ["id"]
           },
@@ -3118,7 +3250,9 @@ export type Database = {
           collected_at: string | null
           created_at: string
           created_by: string | null
+          currency: string
           delivery_date: string | null
+          fx_rate_to_ngn: number | null
           garment_type: string
           garment_type_code: string | null
           id: string
@@ -3145,7 +3279,9 @@ export type Database = {
           collected_at?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           delivery_date?: string | null
+          fx_rate_to_ngn?: number | null
           garment_type: string
           garment_type_code?: string | null
           id?: string
@@ -3172,7 +3308,9 @@ export type Database = {
           collected_at?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           delivery_date?: string | null
+          fx_rate_to_ngn?: number | null
           garment_type?: string
           garment_type_code?: string | null
           id?: string
@@ -3563,6 +3701,7 @@ export type Database = {
         Row: {
           amount: number
           created_at: string
+          currency: string
           id: string
           method: string
           order_id: string
@@ -3577,6 +3716,7 @@ export type Database = {
         Insert: {
           amount: number
           created_at?: string
+          currency: string
           id?: string
           method: string
           order_id: string
@@ -3591,6 +3731,7 @@ export type Database = {
         Update: {
           amount?: number
           created_at?: string
+          currency?: string
           id?: string
           method?: string
           order_id?: string
@@ -3603,13 +3744,6 @@ export type Database = {
           voided?: boolean
         }
         Relationships: [
-          {
-            foreignKeyName: "payments_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "payments_order_id_fkey"
             columns: ["order_id"]
@@ -3986,7 +4120,9 @@ export type Database = {
           converted_order_id: string | null
           created_at: string
           created_by: string | null
+          currency: string
           discount_percent: number
+          fx_rate_to_ngn: number | null
           garment_type: string
           garment_type_code: string | null
           id: string
@@ -4005,7 +4141,9 @@ export type Database = {
           converted_order_id?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           discount_percent?: number
+          fx_rate_to_ngn?: number | null
           garment_type: string
           garment_type_code?: string | null
           id?: string
@@ -4024,7 +4162,9 @@ export type Database = {
           converted_order_id?: string | null
           created_at?: string
           created_by?: string | null
+          currency?: string
           discount_percent?: number
+          fx_rate_to_ngn?: number | null
           garment_type?: string
           garment_type_code?: string | null
           id?: string
@@ -4045,13 +4185,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "clients"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quotes_converted_order_id_fkey"
-            columns: ["converted_order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "quotes_converted_order_id_fkey"
@@ -4160,6 +4293,86 @@ export type Database = {
           },
         ]
       }
+      report_share_views: {
+        Row: {
+          id: string
+          share_id: string
+          user_agent: string | null
+          viewed_at: string
+        }
+        Insert: {
+          id?: string
+          share_id: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Update: {
+          id?: string
+          share_id?: string
+          user_agent?: string | null
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_share_views_share_id_fkey"
+            columns: ["share_id"]
+            isOneToOne: false
+            referencedRelation: "report_shares"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      report_shares: {
+        Row: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          period_month: string
+          revoked_at: string | null
+          snapshot: Json
+          store_id: string
+          token: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          expires_at: string
+          id?: string
+          period_month: string
+          revoked_at?: string | null
+          snapshot: Json
+          store_id: string
+          token?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          expires_at?: string
+          id?: string
+          period_month?: string
+          revoked_at?: string | null
+          snapshot?: Json
+          store_id?: string
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "report_shares_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "report_shares_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       rls_drift_checks: {
         Row: {
           checked_at: string
@@ -4228,13 +4441,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "storefront_items"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "sew_requests_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
           },
           {
             foreignKeyName: "sew_requests_order_id_fkey"
@@ -4371,13 +4577,6 @@ export type Database = {
           void_reason?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "staff_earnings_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "staff_earnings_order_id_fkey"
             columns: ["order_id"]
@@ -4641,6 +4840,48 @@ export type Database = {
           },
         ]
       }
+      store_milestones: {
+        Row: {
+          achieved_at: string
+          acknowledged: boolean
+          detail: Json | null
+          id: string
+          milestone_key: string
+          store_id: string
+        }
+        Insert: {
+          achieved_at?: string
+          acknowledged?: boolean
+          detail?: Json | null
+          id?: string
+          milestone_key: string
+          store_id: string
+        }
+        Update: {
+          achieved_at?: string
+          acknowledged?: boolean
+          detail?: Json | null
+          id?: string
+          milestone_key?: string
+          store_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_milestones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_milestones_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       store_monthly_snapshots: {
         Row: {
           created_at: string
@@ -4684,6 +4925,42 @@ export type Database = {
             foreignKeyName: "store_monthly_snapshots_store_id_fkey"
             columns: ["store_id"]
             isOneToOne: false
+            referencedRelation: "stores_public"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      store_nav_pins: {
+        Row: {
+          created_at: string
+          pinned_keys: string[]
+          store_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          pinned_keys?: string[]
+          store_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          pinned_keys?: string[]
+          store_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "store_nav_pins_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
+            referencedRelation: "stores"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "store_nav_pins_store_id_fkey"
+            columns: ["store_id"]
+            isOneToOne: true
             referencedRelation: "stores_public"
             referencedColumns: ["id"]
           },
@@ -5439,41 +5716,13 @@ export type Database = {
       order_balances: {
         Row: {
           balance: number | null
+          currency: string | null
           order_id: string | null
           paid: number | null
           store_id: string | null
           total: number | null
         }
-        Insert: {
-          balance?: never
-          order_id?: string | null
-          paid?: never
-          store_id?: string | null
-          total?: never
-        }
-        Update: {
-          balance?: never
-          order_id?: string | null
-          paid?: never
-          store_id?: string | null
-          total?: never
-        }
-        Relationships: [
-          {
-            foreignKeyName: "orders_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "orders_store_id_fkey"
-            columns: ["store_id"]
-            isOneToOne: false
-            referencedRelation: "stores_public"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       order_materials_for_tailor: {
         Row: {
@@ -5525,13 +5774,6 @@ export type Database = {
           yards?: number | null
         }
         Relationships: [
-          {
-            foreignKeyName: "order_materials_order_id_fkey"
-            columns: ["order_id"]
-            isOneToOne: false
-            referencedRelation: "order_balances"
-            referencedColumns: ["order_id"]
-          },
           {
             foreignKeyName: "order_materials_order_id_fkey"
             columns: ["order_id"]
@@ -5701,12 +5943,31 @@ export type Database = {
       }
     }
     Functions: {
+      _all_order_balances: {
+        Args: never
+        Returns: {
+          balance: number
+          currency: string
+          order_id: string
+          paid: number
+          store_id: string
+          total: number
+        }[]
+      }
       _can_manage_order_fitting: {
         Args: { p_assigned_to: string; p_store_id: string }
         Returns: boolean
       }
       _compute_fitting_slots: {
         Args: { p_days?: number; p_store_id: string }
+        Returns: Json
+      }
+      _compute_health_report: {
+        Args: {
+          p_anonymize: boolean
+          p_period_month: string
+          p_store_id: string
+        }
         Returns: Json
       }
       _directory_is_paid_or_trial: {
@@ -5733,6 +5994,10 @@ export type Database = {
         Args: { p_store_id: string }
         Returns: undefined
       }
+      _require_quotations_feature: {
+        Args: { p_store_id: string }
+        Returns: undefined
+      }
       _store_has_feature: {
         Args: { p_feature: string; p_store_id: string }
         Returns: boolean
@@ -5747,6 +6012,17 @@ export type Database = {
           has_enough_data: boolean
           orders_counted: number
           rate: number
+        }[]
+      }
+      _store_order_balances: {
+        Args: { p_store_id: string }
+        Returns: {
+          balance: number
+          currency: string
+          order_id: string
+          paid: number
+          store_id: string
+          total: number
         }[]
       }
       _store_weekly_throughput: {
@@ -5804,6 +6080,19 @@ export type Database = {
         Args: { p_limit?: number; p_store_id?: string }
         Returns: Json
       }
+      admin_delete_store: {
+        Args: { p_reason?: string; p_store_id: string }
+        Returns: undefined
+      }
+      admin_delete_user_data: {
+        Args: { p_reason?: string; p_user_id: string }
+        Returns: undefined
+      }
+      admin_extend_trial: {
+        Args: { p_days: number; p_store_id: string }
+        Returns: undefined
+      }
+      admin_get_store_detail: { Args: { p_store_id: string }; Returns: Json }
       admin_growth_analytics: { Args: { p_months?: number }; Returns: Json }
       admin_list_audit_logs: { Args: { p_limit?: number }; Returns: Json }
       admin_list_directory_reports: { Args: never; Returns: Json }
@@ -5813,7 +6102,12 @@ export type Database = {
       admin_my_role: { Args: never; Returns: string }
       admin_platform_health: { Args: never; Returns: Json }
       admin_platform_stats: { Args: never; Returns: Json }
+      admin_platform_totals: { Args: never; Returns: Json }
       admin_recent_errors: { Args: { p_hours?: number }; Returns: Json }
+      admin_remove_staff_member: {
+        Args: { p_member_id: string }
+        Returns: undefined
+      }
       admin_remove_team_member: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -5841,8 +6135,16 @@ export type Database = {
         Args: { p_report_id: string; p_status: string }
         Returns: undefined
       }
+      admin_set_store_active: {
+        Args: { p_is_active: boolean; p_store_id: string }
+        Returns: undefined
+      }
       admin_set_store_ai_allowance: {
         Args: { p_credits: number; p_store_id: string }
+        Returns: undefined
+      }
+      admin_set_store_plan: {
+        Args: { p_plan_code: string; p_store_id: string }
         Returns: undefined
       }
       admin_store_ai_usage: { Args: { p_since?: string }; Returns: Json }
@@ -6052,6 +6354,18 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_moment: {
+        Args: {
+          p_client_id: string
+          p_due_date: string
+          p_message: string
+          p_order_id?: string
+          p_photo_url?: string
+          p_store_id: string
+          p_type: string
+        }
+        Returns: undefined
+      }
       create_notification: {
         Args: {
           p_link?: string
@@ -6099,6 +6413,30 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      create_report_share: {
+        Args: {
+          p_expires_days?: number
+          p_period_month: string
+          p_store_id: string
+        }
+        Returns: {
+          created_at: string
+          created_by: string
+          expires_at: string
+          id: string
+          period_month: string
+          revoked_at: string | null
+          snapshot: Json
+          store_id: string
+          token: string
+        }
+        SetofOptions: {
+          from: "*"
+          to: "report_shares"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       decline_passport_share: {
         Args: { p_share_id: string }
         Returns: undefined
@@ -6142,10 +6480,14 @@ export type Database = {
           isSetofReturn: false
         }
       }
+      generate_anniversary_moments: { Args: never; Returns: undefined }
+      generate_birthday_moments: { Args: never; Returns: undefined }
       generate_delivery_reminder_notifications: {
         Args: never
         Returns: undefined
       }
+      generate_festive_moments: { Args: never; Returns: undefined }
+      generate_fitcheck_moments: { Args: never; Returns: undefined }
       generate_overdue_balance_notifications: {
         Args: never
         Returns: undefined
@@ -6175,7 +6517,13 @@ export type Database = {
         }
       }
       generate_plan_limit_notifications: { Args: never; Returns: undefined }
+      generate_winback_moments: { Args: never; Returns: undefined }
+      generate_zero_balance_milestones: { Args: never; Returns: undefined }
       get_ai_wallet: { Args: { p_store_id: string }; Returns: Json }
+      get_business_health_report: {
+        Args: { p_period_month: string; p_store_id: string }
+        Returns: Json
+      }
       get_daily_digest_data: { Args: { p_store_id: string }; Returns: Json }
       get_design_by_token: {
         Args: { p_token: string }
@@ -6209,6 +6557,7 @@ export type Database = {
         Returns: Json
       }
       get_fitting_link_details: { Args: { p_token: string }; Returns: Json }
+      get_home_dashboard: { Args: { p_store_id: string }; Returns: Json }
       get_invite_by_token: { Args: { p_token: string }; Returns: Json }
       get_order_approval: { Args: { p_token: string }; Returns: Json }
       get_order_capacity_check: {
@@ -6230,7 +6579,12 @@ export type Database = {
         }
         Returns: Json
       }
+      get_public_fx_rate: { Args: never; Returns: number }
       get_referral_stats: { Args: { p_store_id: string }; Returns: Json }
+      get_report_share: {
+        Args: { p_token: string; p_user_agent?: string }
+        Returns: Json
+      }
       get_store_capacity_forecast: {
         Args: { p_store_id: string; p_weeks?: number }
         Returns: Json
@@ -6253,8 +6607,19 @@ export type Database = {
           bank_name: string
         }[]
       }
+      get_style_book: { Args: { p_token: string }; Returns: Json }
       get_weekly_digest_data: { Args: { p_store_id: string }; Returns: Json }
       has_active_support_grant: {
+        Args: { p_store_id: string }
+        Returns: boolean
+      }
+      has_contracts_access: { Args: { p_store_id: string }; Returns: boolean }
+      has_health_report_access: {
+        Args: { p_store_id: string }
+        Returns: boolean
+      }
+      has_job_board_access: { Args: { p_store_id: string }; Returns: boolean }
+      has_multi_currency_access: {
         Args: { p_store_id: string }
         Returns: boolean
       }
@@ -6313,6 +6678,7 @@ export type Database = {
         Returns: Json
       }
       list_passport_shares: { Args: { p_session_token: string }; Returns: Json }
+      list_report_shares: { Args: { p_store_id: string }; Returns: Json }
       log_audit_event: {
         Args: {
           p_action: string
@@ -6345,7 +6711,7 @@ export type Database = {
       }
       match_incoming_transfer: {
         Args: { p_transfer_id: string }
-        Returns: string
+        Returns: undefined
       }
       name_similarity: { Args: { a: string; b: string }; Returns: number }
       next_calendar_occurrence: {
@@ -6370,6 +6736,15 @@ export type Database = {
       passport_start_session: {
         Args: { p_phone_e164: string }
         Returns: string
+      }
+      record_fit_feedback: {
+        Args: {
+          p_area: string
+          p_client_id: string
+          p_order_id: string
+          p_result: string
+        }
+        Returns: undefined
       }
       record_passport_referral: {
         Args: { p_share_token: string; p_store_id: string }
@@ -6490,7 +6865,40 @@ export type Database = {
         Args: { p_session_token: string; p_share_id: string }
         Returns: undefined
       }
+      revoke_report_share: {
+        Args: { p_share_id: string; p_store_id: string }
+        Returns: undefined
+      }
       set_my_ui_language: { Args: { p_language: string }; Returns: undefined }
+      set_order_material_billed_to_client: {
+        Args: { p_billed_to_client: boolean; p_material_id: string }
+        Returns: {
+          billed_to_client: boolean
+          colour: string | null
+          cost: number
+          cost_per_yard: number | null
+          created_at: string
+          description: string | null
+          extras_received: string | null
+          id: string
+          inventory_item_id: string | null
+          order_id: string
+          photo_url: string | null
+          photo_urls: string[]
+          purchased_at: string
+          received_at: string | null
+          received_by: string | null
+          source: string
+          store_id: string
+          yards: number | null
+        }
+        SetofOptions: {
+          from: "*"
+          to: "order_materials"
+          isOneToOne: true
+          isSetofReturn: false
+        }
+      }
       set_order_status_note: {
         Args: {
           p_note?: string
@@ -6532,6 +6940,10 @@ export type Database = {
           p_store_id: string
           p_year: number
         }
+        Returns: undefined
+      }
+      set_style_book_revoked: {
+        Args: { p_client_id: string; p_revoked: boolean }
         Returns: undefined
       }
       unmapped_garment_type_names: {
@@ -6615,6 +7027,7 @@ export type Database = {
           p_quantity: number
         }
         Returns: {
+          billed_to_client: boolean
           colour: string | null
           cost: number
           cost_per_yard: number | null

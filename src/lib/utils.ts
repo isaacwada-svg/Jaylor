@@ -96,3 +96,15 @@ export async function getFunctionErrorMessage(error: unknown, fallback: string):
   }
   return getErrorMessage(error, fallback);
 }
+
+/** "Tunde Bakare" -> "TB"; first and last word only. */
+export function initialsOf(name: string): string {
+  const parts = name
+    .trim()
+    .split(/\s+/)
+    .filter((w) => /^\p{L}/u.test(w));
+  if (parts.length === 0) return "";
+  const first = parts[0]?.[0] ?? "";
+  const last = parts.length > 1 ? (parts[parts.length - 1]?.[0] ?? "") : "";
+  return (first + last).toUpperCase();
+}

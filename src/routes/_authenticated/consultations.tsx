@@ -7,6 +7,7 @@ import { AppShell } from "@/components/jaylor/app-shell";
 import { EmptyState } from "@/components/jaylor/empty-state";
 import { ConsultationForm } from "@/components/jaylor/consultation-form";
 import { StitchDivider } from "@/components/jaylor/stitch-divider";
+import { UpgradeButton } from "@/components/jaylor/upgrade-button";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -15,6 +16,7 @@ import type { Tables } from "@/integrations/supabase/types";
 import { useStore } from "@/lib/store-context";
 import { formatPhoneNG } from "@/lib/phone";
 import { getErrorMessage } from "@/lib/utils";
+import { useFeature } from "@/lib/use-feature";
 
 export const Route = createFileRoute("/_authenticated/consultations")({
   staticData: { sitemap: false },
@@ -50,6 +52,7 @@ function Consultations() {
   const storeId = currentStore?.id;
   const queryClient = useQueryClient();
   const canCreate = currentRole === "owner" || currentRole === "manager";
+  const { data: consultationsFeature } = useFeature(storeId, "consultations");
   const [formOpen, setFormOpen] = useState(false);
   const [actingOn, setActingOn] = useState<string | null>(null);
 
@@ -223,12 +226,15 @@ function Consultations() {
       <div className="mx-auto w-full max-w-3xl px-4 py-6 lg:px-8 lg:py-10">
         <div className="flex items-center justify-between gap-3">
           <h1 className="text-3xl">Consultations</h1>
-          {canCreate && (
-            <Button onClick={() => setFormOpen(true)}>
-              <Plus className="size-4" />
-              New
-            </Button>
-          )}
+          {canCreate &&
+            (consultationsFeature?.allowed ? (
+              <Button onClick={() => setFormOpen(true)}>
+                <Plus className="size-4" />
+                New
+              </Button>
+            ) : (
+              <UpgradeButton requiredPlan={consultationsFeature?.required_plan} />
+            ))}
         </div>
         <StitchDivider className="my-6" />
 
@@ -296,7 +302,11 @@ function Consultations() {
             description="Book a measurement, fitting or style consultation, or share your booking link with clients."
             action={
               canCreate ? (
-                <Button onClick={() => setFormOpen(true)}>New consultation</Button>
+                consultationsFeature?.allowed ? (
+                  <Button onClick={() => setFormOpen(true)}>New consultation</Button>
+                ) : (
+                  <UpgradeButton requiredPlan={consultationsFeature?.required_plan} />
+                )
               ) : undefined
             }
           />

@@ -20,7 +20,7 @@ export const Route = createFileRoute("/style/$token")({
   staticData: { sitemap: false },
   head: () => ({
     meta: [
-      { title: "Style Book — Jaylor" },
+      { title: "Style Book: Jaylor" },
       { name: "description", content: "Every garment made for you, in one place." },
     ],
   }),

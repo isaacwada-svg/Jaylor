@@ -2,16 +2,21 @@ import { useEffect, useState } from "react";
 import { createFileRoute, Link } from "@tanstack/react-router";
 import {
   ArrowRight,
-  CalendarClock,
+  Building2,
   Check,
+  ClipboardCheck,
+  Link2,
+  Lock,
+  ShieldCheck,
   MessageCircle,
   Package,
-  Sparkles,
+  Search,
   Store,
+  Users,
   Wallet,
+  Ruler,
 } from "lucide-react";
 import { BrandLogo } from "@/components/jaylor/logo";
-import { MoneyText } from "@/components/jaylor/money-text";
 import { TierBadge } from "@/components/jaylor/tier-badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -21,27 +26,46 @@ import {
   AccordionTrigger,
 } from "@/components/ui/accordion";
 import { supabase } from "@/integrations/supabase/client";
-import { COMPANY_LINE, ORDER_STATUSES } from "@/lib/jaylor";
+import {
+  COMPANY_LINE,
+  SHOW_DIRECTORY_IN_NAV,
+  SHOW_TESTIMONIALS,
+  SUPPORT_WHATSAPP_URL,
+} from "@/lib/jaylor";
 import { trackEvent } from "@/lib/analytics";
-import { PRICE_TIERS } from "@/lib/pricing-content";
-import { UncollectedCalculator } from "@/components/jaylor/uncollected-calculator";
-import { JOB_LANDING_CONTENT } from "@/lib/job-landing-content";
+import { cn } from "@/lib/utils";
+import { PRICE_TIERS, PRICING_GUARANTEE } from "@/lib/pricing-content";
+import { SupportLink } from "@/components/jaylor/support-link";
+import { SocialLinks } from "@/components/jaylor/social-links";
+import { TestimonialBlock } from "@/components/jaylor/testimonial-block";
 import atelierHero from "@/assets/jaylor-atelier-hero.jpg";
-import dashboardProduct from "@/assets/jaylor-dashboard-product.png";
 import measurementDetail from "@/assets/jaylor-measurement-detail.jpg";
-import garmentEditorial from "@/assets/jaylor-garment-editorial.jpg";
+import heroDemo from "@/assets/videos/jaylor-merged-promo.mp4.asset.json";
+// Cleaned clips (burned-in label removed) live in public/videos and keep the
+// "Demo with sample data • Real Jaylor screens" captions in the page markup.
+const peopleNotebook = { url: "/videos/jaylor-people-notebook.mp4" };
+const peopleSnap = { url: "/videos/jaylor-people-snap-track.mp4" };
+const posterNotebook = { url: "/videos/jaylor-people-notebook-poster.jpg" };
+const posterSnap = { url: "/videos/jaylor-people-snap-track-poster.jpg" };
+import { LazyVideo } from "@/components/jaylor/lazy-video";
+
+import { WhatsAppConcierge } from "@/components/jaylor/whatsapp-concierge";
+import { X } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   staticData: { sitemap: true },
   head: () => ({
     meta: [
-      { title: "Jaylor — The modern workroom for fashion businesses" },
+      { title: "Jaylor: order, payment and staff management for Nigerian tailors" },
       {
         name: "description",
         content:
-          "Jaylor brings orders, measurements, payments and client updates into one refined workroom for tailors and fashion houses in Nigeria.",
+          "Jaylor is the AI-powered app for Nigerian tailors and fashion houses. Track orders, save measurements, collect every naira and get your own storefront. Free to start.",
       },
-      { property: "og:title", content: "Jaylor — The modern workroom for fashion businesses" },
+      {
+        property: "og:title",
+        content: "Jaylor: order, payment and staff management for Nigerian tailors",
+      },
       {
         property: "og:description",
         content: "Every order tracked. Every measurement kept. Every naira accounted for.",
@@ -53,42 +77,57 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-const OPERATING_SYSTEM = [
+const WORKROOM_FEATURES = [
   {
     number: "01",
     icon: Package,
-    title: "Every order, in its place",
-    body: "Follow each garment from received to collected, with fittings, deadlines and responsibilities kept clear.",
+    title: "Keep every order on track",
+    body: "Keep fabric photos, garment details, deadlines and progress together. Share a tracking link so your client knows where their order stands.",
   },
   {
     number: "02",
-    icon: Wallet,
-    title: "Every naira, accounted for",
-    body: "Deposits, payments and outstanding balances stay connected to the right client and the right order.",
+    icon: Ruler,
+    title: "Keep measurements close",
+    body: "Save each client’s measurements with their history. Find the right record for a new garment instead of searching through old notebooks.",
   },
   {
     number: "03",
-    icon: MessageCircle,
-    title: "Every client, informed",
-    body: "Send considered WhatsApp updates and reminders without leaving the place where the work is managed.",
+    icon: Wallet,
+    title: "Know what is paid and owed",
+    body: "Record deposits and payments against each order. See the balance still to collect, without adding it up by hand.",
   },
 ];
 
-const FEATURES = [
+const DIFFERENTIATORS = [
+  {
+    icon: ClipboardCheck,
+    title: "Approval before cutting",
+    body: "Clients approve the style, fabric photos, measurements and price before you cut, so you have proof.",
+  },
+  {
+    icon: Link2,
+    title: "Customer tracking link",
+    body: "Each client follows their order from received to ready, so you get fewer “is my cloth ready?” calls.",
+  },
+  {
+    icon: Users,
+    title: "Group orders",
+    body: "Aso-ebi, weddings and family orders in one link, with each person's measurements and payments.",
+  },
   {
     icon: Store,
-    title: "A storefront that feels like yours",
-    body: "Share a considered shop page on WhatsApp or Instagram. Your work, your name, your clients.",
+    title: "Your own storefront",
+    body: "A shop page with your logo to share on WhatsApp and Instagram.",
   },
   {
-    icon: CalendarClock,
-    title: "One link for group work",
-    body: "Collect measurements and payments from families, bridal parties and aso-ebi groups without the usual chasing.",
+    icon: Search,
+    title: "Free directory listing",
+    body: "New clients can find you by city and style in the Jaylor tailor directory.",
   },
   {
-    icon: Sparkles,
-    title: "Less typing, more making",
-    body: "Speak an order or bring in an old notebook page, then review Jaylor's draft before anything is saved.",
+    icon: Building2,
+    title: "For fashion houses",
+    body: "Staff roles, piece-rate payroll, stock alerts and a monthly business report.",
   },
 ];
 
@@ -116,14 +155,49 @@ const HOME_FAQ = [
   {
     question: "Does it work offline?",
     answer:
-      "Yes. You can keep taking orders and recording payments without a connection, and Jaylor syncs everything the next time you're online.",
+      "Yes. You can keep taking orders and recording payments without a connection, and Jaylor syncs everything the next time you're online. Full offline mode is on paid plans. On Free, you can view your records offline.",
+  },
+  {
+    question: "What if I lose my phone?",
+    answer:
+      "Your records are safe online. Sign in on any phone or computer and everything is there.",
+  },
+  {
+    question: "Can my apprentice steal my customers?",
+    answer:
+      "You control what each staff member sees. Tailors can work on orders without seeing prices or payments.",
+  },
+  {
+    question: "I have measurements in a notebook. Can I bring them in?",
+    answer:
+      "Yes. Snap a photo of the notebook page, and Jaylor drafts it for you to check before saving.",
+  },
+  {
+    question: "Does it work for aso-ebi?",
+    answer: "Yes. One link for the whole group, with each person's measurements and who has paid.",
   },
 ];
 
-const PLANS = PRICE_TIERS.map((plan) => ({ ...plan, features: plan.features.slice(0, 4) }));
+const WOWS = [
+  {
+    icon: Link2,
+    title: "Customer tracking link",
+    body: "Clients check their order themselves. Fewer “is my cloth ready?” calls.",
+  },
+  {
+    icon: ClipboardCheck,
+    title: "Approval before cutting",
+    body: "Clients approve style, fabric and price first, so you have proof.",
+  },
+  {
+    icon: Ruler,
+    title: "Measurement Passport",
+    body: "A measurement record your clients keep and share.",
+  },
+];
 
 function Home() {
-  const [signedIn, setSignedIn] = useState(false);
+  const [signedIn, setSignedIn] = useState<boolean | null>(null);
 
   useEffect(() => {
     void trackEvent("landing_view");
@@ -135,34 +209,52 @@ function Home() {
   }, []);
 
   return (
-    <main className="premium-public min-h-screen overflow-hidden bg-background">
+    <main className="premium-public jaylor-home min-h-screen overflow-hidden bg-background">
       <header className="absolute inset-x-0 top-0 z-30 border-b border-foreground/10">
         <div className="mx-auto flex h-20 w-full max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12">
           <Link to="/" aria-label="Jaylor home">
-            <BrandLogo dark showTagline markClassName="h-11 w-auto" />
+            <BrandLogo dark showTagline markClassName="h-14 w-auto" />
           </Link>
-          <nav className="hidden items-center gap-8 text-xs uppercase text-foreground/70 md:flex">
+          <nav className="hidden items-center gap-6 text-sm text-foreground/90 md:flex">
             <Link to="/features" className="transition-colors hover:text-gold">
               Features
             </Link>
             <a href="#pricing" className="transition-colors hover:text-gold">
               Pricing
             </a>
+            <Link to="/passport" className="transition-colors hover:text-gold">
+              Passport
+            </Link>
+            {SHOW_DIRECTORY_IN_NAV && (
+              <Link to="/tailors" className="transition-colors hover:text-gold">
+                Find a tailor
+              </Link>
+            )}
           </nav>
-          <div className="flex items-center gap-4">
-            {signedIn ? (
-              <Button asChild variant="premium" className="rounded-none px-5 uppercase">
+          <div className="flex shrink-0 items-center gap-3 sm:gap-4">
+            {signedIn === null ? (
+              <div className="h-10 w-28 sm:w-36" aria-hidden="true" />
+            ) : signedIn ? (
+              <Button
+                asChild
+                variant="premium"
+                className="rounded-full px-6 uppercase tracking-[0.14em]"
+              >
                 <Link to="/dashboard">Open Jaylor</Link>
               </Button>
             ) : (
               <>
                 <Link
                   to="/auth"
-                  className="hidden text-xs uppercase text-foreground/70 hover:text-foreground sm:block"
+                  className="border-b border-gold pb-1 text-sm text-foreground/90 hover:text-gold"
                 >
                   Sign in
                 </Link>
-                <Button asChild variant="premium" className="rounded-none px-5 uppercase">
+                <Button
+                  asChild
+                  variant="premium"
+                  className="rounded-full px-5 uppercase tracking-[0.14em] sm:px-6"
+                >
                   <Link to="/auth" search={{ mode: "signup" }}>
                     Start free
                   </Link>
@@ -173,7 +265,7 @@ function Home() {
         </div>
       </header>
 
-      <section className="relative min-h-[600px] border-b border-foreground/10 sm:min-h-[640px] lg:min-h-[680px]">
+      <section className="relative border-b border-foreground/10">
         <img
           src={atelierHero}
           alt="A Nigerian fashion designer draping a burgundy gown in her atelier"
@@ -185,74 +277,127 @@ function Home() {
         <div className="premium-hero-shade-x absolute inset-0" />
         <div className="premium-hero-shade-y absolute inset-0" />
 
-        <div className="relative mx-auto flex min-h-[600px] w-full max-w-[1440px] items-end px-5 pb-10 pt-28 sm:min-h-[640px] sm:px-8 sm:pb-14 lg:min-h-[680px] lg:items-center lg:px-12 lg:pb-0">
+        <div className="relative mx-auto flex w-full max-w-[1440px] items-center px-5 pb-10 pt-28 sm:px-8 sm:pb-12 lg:px-12 lg:pt-32">
           <div className="editorial-rise max-w-3xl">
-            <p className="text-[11px] uppercase text-gold">
+            <p className="text-sm uppercase text-gold">
               For tailors &amp; fashion houses · Nigeria
             </p>
-            <h1 className="mt-6 text-5xl leading-[0.95] text-foreground sm:text-6xl lg:text-[5.5rem]">
-              Run your tailoring business without the chaos.
+            <h1 className="mt-6 text-4xl leading-tight text-foreground sm:text-5xl lg:text-6xl">
+              Every order tracked. Every measurement kept. Every naira accounted for.
             </h1>
-            <p className="mt-6 max-w-lg text-base leading-7 text-foreground/70 sm:text-lg">
-              Track orders, measurements and payments from your phone. Built for Nigerian tailors.
+            <p className="mt-6 max-w-lg text-base leading-7 text-foreground/90 sm:text-lg">
+              Orders, measurements and payments in one place. Less notebook searching, fewer balance
+              mix-ups, and a clear record from first measurement to collection.
             </p>
             <div className="mt-9 flex flex-wrap items-center gap-5">
               <Button
                 asChild
                 variant="premium"
                 size="lg"
-                className="h-12 rounded-none px-7 uppercase"
+                className="h-12 rounded-full px-9 uppercase tracking-[0.14em]"
+              >
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  Start free <ArrowRight />
+                </Link>
+              </Button>
+              <SupportLink className="h-12 rounded-full px-7" />
+            </div>
+            <p className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-foreground/90">
+              <span className="inline-flex items-center gap-1.5">
+                <ShieldCheck className="size-4 text-gold" aria-hidden="true" /> Secure payments by
+                Paystack
+              </span>
+              <span>· Cancel anytime</span>
+              <span>· Your records stay yours</span>
+            </p>
+            <p className="mt-3 text-sm text-foreground/90">
+              Trusted by <span className="font-semibold text-gold">BeeZik Fashion Hub</span> in
+              Suleja
+            </p>
+            <a
+              href="#pricing"
+              className="mt-7 block max-w-xl rounded-2xl border border-gold bg-gold/15 px-5 py-4 transition-colors hover:bg-gold/25"
+            >
+              <span className="block font-heading text-xl text-gold">
+                Free forever for solo tailors
+              </span>
+              <span className="mt-1 block text-sm text-foreground/90">
+                1 shop · 30 days of Growth free, no card · paid plans from ₦6,000/month ·{" "}
+                <span className="underline underline-offset-4">See prices</span>
+              </span>
+            </a>
+            <p className="mt-4 text-sm text-muted-foreground">
+              Are you a client?{" "}
+              <Link to="/passport" className="underline underline-offset-2 hover:text-gold">
+                Your shareable measurement record
+              </Link>
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="See Jaylor work" className="border-b border-border py-10 lg:py-14">
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-[0.8fr_1.2fr] lg:gap-14">
+          <figure id="hero-demo-video" className="relative mx-auto w-full max-w-xs">
+            <LazyVideo
+              src={peopleSnap.url}
+              poster={posterSnap.url}
+              className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+              label="A tailor snaps fabric into Jaylor and her customer checks the order on their phone"
+            />
+            <figcaption className="mt-3 text-center text-[11px] uppercase tracking-[0.2em] text-muted-foreground">
+              EST. 2026 • Built in Abuja for Nigerian tailors
+            </figcaption>
+          </figure>
+          <div>
+            <p className="text-xs uppercase text-gold">The three things tailors love</p>
+            <ul className="mt-6 space-y-7">
+              {WOWS.map(({ icon: Icon, title, body }) => (
+                <li key={title} className="flex gap-4">
+                  <span className="flex size-12 shrink-0 items-center justify-center rounded-full border border-gold/40">
+                    <Icon className="size-6 text-gold" aria-hidden="true" />
+                  </span>
+                  <div>
+                    <p className="font-heading text-2xl">{title}</p>
+                    <p className="mt-1 text-sm leading-6 text-muted-foreground">{body}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+            <div className="mt-7 flex flex-col items-start gap-3 sm:flex-row sm:gap-6">
+              <a
+                href={heroDemo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-sm underline underline-offset-4 hover:text-gold"
+              >
+                Watch the 29-second tour
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="workroom" className="border-b border-border py-12 lg:py-16">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
+            <div>
+              <p className="text-xs uppercase text-gold">The essentials, together</p>
+              <h2 className="mt-5 max-w-md text-4xl leading-tight sm:text-5xl">
+                Orders. Measurements. Payments.
+              </h2>
+              <Button
+                asChild
+                variant="premium"
+                className="mt-7 h-12 rounded-full px-8 uppercase tracking-[0.14em]"
               >
                 <Link to="/auth" search={{ mode: "signup" }}>
                   Start free <ArrowRight />
                 </Link>
               </Button>
             </div>
-            <p className="mt-5 text-xs text-foreground/50">Free to start. No card required.</p>
-            <a
-              href="#workroom"
-              className="mt-3 inline-block text-[11px] uppercase text-foreground/50 transition-colors hover:text-gold"
-            >
-              See how it works
-            </a>
-          </div>
-        </div>
-        <div className="absolute bottom-0 right-5 hidden w-64 border-t border-gold/70 py-5 lg:block lg:right-12">
-          <p className="text-[10px] uppercase text-gold">Made for the craft</p>
-          <p className="mt-2 text-xs leading-5 text-foreground/60">
-            From first measurement to final collection.
-          </p>
-        </div>
-      </section>
-
-      <section aria-label="The Jaylor dashboard" className="border-b border-border bg-secondary/40 py-10 lg:py-14">
-        <div className="mx-auto w-full max-w-5xl px-5 sm:px-8">
-          <p className="text-center text-[11px] uppercase text-gold">This is Jaylor</p>
-          <p className="mx-auto mt-3 max-w-xl text-center text-sm leading-6 text-foreground/60">
-            Your orders, balances and fittings — the real workroom, exactly as you will see it.
-          </p>
-          <img
-            src={dashboardProduct}
-            alt="The Jaylor dashboard showing today's orders, money owed, collection score and garments due soon"
-            width={1420}
-            height={1976}
-            loading="eager"
-            className="mt-6 h-auto w-full"
-          />
-        </div>
-      </section>
-
-      <section id="workroom" className="border-b border-border py-20 lg:py-28">
-        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
-          <div className="grid gap-12 lg:grid-cols-[0.8fr_1.2fr] lg:gap-20">
-            <div>
-              <p className="text-xs uppercase text-gold">Built around the workroom</p>
-              <h2 className="mt-5 max-w-md text-5xl leading-none sm:text-6xl">
-                You know the craft. Jaylor keeps its business in order.
-              </h2>
-            </div>
             <div className="border-t border-border">
-              {OPERATING_SYSTEM.map(({ number, icon: Icon, title, body }) => (
+              {WORKROOM_FEATURES.map(({ number, icon: Icon, title, body }) => (
                 <article
                   key={number}
                   className="group grid gap-5 border-b border-border py-8 sm:grid-cols-[56px_1fr_auto] sm:items-start"
@@ -260,7 +405,9 @@ function Home() {
                   <span className="text-xs text-gold">{number}</span>
                   <div>
                     <h3 className="text-3xl">{title}</h3>
-                    <p className="mt-3 max-w-xl text-sm leading-6 text-muted-foreground">{body}</p>
+                    <p className="mt-3 max-w-xl text-base leading-7 text-muted-foreground">
+                      {body}
+                    </p>
                   </div>
                   <Icon className="size-5 text-gold transition-transform duration-500 group-hover:translate-x-1" />
                 </article>
@@ -270,8 +417,185 @@ function Home() {
         </div>
       </section>
 
+      <section
+        aria-label="Get paid by link"
+        className="border-b border-border bg-card py-12 lg:py-16"
+      >
+        <div className="mx-auto flex w-full max-w-6xl flex-col items-start gap-5 px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">Jaylor Pay</p>
+          <h2 className="max-w-xl text-4xl leading-tight sm:text-5xl">Get paid by link</h2>
+          <p className="max-w-xl text-base leading-7 text-muted-foreground">
+            Send your client a secure payment link for card, transfer or USSD. The money goes
+            straight to your own bank account. Jaylor never holds it.
+          </p>
+          <Link
+            to="/pricing"
+            className="inline-flex items-center gap-2 text-sm text-gold underline underline-offset-4 hover:text-foreground"
+          >
+            See Jaylor Pay fees <ArrowRight className="size-4" />
+          </Link>
+        </div>
+      </section>
+
+      <section
+        aria-label="Notebook versus Jaylor"
+        className="border-b border-border py-12 lg:py-16"
+      >
+        <div className="mx-auto w-full max-w-6xl px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">Same talent. Different business.</p>
+          <h2 className="mt-5 max-w-xl text-4xl leading-tight sm:text-5xl">Notebook vs Jaylor</h2>
+          <div className="mt-10 grid items-center gap-8 lg:grid-cols-[1fr_0.8fr]">
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
+              <div>
+                <p className="text-sm font-semibold text-destructive">Notebook</p>
+                <ul className="mt-3 space-y-2 text-sm text-muted-foreground">
+                  {["Orders get lost", "Payments forgotten", "No proof of what was agreed"].map(
+                    (t) => (
+                      <li key={t} className="flex gap-2">
+                        <X className="mt-0.5 size-4 shrink-0 text-destructive" aria-hidden="true" />
+                        {t}
+                      </li>
+                    ),
+                  )}
+                </ul>
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-gold">Jaylor</p>
+                <ul className="mt-3 space-y-2 text-sm text-foreground/90">
+                  {[
+                    "Nothing falls through the cracks",
+                    "Every payment on record",
+                    "A tracking link for each customer",
+                  ].map((t) => (
+                    <li key={t} className="flex gap-2">
+                      <Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <figure className="mx-auto w-full max-w-xs">
+                <LazyVideo
+                  src={peopleNotebook.url}
+                  poster={posterNotebook.url}
+                  className="aspect-[9/16] w-full rounded-2xl border border-gold/20 object-cover shadow-2xl"
+                  label="A tailor moves from a messy notebook to a real Jaylor sample order"
+                />
+                <figcaption className="mt-3 text-center text-xs text-muted-foreground">
+                  Demo with sample data • Real Jaylor screens
+                </figcaption>
+              </figure>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="Who Jaylor is for" className="border-b border-border py-12 lg:py-16">
+        <div className="mx-auto grid w-full max-w-6xl gap-6 px-5 sm:px-8 md:grid-cols-2 lg:px-10">
+          <article className="rounded-2xl border border-gold/40 bg-card p-7">
+            <p className="text-xs uppercase text-gold">For solo tailors</p>
+            <h3 className="mt-3 text-2xl">Know who owes you. Stop searching notebooks.</h3>
+            <ul className="mt-5 space-y-2 text-sm text-foreground/90">
+              {[
+                "Save every customer's measurements",
+                "See who has paid and who owes",
+                "Send customers a link to check their cloth",
+                "Free forever for one shop",
+              ].map((t) => (
+                <li key={t} className="flex gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </article>
+          <article className="rounded-2xl border border-border bg-card p-7">
+            <p className="text-xs uppercase text-gold">For fashion houses</p>
+            <h3 className="mt-3 text-2xl">Run your team, stock and money in one place.</h3>
+            <ul className="mt-5 space-y-2 text-sm text-foreground/90">
+              {[
+                "Staff roles: tailors don't see money",
+                "Pay staff per piece they sew",
+                "Alerts before fabric runs out",
+                "A monthly business report",
+              ].map((t) => (
+                <li key={t} className="flex gap-2">
+                  <Check className="mt-0.5 size-4 shrink-0 text-gold" aria-hidden="true" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </article>
+        </div>
+      </section>
+
+      <section
+        aria-label="Storefront and directory"
+        className="border-b border-border bg-card py-12 lg:py-16"
+      >
+        <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-5 sm:px-8 lg:grid-cols-2 lg:px-10">
+          <div>
+            <p className="text-xs uppercase text-gold">Get found by new clients</p>
+            <h2 className="mt-5 text-4xl leading-tight sm:text-5xl">Your own shop page, free.</h2>
+            <p className="mt-5 text-base leading-7 text-muted-foreground">
+              Most tailors don't have a website. Jaylor gives you a shop page with your logo and
+              styles to share on WhatsApp and Instagram, plus a free listing so new clients can find
+              you by city and style.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <Button asChild variant="premium" className="h-12 rounded-full px-8">
+                <Link to="/auth" search={{ mode: "signup" }}>
+                  Create my shop page
+                </Link>
+              </Button>
+              <Button asChild variant="outline" className="h-12 rounded-full px-8">
+                <Link to="/tailors">See the directory</Link>
+              </Button>
+            </div>
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div className="rounded-2xl border border-border bg-background p-6">
+              <Store className="size-6 text-gold" aria-hidden="true" />
+              <p className="mt-3 font-medium">Storefront</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                One link with your logo, styles and prices.
+              </p>
+            </div>
+            <div className="rounded-2xl border border-border bg-background p-6">
+              <Search className="size-6 text-gold" aria-hidden="true" />
+              <p className="mt-3 font-medium">Tailor directory</p>
+              <p className="mt-1 text-sm text-muted-foreground">
+                Clients search by city and style.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section aria-label="Faster than writing" className="border-b border-border py-10 lg:py-14">
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <p className="text-xs uppercase text-gold">Faster than writing</p>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-4">
+            <div className="max-w-2xl">
+              <h2 className="text-3xl leading-tight sm:text-4xl">
+                Speak an order. Snap your notebook.
+              </h2>
+              <p className="mt-3 text-base text-muted-foreground">
+                Speak an order or photograph a notebook page, then check the draft before anything
+                is saved. Plus a calculator for balances you may still be owed.
+              </p>
+            </div>
+            <Button asChild variant="outline" className="rounded-full px-7">
+              <Link to="/features" hash="voice-and-photo">
+                See how it works <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+        </div>
+      </section>
+
       <section className="grid border-b border-border lg:grid-cols-2">
-        <div className="relative min-h-[460px] overflow-hidden lg:min-h-[680px]">
+        <div className="relative min-h-[260px] overflow-hidden lg:min-h-[400px]">
           <img
             src={measurementDetail}
             alt="A tailor marking a precise pattern on midnight fabric"
@@ -283,154 +607,128 @@ function Home() {
         </div>
         <div className="flex items-center bg-card px-5 py-16 sm:px-10 lg:px-16">
           <div className="max-w-xl">
-            <p className="text-xs uppercase text-gold">Precision, remembered</p>
-            <h2 className="mt-5 text-5xl leading-none sm:text-6xl">
-              A fitting should begin with confidence.
+            <p className="text-xs uppercase text-gold">Measurement Passport</p>
+            <h2 className="mt-5 text-4xl leading-tight sm:text-5xl">
+              A shareable record of your client’s measurements.
             </h2>
             <p className="mt-7 text-base leading-7 text-muted-foreground">
-              Keep each client’s measurements, garment history and fitting notes ready for the next
-              visit. No searching. No second guessing.
+              A Measurement Passport is a client’s saved measurement record. They choose when to
+              share it with another Jaylor tailor and can see their measurement history in one
+              place.
             </p>
-            <div className="mt-10 grid grid-cols-2 border-y border-border py-7">
-              <div className="border-r border-border pr-6">
-                <p className="font-heading text-4xl text-gold">One</p>
-                <p className="mt-2 text-xs uppercase text-muted-foreground">client record</p>
-              </div>
-              <div className="pl-6">
-                <p className="font-heading text-4xl text-gold">Every</p>
-                <p className="mt-2 text-xs uppercase text-muted-foreground">measurement & order</p>
-              </div>
-            </div>
             <Button
               asChild
               variant="outline"
               size="lg"
-              className="mt-10 rounded-none border-gold text-foreground hover:bg-gold hover:text-accent-foreground"
+              className="mt-10 h-12 rounded-full border-gold px-8 text-foreground hover:bg-gold hover:text-accent-foreground"
             >
-              <Link to="/features">
-                Explore the workroom <ArrowRight />
+              <Link to="/passport">
+                Learn about the Passport <ArrowRight />
               </Link>
             </Button>
           </div>
         </div>
       </section>
 
-      <UncollectedCalculator />
-
-      <section className="border-b border-border py-20 lg:py-28">
-        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
-          <div className="grid gap-14 lg:grid-cols-[1.1fr_0.9fr]">
-            <div className="order-2 grid content-start sm:grid-cols-3 lg:order-1">
-              {FEATURES.map(({ icon: Icon, title, body }, index) => (
-                <article
-                  key={title}
-                  className="border-t border-border py-7 sm:border-r sm:px-6 sm:first:pl-0 sm:last:border-r-0"
-                >
-                  <Icon className="size-5 text-gold" />
-                  <p className="mt-8 text-[10px] text-muted-foreground">0{index + 1}</p>
-                  <h3 className="mt-3 text-2xl leading-tight">{title}</h3>
-                  <p className="mt-4 text-sm leading-6 text-muted-foreground">{body}</p>
-                </article>
-              ))}
-            </div>
-            <div className="order-1 lg:order-2">
-              <p className="text-xs uppercase text-gold">Beyond the order book</p>
-              <h2 className="mt-5 text-5xl leading-none sm:text-6xl">
-                A composed business makes room for better work.
-              </h2>
-            </div>
+      <section aria-label="A note from the team" className="py-14 lg:py-16">
+        <div className="mx-auto w-full max-w-2xl px-5 text-center sm:px-8 lg:px-10">
+          <div className="border border-gold/40 bg-secondary/40 px-6 py-10 sm:px-10">
+            <p className="text-xs uppercase text-gold">
+              Built in Abuja, for tailors across Nigeria
+            </p>
+            <p className="mx-auto mt-6 max-w-md text-lg leading-8 text-foreground/90">
+              "We built Jaylor after watching talented tailors lose money and sleep to lost
+              notebooks, unpaid balances and endless 'is my cloth ready?' calls. We are now
+              welcoming our first tailors, and I will personally help you set up your shop and add
+              your first customers."
+            </p>
+            <p className="mt-6 text-sm text-muted-foreground">Isaac, Jaylor team</p>
+            <Button
+              asChild
+              variant="premium"
+              size="lg"
+              className="mt-4 h-12 rounded-full px-8 tracking-wide"
+            >
+              <a href={SUPPORT_WHATSAPP_URL} target="_blank" rel="noopener noreferrer">
+                <MessageCircle aria-hidden="true" /> Chat with me on WhatsApp
+              </a>
+            </Button>
           </div>
         </div>
       </section>
 
-      <section className="grid border-b border-border lg:grid-cols-[0.8fr_1.2fr]">
-        <div className="relative min-h-[620px] overflow-hidden">
-          <img
-            src={garmentEditorial}
-            alt="A finished burgundy and ivory bespoke gown in an elegant atelier"
-            width={1200}
-            height={1600}
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        </div>
-        <div className="flex items-center px-5 py-16 sm:px-10 lg:px-16">
-          <div className="w-full max-w-2xl">
-            <p className="text-xs uppercase text-gold">One link. Many possibilities.</p>
-            <h2 className="mt-5 text-5xl leading-none sm:text-6xl">
-              Every kind of commission, held to the same standard.
-            </h2>
-            <div className="mt-10 border-t border-border">
-              {JOB_LANDING_CONTENT.map((job, index) => (
-                <Link
-                  key={job.slug}
-                  to="/jobs/$slug"
-                  params={{ slug: job.slug }}
-                  className="group flex items-center justify-between border-b border-border py-5"
-                >
-                  <span className="flex items-center gap-5">
-                    <span className="text-[10px] text-gold">0{index + 1}</span>
-                    <span className="font-heading text-2xl">{job.tileLabel}</span>
-                  </span>
-                  <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-gold" />
-                </Link>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
+      {SHOW_TESTIMONIALS && <TestimonialBlock quote="" name="" shopName="" city="" />}
 
-      <section id="pricing" className="border-b border-border bg-card py-20 lg:py-28">
+      <section id="pricing" className="border-b border-border bg-card py-12 lg:py-16">
         <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
           <div className="grid gap-8 border-b border-border pb-12 lg:grid-cols-2 lg:items-end">
             <div>
               <p className="text-xs uppercase text-gold">Plans for every workroom</p>
-              <h2 className="mt-5 text-5xl leading-none sm:text-6xl">
+              <h2 className="mt-5 text-4xl leading-tight sm:text-5xl">
                 Begin free. Grow with intention.
               </h2>
             </div>
-            <p className="max-w-lg text-sm leading-6 text-muted-foreground lg:justify-self-end">
-              Every new store receives 14 days of Growth at no cost. If you return to Free, your
-              records remain yours.
+            <p className="max-w-lg text-base leading-7 text-muted-foreground lg:justify-self-end">
+              Every new store gets 30 days of the full Growth plan free. No card required. If you
+              return to Free, your records remain yours.
             </p>
           </div>
           <div className="grid sm:grid-cols-2 lg:grid-cols-4">
-            {PLANS.map((plan) => (
+            {PRICE_TIERS.map((plan) => (
               <article
                 key={plan.tier}
-                className="flex min-h-[390px] flex-col border-b border-border px-1 py-8 sm:border-r sm:px-6 lg:border-b-0 lg:first:pl-0 lg:last:border-r-0"
+                className="relative flex min-h-[390px] flex-col border-b border-border px-1 py-8 sm:border-r sm:px-6 lg:border-b-0 lg:first:pl-0 lg:last:border-r-0"
               >
+                {plan.mostPopular && (
+                  <span className="absolute -top-3 left-1 rounded-full bg-gold px-3 py-1 text-xs font-medium text-primary-foreground">
+                    Most popular
+                  </span>
+                )}
                 <TierBadge tier={plan.tier} className="w-fit rounded-none" />
                 <p className="mt-7 font-heading text-3xl text-foreground">
                   {plan.prices.monthly ? plan.prices.monthly.perMonth : "By quote"}
                 </p>
-                <p className="mt-4 min-h-20 text-sm leading-6 text-muted-foreground">
+                <p className="mt-4 min-h-20 text-base leading-7 text-muted-foreground">
                   {plan.blurb}
                 </p>
-                <ul className="mt-5 space-y-3 text-xs text-foreground/80">
+                <ul className="mt-5 space-y-3 text-sm text-foreground/90">
                   {plan.features.map((feature) => (
                     <li key={feature} className="flex items-start gap-2">
                       <Check className="mt-0.5 size-3.5 shrink-0 text-gold" /> {feature}
                     </li>
                   ))}
+                  <li className="flex items-start gap-2 text-muted-foreground">
+                    <Check className="mt-0.5 size-3.5 shrink-0 text-gold" /> Jaylor Pay at{" "}
+                    {plan.jaylorPayFee}
+                  </li>
                 </ul>
-                <Button
-                  asChild
-                  variant={plan.mostPopular ? "premium" : "outline"}
-                  className="mt-auto rounded-none"
-                >
-                  {plan.cta === "custom" ? (
-                    <Link to="/custom">Talk to us</Link>
-                  ) : (
-                    <Link to="/auth" search={{ mode: "signup" }}>
-                      {plan.tier === "Free" ? "Start free" : "Start trial"}
-                    </Link>
-                  )}
-                </Button>
+                <div className="mt-auto pt-12">
+                  <Button
+                    asChild
+                    className={cn(
+                      "w-full rounded-full px-6 py-3.5 text-[14px] font-semibold",
+                      plan.mostPopular
+                        ? "border-none bg-[#C5A059] text-[#0A192F] shadow-md hover:bg-[#C5A059]"
+                        : "border border-[#C5A059]/40 bg-transparent text-white shadow-none hover:bg-white/5",
+                    )}
+                  >
+                    {plan.cta === "custom" ? (
+                      <Link to="/custom">Talk to us</Link>
+                    ) : (
+                      <Link to="/auth" search={{ mode: "signup" }}>
+                        {plan.tier === "Free" ? "Start free" : "Start 30-day free trial"}
+                      </Link>
+                    )}
+                  </Button>
+                </div>
               </article>
             ))}
           </div>
-          <div className="border-t border-border pt-7 text-right">
+          <p className="mt-10 text-center text-xs text-muted-foreground">{PRICING_GUARANTEE}</p>
+          <p className="mt-2 text-center text-xs text-muted-foreground">
+            On the way: automatic WhatsApp reminders for fittings and pickups.
+          </p>
+          <div className="mt-3 border-t border-border pt-7 text-right">
             <Link
               to="/pricing"
               className="inline-flex items-center gap-2 text-xs uppercase text-gold hover:text-foreground"
@@ -441,10 +739,10 @@ function Home() {
         </div>
       </section>
 
-      <section className="py-20 lg:py-28">
+      <section className="py-12 lg:py-16">
         <div className="mx-auto grid w-full max-w-7xl gap-12 px-5 sm:px-8 lg:grid-cols-[0.7fr_1.3fr] lg:px-10">
           <div>
-            <p className="text-xs uppercase text-gold">Considered answers</p>
+            <p className="text-xs uppercase text-gold">Frequently asked questions</p>
             <h2 className="mt-5 text-5xl leading-none">Before you begin.</h2>
           </div>
           <Accordion type="single" collapsible className="border-t border-border">
@@ -454,10 +752,15 @@ function Home() {
                 value={`home-faq-${index}`}
                 className="border-border"
               >
-                <AccordionTrigger className="py-6 text-left font-heading text-2xl font-normal hover:text-gold hover:no-underline">
-                  {item.question}
+                <AccordionTrigger className="py-7 text-left font-heading text-2xl font-normal hover:text-gold hover:no-underline">
+                  <span className="flex items-center gap-2.5">
+                    {item.question.includes("data safe") && (
+                      <Lock className="size-4 shrink-0 text-gold" aria-hidden="true" />
+                    )}
+                    {item.question}
+                  </span>
                 </AccordionTrigger>
-                <AccordionContent className="max-w-2xl pb-7 text-sm leading-6 text-muted-foreground">
+                <AccordionContent className="max-w-2xl pb-8 text-base leading-7 text-muted-foreground">
                   {item.answer}
                 </AccordionContent>
               </AccordionItem>
@@ -471,51 +774,86 @@ function Home() {
           The next garment deserves a clear beginning
         </p>
         <h2 className="mx-auto mt-6 max-w-4xl text-5xl leading-none sm:text-7xl">
-          Every order tracked. Every measurement kept. Every naira accounted for.
+          Your next order deserves a system, not a notebook.
         </h2>
-        <p className="mx-auto mt-6 max-w-xl text-sm leading-6 text-foreground/70">
-          Set up your workroom in a minute. No card required.
+        <p className="mx-auto mt-6 max-w-xl text-sm leading-6 text-foreground/90">
+          Start with the Free plan. No card required.
         </p>
         <Button
           asChild
           variant="premium"
           size="lg"
-          className="mt-9 h-12 rounded-none px-8 uppercase"
+          className="mt-9 h-12 rounded-full px-10 uppercase tracking-[0.14em]"
         >
           <Link to="/auth" search={{ mode: "signup" }}>
             Start free <ArrowRight />
           </Link>
         </Button>
+        <div className="mt-5">
+          <SupportLink className="h-12 max-w-full rounded-full px-6" />
+        </div>
       </section>
 
       <footer className="py-14">
-        <div className="mx-auto grid w-full max-w-7xl gap-10 px-5 sm:px-8 md:grid-cols-[1fr_auto] lg:px-10">
-          <div>
-            <BrandLogo dark showTagline markClassName="h-12 w-auto" />
-            <p className="mt-5 max-w-sm text-xs leading-5 text-muted-foreground">{COMPANY_LINE}</p>
+        <div className="mx-auto w-full max-w-7xl px-5 sm:px-8 lg:px-10">
+          <div className="grid gap-10 sm:grid-cols-3">
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">For clients</p>
+              <nav className="mt-3 flex flex-col gap-3 text-sm text-muted-foreground">
+                <Link to="/passport" className="hover:text-gold">
+                  Measurement Passport
+                </Link>
+                <Link to="/tailors" className="hover:text-gold">
+                  Find a tailor
+                </Link>
+              </nav>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">For tailors</p>
+              <nav className="mt-3 flex flex-col gap-3 text-sm text-muted-foreground">
+                <Link to="/features" className="hover:text-gold">
+                  Features
+                </Link>
+                <Link to="/pricing" className="hover:text-gold">
+                  Pricing
+                </Link>
+                <Link to="/auth" search={{ mode: "signup" }} className="hover:text-gold">
+                  Start free
+                </Link>
+              </nav>
+            </div>
+            <div>
+              <p className="text-xs uppercase text-muted-foreground">Company</p>
+              <nav className="mt-3 flex flex-col gap-3 text-sm text-muted-foreground">
+                <Link to="/contact" className="hover:text-gold">
+                  Contact & support
+                </Link>
+                <Link to="/about" className="hover:text-gold">
+                  About
+                </Link>
+                <Link to="/privacy-policy" className="hover:text-gold">
+                  Privacy
+                </Link>
+                <Link to="/terms" className="hover:text-gold">
+                  Terms
+                </Link>
+                <Link to="/security" className="hover:text-gold">
+                  Security
+                </Link>
+              </nav>
+            </div>
           </div>
-          <nav className="grid grid-cols-2 gap-x-10 gap-y-3 text-xs text-muted-foreground sm:grid-cols-3">
-            <Link to="/features" className="hover:text-gold">
-              Features
-            </Link>
-            <Link to="/pricing" className="hover:text-gold">
-              Pricing
-            </Link>
-            <Link to="/about" className="hover:text-gold">
-              About
-            </Link>
-            <Link to="/privacy-policy" className="hover:text-gold">
-              Privacy
-            </Link>
-            <Link to="/terms" className="hover:text-gold">
-              Terms
-            </Link>
-            <Link to="/security" className="hover:text-gold">
-              Security
-            </Link>
-          </nav>
+          <div className="mt-10 border-t border-foreground/10 pt-8">
+            <BrandLogo dark showTagline markClassName="h-12 w-auto" />
+            <p className="mt-5 max-w-sm text-sm leading-6 text-muted-foreground">{COMPANY_LINE}</p>
+            <div className="mt-7 flex flex-wrap items-center gap-x-6 gap-y-3">
+              <p className="text-xs uppercase text-muted-foreground">Follow Jaylor</p>
+              <SocialLinks showHandles className="flex flex-wrap items-center gap-6" />
+            </div>
+          </div>
         </div>
       </footer>
+      <WhatsAppConcierge />
     </main>
   );
 }

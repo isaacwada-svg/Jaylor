@@ -4,23 +4,45 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { StoreProvider, useStore } from "@/lib/store-context";
 import { AppI18nProvider } from "@/lib/i18n/i18n-context";
+import { AiCreditsProvider } from "@/lib/ai-credits";
+import { APP_FONTS_HREF, AppThemeScope } from "@/components/jaylor/app-theme-scope";
 
 export const Route = createFileRoute("/_authenticated")({
   staticData: { sitemap: "exclude-subtree" },
   ssr: false,
+  // PR U: the app uses Montserrat 700/800 and Playfair Display 700, which the
+  // public pages don't load. Requested here so only logged-in screens pay
+  // for them.
+  head: () => ({
+    links: [
+      {
+        rel: "stylesheet",
+        href: APP_FONTS_HREF,
+      },
+    ],
+  }),
   beforeLoad: async () => {
     const { data, error } = await supabase.auth.getUser();
     if (error || !data.user) throw redirect({ to: "/auth" });
     return { user: data.user };
   },
   component: () => (
-    <StoreProvider>
-      <RequireStore>
-        <AppLanguageGate>
-          <Outlet />
-        </AppLanguageGate>
-      </RequireStore>
-    </StoreProvider>
+    <AppThemeScope>
+      <StoreProvider>
+        <RequireStore>
+          <AppLanguageGate>
+            {/* Every authenticated page can use voice order entry, WhatsApp
+              reply drafts, and the Ask Jaylor advisor -- not just AI Studio
+              and Festive, which already wrap themselves in their own nested
+              provider (harmless, just redundant). One provider here means
+              every AI feature's credit sheet/toast UX works everywhere. */}
+            <AiCreditsProvider>
+              <Outlet />
+            </AiCreditsProvider>
+          </AppLanguageGate>
+        </RequireStore>
+      </StoreProvider>
+    </AppThemeScope>
   ),
 });
 
