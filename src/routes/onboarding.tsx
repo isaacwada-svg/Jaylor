@@ -20,7 +20,7 @@ export const Route = createFileRoute("/onboarding")({
   staticData: { sitemap: false },
   ssr: false,
   head: () => ({
-    meta: [{ title: "Set up your store: Jaylor" }],
+    meta: [{ title: "Set up your store — Jaylor" }],
   }),
   component: Onboarding,
 });
@@ -150,16 +150,7 @@ function Onboarding() {
         })
         .select()
         .single();
-      if (error) {
-        // Temporary diagnostic: the toast only ever shows "Not authorized"
-        // with no detail, and getting the raw Network response body has
-        // been hard to walk through remotely -- logging the full Postgrest
-        // error here (message/details/hint/code) surfaces it in the
-        // Console tab instead, which has been reliable to copy. Remove
-        // once the actual cause of this is confirmed and fixed.
-        console.error("[onboarding] store insert failed", error);
-        throw error;
-      }
+      if (error) throw error;
 
       // A trigger already creates the owner's membership row when a store
       // is inserted; ignore a duplicate-key error either way.
@@ -466,7 +457,7 @@ function Onboarding() {
                   onClick={() =>
                     finish(
                       "/dashboard",
-                      "AI notebook scan is coming soon. For now, add clients one by one.",
+                      "AI notebook scan is coming soon — for now, add clients one by one.",
                     )
                   }
                   className="touch-target w-full rounded-2xl border border-border p-4 text-left transition-colors hover:border-gold hover:bg-accent/60"
