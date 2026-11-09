@@ -16,9 +16,11 @@ export interface TemplateEntry {
 import { template as dailyDigest } from './daily-digest'
 import { template as weeklyDigest } from './weekly-digest'
 import { template as transferAlert } from './transfer-alert'
+import { template as platformAdminAlert } from './platform-admin-alert'
 
 export const TEMPLATES: Record<string, TemplateEntry> = {
   'daily-digest': dailyDigest,
   'weekly-digest': weeklyDigest,
   'transfer-alert': transferAlert,
+  'platform-admin-alert': platformAdminAlert,
 }
