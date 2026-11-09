@@ -84,6 +84,7 @@ import { Route as AuthenticatedQuotationsQuoteIdRouteImport } from './routes/_au
 import { Route as AdminStoresStoreIdRouteImport } from './routes/admin.stores.$storeId'
 import { Route as ApiCronAskJaylorCleanupRouteImport } from './routes/api/cron/ask-jaylor-cleanup'
 import { Route as ApiCronDigestRouteImport } from './routes/api/cron/digest'
+import { Route as ApiInternalPlatformAlertRouteImport } from './routes/api/internal/platform-alert'
 import { Route as ApiInternalTransferAlertRouteImport } from './routes/api/internal/transfer-alert'
 import { Route as FitcheckOrderIdClientIdRouteImport } from './routes/fitcheck.$orderId.$clientId'
 import { Route as PassportShareTokenRouteImport } from './routes/passport.share.$token'
@@ -476,6 +477,12 @@ const ApiCronDigestRoute = ApiCronDigestRouteImport.update({
   path: '/api/cron/digest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiInternalPlatformAlertRoute =
+  ApiInternalPlatformAlertRouteImport.update({
+    id: '/api/internal/platform-alert',
+    path: '/api/internal/platform-alert',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiInternalTransferAlertRoute =
   ApiInternalTransferAlertRouteImport.update({
     id: '/api/internal/transfer-alert',
@@ -576,6 +583,7 @@ export interface FileRoutesByFullPath {
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
+  '/api/internal/platform-alert': typeof ApiInternalPlatformAlertRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/passport/share/$token': typeof PassportShareTokenRoute
@@ -653,6 +661,7 @@ export interface FileRoutesByTo {
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
+  '/api/internal/platform-alert': typeof ApiInternalPlatformAlertRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/passport/share/$token': typeof PassportShareTokenRoute
@@ -736,6 +745,7 @@ export interface FileRoutesById {
   '/admin/stores/$storeId': typeof AdminStoresStoreIdRoute
   '/api/cron/ask-jaylor-cleanup': typeof ApiCronAskJaylorCleanupRoute
   '/api/cron/digest': typeof ApiCronDigestRoute
+  '/api/internal/platform-alert': typeof ApiInternalPlatformAlertRoute
   '/api/internal/transfer-alert': typeof ApiInternalTransferAlertRoute
   '/fitcheck/$orderId/$clientId': typeof FitcheckOrderIdClientIdRoute
   '/passport/share/$token': typeof PassportShareTokenRoute
@@ -819,6 +829,7 @@ export interface FileRouteTypes {
     | '/admin/stores/$storeId'
     | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
+    | '/api/internal/platform-alert'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
     | '/passport/share/$token'
@@ -896,6 +907,7 @@ export interface FileRouteTypes {
     | '/admin/stores/$storeId'
     | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
+    | '/api/internal/platform-alert'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
     | '/passport/share/$token'
@@ -978,6 +990,7 @@ export interface FileRouteTypes {
     | '/admin/stores/$storeId'
     | '/api/cron/ask-jaylor-cleanup'
     | '/api/cron/digest'
+    | '/api/internal/platform-alert'
     | '/api/internal/transfer-alert'
     | '/fitcheck/$orderId/$clientId'
     | '/passport/share/$token'
@@ -1028,6 +1041,7 @@ export interface RootRouteChildren {
   TTokenRoute: typeof TTokenRoute
   ApiCronAskJaylorCleanupRoute: typeof ApiCronAskJaylorCleanupRoute
   ApiCronDigestRoute: typeof ApiCronDigestRoute
+  ApiInternalPlatformAlertRoute: typeof ApiInternalPlatformAlertRoute
   ApiInternalTransferAlertRoute: typeof ApiInternalTransferAlertRoute
   FitcheckOrderIdClientIdRoute: typeof FitcheckOrderIdClientIdRoute
   ApiPublicWhatsappWebhookRoute: typeof ApiPublicWhatsappWebhookRoute
@@ -1561,6 +1575,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiCronDigestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/internal/platform-alert': {
+      id: '/api/internal/platform-alert'
+      path: '/api/internal/platform-alert'
+      fullPath: '/api/internal/platform-alert'
+      preLoaderRoute: typeof ApiInternalPlatformAlertRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/internal/transfer-alert': {
       id: '/api/internal/transfer-alert'
       path: '/api/internal/transfer-alert'
@@ -1762,6 +1783,7 @@ const rootRouteChildren: RootRouteChildren = {
   TTokenRoute: TTokenRoute,
   ApiCronAskJaylorCleanupRoute: ApiCronAskJaylorCleanupRoute,
   ApiCronDigestRoute: ApiCronDigestRoute,
+  ApiInternalPlatformAlertRoute: ApiInternalPlatformAlertRoute,
   ApiInternalTransferAlertRoute: ApiInternalTransferAlertRoute,
   FitcheckOrderIdClientIdRoute: FitcheckOrderIdClientIdRoute,
   ApiPublicWhatsappWebhookRoute: ApiPublicWhatsappWebhookRoute,
