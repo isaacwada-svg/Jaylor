@@ -15,6 +15,7 @@ import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/
 import { Route as AboutRouteImport } from './routes/about'
 import { Route as AdminRouteImport } from './routes/admin'
 import { Route as AdminAiRouteImport } from './routes/admin-ai'
+import { Route as AppRouteImport } from './routes/app'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as ContactRouteImport } from './routes/contact'
 import { Route as CookiesRouteImport } from './routes/cookies'
@@ -118,6 +119,11 @@ const AdminRoute = AdminRouteImport.update({
 const AdminAiRoute = AdminAiRouteImport.update({
   id: '/admin-ai',
   path: '/admin-ai',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppRoute = AppRouteImport.update({
+  id: '/app',
+  path: '/app',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -518,6 +524,7 @@ export interface FileRoutesByFullPath {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin-ai': typeof AdminAiRoute
+  '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -599,6 +606,7 @@ export interface FileRoutesByTo {
   '/$handle': typeof HandleRoute
   '/about': typeof AboutRoute
   '/admin-ai': typeof AdminAiRoute
+  '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -680,6 +688,7 @@ export interface FileRoutesById {
   '/about': typeof AboutRoute
   '/admin': typeof AdminRouteWithChildren
   '/admin-ai': typeof AdminAiRoute
+  '/app': typeof AppRoute
   '/auth': typeof AuthRoute
   '/contact': typeof ContactRoute
   '/cookies': typeof CookiesRoute
@@ -764,6 +773,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-ai'
+    | '/app'
     | '/auth'
     | '/contact'
     | '/cookies'
@@ -845,6 +855,7 @@ export interface FileRouteTypes {
     | '/$handle'
     | '/about'
     | '/admin-ai'
+    | '/app'
     | '/auth'
     | '/contact'
     | '/cookies'
@@ -925,6 +936,7 @@ export interface FileRouteTypes {
     | '/about'
     | '/admin'
     | '/admin-ai'
+    | '/app'
     | '/auth'
     | '/contact'
     | '/cookies'
@@ -1009,6 +1021,7 @@ export interface RootRouteChildren {
   AboutRoute: typeof AboutRoute
   AdminRoute: typeof AdminRouteWithChildren
   AdminAiRoute: typeof AdminAiRoute
+  AppRoute: typeof AppRoute
   AuthRoute: typeof AuthRoute
   ContactRoute: typeof ContactRoute
   CookiesRoute: typeof CookiesRoute
@@ -1090,6 +1103,13 @@ declare module '@tanstack/react-router' {
       path: '/admin-ai'
       fullPath: '/admin-ai'
       preLoaderRoute: typeof AdminAiRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app': {
+      id: '/app'
+      path: '/app'
+      fullPath: '/app'
+      preLoaderRoute: typeof AppRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -1751,6 +1771,7 @@ const rootRouteChildren: RootRouteChildren = {
   AboutRoute: AboutRoute,
   AdminRoute: AdminRouteWithChildren,
   AdminAiRoute: AdminAiRoute,
+  AppRoute: AppRoute,
   AuthRoute: AuthRoute,
   ContactRoute: ContactRoute,
   CookiesRoute: CookiesRoute,
