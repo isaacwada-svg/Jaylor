@@ -101,6 +101,12 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      // iOS Safari ignores manifest.json's display/theme_color for a
+      // home-screen-installed PWA -- these three meta tags are the only way
+      // to get the same full-screen, no-browser-chrome feel there too.
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-status-bar-style", content: "black-translucent" },
+      { name: "apple-mobile-web-app-title", content: "Jaylor" },
     ],
     // Google tag with Consent Mode: loads on every page so Google can detect it,
     // but stores no cookies and sends no personal data until "Accept All".

@@ -33,6 +33,12 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
             >
               Passport
             </Link>
+            <Link
+              to="/app"
+              className="hidden text-muted-foreground hover:text-foreground sm:inline"
+            >
+              Get the app
+            </Link>
             {SHOW_DIRECTORY_IN_NAV && (
               <Link
                 to="/tailors"
@@ -78,6 +84,9 @@ export function MarketingLayout({ children }: { children: ReactNode }) {
                 </Link>
                 <Link to="/pricing" className="hover:text-foreground">
                   Pricing
+                </Link>
+                <Link to="/app" className="hover:text-foreground">
+                  Get the app
                 </Link>
                 <Link to="/auth" search={{ mode: "signup" }} className="hover:text-foreground">
                   Start free

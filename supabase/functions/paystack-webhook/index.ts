@@ -20,7 +20,12 @@ Deno.serve(async (req) => {
   } catch {
     return new Response("Not configured", { status: 500 });
   }
-  if (!valid) return new Response("Invalid signature", { status: 401 });
+  if (!valid) {
+    await relayPlatformAlert("webhook_signature_invalid", {
+      ip: req.headers.get("x-forwarded-for") ?? req.headers.get("cf-connecting-ip") ?? null,
+    });
+    return new Response("Invalid signature", { status: 401 });
+  }
 
   const event = JSON.parse(rawBody);
   const supabase = createClient(
@@ -173,17 +178,45 @@ async function handleDedicatedAccountFailed(
   const customerCode = customer.customer_code as string | undefined;
   if (!customerCode) return;
 
+  const failureReason =
+    (data.reason as string | undefined) ??
+    (data.message as string | undefined) ??
+    "Paystack could not assign an account number";
+
   await supabase
     .from("dedicated_accounts")
     .update({
       status: "failed",
-      failure_reason:
-        (data.reason as string | undefined) ??
-        (data.message as string | undefined) ??
-        "Paystack could not assign an account number",
+      failure_reason: failureReason,
       updated_at: new Date().toISOString(),
     })
     .eq("paystack_customer_code", customerCode);
+
+  await relayPlatformAlert("dedicated_account_failed", {
+    customerCode,
+    reason: failureReason,
+  });
+}
+
+// Same relay target and secret as notifyTransferMatched() below -- see that
+// function's comment for why this hands off to the Node app instead of
+// sending email directly from here.
+async function relayPlatformAlert(
+  kind: "webhook_signature_invalid" | "dedicated_account_failed",
+  details: Record<string, string | number | null>,
+): Promise<void> {
+  const secret = Deno.env.get("INTERNAL_API_SECRET");
+  const baseUrl = Deno.env.get("APP_BASE_URL") ?? "https://jaylor.com.ng";
+  if (!secret) return;
+  try {
+    await fetch(`${baseUrl}/api/internal/platform-alert`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "X-Internal-Secret": secret },
+      body: JSON.stringify({ kind, details }),
+    });
+  } catch (error) {
+    console.error(`[paystack-webhook] platform-alert relay failed (${kind})`, error);
+  }
 }
 
 // A client paid the shop's dedicated account number by plain bank transfer.

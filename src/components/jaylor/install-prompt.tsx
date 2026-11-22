@@ -1,17 +1,20 @@
 import { useEffect, useState } from "react";
 import { Download, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import {
+  getInstallPromptEvent,
+  subscribeInstallPrompt,
+  triggerInstallPrompt,
+  type BeforeInstallPromptEvent,
+} from "@/lib/install-prompt";
 
 const VISIT_KEY = "jaylor:visitCount";
 const DISMISSED_KEY = "jaylor:installDismissed";
 
-interface BeforeInstallPromptEvent extends Event {
-  prompt: () => Promise<void>;
-  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
-}
-
 export function InstallPrompt() {
-  const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(null);
+  const [deferredEvent, setDeferredEvent] = useState<BeforeInstallPromptEvent | null>(() =>
+    getInstallPromptEvent(),
+  );
   const [eligible, setEligible] = useState(false);
 
   useEffect(() => {
@@ -24,12 +27,7 @@ export function InstallPrompt() {
       // ignore storage failures
     }
 
-    function handler(event: Event) {
-      event.preventDefault();
-      setDeferredEvent(event as BeforeInstallPromptEvent);
-    }
-    window.addEventListener("beforeinstallprompt", handler);
-    return () => window.removeEventListener("beforeinstallprompt", handler);
+    return subscribeInstallPrompt(setDeferredEvent);
   }, []);
 
   if (!eligible || !deferredEvent) return null;
@@ -44,10 +42,7 @@ export function InstallPrompt() {
   }
 
   async function install() {
-    if (!deferredEvent) return;
-    await deferredEvent.prompt();
-    const choice = await deferredEvent.userChoice;
-    if (choice.outcome === "accepted") setDeferredEvent(null);
+    await triggerInstallPrompt();
     dismiss();
   }
 
